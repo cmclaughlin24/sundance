@@ -3,21 +3,14 @@ package ports
 import (
 	"context"
 
+	"github.com/cmclaughlin24/sundance/common/database"
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
 )
 
 type Repository struct {
-	Database    Database
+	Database    database.Database
 	Tenants     TenantsRepository
 	DataSources DataSourcesRepository
-}
-
-type Database interface {
-	Close() error
-	BeginTx(context.Context) (context.Context, error)
-	GetTx(context.Context) (any, error)
-	CommitTx(context.Context) error
-	RollbackTx(context.Context) error
 }
 
 type TenantsRepository interface {
