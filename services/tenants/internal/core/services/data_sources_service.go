@@ -20,11 +20,11 @@ func NewDataSourcesService(logger *log.Logger, repository *ports.Repository) *Da
 	}
 }
 
-func (s *DataSourcesService) Find(ctx context.Context) ([]*domain.DataSource, error) {
+func (s *DataSourcesService) Find(ctx context.Context, query ports.ListDataSourceQuery) ([]*domain.DataSource, error) {
 	return nil, nil
 }
 
-func (s *DataSourcesService) FindById(context.Context, domain.DataSourceID) (*domain.DataSource, error) {
+func (s *DataSourcesService) FindById(context.Context, domain.TenantID, domain.DataSourceID) (*domain.DataSource, error) {
 	return nil, nil
 }
 

@@ -77,7 +77,7 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		command := ports.NewCreateTenantCommand("", "")
+		command := ports.NewCreateTenantCommand(dto.Name, dto.Description)
 		tenant, err := h.app.Services.Tenants.Create(r.Context(), command)
 		resultChan <- result[*domain.Tenant]{tenant, err}
 	}()
@@ -145,11 +145,12 @@ func (h *handlers) removeTenant(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
+	tenantId := r.PathValue("tenantId")
 	resultChan := make(chan result[[]*domain.DataSource], 1)
 
 	go func() {
 		defer close(resultChan)
-		sources, err := h.app.Services.DataSources.Find(r.Context())
+		sources, err := h.app.Services.DataSources.Find(r.Context(), ports.NewListDataSourceQuery(domain.TenantID(tenantId)))
 		resultChan <- result[[]*domain.DataSource]{sources, err}
 	}()
 
@@ -166,12 +167,13 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
+	tenantId := r.PathValue("tenantId")
 	sourceId := r.PathValue("dataSourceId")
 	resultChan := make(chan result[*domain.DataSource], 1)
 
 	go func() {
 		defer close(resultChan)
-		source, err := h.app.Services.DataSources.FindById(r.Context(), domain.DataSourceID(sourceId))
+		source, err := h.app.Services.DataSources.FindById(r.Context(), domain.TenantID(tenantId), domain.DataSourceID(sourceId))
 		resultChan <- result[*domain.DataSource]{source, err}
 	}()
 
@@ -245,12 +247,13 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) removeDataSource(w http.ResponseWriter, r *http.Request) {
+	tenantId := r.PathValue("tenantId")
 	sourceId := r.PathValue("dataSourceId")
 	resultChan := make(chan result[any], 1)
 
 	go func() {
 		defer close(resultChan)
-		err := h.app.Services.DataSources.Remove(r.Context(), domain.DataSourceID(sourceId))
+		err := h.app.Services.DataSources.Remove(r.Context(), domain.TenantID(tenantId), domain.DataSourceID(sourceId))
 		resultChan <- result[any]{nil, err}
 	}()
 

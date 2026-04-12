@@ -20,9 +20,9 @@ type TenantsService interface {
 }
 
 type DataSourcesService interface {
-	Find(context.Context) ([]*domain.DataSource, error)
-	FindById(context.Context, domain.DataSourceID) (*domain.DataSource, error)
+	Find(context.Context, ListDataSourceQuery) ([]*domain.DataSource, error)
+	FindById(context.Context, domain.TenantID, domain.DataSourceID) (*domain.DataSource, error)
 	Create(context.Context, CreateDataSourceCommand) (*domain.DataSource, error)
 	Update(context.Context, UpdateDataSourceCommand) (*domain.DataSource, error)
-	Remove(context.Context, domain.DataSourceID) error
+	Remove(context.Context, domain.TenantID, domain.DataSourceID) error
 }

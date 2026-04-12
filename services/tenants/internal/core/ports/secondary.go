@@ -30,8 +30,8 @@ type TenantsRepository interface {
 
 type DataSourcesRepository interface {
 	Exists(context.Context, domain.DataSourceID) (bool, error)
-	Find(context.Context) ([]*domain.DataSource, error)
-	FindById(context.Context, domain.DataSourceID) (*domain.DataSource, error)
+	Find(context.Context, domain.TenantID) ([]*domain.DataSource, error)
+	FindById(context.Context, domain.TenantID, domain.DataSourceID) (*domain.DataSource, error)
 	Upsert(context.Context, *domain.DataSource) (*domain.DataSource, error)
-	Remove(context.Context, domain.DataSourceID) error
+	Remove(context.Context, domain.TenantID, domain.DataSourceID) error
 }
