@@ -2,11 +2,11 @@ package inmemory
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"sync"
 	"time"
 
+	"github.com/cmclaughlin24/sundance/common"
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
 	"github.com/google/uuid"
 )
@@ -44,7 +44,7 @@ func (r *InmemoryTenantRepository) FindById(ctx context.Context, id domain.Tenan
 	tenant, ok := r.tenants[string(id)]
 
 	if !ok {
-		return nil, nil
+		return nil, common.ErrNotFound
 	}
 
 	return tenant, nil
@@ -63,8 +63,7 @@ func (r *InmemoryTenantRepository) Upsert(ctx context.Context, tenant *domain.Te
 		existing, exists := r.tenants[string(tenant.ID)]
 
 		if !exists {
-			// TODO: Implement improved error handling with custom types
-			return nil, fmt.Errorf("tenant %q not found", tenant.ID)
+			return nil, common.ErrNotFound
 		}
 
 		tenant.CreatedAt = existing.CreatedAt

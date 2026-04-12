@@ -28,7 +28,7 @@ func (s *DataSourcesService) FindById(ctx context.Context, tenantId domain.Tenan
 	return s.repository.DataSources.FindById(ctx, tenantId, sourceId)
 }
 
-func (s *DataSourcesService) Create(ctx context.Context, command ports.CreateDataSourceCommand) (*domain.DataSource, error) {
+func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
 	dataSource, err := s.repository.DataSources.Upsert(
 		ctx,
 		domain.NewDataSource("", command.TenantID, command.Type, command.Attributes),
@@ -41,7 +41,7 @@ func (s *DataSourcesService) Create(ctx context.Context, command ports.CreateDat
 	return dataSource, nil
 }
 
-func (s *DataSourcesService) Update(ctx context.Context, command ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
+func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
 	dataSource, err := s.repository.DataSources.Upsert(
 		ctx,
 		domain.NewDataSource(command.ID, command.TenantID, command.Type, command.Attributes),

@@ -28,7 +28,7 @@ func (s *TenantsService) FindById(ctx context.Context, id domain.TenantID) (*dom
 	return s.repository.Tenants.FindById(ctx, id)
 }
 
-func (s *TenantsService) Create(ctx context.Context, command ports.CreateTenantCommand) (*domain.Tenant, error) {
+func (s *TenantsService) Create(ctx context.Context, command *ports.CreateTenantCommand) (*domain.Tenant, error) {
 	tenant, err := s.repository.Tenants.Upsert(
 		ctx,
 		domain.NewTenant("", command.Name, command.Description),
@@ -41,7 +41,7 @@ func (s *TenantsService) Create(ctx context.Context, command ports.CreateTenantC
 	return tenant, nil
 }
 
-func (s *TenantsService) Update(ctx context.Context, command ports.UpdateTenantCommand) (*domain.Tenant, error) {
+func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenantCommand) (*domain.Tenant, error) {
 	tenant, err := s.repository.Tenants.Upsert(
 		ctx,
 		domain.NewTenant(command.ID, command.Name, command.Description),

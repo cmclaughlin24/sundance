@@ -70,10 +70,7 @@ func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[tenantDto]{
-			Message: "Success",
-			Data:    *tenantToDto(res.data),
-		})
+		common.SendJsonResponse(w, http.StatusOK, tenantToDto(res.data))
 	}
 }
 
@@ -85,9 +82,14 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	command, err := ports.NewCreateTenantCommand(dto.Name, dto.Description)
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
 	go func() {
 		defer close(resultChan)
-		command := ports.NewCreateTenantCommand(dto.Name, dto.Description)
 		tenant, err := h.app.Services.Tenants.Create(r.Context(), command)
 		resultChan <- result[*domain.Tenant]{tenant, err}
 	}()
@@ -117,9 +119,14 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	command, err := ports.NewUpdateTenantCommand(domain.TenantID(id), dto.Name, dto.Description)
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
 	go func() {
 		defer close(resultChan)
-		command := ports.NewUpdateTenantCommand(domain.TenantID(id), dto.Name, dto.Description)
 		tenant, err := h.app.Services.Tenants.Update(r.Context(), command)
 		resultChan <- result[*domain.Tenant]{tenant, err}
 	}()
@@ -134,7 +141,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[tenantDto]{
-			Message: "Success",
+			Message: "Success updated!",
 			Data:    *tenantToDto(res.data),
 		})
 	}
@@ -211,10 +218,7 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dataSourceDto]{
-			Message: "Success",
-			Data:    *dataSourceToDto(res.data),
-		})
+		common.SendJsonResponse(w, http.StatusOK, dataSourceToDto(res.data)) 
 	}
 }
 
@@ -227,9 +231,14 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	command, err := ports.NewCreateDataSourceCommand(domain.TenantID(tenantId), dto.Type, dto.Attributes)
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
 	go func() {
 		defer close(resultChan)
-		command := ports.NewCreateDataSourceCommand(domain.TenantID(tenantId), dto.Type, dto.Attributes)
 		tenant, err := h.app.Services.DataSources.Create(r.Context(), command)
 		resultChan <- result[*domain.DataSource]{tenant, err}
 	}()
@@ -260,9 +269,14 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	command, err := ports.NewUpdateDataSourceCommand(domain.DataSourceID(sourceId), domain.TenantID(tenantId), dto.Type, dto.Attributes)
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
 	go func() {
 		defer close(resultChan)
-		command := ports.NewUpdateDataSourceCommand(domain.DataSourceID(sourceId), domain.TenantID(tenantId), dto.Type, dto.Attributes)
 		tenant, err := h.app.Services.DataSources.Update(r.Context(), command)
 		resultChan <- result[*domain.DataSource]{tenant, err}
 	}()
@@ -277,7 +291,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dataSourceDto]{
-			Message: "Success",
+			Message: "Successfully updated!",
 			Data:    *dataSourceToDto(res.data),
 		})
 	}

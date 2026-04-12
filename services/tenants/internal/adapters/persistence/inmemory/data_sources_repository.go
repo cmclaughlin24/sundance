@@ -2,11 +2,11 @@ package inmemory
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"sync"
 	"time"
 
+	"github.com/cmclaughlin24/sundance/common"
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
 	"github.com/google/uuid"
 )
@@ -48,7 +48,7 @@ func (r *InmemoryDataSourceRepository) FindById(ctx context.Context, tenantID do
 	ds, ok := r.dataSources[key]
 
 	if !ok {
-		return nil, nil
+		return nil, common.ErrNotFound
 	}
 
 	return ds, nil
@@ -69,7 +69,7 @@ func (r *InmemoryDataSourceRepository) Upsert(ctx context.Context, ds *domain.Da
 		existing, exists := r.dataSources[key]
 
 		if !exists {
-			return nil, fmt.Errorf("data source %q not found", ds.ID)
+			return nil, common.ErrNotFound
 		}
 
 		ds.CreatedAt = existing.CreatedAt
