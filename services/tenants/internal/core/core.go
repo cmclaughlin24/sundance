@@ -6,6 +6,7 @@ import (
 
 	"github.com/cmclaughlin24/sundance/tenants/internal/adapters/persistence"
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/ports"
+	"github.com/cmclaughlin24/sundance/tenants/internal/core/services"
 )
 
 type ApplicationSettings struct {
@@ -14,23 +15,29 @@ type ApplicationSettings struct {
 
 type Application struct {
 	Logger     *log.Logger
-	Repository *ports.Repository
 	Services   *ports.Services
+	repository *ports.Repository
 }
 
 func NewApplication(settings ApplicationSettings) (*Application, error) {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
-	_, err := persistence.Bootstrap(settings.Persistence, logger)
+	r, err := persistence.Bootstrap(settings.Persistence, logger)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return nil, nil
+	s := services.Bootstrap(logger, r)
+
+	return &Application{
+		Logger:     logger,
+		Services:   s,
+		repository: r,
+	}, nil
 }
 
 func (app *Application) Close() {
-	if err := app.Repository.Database.Close(); err != nil {
+	if err := app.repository.Database.Close(); err != nil {
 		log.Fatalf("an error occurred while closing the database connection: %s", err.Error())
 	}
 }

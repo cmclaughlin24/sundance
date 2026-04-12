@@ -3,6 +3,7 @@ module github.com/cmclaughlin24/sundance/tenants
 go 1.25.3
 
 require (
+	github.com/google/uuid v1.6.0
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -12,3 +13,4 @@ require (
 	golang.org/x/sys v0.42.0 // indirect
 	golang.org/x/text v0.35.0 // indirect
 )
+

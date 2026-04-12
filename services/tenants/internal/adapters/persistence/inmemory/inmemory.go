@@ -7,5 +7,7 @@ import (
 )
 
 func Bootstrap(logger *log.Logger) *ports.Repository {
-	return &ports.Repository{}
+	return &ports.Repository{
+		Tenants: NewInmemoryTenantRepository(logger),
+	}
 }
