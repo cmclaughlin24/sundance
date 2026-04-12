@@ -2,10 +2,13 @@ package inmemory
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
+	"github.com/google/uuid"
 )
 
 type InmemoryDataSourceRepository struct {
@@ -55,7 +58,25 @@ func (r *InmemoryDataSourceRepository) Upsert(ctx context.Context, ds *domain.Da
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.dataSources[getDataSourceKey("", ds.ID)] = ds
+	now := time.Now()
+	key := getDataSourceKey(ds.TenantID, ds.ID)
+
+	if ds.ID == "" {
+		ds.ID = domain.DataSourceID(uuid.New().String())
+		key = getDataSourceKey(ds.TenantID, ds.ID)
+		ds.CreatedAt = now
+	} else {
+		existing, exists := r.dataSources[key]
+
+		if !exists {
+			return nil, fmt.Errorf("data source %q not found", ds.ID)
+		}
+
+		ds.CreatedAt = existing.CreatedAt
+	}
+
+	ds.UpdatedAt = now
+	r.dataSources[key] = ds
 
 	return ds, nil
 }

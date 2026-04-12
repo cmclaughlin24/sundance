@@ -2,11 +2,13 @@ package inmemory
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 	"time"
 
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
+	"github.com/google/uuid"
 )
 
 type InmemoryTenantRepository struct {
@@ -52,7 +54,23 @@ func (r *InmemoryTenantRepository) Upsert(ctx context.Context, tenant *domain.Te
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	tenant.UpdatedAt = time.Now()
+	now := time.Now()
+
+	if tenant.ID == "" {
+		tenant.ID = domain.TenantID(uuid.New().String())
+		tenant.CreatedAt = now
+	} else {
+		existing, exists := r.tenants[string(tenant.ID)]
+
+		if !exists {
+			// TODO: Implement improved error handling with custom types
+			return nil, fmt.Errorf("tenant %q not found", tenant.ID)
+		}
+
+		tenant.CreatedAt = existing.CreatedAt
+	}
+
+	tenant.UpdatedAt = now
 	r.tenants[string(tenant.ID)] = tenant
 
 	return tenant, nil

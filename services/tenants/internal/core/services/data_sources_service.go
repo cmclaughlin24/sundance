@@ -21,11 +21,11 @@ func NewDataSourcesService(logger *log.Logger, repository *ports.Repository) *Da
 }
 
 func (s *DataSourcesService) Find(ctx context.Context, query ports.ListDataSourceQuery) ([]*domain.DataSource, error) {
-	return nil, nil
+	return s.repository.DataSources.Find(ctx, query.TenantID)
 }
 
-func (s *DataSourcesService) FindById(context.Context, domain.TenantID, domain.DataSourceID) (*domain.DataSource, error) {
-	return nil, nil
+func (s *DataSourcesService) FindById(ctx context.Context, tenantId domain.TenantID, sourceId domain.DataSourceID) (*domain.DataSource, error) {
+	return s.repository.DataSources.FindById(ctx, tenantId, sourceId)
 }
 
 func (s *DataSourcesService) Create(context.Context, ports.CreateDataSourceCommand) (*domain.DataSource, error) {
@@ -36,6 +36,6 @@ func (s *DataSourcesService) Update(context.Context, ports.UpdateDataSourceComma
 	return nil, nil
 }
 
-func (s *DataSourcesService) Remove(context.Context, domain.DataSourceID) error {
-	return nil
+func (s *DataSourcesService) Remove(ctx context.Context, tenantId domain.TenantID, sourceId domain.DataSourceID) error {
+	return s.repository.DataSources.Remove(ctx, tenantId, sourceId)
 }

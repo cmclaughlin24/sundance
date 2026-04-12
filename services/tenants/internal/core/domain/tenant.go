@@ -17,6 +17,5 @@ func NewTenant(name, description string) *Tenant {
 	return &Tenant{
 		Name:        name,
 		Description: description,
-		CreatedAt:   time.Now(),
 	}
 }

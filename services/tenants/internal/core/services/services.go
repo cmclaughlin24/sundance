@@ -8,6 +8,7 @@ import (
 
 func Bootstrap(logger *log.Logger, repository *ports.Repository) *ports.Services {
 	return &ports.Services{
-		Tenants: NewTenantsService(logger, repository),
+		Tenants:     NewTenantsService(logger, repository),
+		DataSources: NewDataSourcesService(logger, repository),
 	}
 }

@@ -29,10 +29,14 @@ func (s *TenantsService) FindById(ctx context.Context, id domain.TenantID) (*dom
 }
 
 func (s *TenantsService) Create(ctx context.Context, command ports.CreateTenantCommand) (*domain.Tenant, error) {
+	_ = domain.NewTenant(command.Name, command.Description)
+
 	return nil, nil
 }
 
 func (s *TenantsService) Update(ctx context.Context, command ports.UpdateTenantCommand) (*domain.Tenant, error) {
+	_ = domain.NewTenant(command.Name, command.Description)
+
 	return nil, nil
 }
 
