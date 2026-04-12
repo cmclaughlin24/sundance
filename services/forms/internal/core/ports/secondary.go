@@ -19,6 +19,7 @@ type FormsRepository interface {
 	Update(context.Context, *domain.Form) (*domain.Form, error)
 	FindVersions(context.Context, domain.FormID) ([]*domain.Version, error)
 	FindVersion(context.Context, domain.FormID, domain.VersionID) (*domain.Version, error)
+	FindNextVersionNumber(context.Context, domain.FormID) (int, error)
 	CreateVersion(context.Context, *domain.Version) (*domain.Version, error)
 	UpdateVersion(context.Context, *domain.Version) (*domain.Version, error)
 }

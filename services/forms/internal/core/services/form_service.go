@@ -85,7 +85,15 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 		return nil, err
 	}
 
-	versionNum, err := s.nextVersionNumber(ctx, command.FormID)
+	txCtx, err := s.repository.Database.BeginTx(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer s.repository.Database.RollbackTx(txCtx)
+
+	versionNum, err := s.repository.Forms.FindNextVersionNumber(txCtx, command.FormID)
 
 	if err != nil {
 		return nil, err
@@ -97,9 +105,13 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 		return nil, err
 	}
 
-	version, err = s.repository.Forms.CreateVersion(ctx, version)
+	version, err = s.repository.Forms.CreateVersion(txCtx, version)
 
 	if err != nil {
+		return nil, err
+	}
+
+	if err := s.repository.Database.CommitTx(txCtx); err != nil {
 		return nil, err
 	}
 
@@ -190,25 +202,4 @@ func (s *FormsService) isValidAccess(ctx context.Context, tenantId string, formI
 	}
 
 	return nil
-}
-
-func (s *FormsService) nextVersionNumber(ctx context.Context, formId domain.FormID) (int, error) {
-	versions, err := s.repository.Forms.FindVersions(ctx, formId)
-
-	if err != nil {
-		if err == common.ErrNotFound {
-			return 1, nil
-		}
-
-		return 0, err
-	}
-
-	maxVersion := 0
-	for _, version := range versions {
-		if version.Version > maxVersion {
-			maxVersion = version.Version
-		}
-	}
-
-	return maxVersion + 1, nil
 }

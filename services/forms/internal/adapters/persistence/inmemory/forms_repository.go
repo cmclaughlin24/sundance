@@ -124,6 +124,26 @@ func (r *InMemoryFormsRepository) FindVersion(ctx context.Context, formID domain
 	return version, nil
 }
 
+func (r *InMemoryFormsRepository) FindNextVersionNumber(ctx context.Context, formID domain.FormID) (int, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	versions, ok := r.versions[string(formID)]
+
+	if !ok {
+		return 1, nil
+	}
+
+	maxVersion := 0
+	for _, version := range versions {
+		if version.Version > maxVersion {
+			maxVersion = version.Version
+		}
+	}
+
+	return maxVersion + 1, nil
+}
+
 func (r *InMemoryFormsRepository) CreateVersion(ctx context.Context, version *domain.Version) (*domain.Version, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
