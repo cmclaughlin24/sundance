@@ -86,7 +86,7 @@ func (r *InMemoryFormsRepository) Update(ctx context.Context, form *domain.Form)
 	return form, nil
 }
 
-func (r *InMemoryFormsRepository) GetVersions(ctx context.Context, formID domain.FormID) ([]*domain.Version, error) {
+func (r *InMemoryFormsRepository) FindVersions(ctx context.Context, formID domain.FormID) ([]*domain.Version, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -105,7 +105,7 @@ func (r *InMemoryFormsRepository) GetVersions(ctx context.Context, formID domain
 	return versions, nil
 }
 
-func (r *InMemoryFormsRepository) GetVersion(ctx context.Context, formID domain.FormID, versionID domain.VersionID) (*domain.Version, error) {
+func (r *InMemoryFormsRepository) FindVersion(ctx context.Context, formID domain.FormID, versionID domain.VersionID) (*domain.Version, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
