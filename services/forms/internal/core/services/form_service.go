@@ -23,7 +23,7 @@ func NewFormsService(logger *log.Logger, repository *ports.Repository) *FormsSer
 }
 
 func (s *FormsService) Find(ctx context.Context) ([]*domain.Form, error) {
-	return nil, nil
+	return s.repository.Forms.Find(ctx)
 }
 
 func (s *FormsService) FindById(ctx context.Context, query ports.FindByIdQuery) (*domain.Form, error) {
@@ -40,12 +40,44 @@ func (s *FormsService) FindById(ctx context.Context, query ports.FindByIdQuery) 
 	return form, nil
 }
 
-func (s *FormsService) Create(context.Context, *ports.CreateFormCommand) (*domain.Form, error) {
-	return nil, nil
+func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormCommand) (*domain.Form, error) {
+	form, err := domain.NewForm(domain.FormID(""), command.TenantID, command.Name, command.Description)
+
+	if err != nil {
+		return nil, err
+	}
+
+	form, err = s.repository.Forms.Create(ctx, form)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return form, nil
 }
 
-func (s *FormsService) Update(context.Context, *ports.UpdateFormCommand) (*domain.Form, error) {
-	return nil, nil
+func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormCommand) (*domain.Form, error) {
+	if err := s.isValidAccess(ctx, command.TenantID, command.ID); err != nil {
+		return nil, err
+	}
+
+	form, err := s.repository.Forms.FindById(ctx, command.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err := form.Update(command.Name, command.Description); err != nil {
+		return nil, err
+	}
+
+	form, err = s.repository.Forms.Update(ctx, form)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return form, nil
 }
 
 func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateVersionCommand) (*domain.Version, error) {

@@ -1,6 +1,11 @@
 package domain
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+var ErrInvalidForm = errors.New("invalid form")
 
 type FormID string
 
@@ -24,4 +29,17 @@ func NewForm(id FormID, tenantID, name, description string) (*Form, error) {
 	// TODO: Implement domain specific validation.
 
 	return f, nil
+}
+
+func (f *Form) Update(name, description string) error {
+	if f == nil {
+		return ErrInvalidForm
+	}
+
+	f.Name = name
+	f.Description = description
+	
+	// TODO: Implement domain specific validation.
+
+	return nil
 }
