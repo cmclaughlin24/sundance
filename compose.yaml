@@ -1,0 +1,52 @@
+services:
+  forms:
+    build:
+      dockerfile: ./docker/Dockerfile.dev
+      args:
+        SERVICE: forms
+    ports:
+      - 8080:80
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - ./services/submissions
+            - ./services/tenants
+        - action: rebuild
+          path: ./services/forms/go.mod
+  submissions:
+    build:
+      dockerfile: ./docker/Dockerfile.dev
+      args:
+        SERVICE: submissions
+    ports:
+      - 8081:80
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - ./services/forms
+            - ./services/tenants
+        - action: rebuild
+          path: ./services/submissions/go.mod
+  tenants:
+    build:
+      dockerfile: ./docker/Dockerfile.dev
+      args:
+        SERVICE: tenants
+    ports:
+      - 8082:80
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - ./services/forms
+            - ./services/submissions
+        - action: rebuild
+          path: ./services/submissions/go.mod

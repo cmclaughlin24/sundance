@@ -1,0 +1,15 @@
+FROM cosmtrek/air:latest
+
+ARG SERVICE
+
+WORKDIR /app
+
+COPY . .
+
+WORKDIR /app/services/${SERVICE}
+
+RUN go mod download
+
+EXPOSE 80
+
+CMD [ "air", "-c", ".air.toml" ]
