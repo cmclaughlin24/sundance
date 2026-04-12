@@ -21,7 +21,6 @@ type Database interface {
 }
 
 type TenantsRepository interface {
-	Exists(context.Context, domain.TenantID) (bool, error)
 	Find(context.Context) ([]*domain.Tenant, error)
 	FindById(context.Context, domain.TenantID) (*domain.Tenant, error)
 	Upsert(context.Context, *domain.Tenant) (*domain.Tenant, error)
@@ -29,7 +28,6 @@ type TenantsRepository interface {
 }
 
 type DataSourcesRepository interface {
-	Exists(context.Context, domain.DataSourceID) (bool, error)
 	Find(context.Context, domain.TenantID) ([]*domain.DataSource, error)
 	FindById(context.Context, domain.TenantID, domain.DataSourceID) (*domain.DataSource, error)
 	Upsert(context.Context, *domain.DataSource) (*domain.DataSource, error)

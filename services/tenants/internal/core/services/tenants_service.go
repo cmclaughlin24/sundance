@@ -21,11 +21,11 @@ func NewTenantsService(logger *log.Logger, repository *ports.Repository) *Tenant
 }
 
 func (s *TenantsService) Find(ctx context.Context) ([]*domain.Tenant, error) {
-	return nil, nil
+	return s.repository.Tenants.Find(ctx)
 }
 
 func (s *TenantsService) FindById(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
-	return nil, nil
+	return s.repository.Tenants.FindById(ctx, id)
 }
 
 func (s *TenantsService) Create(ctx context.Context, command ports.CreateTenantCommand) (*domain.Tenant, error) {
@@ -37,5 +37,5 @@ func (s *TenantsService) Update(ctx context.Context, command ports.UpdateTenantC
 }
 
 func (s *TenantsService) Remove(ctx context.Context, id domain.TenantID) error {
-	return nil
+	return s.repository.Tenants.Remove(ctx, id)
 }

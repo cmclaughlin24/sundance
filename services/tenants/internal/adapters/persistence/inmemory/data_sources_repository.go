@@ -21,19 +21,6 @@ func NewInmemoryDataSourceRepository(logger *log.Logger) *InmemoryDataSourceRepo
 	}
 }
 
-func (r *InmemoryDataSourceRepository) Exists(ctx context.Context, id domain.DataSourceID) (bool, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	for _, ds := range r.dataSources {
-		if ds.ID == id {
-			return true, nil
-		}
-	}
-
-	return false, nil
-}
-
 func (r *InmemoryDataSourceRepository) Find(ctx context.Context, tenantID domain.TenantID) ([]*domain.DataSource, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

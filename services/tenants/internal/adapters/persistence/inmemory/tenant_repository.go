@@ -22,15 +22,6 @@ func NewInmemoryTenantRepository(logger *log.Logger) *InmemoryTenantRepository {
 	}
 }
 
-func (r *InmemoryTenantRepository) Exists(ctx context.Context, id domain.TenantID) (bool, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	_, ok := r.tenants[string(id)]
-
-	return ok, nil
-}
-
 func (r *InmemoryTenantRepository) Find(ctx context.Context) ([]*domain.Tenant, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
