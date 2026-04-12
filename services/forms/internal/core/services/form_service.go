@@ -38,8 +38,30 @@ func (s *FormsService) Update(context.Context, *ports.UpdateFormCommand) (*domai
 	return nil, nil
 }
 
-func (s *FormsService) CreateVersion(context.Context, *ports.CreateVersionCommand) (*domain.Version, error) {
-	return nil, nil
+func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateVersionCommand) (*domain.Version, error) {
+	if err := s.isValidAccess(ctx, command.TenantID, command.FormID); err != nil {
+		return nil, err
+	}
+
+	versionNum, err := s.nextVersionNumber(ctx, command.FormID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	version, err := domain.NewVersion(command.ID, command.FormID, versionNum, domain.VersionStatusDraft)
+
+	if err != nil {
+		return nil, err
+	}
+
+	version, err = s.repository.Forms.CreateVersion(ctx, version)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return version, nil
 }
 
 func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateVersionCommand) (*domain.Version, error) {
