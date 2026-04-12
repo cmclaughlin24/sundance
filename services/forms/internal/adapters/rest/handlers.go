@@ -48,11 +48,16 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 
 func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("formId")
+	tenantId := r.URL.Query().Get("tenantId")
+	query := ports.FindByIdQuery{
+		ID:       domain.FormID(id),
+		TenantID: tenantId,
+	}
 	resultChan := make(chan result[*domain.Form], 1)
 
 	go func() {
 		defer close(resultChan)
-		form, err := h.app.Services.Forms.FindById(r.Context(), domain.FormID(id))
+		form, err := h.app.Services.Forms.FindById(r.Context(), query)
 		resultChan <- result[*domain.Form]{form, err}
 	}()
 

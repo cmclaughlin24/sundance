@@ -12,7 +12,7 @@ type Services struct {
 
 type FormsService interface {
 	Find(context.Context) ([]*domain.Form, error)
-	FindById(context.Context, domain.FormID) (*domain.Form, error)
+	FindById(context.Context, FindByIdQuery) (*domain.Form, error)
 	Create(context.Context, *CreateFormCommand) (*domain.Form, error)
 	Update(context.Context, *UpdateFormCommand) (*domain.Form, error)
 	CreateVersion(context.Context, *CreateVersionCommand) (*domain.Version, error)

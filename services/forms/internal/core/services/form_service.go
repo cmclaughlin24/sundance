@@ -26,8 +26,18 @@ func (s *FormsService) Find(ctx context.Context) ([]*domain.Form, error) {
 	return nil, nil
 }
 
-func (s *FormsService) FindById(context.Context, domain.FormID) (*domain.Form, error) {
-	return nil, nil
+func (s *FormsService) FindById(ctx context.Context, query ports.FindByIdQuery) (*domain.Form, error) {
+	form, err := s.repository.Forms.FindById(ctx, query.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if form.TenantID != query.TenantID {
+		return nil, common.ErrUnauthorized
+	}
+
+	return form, nil
 }
 
 func (s *FormsService) Create(context.Context, *ports.CreateFormCommand) (*domain.Form, error) {
