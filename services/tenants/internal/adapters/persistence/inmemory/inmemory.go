@@ -8,6 +8,7 @@ import (
 
 func Bootstrap(logger *log.Logger) *ports.Repository {
 	return &ports.Repository{
-		Tenants: NewInmemoryTenantRepository(logger),
+		Tenants:     NewInmemoryTenantRepository(logger),
+		DataSources: NewInmemoryDataSourceRepository(logger),
 	}
 }
