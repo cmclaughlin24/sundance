@@ -21,6 +21,7 @@ func NewRoutes(app *core.Application) http.Handler {
 	mux.HandleFunc("GET /api/v1/tenants/{tenantId}/data-sources/{dataSourceId}", h.getDataSource)
 	mux.HandleFunc("PUT /api/v1/tenants/{tenantId}/data-sources/{dataSourceId}", h.updateDataSource)
 	mux.HandleFunc("DELETE /api/v1/tenants/{tenantId}/data-sources/{dataSourceId}", h.removeDataSource)
+	mux.HandleFunc("GET /api/v1/tenants/{tenantId}/data-sources/{dataSourceId}/look-ups", h.getDataSourceLookup)
 
 	return mux
 }

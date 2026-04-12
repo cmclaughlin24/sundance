@@ -29,15 +29,29 @@ func (s *TenantsService) FindById(ctx context.Context, id domain.TenantID) (*dom
 }
 
 func (s *TenantsService) Create(ctx context.Context, command ports.CreateTenantCommand) (*domain.Tenant, error) {
-	_ = domain.NewTenant(command.Name, command.Description)
+	tenant, err := s.repository.Tenants.Upsert(
+		ctx,
+		domain.NewTenant("", command.Name, command.Description),
+	)
 
-	return nil, nil
+	if err != nil {
+		return nil, err
+	}
+
+	return tenant, nil
 }
 
 func (s *TenantsService) Update(ctx context.Context, command ports.UpdateTenantCommand) (*domain.Tenant, error) {
-	_ = domain.NewTenant(command.Name, command.Description)
+	tenant, err := s.repository.Tenants.Upsert(
+		ctx,
+		domain.NewTenant(command.ID, command.Name, command.Description),
+	)
 
-	return nil, nil
+	if err != nil {
+		return nil, err
+	}
+
+	return tenant, nil
 }
 
 func (s *TenantsService) Remove(ctx context.Context, id domain.TenantID) error {

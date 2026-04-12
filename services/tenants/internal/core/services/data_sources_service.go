@@ -28,14 +28,44 @@ func (s *DataSourcesService) FindById(ctx context.Context, tenantId domain.Tenan
 	return s.repository.DataSources.FindById(ctx, tenantId, sourceId)
 }
 
-func (s *DataSourcesService) Create(context.Context, ports.CreateDataSourceCommand) (*domain.DataSource, error) {
-	return nil, nil
+func (s *DataSourcesService) Create(ctx context.Context, command ports.CreateDataSourceCommand) (*domain.DataSource, error) {
+	dataSource, err := s.repository.DataSources.Upsert(
+		ctx,
+		domain.NewDataSource("", command.TenantID, command.Type, command.Attributes),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return dataSource, nil
 }
 
-func (s *DataSourcesService) Update(context.Context, ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
-	return nil, nil
+func (s *DataSourcesService) Update(ctx context.Context, command ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
+	dataSource, err := s.repository.DataSources.Upsert(
+		ctx,
+		domain.NewDataSource(command.ID, command.TenantID, command.Type, command.Attributes),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return dataSource, nil
 }
 
 func (s *DataSourcesService) Remove(ctx context.Context, tenantId domain.TenantID, sourceId domain.DataSourceID) error {
 	return s.repository.DataSources.Remove(ctx, tenantId, sourceId)
+}
+
+func (s *DataSourcesService) Lookup(ctx context.Context, tenantId domain.TenantID, sourceId domain.DataSourceID) ([]*domain.DataSourceLookup, error) {
+	_, err := s.repository.DataSources.FindById(ctx, tenantId, sourceId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: Implement data source lookup strategy pattern based on the type of data source.
+
+	return nil, nil
 }

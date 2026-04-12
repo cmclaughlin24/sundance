@@ -35,13 +35,19 @@ func (h *handlers) getTenants(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
-		// TODO: Throw an ApiResponseError that the request timed out.
+		return
 	case res := <-resultChan:
 		if res.err != nil {
-			// TODO: Throw an ApiResponseError that there was an error.
+			common.SendErrorResponse(w, res.err)
 			return
 		}
-		// TODO: Return a successful response with the data.
+
+		dtos := make([]*tenantDto, 0, len(res.data))
+		for _, tenant := range res.data {
+			dtos = append(dtos, tenantToDto(tenant))
+		}
+
+		common.SendJsonResponse(w, http.StatusOK, dtos)
 	}
 }
 
@@ -57,20 +63,24 @@ func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
-		// TODO: Throw an ApiResponseError that the request timed out.
+		return
 	case res := <-resultChan:
 		if res.err != nil {
-			// TODO: Throw an ApiResponseError that there was an error.
+			common.SendErrorResponse(w, res.err)
 			return
 		}
-		// TODO: Return a successful response with the data.
+
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[tenantDto]{
+			Message: "Success",
+			Data:    *tenantToDto(res.data),
+		})
 	}
 }
 
 func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Tenant], 1)
 
-	var dto tenantDto
+	var dto upsertTenantDto
 	if err := common.ReadJsonPayload(r, &dto); err != nil {
 		return
 	}
@@ -84,13 +94,17 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
-		// TODO: Throw an ApiResponseError that the request timed out.
+		return
 	case res := <-resultChan:
 		if res.err != nil {
-			// TODO: Throw an ApiResponseError that there was an error.
+			common.SendErrorResponse(w, res.err)
 			return
 		}
-		// TODO: Return a successful response with the data.
+
+		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[tenantDto]{
+			Message: "Successfully created!",
+			Data:    *tenantToDto(res.data),
+		})
 	}
 }
 
@@ -98,7 +112,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("tenantId")
 	resultChan := make(chan result[*domain.Tenant], 1)
 
-	var dto tenantDto
+	var dto upsertTenantDto
 	if err := common.ReadJsonPayload(r, &dto); err != nil {
 		return
 	}
@@ -112,13 +126,17 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
-		// TODO: Throw an ApiResponseError that the request timed out.
+		return
 	case res := <-resultChan:
 		if res.err != nil {
-			// TODO: Throw an ApiResponseError that there was an error.
+			common.SendErrorResponse(w, res.err)
 			return
 		}
-		// TODO: Return a successful response with the data.
+
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[tenantDto]{
+			Message: "Success",
+			Data:    *tenantToDto(res.data),
+		})
 	}
 }
 
@@ -134,13 +152,14 @@ func (h *handlers) removeTenant(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
-		// TODO: Throw an ApiResponseError that the request timed out.
+		return
 	case res := <-resultChan:
 		if res.err != nil {
-			// TODO: Throw an ApiResponseError that there was an error.
+			common.SendErrorResponse(w, res.err)
 			return
 		}
-		// TODO: Return a successful response with the data.
+
+		w.WriteHeader(http.StatusNoContent)
 	}
 }
 
@@ -156,13 +175,19 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
-		// TODO: Throw an ApiResponseError that the request timed out.
+		return
 	case res := <-resultChan:
 		if res.err != nil {
-			// TODO: Throw an ApiResponseError that there was an error.
+			common.SendErrorResponse(w, res.err)
 			return
 		}
-		// TODO: Return a successful response with the data.
+
+		dtos := make([]*dataSourceDto, 0, len(res.data))
+		for _, source := range res.data {
+			dtos = append(dtos, dataSourceToDto(source))
+		}
+
+		common.SendJsonResponse(w, http.StatusOK, dtos)
 	}
 }
 
@@ -179,13 +204,17 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
-		// TODO: Throw an ApiResponseError that the request timed out.
+		return
 	case res := <-resultChan:
 		if res.err != nil {
-			// TODO: Throw an ApiResponseError that there was an error.
+			common.SendErrorResponse(w, res.err)
 			return
 		}
-		// TODO: Return a successful response with the data.
+
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dataSourceDto]{
+			Message: "Success",
+			Data:    *dataSourceToDto(res.data),
+		})
 	}
 }
 
@@ -193,7 +222,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantId := r.PathValue("tenantId")
 	resultChan := make(chan result[*domain.DataSource], 1)
 
-	var dto dataSourceDto
+	var dto upsertDataSourceDto
 	if err := common.ReadJsonPayload(r, &dto); err != nil {
 		return
 	}
@@ -207,13 +236,17 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
-		// TODO: Throw an ApiResponseError that the request timed out.
+		return
 	case res := <-resultChan:
 		if res.err != nil {
-			// TODO: Throw an ApiResponseError that there was an error.
+			common.SendErrorResponse(w, res.err)
 			return
 		}
-		// TODO: Return a successful response with the data.
+
+		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[dataSourceDto]{
+			Message: "Successfully created!",
+			Data:    *dataSourceToDto(res.data),
+		})
 	}
 }
 
@@ -222,7 +255,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 	sourceId := r.PathValue("dataSourceId")
 	resultChan := make(chan result[*domain.DataSource], 1)
 
-	var dto dataSourceDto
+	var dto upsertDataSourceDto
 	if err := common.ReadJsonPayload(r, &dto); err != nil {
 		return
 	}
@@ -236,13 +269,17 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
-		// TODO: Throw an ApiResponseError that the request timed out.
+		return
 	case res := <-resultChan:
 		if res.err != nil {
-			// TODO: Throw an ApiResponseError that there was an error.
+			common.SendErrorResponse(w, res.err)
 			return
 		}
-		// TODO: Return a successful response with the data.
+
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dataSourceDto]{
+			Message: "Success",
+			Data:    *dataSourceToDto(res.data),
+		})
 	}
 }
 
@@ -259,12 +296,42 @@ func (h *handlers) removeDataSource(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
-		// TODO: Throw an ApiResponseError that the request timed out.
+		return
 	case res := <-resultChan:
 		if res.err != nil {
-			// TODO: Throw an ApiResponseError that there was an error.
+			common.SendErrorResponse(w, res.err)
 			return
 		}
-		// TODO: Return a successful response with the data.
+
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func (h *handlers) getDataSourceLookup(w http.ResponseWriter, r *http.Request) {
+	tenantId := r.PathValue("tenantId")
+	sourceId := r.PathValue("dataSourceId")
+	resultChan := make(chan result[[]*domain.DataSourceLookup], 1)
+
+	go func() {
+		defer close(resultChan)
+		lookups, err := h.app.Services.DataSources.Lookup(r.Context(), domain.TenantID(tenantId), domain.DataSourceID(sourceId))
+		resultChan <- result[[]*domain.DataSourceLookup]{lookups, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			common.SendErrorResponse(w, res.err)
+			return
+		}
+
+		dtos := make([]*dataSourceLookupDto, 0, len(res.data))
+		for _, lookup := range res.data {
+			dtos = append(dtos, dataSourceLookupToDto(lookup))
+		}
+
+		common.SendJsonResponse(w, http.StatusOK, dtos)
 	}
 }

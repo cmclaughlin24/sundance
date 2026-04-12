@@ -1,6 +1,8 @@
 package domain
 
-import "time"
+import (
+	"time"
+)
 
 type TenantID string
 
@@ -13,8 +15,9 @@ type Tenant struct {
 	DataSources []*DataSource
 }
 
-func NewTenant(name, description string) *Tenant {
+func NewTenant(id TenantID, name, description string) *Tenant {
 	return &Tenant{
+		ID:          id,
 		Name:        name,
 		Description: description,
 	}

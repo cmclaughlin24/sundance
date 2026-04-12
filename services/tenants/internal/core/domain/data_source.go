@@ -21,8 +21,9 @@ type DataSource struct {
 	UpdatedAt  time.Time
 }
 
-func NewDataSource(tenantID TenantID, sourceType DataSourceType, attributes DataSourceAttributes) *DataSource {
+func NewDataSource(id DataSourceID, tenantID TenantID, sourceType DataSourceType, attributes DataSourceAttributes) *DataSource {
 	return &DataSource{
+		ID:         id,
 		TenantID:   tenantID,
 		Type:       sourceType,
 		Attributes: attributes,
