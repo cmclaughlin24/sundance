@@ -23,5 +23,5 @@ func NewRoutes(app *core.Application) http.Handler {
 	mux.HandleFunc("POST /api/v1/forms/{formId}/versions/{versionId}/publish", h.publishVersion)
 	mux.HandleFunc("POST /api/v1/forms/{formId}/versions/{versionId}/retire", h.retireVersion)
 
-	return mux
+	return tenantMiddleware(mux)
 }

@@ -47,11 +47,17 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("formId")
-	tenantId := r.URL.Query().Get("tenantId")
+	tenantID, err := tenantIDFromContext(r.Context())
+
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
+	formID := h.getFormIdPathValue(r)
 	query := ports.FindByIdQuery{
-		ID:       domain.FormID(id),
-		TenantID: tenantId,
+		ID:       formID,
+		TenantID: tenantID,
 	}
 	resultChan := make(chan result[*domain.Form], 1)
 
@@ -75,6 +81,12 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := tenantIDFromContext(r.Context())
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
 	resultChan := make(chan result[*domain.Form], 1)
 
 	var dto upsertFormDto
@@ -82,7 +94,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command, err := ports.NewCreateFormCommand(dto.TenantID, dto.Name, dto.Description)
+	command, err := ports.NewCreateFormCommand(tenantID, dto.Name, dto.Description)
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -108,7 +120,13 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("formId")
+	tenantID, err := tenantIDFromContext(r.Context())
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
+	formID := h.getFormIdPathValue(r)
 	resultChan := make(chan result[*domain.Form], 1)
 
 	var dto upsertFormDto
@@ -116,7 +134,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command, err := ports.NewUpdateFormCommand(domain.FormID(id), dto.TenantID, dto.Name, dto.Description)
+	command, err := ports.NewUpdateFormCommand(formID, tenantID, dto.Name, dto.Description)
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -153,10 +171,17 @@ func (h *handlers) removeVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
-	formId, versionId := h.getVersionPathValues(r)
+	tenantID, err := tenantIDFromContext(r.Context())
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
+	formID := h.getFormIdPathValue(r)
+	versionID := h.getVersionIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
-	command, err := ports.NewPublishVersionCommand(formId, "", versionId, "")
+	command, err := ports.NewPublishVersionCommand(formID, tenantID, versionID, "")
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -182,10 +207,17 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
-	formId, versionId := h.getVersionPathValues(r)
+	tenantID, err := tenantIDFromContext(r.Context())
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
+	formId := h.getFormIdPathValue(r)
+	versionId := h.getVersionIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
-	command, err := ports.NewRetireVersionCommand(formId, "", versionId, "")
+	command, err := ports.NewRetireVersionCommand(formId, tenantID, versionId, "")
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -210,9 +242,12 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) getVersionPathValues(r *http.Request) (domain.FormID, domain.VersionID) {
-	formId := r.PathValue("formId")
-	versionId := r.PathValue("versionId")
+func (h *handlers) getFormIdPathValue(r *http.Request) domain.FormID {
+	id := r.PathValue("formId")
+	return domain.FormID(id)
+}
 
-	return domain.FormID(formId), domain.VersionID(versionId)
+func (h *handlers) getVersionIdPathValue(r *http.Request) domain.VersionID {
+	id := r.PathValue("versionId")
+	return domain.VersionID(id)
 }
