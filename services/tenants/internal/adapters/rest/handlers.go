@@ -42,9 +42,9 @@ func (h *handlers) getTenants(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]*tenantDto, 0, len(res.data))
+		dtos := make([]*tenantResponseDto, 0, len(res.data))
 		for _, tenant := range res.data {
-			dtos = append(dtos, tenantToDto(tenant))
+			dtos = append(dtos, tenantToResponseDto(tenant))
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, dtos)
@@ -70,7 +70,7 @@ func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, tenantToDto(res.data))
+		common.SendJsonResponse(w, http.StatusOK, tenantToResponseDto(res.data))
 	}
 }
 
@@ -103,9 +103,9 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[tenantDto]{
+		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[tenantResponseDto]{
 			Message: "Successfully created!",
-			Data:    *tenantToDto(res.data),
+			Data:    *tenantToResponseDto(res.data),
 		})
 	}
 }
@@ -140,9 +140,9 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[tenantDto]{
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[tenantResponseDto]{
 			Message: "Success updated!",
-			Data:    *tenantToDto(res.data),
+			Data:    *tenantToResponseDto(res.data),
 		})
 	}
 }

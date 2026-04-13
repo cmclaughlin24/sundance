@@ -11,7 +11,7 @@ type upsertTenantDto struct {
 	Description string `json:"description"`
 }
 
-type tenantDto struct {
+type tenantResponseDto struct {
 	ID          domain.TenantID `json:"id"`
 	Name        string          `json:"name"`
 	Description string          `json:"description"`
@@ -19,8 +19,8 @@ type tenantDto struct {
 	UpdatedAt   time.Time       `json:"updatedAt"`
 }
 
-func tenantToDto(tenant *domain.Tenant) *tenantDto {
-	return &tenantDto{
+func tenantToResponseDto(tenant *domain.Tenant) *tenantResponseDto {
+	return &tenantResponseDto{
 		ID:          tenant.ID,
 		Name:        tenant.Name,
 		Description: tenant.Description,
