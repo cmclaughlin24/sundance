@@ -1,6 +1,16 @@
 package domain
 
+import (
+	"errors"
+
+	"github.com/cmclaughlin24/sundance/forms/internal/types"
+)
+
 type SectionID string
+
+var (
+	ErrInvalidSection = errors.New("invalid section")
+)
 
 type Section struct {
 	ID         SectionID
@@ -23,4 +33,36 @@ func NewSection(id SectionID, key, name string, position int) (*Section, error) 
 	// TODO: Implement domain specific validation.
 
 	return s, nil
+}
+
+func (s *Section) SetFields(fields ...*Field) error {
+	if s == nil {
+		return ErrInvalidSection
+	}
+
+	if s.Fields == nil {
+		s.Fields = make(map[int]*Field)
+	}
+
+	for _, field := range fields {
+		_, exists := s.Fields[field.Position]
+
+		if exists {
+			return types.ErrDuplicatePosition
+		}
+
+		s.Fields[field.Position] = field
+	}
+
+	return nil
+}
+
+func (v *Section) UpdateFields(fields ...*Field) error {
+	if v == nil {
+		return ErrInvalidSection
+	}
+
+	v.Fields = make(map[int]*Field)
+
+	return v.SetFields(fields...)
 }

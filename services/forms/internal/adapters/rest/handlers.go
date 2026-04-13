@@ -149,8 +149,70 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {}
 
 func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {}
 
-func (h *handlers) removeVersion(w http.ResponseWriter, r *http.Request) {}
+func (h *handlers) removeVersion(w http.ResponseWriter, r *http.Request) {
+}
 
-func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {}
+func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
+	formId, versionId := h.getVersionPathValues(r)
+	resultChan := make(chan result[*domain.Version], 1)
 
-func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {}
+	command, err := ports.NewPublishVersionCommand(formId, "", versionId, "")
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
+	go func() {
+		defer close(resultChan)
+		version, err := h.app.Services.Forms.PublishVersion(r.Context(), command)
+		resultChan <- result[*domain.Version]{version, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			common.SendErrorResponse(w, res.err)
+			return
+		}
+
+		// TODO: Send response.
+	}
+}
+
+func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
+	formId, versionId := h.getVersionPathValues(r)
+	resultChan := make(chan result[*domain.Version], 1)
+
+	command, err := ports.NewRetireVersionCommand(formId, "", versionId, "")
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
+	go func() {
+		defer close(resultChan)
+		version, err := h.app.Services.Forms.RetireVersion(r.Context(), command)
+		resultChan <- result[*domain.Version]{version, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			common.SendErrorResponse(w, res.err)
+			return
+		}
+
+		// TODO: Send response.
+	}
+}
+
+func (h *handlers) getVersionPathValues(r *http.Request) (domain.FormID, domain.VersionID) {
+	formId := r.PathValue("formId")
+	versionId := r.PathValue("versionId")
+
+	return domain.FormID(formId), domain.VersionID(versionId)
+}

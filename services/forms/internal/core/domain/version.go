@@ -3,6 +3,8 @@ package domain
 import (
 	"errors"
 	"time"
+
+	"github.com/cmclaughlin24/sundance/forms/internal/types"
 )
 
 type VersionStatus string
@@ -18,7 +20,6 @@ var (
 	ErrVersionLocked       = errors.New("version is locked")
 	ErrPublishedByRequired = errors.New("publishedBy is required")
 	ErrRetiredByRequired   = errors.New("retiredBy is required")
-	ErrDuplicatePosition   = errors.New("duplicate position")
 )
 
 type VersionID string
@@ -64,7 +65,7 @@ func (v *Version) SetPages(pages ...*Page) error {
 		_, exists := v.Pages[page.Position]
 
 		if exists {
-			return ErrDuplicatePosition
+			return types.ErrDuplicatePosition
 		}
 
 		v.Pages[page.Position] = page
