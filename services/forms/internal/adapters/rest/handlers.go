@@ -167,9 +167,71 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {}
+func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := tenantIDFromContext(r.Context())
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
 
-func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {}
+	formID := h.getFormIdPathValue(r)
+	query := ports.NewFindVersionsQuery(formID, tenantID)
+	resultChan := make(chan result[[]*domain.Version], 1)
+
+	go func() {
+		defer close(resultChan)
+		versions, err := h.app.Services.Forms.FindVersions(r.Context(), query)
+		resultChan <- result[[]*domain.Version]{versions, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			common.SendErrorResponse(w, res.err)
+			return
+		}
+
+		dtos := make([]*versionResponseDto, 0, len(res.data))
+		for _, v := range res.data {
+			dtos = append(dtos, versionToResponseDto(v))
+		}
+
+		common.SendJsonResponse(w, http.StatusOK, dtos)
+	}
+}
+
+func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := tenantIDFromContext(r.Context())
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
+	formID := h.getFormIdPathValue(r)
+	versionID := h.getVersionIdPathValue(r)
+	query := ports.NewFindVersionByIDQuery(formID, tenantID, versionID)
+	resultChan := make(chan result[*domain.Version], 1)
+
+	go func() {
+		defer close(resultChan)
+		version, err := h.app.Services.Forms.FindVersion(r.Context(), query)
+		resultChan <- result[*domain.Version]{version, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			common.SendErrorResponse(w, res.err)
+			return
+		}
+
+		common.SendJsonResponse(w, http.StatusOK, versionToResponseDto(res.data))
+	}
+}
 
 func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {}
 
