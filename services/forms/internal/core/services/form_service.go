@@ -99,7 +99,7 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 		return nil, err
 	}
 
-	version, err := domain.NewVersion(command.ID, command.FormID, versionNum, domain.VersionStatusDraft)
+	version, err := domain.NewVersion(command.VersionID, command.FormID, versionNum, domain.VersionStatusDraft)
 
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateV
 		return nil, err
 	}
 
-	version, err := s.repository.Forms.FindVersion(ctx, command.FormID, command.ID)
+	version, err := s.repository.Forms.FindVersion(ctx, command.FormID, command.VersionID)
 
 	if err != nil {
 		return nil, err
@@ -153,7 +153,7 @@ func (s *FormsService) PublishVersion(ctx context.Context, command *ports.Publis
 		return nil, err
 	}
 
-	if err := version.Publish(command.UserId, time.Now()); err != nil {
+	if err := version.Publish(command.UserID, time.Now()); err != nil {
 		return nil, err
 	}
 
@@ -177,7 +177,7 @@ func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireV
 		return nil, err
 	}
 
-	if err := version.Retire(command.UserId, time.Now()); err != nil {
+	if err := version.Retire(command.UserID, time.Now()); err != nil {
 		return nil, err
 	}
 
