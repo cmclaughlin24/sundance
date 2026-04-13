@@ -360,7 +360,10 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// TODO: Send response.
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[any]{
+			Message: "Successfully published!",
+			Data:    nil,
+		})
 	}
 }
 
@@ -396,7 +399,10 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// TODO: Send response.
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[any]{
+			Message: "Successfully retired!",
+			Data:    nil,
+		})
 	}
 }
 
