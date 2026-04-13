@@ -35,6 +35,7 @@ type CheckboxFieldAttributes struct {
 }
 
 type DateFieldAttributes struct {
+	BaseFieldAttributes
 	MinDate *string
 	MaxDate *string
 }
