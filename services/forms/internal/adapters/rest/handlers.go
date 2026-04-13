@@ -42,7 +42,11 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// TODO: Map to response dto
+		dtos := make([]*formResponseDto, 0, len(res.data))
+		for _, form := range res.data {
+			dtos = append(dtos, formToResponseDto(form))
+		}
+
 		common.SendJsonResponse(w, http.StatusOK, res.data)
 	}
 }
@@ -56,10 +60,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	formID := h.getFormIdPathValue(r)
-	query := ports.FindByIdQuery{
-		FormID:   formID,
-		TenantID: tenantID,
-	}
+	query := ports.NewFindByIDQuery(formID, tenantID)
 	resultChan := make(chan result[*domain.Form], 1)
 
 	go func() {
@@ -77,7 +78,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// TODO: Send response.
+		common.SendJsonResponse(w, http.StatusOK, formToResponseDto(res.data))
 	}
 }
 
@@ -116,7 +117,10 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// TODO: Send response.
+		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[*formResponseDto]{
+			Message: "Successfully created!",
+			Data:    formToResponseDto(res.data),
+		})
 	}
 }
 
@@ -156,7 +160,10 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// TODO: Send response.
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[*formResponseDto]{
+			Message: "Successfully updated!",
+			Data:    formToResponseDto(res.data),
+		})
 	}
 }
 
@@ -168,8 +175,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {}
 
 func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {}
 
-func (h *handlers) removeVersion(w http.ResponseWriter, r *http.Request) {
-}
+func (h *handlers) removeVersion(w http.ResponseWriter, r *http.Request) {}
 
 func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenantIDFromContext(r.Context())

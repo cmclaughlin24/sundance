@@ -26,7 +26,7 @@ func (s *FormsService) Find(ctx context.Context) ([]*domain.Form, error) {
 	return s.repository.Forms.Find(ctx)
 }
 
-func (s *FormsService) FindById(ctx context.Context, query ports.FindByIdQuery) (*domain.Form, error) {
+func (s *FormsService) FindById(ctx context.Context, query *ports.FindByIDQuery) (*domain.Form, error) {
 	form, err := s.repository.Forms.FindById(ctx, query.FormID)
 
 	if err != nil {
@@ -78,6 +78,22 @@ func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormComm
 	}
 
 	return form, nil
+}
+
+func (s *FormsService) FindVersions(ctx context.Context, query *ports.FindVersionsQuery) ([]*domain.Version, error) {
+	if err := s.isValidAccess(ctx, query.TenantID, query.FormID); err != nil {
+		return nil, err
+	}
+
+	return s.repository.Forms.FindVersions(ctx, query.FormID)
+}
+
+func (s *FormsService) FindVersion(ctx context.Context, query *ports.FindVersionByIDQuery) (*domain.Version, error) {
+	if err := s.isValidAccess(ctx, query.TenantID, query.FormID); err != nil {
+		return nil, err
+	}
+
+	return s.repository.Forms.FindVersion(ctx, query.FormID, query.VersionID)
 }
 
 func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateVersionCommand) (*domain.Version, error) {

@@ -189,9 +189,9 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]*dataSourceDto, 0, len(res.data))
+		dtos := make([]*dataSourceResponseDto, 0, len(res.data))
 		for _, source := range res.data {
-			dtos = append(dtos, dataSourceToDto(source))
+			dtos = append(dtos, dataSourceToResponseDto(source))
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, dtos)
@@ -218,7 +218,7 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dataSourceToDto(res.data)) 
+		common.SendJsonResponse(w, http.StatusOK, dataSourceToResponseDto(res.data))
 	}
 }
 
@@ -252,9 +252,9 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[dataSourceDto]{
+		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[dataSourceResponseDto]{
 			Message: "Successfully created!",
-			Data:    *dataSourceToDto(res.data),
+			Data:    *dataSourceToResponseDto(res.data),
 		})
 	}
 }
@@ -290,9 +290,9 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dataSourceDto]{
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dataSourceResponseDto]{
 			Message: "Successfully updated!",
-			Data:    *dataSourceToDto(res.data),
+			Data:    *dataSourceToResponseDto(res.data),
 		})
 	}
 }
@@ -341,9 +341,9 @@ func (h *handlers) getDataSourceLookup(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]*dataSourceLookupDto, 0, len(res.data))
+		dtos := make([]*dataSourceLookupResponseDto, 0, len(res.data))
 		for _, lookup := range res.data {
-			dtos = append(dtos, dataSourceLookupToDto(lookup))
+			dtos = append(dtos, dataSourceLookupToResponseDto(lookup))
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, dtos)
