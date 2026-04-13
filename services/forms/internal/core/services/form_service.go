@@ -27,7 +27,7 @@ func (s *FormsService) Find(ctx context.Context) ([]*domain.Form, error) {
 }
 
 func (s *FormsService) FindById(ctx context.Context, query ports.FindByIdQuery) (*domain.Form, error) {
-	form, err := s.repository.Forms.FindById(ctx, query.ID)
+	form, err := s.repository.Forms.FindById(ctx, query.FormID)
 
 	if err != nil {
 		return nil, err

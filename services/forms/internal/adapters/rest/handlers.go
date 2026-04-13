@@ -56,7 +56,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 
 	formID := h.getFormIdPathValue(r)
 	query := ports.FindByIdQuery{
-		ID:       formID,
+		FormID:       formID,
 		TenantID: tenantID,
 	}
 	resultChan := make(chan result[*domain.Form], 1)
