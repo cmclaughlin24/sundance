@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/common"
+	"github.com/cmclaughlin24/sundance/forms/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/forms/internal/core"
 	"github.com/cmclaughlin24/sundance/forms/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/forms/internal/core/ports"
@@ -42,9 +43,9 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]*formResponseDto, 0, len(res.data))
+		dtos := make([]*dto.FormResponseDto, 0, len(res.data))
 		for _, form := range res.data {
-			dtos = append(dtos, formToResponseDto(form))
+			dtos = append(dtos, dto.FormToResponseDto(form))
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, res.data)
@@ -78,7 +79,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, formToResponseDto(res.data))
+		common.SendJsonResponse(w, http.StatusOK, dto.FormToResponseDto(res.data))
 	}
 }
 
@@ -91,12 +92,12 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 
 	resultChan := make(chan result[*domain.Form], 1)
 
-	var dto upsertFormDto
-	if err := common.ReadJsonPayload(r, &dto); err != nil {
+	var formDto dto.UpsertFormDto
+	if err := common.ReadJsonPayload(r, &formDto); err != nil {
 		return
 	}
 
-	command, err := ports.NewCreateFormCommand(tenantID, dto.Name, dto.Description)
+	command, err := ports.NewCreateFormCommand(tenantID, formDto.Name, formDto.Description)
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -117,9 +118,9 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[*formResponseDto]{
+		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[*dto.FormResponseDto]{
 			Message: "Successfully created!",
-			Data:    formToResponseDto(res.data),
+			Data:    dto.FormToResponseDto(res.data),
 		})
 	}
 }
@@ -134,12 +135,12 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 	formID := h.getFormIdPathValue(r)
 	resultChan := make(chan result[*domain.Form], 1)
 
-	var dto upsertFormDto
-	if err := common.ReadJsonPayload(r, &dto); err != nil {
+	var formDto dto.UpsertFormDto
+	if err := common.ReadJsonPayload(r, &formDto); err != nil {
 		return
 	}
 
-	command, err := ports.NewUpdateFormCommand(formID, tenantID, dto.Name, dto.Description)
+	command, err := ports.NewUpdateFormCommand(formID, tenantID, formDto.Name, formDto.Description)
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -160,9 +161,9 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[*formResponseDto]{
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[*dto.FormResponseDto]{
 			Message: "Successfully updated!",
-			Data:    formToResponseDto(res.data),
+			Data:    dto.FormToResponseDto(res.data),
 		})
 	}
 }
@@ -193,9 +194,9 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]*versionResponseDto, 0, len(res.data))
+		dtos := make([]*dto.VersionResponseDto, 0, len(res.data))
 		for _, v := range res.data {
-			dtos = append(dtos, versionToResponseDto(v))
+			dtos = append(dtos, dto.VersionToResponseDto(v))
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, dtos)
@@ -229,7 +230,7 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, versionToResponseDto(res.data))
+		common.SendJsonResponse(w, http.StatusOK, dto.VersionToResponseDto(res.data))
 	}
 }
 
@@ -243,8 +244,8 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 	formID := h.getFormIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
-	var dto createVersionDto
-	if err := common.ReadJsonPayload(r, &dto); err != nil {
+	var versionDto dto.CreateVersionDto
+	if err := common.ReadJsonPayload(r, &versionDto); err != nil {
 		return
 	}
 
@@ -269,16 +270,63 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[*versionResponseDto]{
+		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[*dto.VersionResponseDto]{
 			Message: "Successfully created!",
-			Data:    versionToResponseDto(res.data),
+			Data:    dto.VersionToResponseDto(res.data),
 		})
 	}
 }
 
-func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {}
+func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := tenantIDFromContext(r.Context())
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
 
-func (h *handlers) removeVersion(w http.ResponseWriter, r *http.Request) {}
+	formID := h.getFormIdPathValue(r)
+	versionID := h.getVersionIdPathValue(r)
+	resultChan := make(chan result[*domain.Version], 1)
+
+	var versionDto dto.UpdateVersionDto
+	if err := common.ReadJsonPayload(r, &versionDto); err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
+	pages, err := dto.DtoToPages(versionDto)
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
+	command, err := ports.NewUpdateVersionCommand(versionID, formID, tenantID, pages)
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
+	go func() {
+		defer close(resultChan)
+		version, err := h.app.Services.Forms.UpdateVersion(r.Context(), command)
+		resultChan <- result[*domain.Version]{version, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			common.SendErrorResponse(w, res.err)
+			return
+		}
+
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[*dto.VersionResponseDto]{
+			Message: "Successfully updated!",
+			Data:    dto.VersionToResponseDto(res.data),
+		})
+	}
+}
 
 func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenantIDFromContext(r.Context())
@@ -291,7 +339,7 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 	versionID := h.getVersionIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
-	command, err := ports.NewPublishVersionCommand(formID, tenantID, versionID, "")
+	command, err := ports.NewPublishVersionCommand(formID, tenantID, versionID, "placeholder")
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -327,7 +375,7 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 	versionId := h.getVersionIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
-	command, err := ports.NewRetireVersionCommand(formId, tenantID, versionId, "")
+	command, err := ports.NewRetireVersionCommand(formId, tenantID, versionId, "placeholder")
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return

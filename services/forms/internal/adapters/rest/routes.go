@@ -19,7 +19,6 @@ func NewRoutes(app *core.Application) http.Handler {
 	mux.HandleFunc("POST /api/v1/forms/{formId}/versions", h.createVersion)
 	mux.HandleFunc("GET /api/v1/forms/{formId}/versions/{versionId}", h.getVersion)
 	mux.HandleFunc("PUT /api/v1/forms/{formId}/versions/{versionId}", h.updateVersion)
-	mux.HandleFunc("DELETE /api/v1/forms/{formId}/versions/{versionId}", h.removeVersion)
 	mux.HandleFunc("POST /api/v1/forms/{formId}/versions/{versionId}/publish", h.publishVersion)
 	mux.HandleFunc("POST /api/v1/forms/{formId}/versions/{versionId}/retire", h.retireVersion)
 
