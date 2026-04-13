@@ -42,7 +42,8 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// TODO: Send response.
+		// TODO: Map to response dto
+		common.SendJsonResponse(w, http.StatusOK, res.data)
 	}
 }
 
@@ -56,7 +57,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 
 	formID := h.getFormIdPathValue(r)
 	query := ports.FindByIdQuery{
-		FormID:       formID,
+		FormID:   formID,
 		TenantID: tenantID,
 	}
 	resultChan := make(chan result[*domain.Form], 1)
