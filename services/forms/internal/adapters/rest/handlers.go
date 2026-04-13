@@ -233,7 +233,48 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {}
+func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := tenantIDFromContext(r.Context())
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
+	formID := h.getFormIdPathValue(r)
+	resultChan := make(chan result[*domain.Version], 1)
+
+	var dto createVersionDto
+	if err := common.ReadJsonPayload(r, &dto); err != nil {
+		return
+	}
+
+	command, err := ports.NewCreateVersionCommand(formID, tenantID)
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
+	go func() {
+		defer close(resultChan)
+		version, err := h.app.Services.Forms.CreateVersion(r.Context(), command)
+		resultChan <- result[*domain.Version]{version, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			common.SendErrorResponse(w, res.err)
+			return
+		}
+
+		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[*versionResponseDto]{
+			Message: "Successfully created!",
+			Data:    versionToResponseDto(res.data),
+		})
+	}
+}
 
 func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {}
 

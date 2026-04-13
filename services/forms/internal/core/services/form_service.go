@@ -115,7 +115,7 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 		return nil, err
 	}
 
-	version, err := domain.NewVersion(command.VersionID, command.FormID, versionNum, domain.VersionStatusDraft)
+	version, err := domain.NewVersion("", command.FormID, versionNum, domain.VersionStatusDraft)
 
 	if err != nil {
 		return nil, err

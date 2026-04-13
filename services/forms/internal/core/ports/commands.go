@@ -56,16 +56,14 @@ type baseVersionCommand struct {
 }
 
 type CreateVersionCommand struct {
-	baseVersionCommand
+	FormID   domain.FormID
+	TenantID string
 }
 
-func NewCreateVersionCommand(id domain.VersionID, formId domain.FormID, tenantID string) (*CreateVersionCommand, error) {
+func NewCreateVersionCommand(formId domain.FormID, tenantID string) (*CreateVersionCommand, error) {
 	command := &CreateVersionCommand{
-		baseVersionCommand{
-			VersionID: id,
-			FormID:    formId,
-			TenantID:  tenantID,
-		},
+		FormID:   formId,
+		TenantID: tenantID,
 	}
 
 	validate := validator.New(validator.WithRequiredStructEnabled())
