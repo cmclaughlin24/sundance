@@ -58,7 +58,7 @@ func SendErrorResponse(w http.ResponseWriter, err error) {
 			StatusCode: http.StatusNotFound,
 		})
 	case errors.Is(err, ErrExists):
-		SendJsonResponse(w, http.StatusNotFound, ApiErrorResponse{
+		SendJsonResponse(w, http.StatusConflict, ApiErrorResponse{
 			Message:    "Conflict",
 			Error:      err.Error(),
 			StatusCode: http.StatusConflict,

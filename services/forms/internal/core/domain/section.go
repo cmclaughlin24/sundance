@@ -57,12 +57,12 @@ func (s *Section) SetFields(fields ...*Field) error {
 	return nil
 }
 
-func (v *Section) UpdateFields(fields ...*Field) error {
-	if v == nil {
+func (s *Section) UpdateFields(fields ...*Field) error {
+	if s == nil {
 		return ErrInvalidSection
 	}
 
-	v.Fields = make(map[int]*Field)
+	s.Fields = make(map[int]*Field)
 
-	return v.SetFields(fields...)
+	return s.SetFields(fields...)
 }

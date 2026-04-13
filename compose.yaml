@@ -49,4 +49,4 @@ services:
             - ./services/forms
             - ./services/submissions
         - action: rebuild
-          path: ./services/submissions/go.mod
+          path: ./services/tenants/go.mod

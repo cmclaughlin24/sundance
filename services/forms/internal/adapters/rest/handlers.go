@@ -48,7 +48,7 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 			dtos = append(dtos, dto.FormToResponseDto(form))
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, res.data)
+		common.SendJsonResponse(w, http.StatusOK, dtos)
 	}
 }
 
