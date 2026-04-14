@@ -61,7 +61,12 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	formID := h.getFormIdPathValue(r)
-	query := ports.NewFindByIDQuery(formID, tenantID)
+	query, err := ports.NewFindByIDQuery(formID, tenantID)
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
 	resultChan := make(chan result[*domain.Form], 1)
 
 	go func() {
@@ -176,7 +181,12 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	formID := h.getFormIdPathValue(r)
-	query := ports.NewFindVersionsQuery(formID, tenantID)
+	query, err := ports.NewFindVersionsQuery(formID, tenantID)
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
 	resultChan := make(chan result[[]*domain.Version], 1)
 
 	go func() {
@@ -212,7 +222,12 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 
 	formID := h.getFormIdPathValue(r)
 	versionID := h.getVersionIdPathValue(r)
-	query := ports.NewFindVersionByIDQuery(formID, tenantID, versionID)
+	query, err := ports.NewFindVersionByIDQuery(formID, tenantID, versionID)
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
 	resultChan := make(chan result[*domain.Version], 1)
 
 	go func() {

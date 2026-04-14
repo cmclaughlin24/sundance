@@ -20,7 +20,7 @@ func NewDataSourcesService(logger *log.Logger, repository *ports.Repository) *Da
 	}
 }
 
-func (s *DataSourcesService) Find(ctx context.Context, query ports.ListDataSourceQuery) ([]*domain.DataSource, error) {
+func (s *DataSourcesService) Find(ctx context.Context, query *ports.ListDataSourceQuery) ([]*domain.DataSource, error) {
 	return s.repository.DataSources.Find(ctx, query.TenantID)
 }
 

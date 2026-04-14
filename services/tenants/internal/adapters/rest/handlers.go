@@ -172,11 +172,18 @@ func (h *handlers) removeTenant(w http.ResponseWriter, r *http.Request) {
 
 func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 	tenantId := r.PathValue("tenantId")
+
+	query, err := ports.NewListDataSourceQuery(domain.TenantID(tenantId))
+	if err != nil {
+		common.SendErrorResponse(w, err)
+		return
+	}
+
 	resultChan := make(chan result[[]*domain.DataSource], 1)
 
 	go func() {
 		defer close(resultChan)
-		sources, err := h.app.Services.DataSources.Find(r.Context(), ports.NewListDataSourceQuery(domain.TenantID(tenantId)))
+		sources, err := h.app.Services.DataSources.Find(r.Context(), query)
 		resultChan <- result[[]*domain.DataSource]{sources, err}
 	}()
 

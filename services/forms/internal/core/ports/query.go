@@ -1,17 +1,27 @@
 package ports
 
-import "github.com/cmclaughlin24/sundance/forms/internal/core/domain"
+import (
+	"github.com/cmclaughlin24/sundance/forms/internal/core/domain"
+	"github.com/go-playground/validator/v10"
+)
 
 type FindByIDQuery struct {
 	FormID   domain.FormID
 	TenantID string
 }
 
-func NewFindByIDQuery(formID domain.FormID, tenantID string) *FindByIDQuery {
-	return &FindByIDQuery{
+func NewFindByIDQuery(formID domain.FormID, tenantID string) (*FindByIDQuery, error) {
+	query := &FindByIDQuery{
 		FormID:   formID,
 		TenantID: tenantID,
 	}
+
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	if err := validate.Struct(query); err != nil {
+		return nil, err
+	}
+
+	return query, nil
 }
 
 type FindVersionsQuery struct {
@@ -19,11 +29,18 @@ type FindVersionsQuery struct {
 	TenantID string
 }
 
-func NewFindVersionsQuery(formID domain.FormID, tenantID string) *FindVersionsQuery {
-	return &FindVersionsQuery{
+func NewFindVersionsQuery(formID domain.FormID, tenantID string) (*FindVersionsQuery, error) {
+	query := &FindVersionsQuery{
 		FormID:   formID,
 		TenantID: tenantID,
 	}
+
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	if err := validate.Struct(query); err != nil {
+		return nil, err
+	}
+
+	return query, nil
 }
 
 type FindVersionByIDQuery struct {
@@ -32,10 +49,17 @@ type FindVersionByIDQuery struct {
 	TenantID  string
 }
 
-func NewFindVersionByIDQuery(formID domain.FormID, tenantID string, versionID domain.VersionID) *FindVersionByIDQuery {
-	return &FindVersionByIDQuery{
+func NewFindVersionByIDQuery(formID domain.FormID, tenantID string, versionID domain.VersionID) (*FindVersionByIDQuery, error) {
+	query := &FindVersionByIDQuery{
 		FormID:    formID,
 		VersionID: versionID,
 		TenantID:  tenantID,
 	}
+
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	if err := validate.Struct(query); err != nil {
+		return nil, err
+	}
+
+	return query, nil
 }
