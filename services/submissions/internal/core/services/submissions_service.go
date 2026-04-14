@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/cmclaughlin24/sundance/common"
 	"github.com/cmclaughlin24/sundance/submissions/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/submissions/internal/core/ports"
 )
@@ -20,16 +21,36 @@ func NewSubmissionsService(logger *log.Logger, repository *ports.Repository) *Su
 	}
 }
 
-func (s *SubmissionsService) Find(context.Context) ([]*domain.Submission, error) {
-	return nil, nil
+func (s *SubmissionsService) Find(ctx context.Context) ([]*domain.Submission, error) {
+	return s.repository.Submissions.Find(ctx)
 }
 
-func (s *SubmissionsService) FindById(context.Context, ports.FindByIdQuery[domain.SubmissionID]) (*domain.Submission, error) {
-	return nil, nil
+func (s *SubmissionsService) FindById(ctx context.Context, query *ports.FindByIdQuery[domain.SubmissionID]) (*domain.Submission, error) {
+	submission, err := s.repository.Submissions.FindById(ctx, query.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if submission.TenantID != query.TenantID {
+		return nil, common.ErrUnauthorized
+	}
+
+	return submission, nil
 }
 
-func (s *SubmissionsService) FindByReferenceId(context.Context, ports.FindByIdQuery[domain.ReferenceID]) (*domain.Submission, error) {
-	return nil, nil
+func (s *SubmissionsService) FindByReferenceId(ctx context.Context, query *ports.FindByIdQuery[domain.ReferenceID]) (*domain.Submission, error) {
+	submission, err := s.repository.Submissions.FindByReferenceId(ctx, query.ID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if submission.TenantID != query.TenantID {
+		return nil, common.ErrUnauthorized
+	}
+
+	return submission, nil
 }
 
 func (s *SubmissionsService) FindAttempts(context.Context) ([]*domain.SubmissionAttempt, error) {
