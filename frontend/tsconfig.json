@@ -1,0 +1,10 @@
+{
+    "files": [],
+    "references": [
+        { "path": "apps/authentication" },
+        { "path": "apps/certification" },
+        { "path": "apps/host" },
+        { "path": "packages/common" },
+        { "path": "packages/mfe" }
+    ]
+}

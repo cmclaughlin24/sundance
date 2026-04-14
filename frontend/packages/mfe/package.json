@@ -1,0 +1,36 @@
+{
+  "name": "@sundance/mfe",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/sundance-mfe.umd.js",
+  "module": "./dist/sundance-mfe.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/sundance-mfe.es.js",
+      "require": "./dist/sundance-mfe.umd.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@tanstack/react-router": "^1.167.0",
+    "@testing-library/react": "catalog:test",
+    "@types/node": "^22.15.3",
+    "@vitest/coverage-v8": "catalog:test",
+    "happy-dom": "catalog:test",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.7",
+    "vite-plugin-dts": "^4.5.3",
+    "vitest": "catalog:test"
+  }
+}

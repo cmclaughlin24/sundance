@@ -1,0 +1,51 @@
+{
+  "name": "@sundance/certification",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview --port 3002",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@sundance/common": "workspace:*",
+    "@sundance/mfe": "workspace:*",
+    "@emotion/react": "catalog:",
+    "@emotion/styled": "catalog:",
+    "@module-federation/vite": "^1.13.0",
+    "@mui/material": "catalog:",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-web": "^0.58.0",
+    "@opentelemetry/context-zone": "^2.6.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.213.0",
+    "@opentelemetry/instrumentation": "^0.213.0",
+    "@opentelemetry/resources": "^2.6.0",
+    "@opentelemetry/sdk-trace-base": "^2.6.0",
+    "@opentelemetry/sdk-trace-web": "^2.6.0",
+    "@opentelemetry/semantic-conventions": "^1.40.0",
+    "@tanstack/react-router": "^1.167.0",
+    "@tanstack/react-router-devtools": "^1.166.7",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@originjs/vite-plugin-federation": "^1.4.1",
+    "@playwright/test": "catalog:test",
+    "@tanstack/devtools-vite": "^0.5.5",
+    "@tanstack/router-plugin": "^1.166.9",
+    "@testing-library/react": "catalog:test",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "@vitejs/plugin-react-swc": "^4.1.0",
+    "@vitest/coverage-v8": "catalog:test",
+    "happy-dom": "catalog:test",
+    "playwright": "catalog:test",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.7",
+    "vitest": "catalog:test"
+  }
+}

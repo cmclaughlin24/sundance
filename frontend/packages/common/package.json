@@ -1,0 +1,41 @@
+{
+  "name": "@sundance/common",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/sundance-common.umd.js",
+  "module": "./dist/sundance-common.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/sundance-common.es.js",
+      "require": "./dist/sundance-common.umd.js"
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "catalog:"
+  },
+  "devDependencies": {
+    "@emotion/react": "catalog:",
+    "@emotion/styled": "catalog:",
+    "@mui/material": "catalog:",
+    "@testing-library/react": "catalog:test",
+    "@types/node": "^22.15.3",
+    "@types/react": "^19.2.14",
+    "@vitest/coverage-v8": "catalog:test",
+    "happy-dom": "catalog:test",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.7",
+    "vite-plugin-dts": "^4.5.3",
+    "vitest": "catalog:test"
+  }
+}

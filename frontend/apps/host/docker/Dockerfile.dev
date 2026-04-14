@@ -1,0 +1,25 @@
+FROM node:24-alpine
+
+ARG OTEL_ENABLED=false
+
+ENV AUTHENTICATION_HOST=http://localhost:3001
+ENV CERTIFICATION_HOST=http://localhost:3002
+ENV OTLP_HOST=http://localhost:4318
+ENV VITE_OTEL_ENABLED=${OTEL_ENABLED}
+
+WORKDIR /app
+
+COPY ../../package.json ../../pnpm-workspace.yaml ./
+COPY ../../pnpm-lock.yaml ./
+COPY ../../packages ./packages
+COPY package.json tsconfig.json vite.config.ts tsconfig.app.json tsconfig.node.json eslint.config.js ./
+COPY src ./src
+
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
+
+RUN pnpm install
+RUN pnpm run build
+
+EXPOSE 3000
+
+CMD ["pnpm", "run", "preview"]

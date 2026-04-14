@@ -1,6 +1,7 @@
 services:
   forms:
     build:
+      context: ./backend
       dockerfile: ./docker/Dockerfile.dev
       args:
         SERVICE: forms
@@ -18,6 +19,7 @@ services:
           path: ./services/forms/go.mod
   submissions:
     build:
+      context: ./backend
       dockerfile: ./docker/Dockerfile.dev
       args:
         SERVICE: submissions
@@ -35,6 +37,7 @@ services:
           path: ./services/submissions/go.mod
   tenants:
     build:
+      context: ./backend
       dockerfile: ./docker/Dockerfile.dev
       args:
         SERVICE: tenants
