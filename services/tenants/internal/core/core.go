@@ -38,6 +38,6 @@ func NewApplication(settings ApplicationSettings) (*Application, error) {
 
 func (app *Application) Close() {
 	if err := app.repository.Database.Close(); err != nil {
-		log.Fatalf("an error occurred while closing the database connection: %s", err.Error())
+		app.Logger.Fatalf("an error occurred while closing the database connection: %s", err.Error())
 	}
 }
