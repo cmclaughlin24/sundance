@@ -19,7 +19,7 @@ export default defineConfig({
     react(),
     federation({
       dts: false,
-      name: "certification",
+      name: "forms",
       filename: "remoteEntry.js",
       exposes: {
         "./bootstrap": "./src/bootstrap.tsx",

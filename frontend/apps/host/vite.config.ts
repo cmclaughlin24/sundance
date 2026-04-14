@@ -27,10 +27,10 @@ export default defineConfig({
           entry: "/authentication-ui/remoteEntry.js",
           shareScope: "default",
         },
-        certification: {
+        forms: {
           type: "module",
-          name: "certification",
-          entry: "/certification-ui/remoteEntry.js",
+          name: "forms",
+          entry: "/forms-ui/remoteEntry.js",
           shareScope: "default",
         },
       },
@@ -52,9 +52,9 @@ export default defineConfig({
         target: process.env.AUTHENTICATION_HOST || "http://localhost:3001",
         rewrite: (path) => path.replace(/^\/authentication-ui/, ""),
       },
-      "/certification-ui": {
-        target: process.env.CERTIFICATION_HOST || "http://localhost:3002",
-        rewrite: (path) => path.replace(/^\/certification-ui/, ""),
+      "/forms-ui": {
+        target: process.env.FORMS_HOST || "http://localhost:3002",
+        rewrite: (path) => path.replace(/^\/forms-ui/, ""),
       },
       "/otlp": {
         target: process.env.OTLP_HOST || "http://localhost:4318",

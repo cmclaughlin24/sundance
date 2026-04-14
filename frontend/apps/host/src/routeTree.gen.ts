@@ -10,7 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as CertificationSplatRouteImport } from './routes/certification/$'
+import { Route as FormsSplatRouteImport } from './routes/forms/$'
 import { Route as AuthenticationSplatRouteImport } from './routes/authentication/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -18,9 +18,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CertificationSplatRoute = CertificationSplatRouteImport.update({
-  id: '/certification/$',
-  path: '/certification/$',
+const FormsSplatRoute = FormsSplatRouteImport.update({
+  id: '/forms/$',
+  path: '/forms/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticationSplatRoute = AuthenticationSplatRouteImport.update({
@@ -32,31 +32,31 @@ const AuthenticationSplatRoute = AuthenticationSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/authentication/$': typeof AuthenticationSplatRoute
-  '/certification/$': typeof CertificationSplatRoute
+  '/forms/$': typeof FormsSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/authentication/$': typeof AuthenticationSplatRoute
-  '/certification/$': typeof CertificationSplatRoute
+  '/forms/$': typeof FormsSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/authentication/$': typeof AuthenticationSplatRoute
-  '/certification/$': typeof CertificationSplatRoute
+  '/forms/$': typeof FormsSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/authentication/$' | '/certification/$'
+  fullPaths: '/' | '/authentication/$' | '/forms/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/authentication/$' | '/certification/$'
-  id: '__root__' | '/' | '/authentication/$' | '/certification/$'
+  to: '/' | '/authentication/$' | '/forms/$'
+  id: '__root__' | '/' | '/authentication/$' | '/forms/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticationSplatRoute: typeof AuthenticationSplatRoute
-  CertificationSplatRoute: typeof CertificationSplatRoute
+  FormsSplatRoute: typeof FormsSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -68,11 +68,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/certification/$': {
-      id: '/certification/$'
-      path: '/certification/$'
-      fullPath: '/certification/$'
-      preLoaderRoute: typeof CertificationSplatRouteImport
+    '/forms/$': {
+      id: '/forms/$'
+      path: '/forms/$'
+      fullPath: '/forms/$'
+      preLoaderRoute: typeof FormsSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/authentication/$': {
@@ -88,7 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticationSplatRoute: AuthenticationSplatRoute,
-  CertificationSplatRoute: CertificationSplatRoute,
+  FormsSplatRoute: FormsSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

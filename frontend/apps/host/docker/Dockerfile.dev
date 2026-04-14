@@ -3,7 +3,7 @@ FROM node:24-alpine
 ARG OTEL_ENABLED=false
 
 ENV AUTHENTICATION_HOST=http://localhost:3001
-ENV CERTIFICATION_HOST=http://localhost:3002
+ENV FORMS_HOST=http://localhost:3002
 ENV OTLP_HOST=http://localhost:4318
 ENV VITE_OTEL_ENABLED=${OTEL_ENABLED}
 

@@ -8,7 +8,7 @@ import { ATTR_SERVICE_NAME } from "@opentelemetry/semantic-conventions";
 import { getWebAutoInstrumentations } from "@opentelemetry/auto-instrumentations-web";
 
 const OTEL_ENDPOINT = "/otlp";
-const OTEL_SERVICE_NAME = "certification";
+const OTEL_SERVICE_NAME = "forms";
 const OTEL_ENABLED = import.meta.env.VITE_OTEL_ENABLED === "true";
 
 export function initTelemetry() {

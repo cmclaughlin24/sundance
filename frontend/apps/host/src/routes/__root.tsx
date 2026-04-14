@@ -27,11 +27,11 @@ function RootComponent() {
               Authentication
             </SundanceMasthead.Link>
             <SundanceMasthead.Link
-              to="/certification"
+              to="/forms"
               from="/"
               component={Link}
             >
-              Certification
+              Forms
             </SundanceMasthead.Link>
           </Box>
           <Box sx={{ display: "flex", justifyContent: "end" }}>
