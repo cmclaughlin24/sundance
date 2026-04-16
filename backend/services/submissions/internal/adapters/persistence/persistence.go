@@ -8,26 +8,26 @@ import (
 	"github.com/cmclaughlin24/sundance/submissions/internal/core/ports"
 )
 
-type PersistanceDriver string
+type PersistenceDriver string
 
 const (
-	PersistanceDriverInMemory PersistanceDriver = "in-memory"
+	PersistenceDriverInMemory PersistenceDriver = "in-memory"
 )
 
-type bootstrapFn func(PersistanceOptions, *log.Logger) (*ports.Repository, error)
+type bootstrapFn func(PersistenceOptions, *log.Logger) (*ports.Repository, error)
 
-type PersistanceOptions any
+type PersistenceOptions any
 
-type PersistanceSettings struct {
-	Driver  PersistanceDriver  `json:"driver"`
-	Options PersistanceOptions `json:"options"`
+type PersistenceSettings struct {
+	Driver  PersistenceDriver  `json:"driver"`
+	Options PersistenceOptions `json:"options"`
 }
 
-func Bootstrap(settings PersistanceSettings, logger *log.Logger) (*ports.Repository, error) {
+func Bootstrap(settings PersistenceSettings, logger *log.Logger) (*ports.Repository, error) {
 	var fn bootstrapFn
 
 	switch settings.Driver {
-	case PersistanceDriverInMemory:
+	case PersistenceDriverInMemory:
 		fn = bootstrapInMemory
 	}
 
@@ -38,6 +38,6 @@ func Bootstrap(settings PersistanceSettings, logger *log.Logger) (*ports.Reposit
 	return fn(settings.Options, logger)
 }
 
-func bootstrapInMemory(_ PersistanceOptions, logger *log.Logger) (*ports.Repository, error) {
+func bootstrapInMemory(_ PersistenceOptions, logger *log.Logger) (*ports.Repository, error) {
 	return inmemory.Bootstrap(logger), nil
 }

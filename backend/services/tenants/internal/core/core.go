@@ -10,7 +10,7 @@ import (
 )
 
 type ApplicationSettings struct {
-	Persistence persistence.PersistanceSettings `json:"persistence"`
+	Persistence persistence.PersistenceSettings `json:"persistence"`
 }
 
 type Application struct {

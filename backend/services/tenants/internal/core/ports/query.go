@@ -2,11 +2,11 @@ package ports
 
 import (
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
-	"github.com/go-playground/validator/v10"
+	"github.com/cmclaughlin24/sundance/tenants/internal/validate"
 )
 
 type ListDataSourceQuery struct {
-	TenantID domain.TenantID
+	TenantID domain.TenantID `validate:"required"`
 }
 
 func NewListDataSourceQuery(tenantId domain.TenantID) (*ListDataSourceQuery, error) {
@@ -14,8 +14,7 @@ func NewListDataSourceQuery(tenantId domain.TenantID) (*ListDataSourceQuery, err
 		TenantID: tenantId,
 	}
 
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(query); err != nil {
+	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
 

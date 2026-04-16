@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/tenants/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/tenants/internal/core"
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/ports"
@@ -42,9 +43,9 @@ func (h *handlers) getTenants(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]*tenantResponse, 0, len(res.data))
+		dtos := make([]*dto.TenantResponse, 0, len(res.data))
 		for _, tenant := range res.data {
-			dtos = append(dtos, tenantToResponse(tenant))
+			dtos = append(dtos, dto.TenantToResponse(tenant))
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, dtos)
@@ -70,19 +71,19 @@ func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, tenantToResponse(res.data))
+		common.SendJsonResponse(w, http.StatusOK, dto.TenantToResponse(res.data))
 	}
 }
 
 func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Tenant], 1)
 
-	var dto upsertTenantRequest
-	if err := common.ReadJsonPayload(r, &dto); err != nil {
+	var body dto.UpsertTenantRequest
+	if err := common.ReadJsonPayload(r, &body); err != nil {
 		return
 	}
 
-	command, err := ports.NewCreateTenantCommand(dto.Name, dto.Description)
+	command, err := ports.NewCreateTenantCommand(body.Name, body.Description)
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -103,9 +104,9 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[tenantResponse]{
+		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[dto.TenantResponse]{
 			Message: "Successfully created!",
-			Data:    *tenantToResponse(res.data),
+			Data:    *dto.TenantToResponse(res.data),
 		})
 	}
 }
@@ -114,12 +115,12 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("tenantId")
 	resultChan := make(chan result[*domain.Tenant], 1)
 
-	var dto upsertTenantRequest
-	if err := common.ReadJsonPayload(r, &dto); err != nil {
+	var body dto.UpsertTenantRequest
+	if err := common.ReadJsonPayload(r, &body); err != nil {
 		return
 	}
 
-	command, err := ports.NewUpdateTenantCommand(domain.TenantID(id), dto.Name, dto.Description)
+	command, err := ports.NewUpdateTenantCommand(domain.TenantID(id), body.Name, body.Description)
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -140,9 +141,9 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[tenantResponse]{
-			Message: "Success updated!",
-			Data:    *tenantToResponse(res.data),
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dto.TenantResponse]{
+			Message: "Successfully updated!",
+			Data:    *dto.TenantToResponse(res.data),
 		})
 	}
 }
@@ -196,9 +197,9 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]*dataSourceResponse, 0, len(res.data))
+		dtos := make([]*dto.DataSourceResponse, 0, len(res.data))
 		for _, source := range res.data {
-			dtos = append(dtos, dataSourceToResponseDto(source))
+			dtos = append(dtos, dto.DataSourceToResponseDto(source))
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, dtos)
@@ -225,7 +226,7 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dataSourceToResponseDto(res.data))
+		common.SendJsonResponse(w, http.StatusOK, dto.DataSourceToResponseDto(res.data))
 	}
 }
 
@@ -233,12 +234,12 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantId := r.PathValue("tenantId")
 	resultChan := make(chan result[*domain.DataSource], 1)
 
-	var dto upsertDataSourceRequest
-	if err := common.ReadJsonPayload(r, &dto); err != nil {
+	var body dto.UpsertDataSourceRequest
+	if err := common.ReadJsonPayload(r, &body); err != nil {
 		return
 	}
 
-	command, err := ports.NewCreateDataSourceCommand(domain.TenantID(tenantId), dto.Type, dto.Attributes)
+	command, err := ports.NewCreateDataSourceCommand(domain.TenantID(tenantId), body.Type, body.Attributes)
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -259,9 +260,9 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[dataSourceResponse]{
+		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[dto.DataSourceResponse]{
 			Message: "Successfully created!",
-			Data:    *dataSourceToResponseDto(res.data),
+			Data:    *dto.DataSourceToResponseDto(res.data),
 		})
 	}
 }
@@ -271,12 +272,12 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 	sourceId := r.PathValue("dataSourceId")
 	resultChan := make(chan result[*domain.DataSource], 1)
 
-	var dto upsertDataSourceRequest
-	if err := common.ReadJsonPayload(r, &dto); err != nil {
+	var body dto.UpsertDataSourceRequest
+	if err := common.ReadJsonPayload(r, &body); err != nil {
 		return
 	}
 
-	command, err := ports.NewUpdateDataSourceCommand(domain.DataSourceID(sourceId), domain.TenantID(tenantId), dto.Type, dto.Attributes)
+	command, err := ports.NewUpdateDataSourceCommand(domain.DataSourceID(sourceId), domain.TenantID(tenantId), body.Type, body.Attributes)
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -297,9 +298,9 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dataSourceResponse]{
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dto.DataSourceResponse]{
 			Message: "Successfully updated!",
-			Data:    *dataSourceToResponseDto(res.data),
+			Data:    *dto.DataSourceToResponseDto(res.data),
 		})
 	}
 }
@@ -348,9 +349,9 @@ func (h *handlers) getDataSourceLookup(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]*dataSourceLookupResponse, 0, len(res.data))
+		dtos := make([]*dto.DataSourceLookupResponse, 0, len(res.data))
 		for _, lookup := range res.data {
-			dtos = append(dtos, dataSourceLookupToResponse(lookup))
+			dtos = append(dtos, dto.DataSourceLookupToResponse(lookup))
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, dtos)

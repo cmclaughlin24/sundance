@@ -97,12 +97,12 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 
 	resultChan := make(chan result[*domain.Form], 1)
 
-	var formDto dto.UpsertFormDto
-	if err := common.ReadJsonPayload(r, &formDto); err != nil {
+	var body dto.UpsertFormDto
+	if err := common.ReadJsonPayload(r, &body); err != nil {
 		return
 	}
 
-	command, err := ports.NewCreateFormCommand(tenantID, formDto.Name, formDto.Description)
+	command, err := ports.NewCreateFormCommand(tenantID, body.Name, body.Description)
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -140,12 +140,12 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 	formID := h.getFormIdPathValue(r)
 	resultChan := make(chan result[*domain.Form], 1)
 
-	var formDto dto.UpsertFormDto
-	if err := common.ReadJsonPayload(r, &formDto); err != nil {
+	var body dto.UpsertFormDto
+	if err := common.ReadJsonPayload(r, &body); err != nil {
 		return
 	}
 
-	command, err := ports.NewUpdateFormCommand(formID, tenantID, formDto.Name, formDto.Description)
+	command, err := ports.NewUpdateFormCommand(formID, tenantID, body.Name, body.Description)
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -259,8 +259,8 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 	formID := h.getFormIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
-	var versionDto dto.CreateVersionDto
-	if err := common.ReadJsonPayload(r, &versionDto); err != nil {
+	var body dto.CreateVersionDto
+	if err := common.ReadJsonPayload(r, &body); err != nil {
 		return
 	}
 
@@ -303,13 +303,13 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 	versionID := h.getVersionIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
-	var versionDto dto.UpdateVersionDto
-	if err := common.ReadJsonPayload(r, &versionDto); err != nil {
+	var body dto.UpdateVersionDto
+	if err := common.ReadJsonPayload(r, &body); err != nil {
 		common.SendErrorResponse(w, err)
 		return
 	}
 
-	pages, err := dto.DtoToPages(versionDto)
+	pages, err := dto.DtoToPages(body)
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return

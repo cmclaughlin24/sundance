@@ -2,22 +2,27 @@ package ports
 
 import (
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
-	"github.com/go-playground/validator/v10"
+	"github.com/cmclaughlin24/sundance/tenants/internal/validate"
 )
 
+type baseTenantCommand struct {
+	Name        string `validate:"required,max=75"`
+	Description string `validate:"required,max=250"`
+}
+
 type CreateTenantCommand struct {
-	Name        string `validate:"required"`
-	Description string `validate:"required"`
+	baseTenantCommand
 }
 
 func NewCreateTenantCommand(name, description string) (*CreateTenantCommand, error) {
 	command := &CreateTenantCommand{
-		Name:        name,
-		Description: description,
+		baseTenantCommand{
+			Name:        name,
+			Description: description,
+		},
 	}
 
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(command); err != nil {
+	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
 
@@ -25,29 +30,33 @@ func NewCreateTenantCommand(name, description string) (*CreateTenantCommand, err
 }
 
 type UpdateTenantCommand struct {
-	ID          domain.TenantID `validate:"required"`
-	Name        string          `validate:"required"`
-	Description string          `validate:"required"`
+	ID domain.TenantID `validate:"required"`
+	baseTenantCommand
 }
 
 func NewUpdateTenantCommand(id domain.TenantID, name, description string) (*UpdateTenantCommand, error) {
 	command := &UpdateTenantCommand{
-		ID:          id,
-		Name:        name,
-		Description: description,
+		id,
+		baseTenantCommand{
+			Name:        name,
+			Description: description,
+		},
 	}
 
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(command); err != nil {
+	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
 
 	return command, nil
 }
 
+type baseDataSourceCommand struct {
+	TenantID domain.TenantID       `validate:"required"`
+	Type     domain.DataSourceType `validate:"oneof=static scheduled query"`
+}
+
 type CreateDataSourceCommand struct {
-	TenantID   domain.TenantID
-	Type       domain.DataSourceType
+	baseDataSourceCommand
 	Attributes domain.DataSourceAttributes
 }
 
@@ -57,13 +66,14 @@ func NewCreateDataSourceCommand(
 	attr domain.DataSourceAttributes,
 ) (*CreateDataSourceCommand, error) {
 	command := &CreateDataSourceCommand{
-		TenantID:   tenantId,
-		Type:       sourceType,
+		baseDataSourceCommand: baseDataSourceCommand{
+			TenantID: tenantId,
+			Type:     sourceType,
+		},
 		Attributes: attr,
 	}
 
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(command); err != nil {
+	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
 
@@ -71,9 +81,8 @@ func NewCreateDataSourceCommand(
 }
 
 type UpdateDataSourceCommand struct {
+	baseDataSourceCommand
 	ID         domain.DataSourceID
-	TenantID   domain.TenantID
-	Type       domain.DataSourceType
 	Attributes domain.DataSourceAttributes
 }
 
@@ -84,14 +93,15 @@ func NewUpdateDataSourceCommand(
 	attr domain.DataSourceAttributes,
 ) (*UpdateDataSourceCommand, error) {
 	command := &UpdateDataSourceCommand{
-		ID:         id,
-		TenantID:   tenantId,
-		Type:       sourceType,
+		ID: id,
+		baseDataSourceCommand: baseDataSourceCommand{
+			TenantID: tenantId,
+			Type:     sourceType,
+		},
 		Attributes: attr,
 	}
 
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(command); err != nil {
+	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
 

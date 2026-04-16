@@ -15,10 +15,10 @@ type Tenant struct {
 	DataSources []*DataSource
 }
 
-func NewTenant(id TenantID, name, description string) *Tenant {
+func NewTenant(id TenantID, name, description string) (*Tenant, error) {
 	return &Tenant{
 		ID:          id,
 		Name:        name,
 		Description: description,
-	}
+	}, nil
 }

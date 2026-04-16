@@ -1,4 +1,4 @@
-package rest
+package dto
 
 import (
 	"time"
@@ -6,7 +6,7 @@ import (
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
 )
 
-type tenantResponse struct {
+type TenantResponse struct {
 	ID          domain.TenantID `json:"id"`
 	Name        string          `json:"name"`
 	Description string          `json:"description"`
@@ -14,8 +14,8 @@ type tenantResponse struct {
 	UpdatedAt   time.Time       `json:"updatedAt"`
 }
 
-func tenantToResponse(tenant *domain.Tenant) *tenantResponse {
-	return &tenantResponse{
+func TenantToResponse(tenant *domain.Tenant) *TenantResponse {
+	return &TenantResponse{
 		ID:          tenant.ID,
 		Name:        tenant.Name,
 		Description: tenant.Description,
@@ -24,7 +24,7 @@ func tenantToResponse(tenant *domain.Tenant) *tenantResponse {
 	}
 }
 
-type dataSourceResponse struct {
+type DataSourceResponse struct {
 	ID         domain.DataSourceID   `json:"id"`
 	TenantID   domain.TenantID       `json:"tenantId"`
 	Type       domain.DataSourceType `json:"type"`
@@ -33,8 +33,8 @@ type dataSourceResponse struct {
 	UpdatedAt  time.Time             `json:"updatedAt"`
 }
 
-func dataSourceToResponseDto(source *domain.DataSource) *dataSourceResponse {
-	return &dataSourceResponse{
+func DataSourceToResponseDto(source *domain.DataSource) *DataSourceResponse {
+	return &DataSourceResponse{
 		ID:         source.ID,
 		TenantID:   source.TenantID,
 		Type:       source.Type,
@@ -44,13 +44,13 @@ func dataSourceToResponseDto(source *domain.DataSource) *dataSourceResponse {
 	}
 }
 
-type dataSourceLookupResponse struct {
+type DataSourceLookupResponse struct {
 	Code        string `json:"code"`
 	Description string `json:"description"`
 }
 
-func dataSourceLookupToResponse(lookup *domain.DataSourceLookup) *dataSourceLookupResponse {
-	return &dataSourceLookupResponse{
+func DataSourceLookupToResponse(lookup *domain.DataSourceLookup) *DataSourceLookupResponse {
+	return &DataSourceLookupResponse{
 		Code:        lookup.Code,
 		Description: lookup.Description,
 	}
