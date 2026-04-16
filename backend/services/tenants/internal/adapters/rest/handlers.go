@@ -103,7 +103,7 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[tenantResponseDto]{
+		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[tenantResponse]{
 			Message: "Successfully created!",
 			Data:    *tenantToResponse(res.data),
 		})
@@ -140,7 +140,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[tenantResponseDto]{
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[tenantResponse]{
 			Message: "Success updated!",
 			Data:    *tenantToResponse(res.data),
 		})
@@ -259,7 +259,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[dataSourceResponseDto]{
+		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[dataSourceResponse]{
 			Message: "Successfully created!",
 			Data:    *dataSourceToResponseDto(res.data),
 		})
@@ -297,7 +297,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dataSourceResponseDto]{
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dataSourceResponse]{
 			Message: "Successfully updated!",
 			Data:    *dataSourceToResponseDto(res.data),
 		})
