@@ -6,7 +6,7 @@ import (
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
 )
 
-type tenantResponseDto struct {
+type tenantResponse struct {
 	ID          domain.TenantID `json:"id"`
 	Name        string          `json:"name"`
 	Description string          `json:"description"`
@@ -14,8 +14,8 @@ type tenantResponseDto struct {
 	UpdatedAt   time.Time       `json:"updatedAt"`
 }
 
-func tenantToResponseDto(tenant *domain.Tenant) *tenantResponseDto {
-	return &tenantResponseDto{
+func tenantToResponse(tenant *domain.Tenant) *tenantResponse {
+	return &tenantResponse{
 		ID:          tenant.ID,
 		Name:        tenant.Name,
 		Description: tenant.Description,
@@ -24,7 +24,7 @@ func tenantToResponseDto(tenant *domain.Tenant) *tenantResponseDto {
 	}
 }
 
-type dataSourceResponseDto struct {
+type dataSourceResponse struct {
 	ID         domain.DataSourceID   `json:"id"`
 	TenantID   domain.TenantID       `json:"tenantId"`
 	Type       domain.DataSourceType `json:"type"`
@@ -33,8 +33,8 @@ type dataSourceResponseDto struct {
 	UpdatedAt  time.Time             `json:"updatedAt"`
 }
 
-func dataSourceToResponseDto(source *domain.DataSource) *dataSourceResponseDto {
-	return &dataSourceResponseDto{
+func dataSourceToResponseDto(source *domain.DataSource) *dataSourceResponse {
+	return &dataSourceResponse{
 		ID:         source.ID,
 		TenantID:   source.TenantID,
 		Type:       source.Type,
@@ -44,13 +44,13 @@ func dataSourceToResponseDto(source *domain.DataSource) *dataSourceResponseDto {
 	}
 }
 
-type dataSourceLookupResponseDto struct {
+type dataSourceLookupResponse struct {
 	Code        string `json:"code"`
 	Description string `json:"description"`
 }
 
-func dataSourceLookupToResponseDto(lookup *domain.DataSourceLookup) *dataSourceLookupResponseDto {
-	return &dataSourceLookupResponseDto{
+func dataSourceLookupToResponse(lookup *domain.DataSourceLookup) *dataSourceLookupResponse {
+	return &dataSourceLookupResponse{
 		Code:        lookup.Code,
 		Description: lookup.Description,
 	}
