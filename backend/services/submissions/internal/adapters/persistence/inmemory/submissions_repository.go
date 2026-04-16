@@ -5,7 +5,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/cmclaughlin24/sundance/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/submissions/internal/core/domain"
 )
 

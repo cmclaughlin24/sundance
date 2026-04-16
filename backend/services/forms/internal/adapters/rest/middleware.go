@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 )
 
 const tenantIDHeader = "X-Tenant-ID"

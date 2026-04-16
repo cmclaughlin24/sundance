@@ -3,7 +3,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/submissions/internal/core"
 	"github.com/cmclaughlin24/sundance/submissions/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/submissions/internal/core/ports"

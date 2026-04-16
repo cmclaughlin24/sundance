@@ -3,7 +3,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/forms/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/forms/internal/core"
 	"github.com/cmclaughlin24/sundance/forms/internal/core/domain"
