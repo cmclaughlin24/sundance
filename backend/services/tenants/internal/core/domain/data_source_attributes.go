@@ -1,6 +1,6 @@
 package domain
 
-type DataSourceAttributes interface{}
+type DataSourceAttributes any
 
 type StaticDataSourceAttributes struct{}
 

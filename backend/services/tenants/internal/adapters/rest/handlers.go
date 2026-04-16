@@ -8,6 +8,7 @@ import (
 	"github.com/cmclaughlin24/sundance/tenants/internal/core"
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/tenants/internal/core/ports"
+	"github.com/cmclaughlin24/sundance/tenants/internal/validate"
 )
 
 type result[T any] struct {
@@ -80,11 +81,20 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 
 	var body dto.UpsertTenantRequest
 	if err := common.ReadJsonPayload(r, &body); err != nil {
+		common.SendErrorResponse(w, err)
 		return
 	}
 
 	command, err := ports.NewCreateTenantCommand(body.Name, body.Description)
 	if err != nil {
+		if validate.IsValidationErr(err) {
+			common.SendJsonResponse(w, http.StatusBadRequest, common.ApiErrorResponse{
+				Message:    "Bad Request",
+				Error:      err.Error(),
+				StatusCode: http.StatusBadRequest,
+			})
+		}
+
 		common.SendErrorResponse(w, err)
 		return
 	}
@@ -117,11 +127,20 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 
 	var body dto.UpsertTenantRequest
 	if err := common.ReadJsonPayload(r, &body); err != nil {
+		common.SendErrorResponse(w, err)
 		return
 	}
 
 	command, err := ports.NewUpdateTenantCommand(domain.TenantID(id), body.Name, body.Description)
 	if err != nil {
+		if validate.IsValidationErr(err) {
+			common.SendJsonResponse(w, http.StatusBadRequest, common.ApiErrorResponse{
+				Message:    "Bad Request",
+				Error:      err.Error(),
+				StatusCode: http.StatusBadRequest,
+			})
+		}
+
 		common.SendErrorResponse(w, err)
 		return
 	}
@@ -236,11 +255,20 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 
 	var body dto.UpsertDataSourceRequest
 	if err := common.ReadJsonPayload(r, &body); err != nil {
+		common.SendErrorResponse(w, err)
 		return
 	}
 
 	command, err := ports.NewCreateDataSourceCommand(domain.TenantID(tenantId), body.Type, body.Attributes)
 	if err != nil {
+		if validate.IsValidationErr(err) {
+			common.SendJsonResponse(w, http.StatusBadRequest, common.ApiErrorResponse{
+				Message:    "Bad Request",
+				Error:      err.Error(),
+				StatusCode: http.StatusBadRequest,
+			})
+		}
+
 		common.SendErrorResponse(w, err)
 		return
 	}
@@ -274,11 +302,20 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 
 	var body dto.UpsertDataSourceRequest
 	if err := common.ReadJsonPayload(r, &body); err != nil {
+		common.SendErrorResponse(w, err)
 		return
 	}
 
 	command, err := ports.NewUpdateDataSourceCommand(domain.DataSourceID(sourceId), domain.TenantID(tenantId), body.Type, body.Attributes)
 	if err != nil {
+		if validate.IsValidationErr(err) {
+			common.SendJsonResponse(w, http.StatusBadRequest, common.ApiErrorResponse{
+				Message:    "Bad Request",
+				Error:      err.Error(),
+				StatusCode: http.StatusBadRequest,
+			})
+		}
+
 		common.SendErrorResponse(w, err)
 		return
 	}

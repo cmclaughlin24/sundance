@@ -1,4 +1,23 @@
 services:
+  mongo:
+    image: mongo:latest
+    restart: always
+    volumes:
+      - "mongodb:/data/db"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "3000:8081"
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: user
+      ME_CONFIG_BASICAUTH_PASSWORD: password
+      ME_CONFIG_OPTIONS_EDITORTHEME: ambiance
+      ME_CONFIG_MONGODB_URL: mongodb://root:password@mongo:27017
+    depends_on:
+      - mongo
   forms:
     build:
       context: ./backend
@@ -53,3 +72,5 @@ services:
             - ./services/submissions
         - action: rebuild
           path: ./services/tenants/go.mod
+volumes:
+  mongodb:
