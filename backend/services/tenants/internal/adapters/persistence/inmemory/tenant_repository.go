@@ -50,6 +50,13 @@ func (r *InmemoryTenantRepository) FindById(ctx context.Context, id domain.Tenan
 	return tenant, nil
 }
 
+func (r *InmemoryTenantRepository) Exists(ctx context.Context, id domain.TenantID) (bool, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	_, exists := r.tenants[string(id)]
+	return exists, nil
+}
+
 func (r *InmemoryTenantRepository) Upsert(ctx context.Context, tenant *domain.Tenant) (*domain.Tenant, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()

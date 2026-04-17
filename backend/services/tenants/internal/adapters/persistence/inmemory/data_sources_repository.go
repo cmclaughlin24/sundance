@@ -54,6 +54,13 @@ func (r *InmemoryDataSourceRepository) FindById(ctx context.Context, tenantID do
 	return ds, nil
 }
 
+func (r *InmemoryDataSourceRepository) Exists(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) (bool, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	_, exists := r.dataSources[string(id)]
+	return exists, nil
+}
+
 func (r *InmemoryDataSourceRepository) Upsert(ctx context.Context, ds *domain.DataSource) (*domain.DataSource, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()

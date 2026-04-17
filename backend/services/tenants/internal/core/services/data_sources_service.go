@@ -4,9 +4,10 @@ import (
 	"context"
 	"log"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 )
 
 type DataSourcesService struct {
@@ -29,8 +30,8 @@ func (s *DataSourcesService) Find(ctx context.Context, query *ports.ListDataSour
 	return s.repository.DataSources.Find(ctx, query.TenantID)
 }
 
-func (s *DataSourcesService) FindById(ctx context.Context, tenantId domain.TenantID, sourceId domain.DataSourceID) (*domain.DataSource, error) {
-	return s.repository.DataSources.FindById(ctx, tenantId, sourceId)
+func (s *DataSourcesService) FindById(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) (*domain.DataSource, error) {
+	return s.repository.DataSources.FindById(ctx, tenantID, sourceID)
 }
 
 func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
@@ -73,12 +74,22 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 	return dataSource, nil
 }
 
-func (s *DataSourcesService) Remove(ctx context.Context, tenantId domain.TenantID, sourceId domain.DataSourceID) error {
-	return s.repository.DataSources.Remove(ctx, tenantId, sourceId)
+func (s *DataSourcesService) Remove(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) error {
+	exists, err := s.repository.DataSources.Exists(ctx, tenantID, sourceID)
+
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return common.ErrNotFound
+	}
+
+	return s.repository.DataSources.Remove(ctx, tenantID, sourceID)
 }
 
-func (s *DataSourcesService) Lookup(ctx context.Context, tenantId domain.TenantID, sourceId domain.DataSourceID) ([]*domain.DataSourceLookup, error) {
-	_, err := s.repository.DataSources.FindById(ctx, tenantId, sourceId)
+func (s *DataSourcesService) Lookup(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) ([]*domain.DataSourceLookup, error) {
+	_, err := s.repository.DataSources.FindById(ctx, tenantID, sourceID)
 
 	if err != nil {
 		return nil, err

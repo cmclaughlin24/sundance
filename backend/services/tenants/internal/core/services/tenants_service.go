@@ -4,9 +4,10 @@ import (
 	"context"
 	"log"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 )
 
 type TenantsService struct {
@@ -70,5 +71,15 @@ func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenant
 }
 
 func (s *TenantsService) Remove(ctx context.Context, id domain.TenantID) error {
+	exists, err := s.repository.Tenants.Exists(ctx, id)
+
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return common.ErrNotFound
+	}
+
 	return s.repository.Tenants.Remove(ctx, id)
 }
