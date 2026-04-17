@@ -55,12 +55,12 @@ func (h *handlers) getTenants(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("tenantId")
+	tenantID := h.getTenantIDPathValue(r)
 	resultChan := make(chan result[*domain.Tenant], 1)
 
 	go func() {
 		defer close(resultChan)
-		tenant, err := h.app.Services.Tenants.FindById(r.Context(), domain.TenantID(id))
+		tenant, err := h.app.Services.Tenants.FindById(r.Context(), tenantID)
 		resultChan <- result[*domain.Tenant]{tenant, err}
 	}()
 
@@ -115,7 +115,7 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("tenantId")
+	tenantID := h.getTenantIDPathValue(r)
 	resultChan := make(chan result[*domain.Tenant], 1)
 
 	var body dto.TenantRequest
@@ -124,7 +124,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command, err := ports.NewUpdateTenantCommand(domain.TenantID(id), body.Name, body.Description)
+	command, err := ports.NewUpdateTenantCommand(tenantID, body.Name, body.Description)
 	if err != nil {
 		h.sendErrorResponse(w, err)
 		return
@@ -153,12 +153,12 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) removeTenant(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("tenantId")
+	tenantID := h.getTenantIDPathValue(r)
 	resultChan := make(chan result[any], 1)
 
 	go func() {
 		defer close(resultChan)
-		err := h.app.Services.Tenants.Remove(r.Context(), domain.TenantID(id))
+		err := h.app.Services.Tenants.Remove(r.Context(), tenantID)
 		resultChan <- result[any]{nil, err}
 	}()
 
@@ -176,9 +176,9 @@ func (h *handlers) removeTenant(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
-	tenantId := r.PathValue("tenantId")
+	tenantID := h.getTenantIDPathValue(r)
 
-	query, err := ports.NewListDataSourceQuery(domain.TenantID(tenantId))
+	query, err := ports.NewListDataSourceQuery(tenantID)
 	if err != nil {
 		h.sendErrorResponse(w, err)
 		return
@@ -211,13 +211,13 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
-	tenantId := r.PathValue("tenantId")
-	sourceId := r.PathValue("dataSourceId")
+	tenantID := h.getTenantIDPathValue(r)
+	sourceID := r.PathValue("dataSourceId")
 	resultChan := make(chan result[*domain.DataSource], 1)
 
 	go func() {
 		defer close(resultChan)
-		source, err := h.app.Services.DataSources.FindById(r.Context(), domain.TenantID(tenantId), domain.DataSourceID(sourceId))
+		source, err := h.app.Services.DataSources.FindById(r.Context(), tenantID, domain.DataSourceID(sourceID))
 		resultChan <- result[*domain.DataSource]{source, err}
 	}()
 
@@ -235,7 +235,7 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
-	tenantId := r.PathValue("tenantId")
+	tenantID := h.getTenantIDPathValue(r)
 	resultChan := make(chan result[*domain.DataSource], 1)
 
 	var body dto.DataSourceRequest
@@ -250,7 +250,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command, err := ports.NewCreateDataSourceCommand(domain.TenantID(tenantId), body.Type, attributes)
+	command, err := ports.NewCreateDataSourceCommand(tenantID, body.Type, attributes)
 	if err != nil {
 		h.sendErrorResponse(w, err)
 		return
@@ -279,8 +279,8 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
-	tenantId := r.PathValue("tenantId")
-	sourceId := r.PathValue("dataSourceId")
+	tenantID := h.getTenantIDPathValue(r)
+	sourceID := r.PathValue("dataSourceId")
 	resultChan := make(chan result[*domain.DataSource], 1)
 
 	var body dto.DataSourceRequest
@@ -295,7 +295,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command, err := ports.NewUpdateDataSourceCommand(domain.DataSourceID(sourceId), domain.TenantID(tenantId), body.Type, attributes)
+	command, err := ports.NewUpdateDataSourceCommand(domain.DataSourceID(sourceID), tenantID, body.Type, attributes)
 	if err != nil {
 		h.sendErrorResponse(w, err)
 		return
@@ -324,13 +324,13 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) removeDataSource(w http.ResponseWriter, r *http.Request) {
-	tenantId := r.PathValue("tenantId")
-	sourceId := r.PathValue("dataSourceId")
+	tenantID := h.getTenantIDPathValue(r)
+	sourceID := r.PathValue("dataSourceId")
 	resultChan := make(chan result[any], 1)
 
 	go func() {
 		defer close(resultChan)
-		err := h.app.Services.DataSources.Remove(r.Context(), domain.TenantID(tenantId), domain.DataSourceID(sourceId))
+		err := h.app.Services.DataSources.Remove(r.Context(), tenantID, domain.DataSourceID(sourceID))
 		resultChan <- result[any]{nil, err}
 	}()
 
@@ -348,13 +348,13 @@ func (h *handlers) removeDataSource(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getDataSourceLookup(w http.ResponseWriter, r *http.Request) {
-	tenantId := r.PathValue("tenantId")
-	sourceId := r.PathValue("dataSourceId")
+	tenantID := h.getTenantIDPathValue(r)
+	sourceID := r.PathValue("dataSourceId")
 	resultChan := make(chan result[[]*domain.DataSourceLookup], 1)
 
 	go func() {
 		defer close(resultChan)
-		lookups, err := h.app.Services.DataSources.Lookup(r.Context(), domain.TenantID(tenantId), domain.DataSourceID(sourceId))
+		lookups, err := h.app.Services.DataSources.Lookup(r.Context(), tenantID, domain.DataSourceID(sourceID))
 		resultChan <- result[[]*domain.DataSourceLookup]{lookups, err}
 	}()
 
@@ -388,4 +388,9 @@ func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 		common.SendErrorResponse(w, err)
 	}
 
+}
+
+func (h *handlers) getTenantIDPathValue(r *http.Request) domain.TenantID {
+	id := r.PathValue("tenantId")
+	return domain.TenantID(id)
 }
