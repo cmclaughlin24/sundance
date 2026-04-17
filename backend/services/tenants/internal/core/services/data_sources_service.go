@@ -29,7 +29,12 @@ func (s *DataSourcesService) FindById(ctx context.Context, tenantId domain.Tenan
 }
 
 func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
-	ds, _ := domain.NewDataSource("", command.TenantID, command.Type, command.Attributes)
+	ds, err := domain.NewDataSource("", command.TenantID, command.Type, command.Attributes)
+
+	if err != nil {
+		return nil, err
+	}
+
 	dataSource, err := s.repository.DataSources.Upsert(ctx, ds)
 
 	if err != nil {
@@ -40,7 +45,12 @@ func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDa
 }
 
 func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
-	ds, _ := domain.NewDataSource(command.ID, command.TenantID, command.Type, command.Attributes)
+	ds, err := domain.NewDataSource(command.ID, command.TenantID, command.Type, command.Attributes)
+
+	if err != nil {
+		return nil, err
+	}
+
 	dataSource, err := s.repository.DataSources.Upsert(ctx, ds)
 
 	if err != nil {
