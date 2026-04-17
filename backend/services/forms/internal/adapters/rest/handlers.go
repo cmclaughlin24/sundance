@@ -95,6 +95,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 
 	var body dto.UpsertFormRequest
 	if err := common.ReadJsonPayload(r, &body); err != nil {
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -134,6 +135,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 
 	var body dto.UpsertFormRequest
 	if err := common.ReadJsonPayload(r, &body); err != nil {
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -239,6 +241,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 
 	var body dto.CreateVersionDto
 	if err := common.ReadJsonPayload(r, &body); err != nil {
+		h.sendErrorResponse(w, err)
 		return
 	}
 

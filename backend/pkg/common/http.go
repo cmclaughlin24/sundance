@@ -3,7 +3,12 @@ package common
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
+)
+
+var (
+	ErrDecodeJSON = errors.New("failed to parse json request")
 )
 
 type ApiResponse[T any] struct {
@@ -22,7 +27,7 @@ func ReadJsonPayload[T any](r *http.Request, data T) error {
 	decoder := json.NewDecoder(r.Body)
 
 	if err := decoder.Decode(data); err != nil {
-		return err
+		return fmt.Errorf("%w: %w", ErrDecodeJSON, err)
 	}
 
 	return nil
@@ -51,6 +56,12 @@ func SendErrorResponse(w http.ResponseWriter, err error) {
 	}
 
 	switch {
+	case errors.Is(err, ErrDecodeJSON):
+		SendJsonResponse(w, http.StatusBadRequest, ApiErrorResponse{
+			Message:    "Bad Request",
+			Error:      err.Error(),
+			StatusCode: http.StatusBadRequest,
+		})
 	case errors.Is(err, ErrNotFound):
 		SendJsonResponse(w, http.StatusNotFound, ApiErrorResponse{
 			Message:    "Not Found",
