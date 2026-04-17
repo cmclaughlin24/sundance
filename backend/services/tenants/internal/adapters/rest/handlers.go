@@ -88,14 +88,6 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 
 	command, err := ports.NewCreateTenantCommand(body.Name, body.Description)
 	if err != nil {
-		if validate.IsValidationErr(err) {
-			common.SendJsonResponse(w, http.StatusBadRequest, common.ApiErrorResponse{
-				Message:    "Bad Request",
-				Error:      err.Error(),
-				StatusCode: http.StatusBadRequest,
-			})
-		}
-
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -134,14 +126,6 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 
 	command, err := ports.NewUpdateTenantCommand(domain.TenantID(id), body.Name, body.Description)
 	if err != nil {
-		if validate.IsValidationErr(err) {
-			common.SendJsonResponse(w, http.StatusBadRequest, common.ApiErrorResponse{
-				Message:    "Bad Request",
-				Error:      err.Error(),
-				StatusCode: http.StatusBadRequest,
-			})
-		}
-
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -219,7 +203,7 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 
 		dtos := make([]*dto.DataSourceResponse, 0, len(res.data))
 		for _, source := range res.data {
-			dtos = append(dtos, dto.DataSourceToResponseDto(source))
+			dtos = append(dtos, dto.DataSourceToResponse(source))
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, dtos)
@@ -246,7 +230,7 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dto.DataSourceToResponseDto(res.data))
+		common.SendJsonResponse(w, http.StatusOK, dto.DataSourceToResponse(res.data))
 	}
 }
 
@@ -289,7 +273,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 
 		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[dto.DataSourceResponse]{
 			Message: "Successfully created!",
-			Data:    *dto.DataSourceToResponseDto(res.data),
+			Data:    *dto.DataSourceToResponse(res.data),
 		})
 	}
 }
@@ -328,13 +312,13 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			h.sendErrorResponse(w, err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dto.DataSourceResponse]{
 			Message: "Successfully updated!",
-			Data:    *dto.DataSourceToResponseDto(res.data),
+			Data:    *dto.DataSourceToResponse(res.data),
 		})
 	}
 }

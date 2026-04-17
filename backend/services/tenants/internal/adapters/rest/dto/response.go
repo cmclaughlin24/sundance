@@ -33,7 +33,7 @@ type DataSourceResponse struct {
 	UpdatedAt  time.Time             `json:"updatedAt"`
 }
 
-func DataSourceToResponseDto(source *domain.DataSource) *DataSourceResponse {
+func DataSourceToResponse(source *domain.DataSource) *DataSourceResponse {
 	return &DataSourceResponse{
 		ID:         source.ID,
 		TenantID:   source.TenantID,

@@ -51,13 +51,13 @@ func NewUpdateTenantCommand(id domain.TenantID, name, description string) (*Upda
 }
 
 type baseDataSourceCommand struct {
-	TenantID domain.TenantID       `validate:"required"`
-	Type     domain.DataSourceType `validate:"oneof=static scheduled query"`
+	TenantID   domain.TenantID             `validate:"required"`
+	Type       domain.DataSourceType       `validate:"oneof=static scheduled query"`
+	Attributes domain.DataSourceAttributes `validate:"required"`
 }
 
 type CreateDataSourceCommand struct {
 	baseDataSourceCommand
-	Attributes domain.DataSourceAttributes
 }
 
 func NewCreateDataSourceCommand(
@@ -67,10 +67,10 @@ func NewCreateDataSourceCommand(
 ) (*CreateDataSourceCommand, error) {
 	command := &CreateDataSourceCommand{
 		baseDataSourceCommand: baseDataSourceCommand{
-			TenantID: tenantId,
-			Type:     sourceType,
+			TenantID:   tenantId,
+			Type:       sourceType,
+			Attributes: attr,
 		},
-		Attributes: attr,
 	}
 
 	if err := validate.ValidateStruct(command); err != nil {
@@ -82,8 +82,7 @@ func NewCreateDataSourceCommand(
 
 type UpdateDataSourceCommand struct {
 	baseDataSourceCommand
-	ID         domain.DataSourceID
-	Attributes domain.DataSourceAttributes
+	ID domain.DataSourceID `validate:"required"`
 }
 
 func NewUpdateDataSourceCommand(
@@ -95,10 +94,10 @@ func NewUpdateDataSourceCommand(
 	command := &UpdateDataSourceCommand{
 		ID: id,
 		baseDataSourceCommand: baseDataSourceCommand{
-			TenantID: tenantId,
-			Type:     sourceType,
+			TenantID:   tenantId,
+			Type:       sourceType,
+			Attributes: attr,
 		},
-		Attributes: attr,
 	}
 
 	if err := validate.ValidateStruct(command); err != nil {
