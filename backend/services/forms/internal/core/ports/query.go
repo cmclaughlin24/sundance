@@ -4,41 +4,48 @@ import (
 	"github.com/cmclaughlin24/sundance/forms/internal/core/domain"
 )
 
+type baseFindQuery struct {
+	FormID   domain.FormID `validate:"required"`
+	TenantID string        `validate:"required"`
+}
+
 type FindByIDQuery struct {
-	FormID   domain.FormID
-	TenantID string
+	baseFindQuery
 }
 
 func NewFindByIDQuery(formID domain.FormID, tenantID string) *FindByIDQuery {
 	return &FindByIDQuery{
-		FormID:   formID,
-		TenantID: tenantID,
+		baseFindQuery{
+			FormID:   formID,
+			TenantID: tenantID,
+		},
 	}
-
 }
 
 type FindVersionsQuery struct {
-	FormID   domain.FormID
-	TenantID string
+	baseFindQuery
 }
 
 func NewFindVersionsQuery(formID domain.FormID, tenantID string) *FindVersionsQuery {
 	return &FindVersionsQuery{
-		FormID:   formID,
-		TenantID: tenantID,
+		baseFindQuery{
+			FormID:   formID,
+			TenantID: tenantID,
+		},
 	}
 }
 
 type FindVersionByIDQuery struct {
-	FormID    domain.FormID
-	VersionID domain.VersionID
-	TenantID  string
+	baseFindQuery
+	VersionID domain.VersionID `validate:"required"`
 }
 
 func NewFindVersionByIDQuery(formID domain.FormID, tenantID string, versionID domain.VersionID) *FindVersionByIDQuery {
 	return &FindVersionByIDQuery{
-		FormID:    formID,
+		baseFindQuery: baseFindQuery{
+			FormID:   formID,
+			TenantID: tenantID,
+		},
 		VersionID: versionID,
-		TenantID:  tenantID,
 	}
 }

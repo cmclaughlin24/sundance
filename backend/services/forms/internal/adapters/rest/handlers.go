@@ -326,6 +326,7 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 	formID := h.getFormIdPathValue(r)
 	versionID := h.getVersionIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
+	// FIXME: Remove temporary placeholder for user ID.
 	command := ports.NewPublishVersionCommand(formID, tenantID, versionID, "placeholder")
 
 	go func() {
@@ -360,6 +361,7 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 	formId := h.getFormIdPathValue(r)
 	versionId := h.getVersionIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
+	// FIXME: Remove temporary placeholder for user ID.
 	command := ports.NewRetireVersionCommand(formId, tenantID, versionId, "placeholder")
 
 	go func() {
