@@ -2,27 +2,27 @@ package dto
 
 import "github.com/cmclaughlin24/sundance/forms/internal/core/domain"
 
-type PageDto struct {
+type PageRequest struct {
 	Key      string       `json:"key"`
 	Name     string       `json:"name"`
 	Position int          `json:"position"`
-	Sections []SectionDto `json:"sections"`
+	Sections []SectionRequest `json:"sections"`
 }
 
-type PageResponseDto struct {
+type PageResponse struct {
 	ID         domain.PageID                 `json:"id"`
 	Key        string                        `json:"key"`
 	Name       string                        `json:"name"`
 	Position   int                           `json:"position"`
-	Sections   []*SectionResponseDto         `json:"sections"`
-	Conditions []*ConditionalRuleResponseDto `json:"conditions"`
+	Sections   []*SectionResponse         `json:"sections"`
+	Conditions []*ConditionalRuleResponse `json:"conditions"`
 }
 
-func DtoToPages(dto UpdateVersionDto) ([]*domain.Page, error) {
+func RequestToPages(dto UpdateVersionDto) ([]*domain.Page, error) {
 	pages := make([]*domain.Page, 0, len(dto.Pages))
 
 	for _, p := range dto.Pages {
-		page, err := DtoToPage(p)
+		page, err := RequestToPage(p)
 
 		if err != nil {
 			return nil, err
@@ -34,11 +34,11 @@ func DtoToPages(dto UpdateVersionDto) ([]*domain.Page, error) {
 	return pages, nil
 }
 
-func DtoToPage(dto PageDto) (*domain.Page, error) {
+func RequestToPage(dto PageRequest) (*domain.Page, error) {
 	sections := make([]*domain.Section, 0, len(dto.Sections))
 
 	for _, s := range dto.Sections {
-		section, err := DtoToSection(s)
+		section, err := RequestToSection(s)
 
 		if err != nil {
 			return nil, err
@@ -59,19 +59,19 @@ func DtoToPage(dto PageDto) (*domain.Page, error) {
 	return page, nil
 }
 
-func PageToResponseDto(page *domain.Page) *PageResponseDto {
+func PageToResponse(page *domain.Page) *PageResponse {
 	if page == nil {
 		return nil
 	}
 
-	sections := make([]*SectionResponseDto, 0, len(page.Sections))
+	sections := make([]*SectionResponse, 0, len(page.Sections))
 	for _, s := range page.Sections {
-		sections = append(sections, SectionToResponseDto(s))
+		sections = append(sections, SectionToResponse(s))
 	}
 
-	conditions := ConditionalRulesToResponseDtos(page.Conditions...)
+	conditions := ConditionalRulesToResponse(page.Conditions...)
 
-	return &PageResponseDto{
+	return &PageResponse{
 		ID:         page.ID,
 		Key:        page.Key,
 		Name:       page.Name,

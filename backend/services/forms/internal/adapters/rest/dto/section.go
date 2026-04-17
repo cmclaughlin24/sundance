@@ -2,27 +2,27 @@ package dto
 
 import "github.com/cmclaughlin24/sundance/forms/internal/core/domain"
 
-type SectionDto struct {
+type SectionRequest struct {
 	Key      string     `json:"key"`
 	Name     string     `json:"name"`
 	Position int        `json:"position"`
-	Fields   []FieldDto `json:"fields"`
+	Fields   []FieldRequest `json:"fields"`
 }
 
-type SectionResponseDto struct {
+type SectionResponse struct {
 	ID         domain.SectionID              `json:"id"`
 	Key        string                        `json:"key"`
 	Name       string                        `json:"name"`
 	Position   int                           `json:"position"`
-	Fields     []*FieldResponseDto           `json:"fields"`
-	Conditions []*ConditionalRuleResponseDto `json:"conditions"`
+	Fields     []*FieldResponse           `json:"fields"`
+	Conditions []*ConditionalRuleResponse `json:"conditions"`
 }
 
-func DtoToSection(dto SectionDto) (*domain.Section, error) {
+func RequestToSection(dto SectionRequest) (*domain.Section, error) {
 	fields := make([]*domain.Field, 0, len(dto.Fields))
 
 	for _, f := range dto.Fields {
-		field, err := DtoToField(f)
+		field, err := RequestToField(f)
 
 		if err != nil {
 			return nil, err
@@ -43,19 +43,19 @@ func DtoToSection(dto SectionDto) (*domain.Section, error) {
 	return section, nil
 }
 
-func SectionToResponseDto(section *domain.Section) *SectionResponseDto {
+func SectionToResponse(section *domain.Section) *SectionResponse {
 	if section == nil {
 		return nil
 	}
 
-	fields := make([]*FieldResponseDto, 0, len(section.Fields))
+	fields := make([]*FieldResponse, 0, len(section.Fields))
 	for _, f := range section.Fields {
-		fields = append(fields, FieldToResponseDto(f))
+		fields = append(fields, FieldToResponse(f))
 	}
 
-	conditions := ConditionalRulesToResponseDtos(section.Conditions...)
+	conditions := ConditionalRulesToResponse(section.Conditions...)
 
-	return &SectionResponseDto{
+	return &SectionResponse{
 		ID:         section.ID,
 		Key:        section.Key,
 		Name:       section.Name,

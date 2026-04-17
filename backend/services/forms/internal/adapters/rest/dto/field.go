@@ -2,7 +2,7 @@ package dto
 
 import "github.com/cmclaughlin24/sundance/forms/internal/core/domain"
 
-type FieldDto struct {
+type FieldRequest struct {
 	Key        string `json:"key"`
 	Name       string `json:"name"`
 	FieldType  string `json:"fieldType"`
@@ -10,17 +10,17 @@ type FieldDto struct {
 	Attributes any    `json:"attributes"`
 }
 
-type FieldResponseDto struct {
+type FieldResponse struct {
 	ID         domain.FieldID                `json:"id"`
 	Key        string                        `json:"key"`
 	Name       string                        `json:"name"`
 	FieldType  string                        `json:"fieldType"`
 	Position   int                           `json:"position"`
-	Conditions []*ConditionalRuleResponseDto `json:"conditions"`
+	Conditions []*ConditionalRuleResponse `json:"conditions"`
 }
 
-func DtoToField(dto FieldDto) (*domain.Field, error) {
-	attributes, err := attributesFromDto(domain.FieldType(dto.FieldType), dto.Attributes)
+func RequestToField(dto FieldRequest) (*domain.Field, error) {
+	attributes, err := attributesFromRequest(domain.FieldType(dto.FieldType), dto.Attributes)
 
 	if err != nil {
 		return nil, err
@@ -36,14 +36,14 @@ func DtoToField(dto FieldDto) (*domain.Field, error) {
 	)
 }
 
-func FieldToResponseDto(field *domain.Field) *FieldResponseDto {
+func FieldToResponse(field *domain.Field) *FieldResponse {
 	if field == nil {
 		return nil
 	}
 
-	conditions := ConditionalRulesToResponseDtos(field.Conditions...)
+	conditions := ConditionalRulesToResponse(field.Conditions...)
 
-	return &FieldResponseDto{
+	return &FieldResponse{
 		ID:         field.ID,
 		Key:        field.Key,
 		Name:       field.Name,

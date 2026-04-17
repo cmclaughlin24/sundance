@@ -6,12 +6,12 @@ import (
 	"github.com/cmclaughlin24/sundance/forms/internal/core/domain"
 )
 
-type UpsertFormDto struct {
+type UpsertFormRequest struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
 
-type FormResponseDto struct {
+type FormResponse struct {
 	ID          domain.FormID `json:"id"`
 	TenantID    string        `json:"tenantId"`
 	Name        string        `json:"name"`
@@ -20,12 +20,12 @@ type FormResponseDto struct {
 	UpdatedAt   time.Time     `json:"updatedAt"`
 }
 
-func FormToResponseDto(form *domain.Form) *FormResponseDto {
+func FormToResponse(form *domain.Form) *FormResponse {
 	if form == nil {
 		return nil
 	}
 
-	return &FormResponseDto{
+	return &FormResponse{
 		ID:          form.ID,
 		TenantID:    form.TenantID,
 		Name:        form.Name,

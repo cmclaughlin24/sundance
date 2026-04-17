@@ -43,9 +43,9 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]*dto.FormResponseDto, 0, len(res.data))
+		dtos := make([]*dto.FormResponse, 0, len(res.data))
 		for _, form := range res.data {
-			dtos = append(dtos, dto.FormToResponseDto(form))
+			dtos = append(dtos, dto.FormToResponse(form))
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, dtos)
@@ -84,7 +84,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dto.FormToResponseDto(res.data))
+		common.SendJsonResponse(w, http.StatusOK, dto.FormToResponse(res.data))
 	}
 }
 
@@ -97,7 +97,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 
 	resultChan := make(chan result[*domain.Form], 1)
 
-	var body dto.UpsertFormDto
+	var body dto.UpsertFormRequest
 	if err := common.ReadJsonPayload(r, &body); err != nil {
 		return
 	}
@@ -123,9 +123,9 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[*dto.FormResponseDto]{
+		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[*dto.FormResponse]{
 			Message: "Successfully created!",
-			Data:    dto.FormToResponseDto(res.data),
+			Data:    dto.FormToResponse(res.data),
 		})
 	}
 }
@@ -140,7 +140,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 	formID := h.getFormIdPathValue(r)
 	resultChan := make(chan result[*domain.Form], 1)
 
-	var body dto.UpsertFormDto
+	var body dto.UpsertFormRequest
 	if err := common.ReadJsonPayload(r, &body); err != nil {
 		return
 	}
@@ -166,9 +166,9 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[*dto.FormResponseDto]{
+		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[*dto.FormResponse]{
 			Message: "Successfully updated!",
-			Data:    dto.FormToResponseDto(res.data),
+			Data:    dto.FormToResponse(res.data),
 		})
 	}
 }
@@ -206,7 +206,7 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 
 		dtos := make([]*dto.VersionResponseDto, 0, len(res.data))
 		for _, v := range res.data {
-			dtos = append(dtos, dto.VersionToResponseDto(v))
+			dtos = append(dtos, dto.VersionToResponse(v))
 		}
 
 		common.SendJsonResponse(w, http.StatusOK, dtos)
@@ -245,7 +245,7 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dto.VersionToResponseDto(res.data))
+		common.SendJsonResponse(w, http.StatusOK, dto.VersionToResponse(res.data))
 	}
 }
 
@@ -287,7 +287,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 
 		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[*dto.VersionResponseDto]{
 			Message: "Successfully created!",
-			Data:    dto.VersionToResponseDto(res.data),
+			Data:    dto.VersionToResponse(res.data),
 		})
 	}
 }
@@ -309,7 +309,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pages, err := dto.DtoToPages(body)
+	pages, err := dto.RequestToPages(body)
 	if err != nil {
 		common.SendErrorResponse(w, err)
 		return
@@ -338,7 +338,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 
 		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[*dto.VersionResponseDto]{
 			Message: "Successfully updated!",
-			Data:    dto.VersionToResponseDto(res.data),
+			Data:    dto.VersionToResponse(res.data),
 		})
 	}
 }

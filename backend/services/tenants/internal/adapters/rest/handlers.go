@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
@@ -40,7 +41,7 @@ func (h *handlers) getTenants(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -68,7 +69,7 @@ func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -79,9 +80,9 @@ func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Tenant], 1)
 
-	var body dto.UpsertTenantRequest
+	var body dto.TenantRequest
 	if err := common.ReadJsonPayload(r, &body); err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -95,7 +96,7 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -110,7 +111,7 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -125,9 +126,9 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("tenantId")
 	resultChan := make(chan result[*domain.Tenant], 1)
 
-	var body dto.UpsertTenantRequest
+	var body dto.TenantRequest
 	if err := common.ReadJsonPayload(r, &body); err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -141,7 +142,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -156,7 +157,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -182,7 +183,7 @@ func (h *handlers) removeTenant(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -195,7 +196,7 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 
 	query, err := ports.NewListDataSourceQuery(domain.TenantID(tenantId))
 	if err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -212,7 +213,7 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -241,7 +242,7 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -253,23 +254,21 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantId := r.PathValue("tenantId")
 	resultChan := make(chan result[*domain.DataSource], 1)
 
-	var body dto.UpsertDataSourceRequest
+	var body dto.DataSourceRequest
 	if err := common.ReadJsonPayload(r, &body); err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
-	command, err := ports.NewCreateDataSourceCommand(domain.TenantID(tenantId), body.Type, body.Attributes)
+	attributes, err := dto.RequestToDataSourceAttributes(body.Type, body.Attributes)
 	if err != nil {
-		if validate.IsValidationErr(err) {
-			common.SendJsonResponse(w, http.StatusBadRequest, common.ApiErrorResponse{
-				Message:    "Bad Request",
-				Error:      err.Error(),
-				StatusCode: http.StatusBadRequest,
-			})
-		}
+		h.sendErrorResponse(w, err)
+		return
+	}
 
-		common.SendErrorResponse(w, err)
+	command, err := ports.NewCreateDataSourceCommand(domain.TenantID(tenantId), body.Type, attributes)
+	if err != nil {
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -284,7 +283,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -300,23 +299,21 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 	sourceId := r.PathValue("dataSourceId")
 	resultChan := make(chan result[*domain.DataSource], 1)
 
-	var body dto.UpsertDataSourceRequest
+	var body dto.DataSourceRequest
 	if err := common.ReadJsonPayload(r, &body); err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
-	command, err := ports.NewUpdateDataSourceCommand(domain.DataSourceID(sourceId), domain.TenantID(tenantId), body.Type, body.Attributes)
+	attributes, err := dto.RequestToDataSourceAttributes(body.Type, body.Attributes)
 	if err != nil {
-		if validate.IsValidationErr(err) {
-			common.SendJsonResponse(w, http.StatusBadRequest, common.ApiErrorResponse{
-				Message:    "Bad Request",
-				Error:      err.Error(),
-				StatusCode: http.StatusBadRequest,
-			})
-		}
+		h.sendErrorResponse(w, err)
+		return
+	}
 
-		common.SendErrorResponse(w, err)
+	command, err := ports.NewUpdateDataSourceCommand(domain.DataSourceID(sourceId), domain.TenantID(tenantId), body.Type, attributes)
+	if err != nil {
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -331,7 +328,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, err)
 			return
 		}
 
@@ -358,7 +355,7 @@ func (h *handlers) removeDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -382,7 +379,7 @@ func (h *handlers) getDataSourceLookup(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -393,4 +390,18 @@ func (h *handlers) getDataSourceLookup(w http.ResponseWriter, r *http.Request) {
 
 		common.SendJsonResponse(w, http.StatusOK, dtos)
 	}
+}
+
+func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
+	switch {
+	case validate.IsValidationErr(err) || errors.Is(err, dto.ErrDataSourceAttrParse):
+		common.SendJsonResponse(w, http.StatusBadRequest, common.ApiErrorResponse{
+			Message:    "Bad Request",
+			Error:      err.Error(),
+			StatusCode: http.StatusBadRequest,
+		})
+	default:
+		common.SendErrorResponse(w, err)
+	}
+
 }

@@ -27,7 +27,7 @@ var attributeParsers = map[domain.FieldType]attributeParser{
 	},
 }
 
-func attributesFromDto(fieldType domain.FieldType, raw any) (domain.FieldAttributes, error) {
+func attributesFromRequest(fieldType domain.FieldType, raw any) (domain.FieldAttributes, error) {
 	if fieldType == "" {
 		return nil, errors.New("field type is required")
 	}

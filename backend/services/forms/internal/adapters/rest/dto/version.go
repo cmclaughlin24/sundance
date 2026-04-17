@@ -9,7 +9,7 @@ import (
 type CreateVersionDto struct{}
 
 type UpdateVersionDto struct {
-	Pages []PageDto `json:"pages"`
+	Pages []PageRequest `json:"pages"`
 }
 
 type VersionResponseDto struct {
@@ -23,17 +23,17 @@ type VersionResponseDto struct {
 	RetiredAt     time.Time            `json:"retiredAt"`
 	CreatedAt     time.Time            `json:"createdAt"`
 	UpdatedAt     time.Time            `json:"updatedAt"`
-	Pages         []*PageResponseDto   `json:"pages"`
+	Pages         []*PageResponse   `json:"pages"`
 }
 
-func VersionToResponseDto(version *domain.Version) *VersionResponseDto {
+func VersionToResponse(version *domain.Version) *VersionResponseDto {
 	if version == nil {
 		return nil
 	}
 
-	pages := make([]*PageResponseDto, 0, len(version.Pages))
+	pages := make([]*PageResponse, 0, len(version.Pages))
 	for _, p := range version.Pages {
-		pages = append(pages, PageToResponseDto(p))
+		pages = append(pages, PageToResponse(p))
 	}
 
 	return &VersionResponseDto{

@@ -2,14 +2,14 @@ package dto
 
 import "github.com/cmclaughlin24/sundance/forms/internal/core/domain"
 
-type ConditionalRuleResponseDto struct {
+type ConditionalRuleResponse struct {
 	ID domain.ConditionalRuleID `json:"id"`
 }
 
-func ConditionalRulesToResponseDtos(rules ...*domain.ConditionalRule) []*ConditionalRuleResponseDto {
-	conditions := make([]*ConditionalRuleResponseDto, 0, len(rules))
+func ConditionalRulesToResponse(rules ...*domain.ConditionalRule) []*ConditionalRuleResponse {
+	conditions := make([]*ConditionalRuleResponse, 0, len(rules))
 	for _, c := range rules {
-		conditions = append(conditions, &ConditionalRuleResponseDto{
+		conditions = append(conditions, &ConditionalRuleResponse{
 			ID: c.ID,
 		})
 	}

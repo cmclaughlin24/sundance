@@ -1,6 +1,6 @@
 package domain
 
-type FieldAttributes interface{}
+type FieldAttributes any
 
 type BaseFieldAttributes struct {
 	IsReadOnly bool
