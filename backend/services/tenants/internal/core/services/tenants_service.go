@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/tenants/internal/core/ports"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
 
 type TenantsService struct {

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/tenants/internal/strategy"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/strategy"
 )
 
 var (

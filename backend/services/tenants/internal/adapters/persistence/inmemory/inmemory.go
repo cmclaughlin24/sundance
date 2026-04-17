@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/database"
-	"github.com/cmclaughlin24/sundance/tenants/internal/core/ports"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
 
 func Bootstrap(logger *log.Logger) *ports.Repository {

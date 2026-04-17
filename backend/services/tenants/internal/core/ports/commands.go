@@ -1,8 +1,8 @@
 package ports
 
 import (
-	"github.com/cmclaughlin24/sundance/tenants/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/tenants/internal/validate"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/validate"
 )
 
 type baseTenantCommand struct {

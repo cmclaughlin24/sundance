@@ -3,7 +3,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/tenants/internal/core"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 )
 
 func NewRoutes(app *core.Application) http.Handler {

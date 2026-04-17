@@ -1,4 +1,4 @@
-module github.com/cmclaughlin24/sundance/tenants
+module github.com/cmclaughlin24/sundance/backend/services/tenants
 
 go 1.25.3
 
