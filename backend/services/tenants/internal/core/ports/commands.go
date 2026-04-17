@@ -2,7 +2,6 @@ package ports
 
 import (
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/validate"
 )
 
 type baseTenantCommand struct {
@@ -14,19 +13,13 @@ type CreateTenantCommand struct {
 	baseTenantCommand
 }
 
-func NewCreateTenantCommand(name, description string) (*CreateTenantCommand, error) {
-	command := &CreateTenantCommand{
+func NewCreateTenantCommand(name, description string) *CreateTenantCommand {
+	return &CreateTenantCommand{
 		baseTenantCommand{
 			Name:        name,
 			Description: description,
 		},
 	}
-
-	if err := validate.ValidateStruct(command); err != nil {
-		return nil, err
-	}
-
-	return command, nil
 }
 
 type UpdateTenantCommand struct {
@@ -34,20 +27,14 @@ type UpdateTenantCommand struct {
 	baseTenantCommand
 }
 
-func NewUpdateTenantCommand(id domain.TenantID, name, description string) (*UpdateTenantCommand, error) {
-	command := &UpdateTenantCommand{
+func NewUpdateTenantCommand(id domain.TenantID, name, description string) *UpdateTenantCommand {
+	return &UpdateTenantCommand{
 		id,
 		baseTenantCommand{
 			Name:        name,
 			Description: description,
 		},
 	}
-
-	if err := validate.ValidateStruct(command); err != nil {
-		return nil, err
-	}
-
-	return command, nil
 }
 
 type baseDataSourceCommand struct {
@@ -64,20 +51,14 @@ func NewCreateDataSourceCommand(
 	tenantId domain.TenantID,
 	sourceType domain.DataSourceType,
 	attr domain.DataSourceAttributes,
-) (*CreateDataSourceCommand, error) {
-	command := &CreateDataSourceCommand{
+) *CreateDataSourceCommand {
+	return &CreateDataSourceCommand{
 		baseDataSourceCommand: baseDataSourceCommand{
 			TenantID:   tenantId,
 			Type:       sourceType,
 			Attributes: attr,
 		},
 	}
-
-	if err := validate.ValidateStruct(command); err != nil {
-		return nil, err
-	}
-
-	return command, nil
 }
 
 type UpdateDataSourceCommand struct {
@@ -90,8 +71,8 @@ func NewUpdateDataSourceCommand(
 	tenantId domain.TenantID,
 	sourceType domain.DataSourceType,
 	attr domain.DataSourceAttributes,
-) (*UpdateDataSourceCommand, error) {
-	command := &UpdateDataSourceCommand{
+) *UpdateDataSourceCommand {
+	return &UpdateDataSourceCommand{
 		ID: id,
 		baseDataSourceCommand: baseDataSourceCommand{
 			TenantID:   tenantId,
@@ -99,10 +80,4 @@ func NewUpdateDataSourceCommand(
 			Attributes: attr,
 		},
 	}
-
-	if err := validate.ValidateStruct(command); err != nil {
-		return nil, err
-	}
-
-	return command, nil
 }

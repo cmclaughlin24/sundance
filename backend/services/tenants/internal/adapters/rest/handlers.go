@@ -86,11 +86,7 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command, err := ports.NewCreateTenantCommand(body.Name, body.Description)
-	if err != nil {
-		h.sendErrorResponse(w, err)
-		return
-	}
+	command := ports.NewCreateTenantCommand(body.Name, body.Description)
 
 	go func() {
 		defer close(resultChan)
@@ -124,11 +120,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command, err := ports.NewUpdateTenantCommand(tenantID, body.Name, body.Description)
-	if err != nil {
-		h.sendErrorResponse(w, err)
-		return
-	}
+	command := ports.NewUpdateTenantCommand(tenantID, body.Name, body.Description)
 
 	go func() {
 		defer close(resultChan)
@@ -177,13 +169,7 @@ func (h *handlers) removeTenant(w http.ResponseWriter, r *http.Request) {
 
 func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantIDPathValue(r)
-
-	query, err := ports.NewListDataSourceQuery(tenantID)
-	if err != nil {
-		h.sendErrorResponse(w, err)
-		return
-	}
-
+	query := ports.NewListDataSourceQuery(tenantID)
 	resultChan := make(chan result[[]*domain.DataSource], 1)
 
 	go func() {
@@ -250,11 +236,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command, err := ports.NewCreateDataSourceCommand(tenantID, body.Type, attributes)
-	if err != nil {
-		h.sendErrorResponse(w, err)
-		return
-	}
+	command := ports.NewCreateDataSourceCommand(tenantID, body.Type, attributes)
 
 	go func() {
 		defer close(resultChan)
@@ -295,11 +277,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command, err := ports.NewUpdateDataSourceCommand(domain.DataSourceID(sourceID), tenantID, body.Type, attributes)
-	if err != nil {
-		h.sendErrorResponse(w, err)
-		return
-	}
+	command := ports.NewUpdateDataSourceCommand(domain.DataSourceID(sourceID), tenantID, body.Type, attributes)
 
 	go func() {
 		defer close(resultChan)

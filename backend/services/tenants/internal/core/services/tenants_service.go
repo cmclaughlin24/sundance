@@ -6,6 +6,7 @@ import (
 
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/validate"
 )
 
 type TenantsService struct {
@@ -29,6 +30,10 @@ func (s *TenantsService) FindById(ctx context.Context, id domain.TenantID) (*dom
 }
 
 func (s *TenantsService) Create(ctx context.Context, command *ports.CreateTenantCommand) (*domain.Tenant, error) {
+	if err := validate.ValidateStruct(command); err != nil {
+		return nil, err
+	}
+
 	t, err := domain.NewTenant("", command.Name, command.Description)
 
 	if err != nil {
@@ -45,6 +50,10 @@ func (s *TenantsService) Create(ctx context.Context, command *ports.CreateTenant
 }
 
 func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenantCommand) (*domain.Tenant, error) {
+	if err := validate.ValidateStruct(command); err != nil {
+		return nil, err
+	}
+
 	t, err := domain.NewTenant(command.ID, command.Name, command.Description)
 
 	if err != nil {

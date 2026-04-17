@@ -6,6 +6,7 @@ import (
 
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/validate"
 )
 
 type DataSourcesService struct {
@@ -21,6 +22,10 @@ func NewDataSourcesService(logger *log.Logger, repository *ports.Repository) *Da
 }
 
 func (s *DataSourcesService) Find(ctx context.Context, query *ports.ListDataSourceQuery) ([]*domain.DataSource, error) {
+	if err := validate.ValidateStruct(query); err != nil {
+		return nil, err
+	}
+;
 	return s.repository.DataSources.Find(ctx, query.TenantID)
 }
 
@@ -29,6 +34,10 @@ func (s *DataSourcesService) FindById(ctx context.Context, tenantId domain.Tenan
 }
 
 func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
+	if err := validate.ValidateStruct(command); err != nil {
+		return nil, err
+	}
+
 	ds, err := domain.NewDataSource("", command.TenantID, command.Type, command.Attributes)
 
 	if err != nil {
@@ -45,6 +54,10 @@ func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDa
 }
 
 func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
+	if err := validate.ValidateStruct(command); err != nil {
+		return nil, err
+	}
+
 	ds, err := domain.NewDataSource(command.ID, command.TenantID, command.Type, command.Attributes)
 
 	if err != nil {
