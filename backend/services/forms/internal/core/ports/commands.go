@@ -11,19 +11,12 @@ type CreateFormCommand struct {
 	Description string
 }
 
-func NewCreateFormCommand(tenantId, name, description string) (*CreateFormCommand, error) {
-	command := &CreateFormCommand{
+func NewCreateFormCommand(tenantId, name, description string) *CreateFormCommand {
+	return &CreateFormCommand{
 		TenantID:    tenantId,
 		Name:        name,
 		Description: description,
 	}
-
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(command); err != nil {
-		return nil, err
-	}
-
-	return command, nil
 }
 
 type UpdateFormCommand struct {
@@ -33,20 +26,13 @@ type UpdateFormCommand struct {
 	Description string
 }
 
-func NewUpdateFormCommand(id domain.FormID, tenantId, name, description string) (*UpdateFormCommand, error) {
-	command := &UpdateFormCommand{
+func NewUpdateFormCommand(id domain.FormID, tenantId, name, description string) *UpdateFormCommand {
+	return &UpdateFormCommand{
 		ID:          id,
 		TenantID:    tenantId,
 		Name:        name,
 		Description: description,
 	}
-
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(command); err != nil {
-		return nil, err
-	}
-
-	return command, nil
 }
 
 type baseVersionCommand struct {
@@ -60,18 +46,11 @@ type CreateVersionCommand struct {
 	TenantID string
 }
 
-func NewCreateVersionCommand(formId domain.FormID, tenantID string) (*CreateVersionCommand, error) {
-	command := &CreateVersionCommand{
+func NewCreateVersionCommand(formId domain.FormID, tenantID string) *CreateVersionCommand {
+	return &CreateVersionCommand{
 		FormID:   formId,
 		TenantID: tenantID,
 	}
-
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(command); err != nil {
-		return nil, err
-	}
-
-	return command, nil
 }
 
 type UpdateVersionCommand struct {
@@ -102,8 +81,8 @@ type PublishVersionCommand struct {
 	UserID string
 }
 
-func NewPublishVersionCommand(formID domain.FormID, tenantID string, versionID domain.VersionID, userID string) (*PublishVersionCommand, error) {
-	command := &PublishVersionCommand{
+func NewPublishVersionCommand(formID domain.FormID, tenantID string, versionID domain.VersionID, userID string) *PublishVersionCommand {
+	return &PublishVersionCommand{
 		baseVersionCommand: baseVersionCommand{
 			VersionID: versionID,
 			FormID:    formID,
@@ -111,13 +90,6 @@ func NewPublishVersionCommand(formID domain.FormID, tenantID string, versionID d
 		},
 		UserID: userID,
 	}
-
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(command); err != nil {
-		return nil, err
-	}
-
-	return command, nil
 }
 
 type RetireVersionCommand struct {
@@ -125,8 +97,8 @@ type RetireVersionCommand struct {
 	UserID string
 }
 
-func NewRetireVersionCommand(formID domain.FormID, tenantID string, versionID domain.VersionID, userID string) (*RetireVersionCommand, error) {
-	command := &RetireVersionCommand{
+func NewRetireVersionCommand(formID domain.FormID, tenantID string, versionID domain.VersionID, userID string) *RetireVersionCommand {
+	return &RetireVersionCommand{
 		baseVersionCommand: baseVersionCommand{
 			VersionID: versionID,
 			FormID:    formID,
@@ -134,11 +106,4 @@ func NewRetireVersionCommand(formID domain.FormID, tenantID string, versionID do
 		},
 		UserID: userID,
 	}
-
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(command); err != nil {
-		return nil, err
-	}
-
-	return command, nil
 }

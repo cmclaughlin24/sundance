@@ -6,7 +6,7 @@ import (
 
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/validate"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 )
 
 type TenantsService struct {

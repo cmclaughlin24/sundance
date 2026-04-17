@@ -4,23 +4,38 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/forms/internal/core"
+	"github.com/go-chi/chi/v5"
 )
 
 func NewRoutes(app *core.Application) http.Handler {
 	h := newHandlers(app)
-	mux := http.NewServeMux()
+	mux := chi.NewRouter()
 
-	mux.HandleFunc("GET /api/v1/forms", h.getForms)
-	mux.HandleFunc("POST /api/v1/forms", h.createForm)
-	mux.HandleFunc("GET /api/v1/forms/{formId}", h.getForm)
-	mux.HandleFunc("PUT /api/v1/forms/{formId}", h.updateForm)
+	mux.Use(tenantMiddleware)
 
-	mux.HandleFunc("GET /api/v1/forms/{formId}/versions", h.getVersions)
-	mux.HandleFunc("POST /api/v1/forms/{formId}/versions", h.createVersion)
-	mux.HandleFunc("GET /api/v1/forms/{formId}/versions/{versionId}", h.getVersion)
-	mux.HandleFunc("PUT /api/v1/forms/{formId}/versions/{versionId}", h.updateVersion)
-	mux.HandleFunc("POST /api/v1/forms/{formId}/versions/{versionId}/publish", h.publishVersion)
-	mux.HandleFunc("POST /api/v1/forms/{formId}/versions/{versionId}/retire", h.retireVersion)
+	mux.Route("/api/v1", func(routes chi.Router) {
+		routes.Route("/forms", func(formsRoutes chi.Router) {
+			formsRoutes.Get("/", h.getForms)
+			formsRoutes.Post("/", h.createForm)
 
-	return tenantMiddleware(mux)
+			formsRoutes.Route("/{formId}", func(formRoutes chi.Router) {
+				formRoutes.Get("/", h.getForm)
+				formRoutes.Put("/", h.updateForm)
+
+				formRoutes.Route("/versions", func(versionsRoutes chi.Router) {
+					versionsRoutes.Get("/", h.getVersions)
+					versionsRoutes.Post("/", h.createVersion)
+
+					versionsRoutes.Route("/{versionId}", func(versionRoutes chi.Router) {
+						versionRoutes.Get("/", h.getVersion)
+						versionRoutes.Put("/", h.updateVersion)
+						versionRoutes.Post("/publish", h.publishVersion)
+						versionRoutes.Post("/retire", h.retireVersion)
+					})
+				})
+			})
+		})
+	})
+
+	return mux
 }

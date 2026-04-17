@@ -61,12 +61,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	formID := h.getFormIdPathValue(r)
-	query, err := ports.NewFindByIDQuery(formID, tenantID)
-	if err != nil {
-		common.SendErrorResponse(w, err)
-		return
-	}
-
+	query := ports.NewFindByIDQuery(formID, tenantID)
 	resultChan := make(chan result[*domain.Form], 1)
 
 	go func() {
@@ -102,11 +97,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command, err := ports.NewCreateFormCommand(tenantID, body.Name, body.Description)
-	if err != nil {
-		common.SendErrorResponse(w, err)
-		return
-	}
+	command := ports.NewCreateFormCommand(tenantID, body.Name, body.Description)
 
 	go func() {
 		defer close(resultChan)
@@ -145,11 +136,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command, err := ports.NewUpdateFormCommand(formID, tenantID, body.Name, body.Description)
-	if err != nil {
-		common.SendErrorResponse(w, err)
-		return
-	}
+	command := ports.NewUpdateFormCommand(formID, tenantID, body.Name, body.Description)
 
 	go func() {
 		defer close(resultChan)
@@ -181,12 +168,7 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 	}
 
 	formID := h.getFormIdPathValue(r)
-	query, err := ports.NewFindVersionsQuery(formID, tenantID)
-	if err != nil {
-		common.SendErrorResponse(w, err)
-		return
-	}
-
+	query := ports.NewFindVersionsQuery(formID, tenantID)
 	resultChan := make(chan result[[]*domain.Version], 1)
 
 	go func() {
@@ -222,12 +204,7 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 
 	formID := h.getFormIdPathValue(r)
 	versionID := h.getVersionIdPathValue(r)
-	query, err := ports.NewFindVersionByIDQuery(formID, tenantID, versionID)
-	if err != nil {
-		common.SendErrorResponse(w, err)
-		return
-	}
-
+	query := ports.NewFindVersionByIDQuery(formID, tenantID, versionID)
 	resultChan := make(chan result[*domain.Version], 1)
 
 	go func() {
@@ -264,11 +241,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command, err := ports.NewCreateVersionCommand(formID, tenantID)
-	if err != nil {
-		common.SendErrorResponse(w, err)
-		return
-	}
+	command := ports.NewCreateVersionCommand(formID, tenantID)
 
 	go func() {
 		defer close(resultChan)
@@ -353,12 +326,7 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 	formID := h.getFormIdPathValue(r)
 	versionID := h.getVersionIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
-
-	command, err := ports.NewPublishVersionCommand(formID, tenantID, versionID, "placeholder")
-	if err != nil {
-		common.SendErrorResponse(w, err)
-		return
-	}
+	command := ports.NewPublishVersionCommand(formID, tenantID, versionID, "placeholder")
 
 	go func() {
 		defer close(resultChan)
@@ -392,12 +360,7 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 	formId := h.getFormIdPathValue(r)
 	versionId := h.getVersionIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
-
-	command, err := ports.NewRetireVersionCommand(formId, tenantID, versionId, "placeholder")
-	if err != nil {
-		common.SendErrorResponse(w, err)
-		return
-	}
+	command := ports.NewRetireVersionCommand(formId, tenantID, versionId, "placeholder")
 
 	go func() {
 		defer close(resultChan)

@@ -8,6 +8,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/forms/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/forms/internal/core/ports"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 )
 
 type FormsService struct {
@@ -27,6 +28,10 @@ func (s *FormsService) Find(ctx context.Context) ([]*domain.Form, error) {
 }
 
 func (s *FormsService) FindById(ctx context.Context, query *ports.FindByIDQuery) (*domain.Form, error) {
+	if err := validate.ValidateStruct(query); err != nil {
+		return nil, err
+	}
+
 	form, err := s.repository.Forms.FindById(ctx, query.FormID)
 
 	if err != nil {
@@ -41,6 +46,10 @@ func (s *FormsService) FindById(ctx context.Context, query *ports.FindByIDQuery)
 }
 
 func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormCommand) (*domain.Form, error) {
+	if err := validate.ValidateStruct(command); err != nil {
+		return nil, err
+	}
+
 	form, err := domain.NewForm(domain.FormID(""), command.TenantID, command.Name, command.Description)
 
 	if err != nil {
@@ -57,6 +66,10 @@ func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormComm
 }
 
 func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormCommand) (*domain.Form, error) {
+	if err := validate.ValidateStruct(command); err != nil {
+		return nil, err
+	}
+
 	if err := s.isValidAccess(ctx, command.TenantID, command.ID); err != nil {
 		return nil, err
 	}
@@ -81,6 +94,10 @@ func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormComm
 }
 
 func (s *FormsService) FindVersions(ctx context.Context, query *ports.FindVersionsQuery) ([]*domain.Version, error) {
+	if err := validate.ValidateStruct(query); err != nil {
+		return nil, err
+	}
+
 	if err := s.isValidAccess(ctx, query.TenantID, query.FormID); err != nil {
 		return nil, err
 	}
@@ -89,6 +106,10 @@ func (s *FormsService) FindVersions(ctx context.Context, query *ports.FindVersio
 }
 
 func (s *FormsService) FindVersion(ctx context.Context, query *ports.FindVersionByIDQuery) (*domain.Version, error) {
+	if err := validate.ValidateStruct(query); err != nil {
+		return nil, err
+	}
+
 	if err := s.isValidAccess(ctx, query.TenantID, query.FormID); err != nil {
 		return nil, err
 	}
@@ -97,6 +118,10 @@ func (s *FormsService) FindVersion(ctx context.Context, query *ports.FindVersion
 }
 
 func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateVersionCommand) (*domain.Version, error) {
+	if err := validate.ValidateStruct(command); err != nil {
+		return nil, err
+	}
+
 	if err := s.isValidAccess(ctx, command.TenantID, command.FormID); err != nil {
 		return nil, err
 	}
@@ -135,6 +160,10 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 }
 
 func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateVersionCommand) (*domain.Version, error) {
+	if err := validate.ValidateStruct(command); err != nil {
+		return nil, err
+	}
+
 	if err := s.isValidAccess(ctx, command.TenantID, command.FormID); err != nil {
 		return nil, err
 	}
@@ -159,6 +188,10 @@ func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateV
 }
 
 func (s *FormsService) PublishVersion(ctx context.Context, command *ports.PublishVersionCommand) (*domain.Version, error) {
+	if err := validate.ValidateStruct(command); err != nil {
+		return nil, err
+	}
+
 	if err := s.isValidAccess(ctx, command.TenantID, command.FormID); err != nil {
 		return nil, err
 	}
@@ -183,6 +216,10 @@ func (s *FormsService) PublishVersion(ctx context.Context, command *ports.Publis
 }
 
 func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireVersionCommand) (*domain.Version, error) {
+	if err := validate.ValidateStruct(command); err != nil {
+		return nil, err
+	}
+
 	if err := s.isValidAccess(ctx, command.TenantID, command.FormID); err != nil {
 		return nil, err
 	}

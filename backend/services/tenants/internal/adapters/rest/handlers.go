@@ -5,11 +5,11 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/validate"
 )
 
 type result[T any] struct {
