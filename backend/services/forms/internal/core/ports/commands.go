@@ -2,7 +2,6 @@ package ports
 
 import (
 	"github.com/cmclaughlin24/sundance/forms/internal/core/domain"
-	"github.com/go-playground/validator/v10"
 )
 
 type CreateFormCommand struct {
@@ -58,8 +57,8 @@ type UpdateVersionCommand struct {
 	Pages []*domain.Page
 }
 
-func NewUpdateVersionCommand(id domain.VersionID, formId domain.FormID, tenantID string, pages []*domain.Page) (*UpdateVersionCommand, error) {
-	command := &UpdateVersionCommand{
+func NewUpdateVersionCommand(id domain.VersionID, formId domain.FormID, tenantID string, pages []*domain.Page) *UpdateVersionCommand {
+	return &UpdateVersionCommand{
 		baseVersionCommand: baseVersionCommand{
 			VersionID: id,
 			FormID:    formId,
@@ -67,13 +66,6 @@ func NewUpdateVersionCommand(id domain.VersionID, formId domain.FormID, tenantID
 		},
 		Pages: pages,
 	}
-
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(command); err != nil {
-		return nil, err
-	}
-
-	return command, nil
 }
 
 type PublishVersionCommand struct {

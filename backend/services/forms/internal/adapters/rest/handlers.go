@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/forms/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/forms/internal/core"
 	"github.com/cmclaughlin24/sundance/forms/internal/core/domain"
@@ -39,7 +40,7 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -56,7 +57,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenantIDFromContext(r.Context())
 
 	if err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -75,7 +76,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -86,7 +87,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenantIDFromContext(r.Context())
 	if err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -110,7 +111,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -124,7 +125,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenantIDFromContext(r.Context())
 	if err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -149,7 +150,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -163,7 +164,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenantIDFromContext(r.Context())
 	if err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -182,7 +183,7 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -198,7 +199,7 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenantIDFromContext(r.Context())
 	if err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -218,7 +219,7 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -229,7 +230,7 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenantIDFromContext(r.Context())
 	if err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -254,7 +255,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -268,7 +269,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenantIDFromContext(r.Context())
 	if err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -278,21 +279,17 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 
 	var body dto.UpdateVersionDto
 	if err := common.ReadJsonPayload(r, &body); err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
 	pages, err := dto.RequestToPages(body)
 	if err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
-	command, err := ports.NewUpdateVersionCommand(versionID, formID, tenantID, pages)
-	if err != nil {
-		common.SendErrorResponse(w, err)
-		return
-	}
+	command := ports.NewUpdateVersionCommand(versionID, formID, tenantID, pages)
 
 	go func() {
 		defer close(resultChan)
@@ -305,7 +302,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -319,7 +316,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenantIDFromContext(r.Context())
 	if err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -339,7 +336,7 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -353,7 +350,7 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := tenantIDFromContext(r.Context())
 	if err != nil {
-		common.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -373,7 +370,7 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -392,4 +389,18 @@ func (h *handlers) getFormIdPathValue(r *http.Request) domain.FormID {
 func (h *handlers) getVersionIdPathValue(r *http.Request) domain.VersionID {
 	id := r.PathValue("versionId")
 	return domain.VersionID(id)
+}
+
+func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
+	switch {
+	case validate.IsValidationErr(err):
+		common.SendJsonResponse(w, http.StatusBadRequest, common.ApiErrorResponse{
+			Message:    "Bad Request",
+			Error:      err.Error(),
+			StatusCode: http.StatusBadRequest,
+		})
+	default:
+		common.SendErrorResponse(w, err)
+	}
+
 }

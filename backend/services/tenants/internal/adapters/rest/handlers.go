@@ -354,6 +354,11 @@ func (h *handlers) getDataSourceLookup(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *handlers) getTenantIDPathValue(r *http.Request) domain.TenantID {
+	id := r.PathValue("tenantId")
+	return domain.TenantID(id)
+}
+
 func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 	switch {
 	case validate.IsValidationErr(err) || errors.Is(err, dto.ErrDataSourceAttrParse):
@@ -368,7 +373,3 @@ func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 
 }
 
-func (h *handlers) getTenantIDPathValue(r *http.Request) domain.TenantID {
-	id := r.PathValue("tenantId")
-	return domain.TenantID(id)
-}
