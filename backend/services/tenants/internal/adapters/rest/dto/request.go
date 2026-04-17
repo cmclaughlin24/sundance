@@ -3,6 +3,7 @@ package dto
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/strategy"
@@ -49,7 +50,7 @@ func RequestToDataSourceAttributes(dataSourceType domain.DataSourceType, raw any
 	strategy, err := attributeParserStrategies.Get(dataSourceType)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrDataSourceAttrParse, err)
 	}
 
 	return strategy(attrBytes)
