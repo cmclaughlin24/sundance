@@ -12,7 +12,6 @@ type Tenant struct {
 	Description string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	DataSources []*DataSource
 }
 
 func NewTenant(id TenantID, name, description string) (*Tenant, error) {
