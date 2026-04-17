@@ -57,7 +57,8 @@ func (r *InmemoryDataSourceRepository) FindById(ctx context.Context, tenantID do
 func (r *InmemoryDataSourceRepository) Exists(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) (bool, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
-	_, exists := r.dataSources[string(id)]
+	key := getDataSourceKey(tenantID, id)
+	_, exists := r.dataSources[key]
 	return exists, nil
 }
 

@@ -26,6 +26,24 @@
 
 12. ~~Services silently discard `domain.New*` constructor errors~~ (Tenants #2) -- Both `tenants_service.go` and `data_sources_service.go` now properly check and return errors from `domain.NewTenant` and `domain.NewDataSource`.
 
+## Issues Resolved Since 4/17 Review
+
+13. ~~Handlers swallow JSON parse errors~~ (Forms #1) -- `createForm` (`handlers.go:97-100`), `updateForm` (`handlers.go:137-140`), and `createVersion` (`handlers.go:243-246`) now call `h.sendErrorResponse(w, err)` when `ReadJsonPayload` fails, instead of returning without writing an HTTP response.
+
+14. ~~Forms commands have no `validate` struct tags~~ (Forms #18) -- All command structs now have validation tags: `baseFormCommand` has `validate:"required"` on `TenantID`, `validate:"required,max=75"` on `Name`, `validate:"required,max=250"` on `Description`; `baseVersionCommand` has `validate:"required"` on `FormID` and `TenantID`; `PublishVersionCommand` and `RetireVersionCommand` have `validate:"required"` on `VersionID` and `UserID`.
+
+15. ~~`validator.New()` created per `NewUpdateVersionCommand` call~~ (Forms #19) -- Command constructors no longer perform validation themselves. Validation is handled in the service layer via `validate.ValidateStruct(command)`, which uses the package-level singleton validator in `pkg/common/validate/validate.go`.
+
+16. ~~Route bug: `removeDataSource` mapped to `PUT` instead of `DELETE`~~ (Tenants #42) -- `routes.go:31` now correctly uses `dataSourceRoutes.Delete("/", h.removeDataSource)`.
+
+17. ~~`ErrDataSourceAttrParse` is defined but never returned~~ (Tenants #44, partially) -- `RequestToDataSourceAttributes` now wraps errors from `strategies.Get()` (unknown type) with `ErrDataSourceAttrParse` (`request.go:53`). However, errors from `parseAttributes` (JSON unmarshal failures) are still returned unwrapped. See remaining issue #41 below.
+
+18. ~~JSON parse errors map to 500 instead of 400~~ (Tenants #43) -- `ReadJsonPayload` in `pkg/common/http.go` now wraps `json.Decoder` errors with `ErrDecodeJSON` (`http.go:30`), and `SendErrorResponse` maps `ErrDecodeJSON` to HTTP 400 (`http.go:59-64`). The tenants `sendErrorResponse` delegates unmatched errors to `common.SendErrorResponse`, so JSON parse errors from `ReadJsonPayload` now correctly produce 400 responses.
+
+19. ~~No `json.Decoder` error mapping~~ (Shared #72) -- `ReadJsonPayload` wraps all decode errors with `ErrDecodeJSON` via `fmt.Errorf("%w: %w", ErrDecodeJSON, err)` (`http.go:30`), and `SendErrorResponse` checks for `ErrDecodeJSON` as its first case (`http.go:59`). This resolves the global JSON parse-to-500 issue for any service that uses the shared `ReadJsonPayload`/`SendErrorResponse` pipeline.
+
+20. ~~`Exists` key mismatch in `data_sources_repository.go`~~ (New from this review) -- `Exists` was looking up by `string(id)` instead of the composite `getDataSourceKey(tenantID, id)` key used by all other methods. Fixed in the working tree to use the composite key (`data_sources_repository.go:60`).
+
 ---
 
 ## Remaining Issues
@@ -34,53 +52,49 @@
 
 #### Bugs
 
-1. **Handlers swallow JSON parse errors** (`handlers.go:96-98`, `135-137`, `240-242`) -- `createForm`, `updateForm`, and `createVersion` `return` without writing an HTTP response when `ReadJsonPayload` fails. The client receives an empty response with a 200 status code. `updateVersion` (`handlers.go:280-283`) correctly calls `SendErrorResponse`. *(Partially unresolved from 4/13 #3.)*
-
-2. **`publishVersion` and `retireVersion` use hardcoded `"placeholder"` user ID** (`handlers.go:329`, `363`) -- The publish/retire state transitions record a fake user. Not a real auth integration.
+1. **`publishVersion` and `retireVersion` use hardcoded `"placeholder"` user ID** (`handlers.go:329-330`, `364-365`) -- The publish/retire state transitions record a fake user. Both have `// FIXME: Remove temporary placeholder for user ID.` comments but remain unresolved. Not a real auth integration. *(Unresolved from 4/13 #3, 4/17 #2.)*
 
 #### Architectural
 
-3. **`core.go` imports from the adapters layer** (`core.go:7`, `13`) -- `ApplicationSettings` references `persistence.PersistenceSettings`, violating the hexagonal dependency rule. The core package should not depend on adapter types. Configuration should be defined in core or injected as plain values. *(Unresolved from 4/13 #7.)*
+2. **`core.go` imports from the adapters layer** (`core.go:7`) -- `ApplicationSettings` references `persistence.PersistenceSettings`, and `NewApplication` calls `persistence.Bootstrap` directly. The core package should not depend on adapter types. Configuration should be defined in core or injected as plain values. *(Unresolved from 4/13 #7.)*
 
-4. **Services receive the entire `Repository` struct** (`form_service.go`) -- The form service gets access to `Database` and the full repository aggregate rather than just the `FormsRepository` interface. Violates Interface Segregation. *(Unresolved from 4/13 #8.)*
+3. **Services receive the entire `Repository` struct** (`form_service.go:14-17`) -- The form service holds `*ports.Repository` which includes `Database` and the full repository aggregate rather than just the `FormsRepository` interface. Violates Interface Segregation. *(Unresolved from 4/13 #8.)*
 
-5. **REST handlers hold a reference to the full `Application`** (`handlers.go:18-20`) -- The `handlers` struct takes `*core.Application` rather than just `*ports.Services` or the specific service interface, giving the HTTP layer access to the logger, repository, and any future internal state. *(Unresolved from 4/13 #9.)*
+4. **REST handlers hold a reference to the full `Application`** (`handlers.go:19-21`) -- The `handlers` struct takes `*core.Application` rather than just `*ports.Services` or the specific service interface, giving the HTTP layer access to the logger, repository, and any future internal state. *(Unresolved from 4/13 #9.)*
 
-6. **`Find()` has no tenant filtering** (`form_service.go`) -- Returns all forms across all tenants. Every other query enforces tenant isolation. *(Unresolved from 4/13 #10.)*
+5. **`Find()` has no tenant filtering** (`form_service.go:26-28`) -- Returns all forms across all tenants. Every other query enforces tenant isolation. *(Unresolved from 4/13 #10.)*
 
-7. **Aggregate boundaries unclear** -- `Form` has no `Versions` field; `Version` can be loaded/modified independently without going through `Form`. From a DDD perspective, if `Version` is within the `Form` aggregate, mutations should go through the aggregate root. If it's its own aggregate, the relationship should be modeled as a reference only. *(Unresolved from 4/13 #11.)*
+6. **Aggregate boundaries unclear** -- `Form` has no `Versions` field; `Version` can be loaded/modified independently without going through `Form`. From a DDD perspective, if `Version` is within the `Form` aggregate, mutations should go through the aggregate root. If it's its own aggregate, the relationship should be modeled as a reference only. *(Unresolved from 4/13 #11.)*
 
-8. **Unnecessary goroutine/channel pattern in every handler** (`handlers.go`, all 10 handlers) -- `net/http` already runs each handler in its own goroutine. The extra goroutine + buffered channel + `select` pattern adds allocation overhead and complexity with no concurrency benefit. *(Unresolved from 4/13 #25.)*
+7. **Unnecessary goroutine/channel pattern in every handler** (`handlers.go`, all 10 handlers) -- `net/http` already runs each handler in its own goroutine. The extra goroutine + buffered channel + `select` pattern adds allocation overhead and complexity with no concurrency benefit. *(Unresolved from 4/13 #25.)*
 
-9. **`time.Now()` called directly in the repository layer** (`forms_repository.go`) -- Couples persistence to wall-clock time, making deterministic tests impossible. Should be injected via a `Clock` interface or function. *(Unresolved from 4/13 #26.)*
+8. **`time.Now()` called directly in the repository and service layers** (`forms_repository.go:59`, `83`; `form_service.go` in `PublishVersion` and `RetireVersion`) -- Couples persistence and business logic to wall-clock time, making deterministic tests impossible. Should be injected via a `Clock` interface or function. *(Expanded from 4/13 #26.)*
 
 #### Missing Functionality
 
-10. **Zero test files** in the entire forms service. *(Unresolved from 4/13 #12.)*
+9. **Zero test files** in the entire forms service. *(Unresolved from 4/13 #12.)*
 
-11. **Domain validation unimplemented** (`form.go`, `field.go`, `page.go`, `section.go`) -- All entity constructors contain `// TODO: Implement domain specific validation`. *(Unresolved from 4/13 #13.)*
+10. **Domain validation unimplemented** (`form.go`, `field.go`, `page.go`, `section.go`, `version.go`) -- All entity constructors contain `// TODO: Implement domain specific validation`. *(Unresolved from 4/13 #13.)*
 
-12. **No domain events** for cross-service communication. *(Unresolved from 4/13 #14.)*
+11. **No domain events** for cross-service communication. *(Unresolved from 4/13 #14.)*
 
-13. **Incomplete error-to-HTTP mapping** -- `ErrUnauthorized`, `ErrMissingTenantID`, and domain errors (`ErrVersionLocked`, `ErrInvalidVersion`, etc.) all fall through to the default 500 case in `common.SendErrorResponse`. *(Unresolved from 4/13 #15.)*
+12. **Incomplete error-to-HTTP mapping** -- `ErrUnauthorized`, `ErrMissingTenantID`, and domain errors (`ErrVersionLocked`, `ErrInvalidVersion`, etc.) all fall through to the default 500 case in `common.SendErrorResponse`. *(Unresolved from 4/13 #15.)*
 
-14. **No real authentication** -- `X-Tenant-ID` is blindly trusted. *(Unresolved from 4/13 #16.)*
+13. **No real authentication** -- `X-Tenant-ID` is blindly trusted. *(Unresolved from 4/13 #16.)*
 
-15. **No `Delete` operation for forms.** *(Unresolved from 4/13 #17.)*
+14. **No `Delete` operation for forms.** *(Unresolved from 4/13 #17.)*
 
-16. **`ConditionalRule` is an empty stub** (`conditional_rule.go`) -- Contains only an ID; no rule type, conditions, or actions. *(Unresolved from 4/13 #18.)*
+15. **`ConditionalRule` is an empty stub** (`conditional_rule.go`) -- Contains only an ID; no rule type, conditions, or actions. *(Unresolved from 4/13 #18.)*
 
 #### Code Quality
 
-17. **`FieldAttributes` is typed as `any`** (`field_attributes.go:3`) -- No type safety; any value can be assigned. Should use a sealed interface with a marker method (e.g., `isFieldAttributes()`) to restrict implementations to known types. *(Unresolved from 4/13 #19.)*
+16. **`FieldAttributes` is typed as `any`** (`field_attributes.go:3`) -- No type safety; any value can be assigned. Concrete types (`TextFieldAttributes`, `NumberFieldAttributes`, etc.) are defined but the type alias itself is `any`, so `Field.Attributes` has no compile-time safety. Should use a sealed interface with a marker method (e.g., `isFieldAttributes()`). *(Unresolved from 4/13 #19.)*
 
-18. **Forms commands have no `validate` struct tags** (`commands.go`) -- `CreateFormCommand`, `UpdateFormCommand`, `CreateVersionCommand`, `PublishVersionCommand`, and `RetireVersionCommand` have no tags, so the `ValidateStruct` call in the service layer is a no-op. *(Unresolved from 4/13 #22.)*
+17. **`FieldResponse` DTO omits `Attributes`** (`dto/field.go`) -- `FieldToResponse` maps all fields except `Attributes`, meaning field attribute data is silently lost in API responses. *(New.)*
 
-19. **`validator.New()` created per `NewUpdateVersionCommand` call** (`commands.go:71`) -- Expensive; should use the package-level singleton from `pkg/common/validate`. *(Unresolved from 4/13 #21.)*
+18. **Inconsistent constructor signatures** -- Forms domain constructors return `(*Entity, error)` but never return errors (validation is TODO). Either implement validation or simplify the signature. *(Unresolved from 4/13 #23.)*
 
-20. **Inconsistent constructor signatures** -- Forms domain constructors return `(*Entity, error)` but never return errors (validation is TODO). Either implement validation or simplify the signature. *(Unresolved from 4/13 #23.)*
-
-21. **In-memory transactions are no-ops** (`inmemory_database.go`) -- `BeginTx`/`CommitTx`/`RollbackTx` do nothing; the `CreateVersion` flow has a race condition since read and write locks are not held atomically. *(Unresolved from 4/13 #29.)*
+19. **In-memory transactions are no-ops** (`inmemory_database.go`) -- `BeginTx`/`CommitTx`/`RollbackTx` do nothing; the `CreateVersion` flow has a race condition since read and write locks are not held atomically. *(Unresolved from 4/13 #29.)*
 
 ---
 
@@ -88,51 +102,53 @@
 
 #### Bugs
 
-22. **`nil` route handlers will panic at runtime** (`routes.go`) -- 4 of 6 route registrations pass `nil` as the handler function: `POST /submissions`, `GET .../attempts`, `GET .../status`, `POST .../replay`. Any request to these endpoints will cause a nil pointer dereference panic.
+20. **`nil` route handlers will panic at runtime** (`routes.go`) -- 4 of 6 route registrations pass `nil` as the handler function: `POST /submissions`, `GET .../attempts`, `GET .../status`, `POST .../replay`. Any request to these endpoints will cause a nil pointer dereference panic. *(Unresolved from 4/17 #22.)*
 
-23. **`Database` field is nil in in-memory bootstrap** (`inmemory/inmemory.go`) -- `Repository.Database` is not set, so `Application.Close()` will panic with a nil pointer dereference since `Close()` calls `a.repository.Database.Close()`.
+21. **`Database` field is nil in in-memory bootstrap** (`inmemory/inmemory.go`) -- `Repository.Database` is not set, so `Application.Close()` will panic with a nil pointer dereference since `Close()` calls `a.repository.Database.Close()`. *(Unresolved from 4/17 #23.)*
 
-24. **Services bootstrap does not wire `SubmissionsService`** (`services/services.go`) -- `Bootstrap()` returns `ports.Services{Submissions: nil}`. The implementation exists in `submissions_service.go` but is never instantiated. Any handler calling `app.Services.Submissions.*` will nil-pointer panic.
+22. **Services bootstrap does not wire `SubmissionsService`** (`services/services.go`) -- `Bootstrap()` returns `ports.Services{Submissions: nil}`. The implementation exists in `submissions_service.go` but is never instantiated. Any handler calling `app.Services.Submissions.*` will nil-pointer panic. *(Unresolved from 4/17 #24.)*
 
 #### Architectural
 
-25. **Entry point is a stub** (`cmd/server/main.go`) -- The `main()` function only prints `"Submissions Service"` and exits. No HTTP server is started, no application is bootstrapped.
+23. **Entry point is a stub** (`cmd/server/main.go`) -- The `main()` function only prints `"Submissions Service"` and exits. No HTTP server is started, no application is bootstrapped. *(Unresolved from 4/17 #25.)*
 
-26. **`core.go` imports from the adapters layer** (`core.go:7`, `13`) -- Same hexagonal dependency violation as the other services: `ApplicationSettings` references `persistence.PersistenceSettings`. *(Same pattern as Forms #3, Tenants #46.)*
+24. **`core.go` imports from the adapters layer** (`core.go`) -- Same hexagonal dependency violation as the other services: `ApplicationSettings` references `persistence.PersistenceSettings`. *(Same pattern as Forms #2, Tenants #43. Unresolved from 4/17 #26.)*
 
-27. **REST uses `net/http.ServeMux` while other services use `go-chi/chi`** (`routes.go`) -- Inconsistent router choice across services. Forms and tenants use chi; submissions uses the stdlib mux. This also means submissions lacks chi's middleware and path parameter features.
+25. **REST uses `net/http.ServeMux` while other services use `go-chi/chi`** (`routes.go`) -- Inconsistent router choice across services. Forms and tenants use chi; submissions uses the stdlib mux. This also means submissions lacks chi's middleware and path parameter features. *(Unresolved from 4/17 #27.)*
 
-28. **No tenant middleware** -- `middleware.go` is empty. Unlike forms and tenants, there is no `X-Tenant-ID` extraction. Yet the service layer's `FindById` and `FindByReferenceId` enforce tenant authorization via the query object's `TenantID` field. Without middleware, tenant ID is never available.
+26. **No tenant middleware** -- `middleware.go` is empty (0 lines, no package declaration). Unlike forms and tenants, there is no `X-Tenant-ID` extraction. Yet the service layer's `FindById` and `FindByReferenceId` enforce tenant authorization via the query object's `TenantID` field. Without middleware, tenant ID is never available. *(Unresolved from 4/17 #28.)*
 
-29. **`Find()` has no tenant filtering** (`submissions_service.go`) -- Returns all submissions across all tenants. *(Same pattern as Forms #6.)*
+27. **`Find()` has no tenant filtering** (`submissions_service.go`) -- Returns all submissions across all tenants. *(Same pattern as Forms #5. Unresolved from 4/17 #29.)*
 
-30. **REST handlers hold a reference to the full `Application`** (`handlers.go`) -- Same pattern as other services.
+28. **REST handlers hold a reference to the full `Application`** (`handlers.go`) -- Same pattern as other services. *(Unresolved from 4/17 #30.)*
 
-31. **Unnecessary goroutine/channel pattern** in implemented handlers -- Same pattern as other services.
+29. **Unnecessary goroutine/channel pattern** in implemented handlers -- Same pattern as other services. *(Unresolved from 4/17 #31.)*
 
 #### Missing Functionality
 
-32. **Zero test files** in the entire submissions service.
+30. **Zero test files** in the entire submissions service. *(Unresolved from 4/17 #32.)*
 
-33. **`FindAttempts` and `Replay` service methods are stubs** (`submissions_service.go`) -- Return `nil, nil` and `nil` respectively.
+31. **`FindAttempts` and `Replay` service methods are stubs** (`submissions_service.go`) -- Return `nil, nil` and `nil` respectively. *(Unresolved from 4/17 #33.)*
 
-34. **DTOs not implemented** -- `dto.go` is empty. Handlers have `// TODO` comments noting domain-to-DTO conversion is missing. Handlers currently send raw domain objects.
+32. **DTOs not implemented** -- `dto.go` is empty (0 lines). Handlers have `// TODO` comments noting domain-to-DTO conversion is missing. Handlers currently send raw domain objects. *(Unresolved from 4/17 #34.)*
 
-35. **No domain constructors** -- `Submission` and `SubmissionAttempt` are bare structs with no factory functions, no validation, and no business methods.
+33. **No domain constructors** -- `Submission` and `SubmissionAttempt` are bare structs with no factory functions, no validation, and no business methods. *(Unresolved from 4/17 #35.)*
 
-36. **No write operations in the repository interface** -- `SubmissionsRepository` only defines `Find`, `FindById`, `FindByReferenceId`. No `Create`, `Update`, or `Delete`.
+34. **No write operations in the repository interface** -- `SubmissionsRepository` only defines `Find`, `FindById`, `FindByReferenceId`. No `Create`, `Update`, or `Delete`. *(Unresolved from 4/17 #36.)*
 
-37. **No domain events** for cross-service communication.
+35. **No domain events** for cross-service communication. *(Unresolved from 4/17 #37.)*
 
-38. **No real authentication.**
+36. **No real authentication.** *(Unresolved from 4/17 #38.)*
+
+37. **`ReplaySubmissionCommand` is an empty struct** (`commands.go`) -- Has no fields, making it impossible to specify what to replay. *(New.)*
 
 #### Code Quality
 
-39. **`Payload` typed as `any`** (`submission.go`) -- Same `any` issue as `FieldAttributes` and `DataSourceAttributes` in other services. No type safety.
+38. **`Payload` typed as `any`** (`submission.go`) -- Same `any` issue as `FieldAttributes` and `DataSourceAttributes` in other services. `ErrorDetails` on `SubmissionAttempt` is also typed as `any`. No type safety. *(Unresolved from 4/17 #39.)*
 
-40. **`SubmissionStatus` has no defined constants** -- Unlike `VersionStatus` in forms or `DataSourceType` in tenants, there are no `const` values for valid submission statuses.
+39. **`SubmissionStatus` has no defined constants** -- Unlike `VersionStatus` in forms or `DataSourceType` in tenants, there are no `const` values for valid submission statuses. *(Unresolved from 4/17 #40.)*
 
-41. **`SubmissionsRepository.FindByReferenceId` does a linear scan** (`submissions_repository.go`) -- No secondary index on `ReferenceID`. Acceptable for in-memory dev but will not scale.
+40. **`SubmissionsRepository.FindByReferenceId` does a linear scan** (`submissions_repository.go`) -- No secondary index on `ReferenceID`. Acceptable for in-memory dev but will not scale. *(Unresolved from 4/17 #41.)*
 
 ---
 
@@ -140,61 +156,57 @@
 
 #### Bugs
 
-42. **Route bug: `removeDataSource` mapped to `PUT` instead of `DELETE`** (`routes.go:31`) -- `dataSourceRoutes.Put("/", h.removeDataSource)` should be `dataSourceRoutes.Delete("/", h.removeDataSource)`. The delete endpoint is unreachable; `PUT` requests to this path will hit `removeDataSource` instead of `updateDataSource` since chi will use the last registered handler for the same method+path.
+41. **`ErrDataSourceAttrParse` not wrapped on JSON unmarshal failure** (`dto/request.go:59-66`) -- `parseAttributes` returns raw `json.Unmarshal` errors without wrapping them in `ErrDataSourceAttrParse`. Only the `strategies.Get()` error path (unknown type) wraps the sentinel. When attribute JSON is malformed, the error bypasses the `errors.Is(err, dto.ErrDataSourceAttrParse)` check in `sendErrorResponse` and falls through to `common.SendErrorResponse`. Since `ReadJsonPayload` is not involved here (the body was already decoded), `ErrDecodeJSON` is also not present, so the error hits the 500 default. *(Partially resolved from 4/17 #44 -- unknown type path fixed, unmarshal path still broken.)*
 
-43. **JSON parse errors map to 500 instead of 400** (`handlers.go:84-87`, `122-125`, `228-231`, `269-272`) -- While handlers now call `sendErrorResponse`, the `json.Decoder` error from `ReadJsonPayload` is not a `validator.ValidationErrors` and is not `ErrDataSourceAttrParse`, so it falls through to `common.SendErrorResponse` which defaults to 500. Malformed JSON from clients produces a 500 Internal Server Error instead of a 400 Bad Request. *(Unresolved from 4/17 #1.)*
-
-44. **`ErrDataSourceAttrParse` is defined but never returned** (`dto/request.go:9`) -- The sentinel error is defined and checked in `sendErrorResponse` (`handlers.go:359`), but `RequestToDataSourceAttributes` and `parseAttributes` never return or wrap it. The `errors.Is(err, dto.ErrDataSourceAttrParse)` check is dead code. *(Unresolved from 4/17 #4.)*
-
-45. **`Remove` operations succeed silently for non-existent entities** (`tenant_repository.go:78-84`; `data_sources_repository.go:84-91`) -- Go's `delete` on a map is a no-op for missing keys, so deleting a non-existent tenant or data source returns `nil` (HTTP 204) instead of `ErrNotFound` (HTTP 404). *(Unresolved from 4/16 #3.)*
+42. **`Remove` operations succeed silently for non-existent entities at the repository layer** (`tenant_repository.go:85-91`; `data_sources_repository.go:91-98`) -- Go's `delete` on a map is a no-op for missing keys, so the repository returns `nil` regardless. The service layer mitigates this by calling `Exists` first, but the repository contract is still incorrect -- a `Remove` for a non-existent key should return `ErrNotFound`. *(Unresolved from 4/16 #3. Service-layer mitigation noted.)*
 
 #### Architectural
 
-46. **`core.go` imports from the adapters layer** (`core.go:7`, `13`) -- `ApplicationSettings` references `persistence.PersistenceSettings`, violating the hexagonal dependency rule. *(Unresolved from 4/16 #5.)*
+43. **`core.go` imports from the adapters layer** (`core.go:7`) -- `ApplicationSettings` references `persistence.PersistenceSettings`, violating the hexagonal dependency rule. *(Unresolved from 4/16 #5.)*
 
-47. **Services receive the entire `*ports.Repository` struct** (`tenants_service.go:14`; `data_sources_service.go:14`) -- Each service gets access to `Database`, `Tenants`, AND `DataSources` repositories. Violates Interface Segregation. *(Unresolved from 4/16 #6.)*
+44. **Services receive the entire `*ports.Repository` struct** (`tenants_service.go:14`; `data_sources_service.go:14`) -- Each service gets access to `Database`, `Tenants`, AND `DataSources` repositories. Violates Interface Segregation. *(Unresolved from 4/16 #6.)*
 
-48. **REST handlers hold a reference to the full `Application`** (`handlers.go:20-22`) -- Same pattern as other services. *(Unresolved from 4/16 #7.)*
+45. **REST handlers hold a reference to the full `Application`** (`handlers.go:20-22`) -- Same pattern as other services. *(Unresolved from 4/16 #7.)*
 
-49. **`DataSource` can be created without verifying its parent `Tenant` exists** (`data_sources_service.go:36-54`) -- `Create` and `Update` call `Upsert` directly without checking that the `TenantID` corresponds to an existing tenant. Allows orphaned data sources. *(Unresolved from 4/16 #8.)*
+46. **`DataSource` can be created without verifying its parent `Tenant` exists** (`data_sources_service.go:37-55`) -- `Create` and `Update` call `Upsert` directly without checking that the `TenantID` corresponds to an existing tenant. Allows orphaned data sources. *(Unresolved from 4/16 #8.)*
 
-50. **`Tenant.DataSources` field is declared but never populated** (`tenant.go`) -- The `Tenant` struct previously had a `DataSources` field that is never set in any code path, giving a false impression that `Tenant` is an aggregate root containing its data sources. Either populate it or remove it. *(Unresolved from 4/16 #9.)*
+47. **`Tenant.DataSources` field is declared but never populated** (`tenant.go`) -- The `Tenant` struct has a `DataSources` field that is never set in any code path, giving a false impression that `Tenant` is an aggregate root containing its data sources. Either populate it or remove it. *(Unresolved from 4/16 #9.)*
 
-51. **`Find()` in tenants service has no pagination or filtering** (`tenants_service.go:24-26`) -- Returns every tenant in a single unbounded response. *(Unresolved from 4/16 #10.)*
+48. **`Find()` in tenants service has no pagination or filtering** (`tenants_service.go:25-27`) -- Returns every tenant in a single unbounded response. *(Unresolved from 4/16 #10.)*
 
-52. **Unnecessary goroutine/channel pattern in every handler** (`handlers.go`, all 11 handlers) -- Same pattern as other services. *(Unresolved from 4/16 #11.)*
+49. **Unnecessary goroutine/channel pattern in every handler** (`handlers.go`, all 11 handlers) -- Same pattern as other services. *(Unresolved from 4/16 #11.)*
 
 #### Missing Functionality
 
-53. **Zero test files** in the entire tenants service. *(Unresolved from 4/16 #12.)*
+50. **Zero test files** in the entire tenants service. *(Unresolved from 4/16 #12.)*
 
-54. **Domain validation unimplemented** (`tenant.go:17-23`; `data_source.go`) -- Constructors return `(*Entity, error)` but never validate. *(Unresolved from 4/16 #13.)*
+51. **Domain validation unimplemented** (`tenant.go:17-23`) -- `NewTenant` returns `(*Tenant, error)` but never validates or returns an error. `NewDataSource` has *some* validation (attribute type matching) but does not validate empty `TenantID`, empty `Type`, or field lengths. *(Partially unresolved from 4/16 #13.)*
 
-55. **No domain events** for cross-service communication. *(Unresolved from 4/16 #14.)*
+52. **No domain events** for cross-service communication. *(Unresolved from 4/16 #14.)*
 
-56. **Incomplete error-to-HTTP mapping** (`http.go:48-72`) -- `ErrInvalidID` and `ErrUnauthorized` are defined in `error.go` but not mapped in `SendErrorResponse`. They fall through to the default 500 case. *(Unresolved from 4/16 #15.)*
+53. **Incomplete error-to-HTTP mapping** (`http.go:58-83`) -- `ErrInvalidID` and `ErrUnauthorized` are defined in `error.go` but not mapped in `SendErrorResponse`. They fall through to the default 500 case. *(Unresolved from 4/16 #15.)*
 
-57. **No real authentication**. *(Unresolved from 4/16 #16.)*
+54. **No real authentication**. *(Unresolved from 4/16 #16.)*
 
-58. **`Lookup` service method is a stub** (`data_sources_service.go:80-89`) -- Always returns `nil, nil` after verifying the data source exists. *(Unresolved from 4/16 #17.)*
+55. **`Lookup` service method is a stub** (`data_sources_service.go:91-101`) -- Always returns `nil, nil` after verifying the data source exists. Contains `// TODO: Implement data source lookup strategy pattern based on the type of data source.` *(Unresolved from 4/16 #17.)*
 
-59. **`DataSourceAttributes` concrete types incomplete** (`data_source_attributes.go`) -- `ScheduledDataSourceAttributes` has zero fields. `StaticDataSourceAttributes` and `QueryDataSourceAttributes` lack `json` struct tags, so JSON marshaling uses Go's default capitalized field names (e.g., `"Data"` instead of `"data"`). *(Unresolved from 4/16 #18.)*
+56. **`DataSourceAttributes` concrete types incomplete** (`data_source_attributes.go`) -- `ScheduledDataSourceAttributes` has zero fields. `StaticDataSourceAttributes` and `QueryDataSourceAttributes` lack `json` struct tags, so JSON marshaling uses Go's default capitalized field names (e.g., `"Data"` instead of `"data"`). *(Unresolved from 4/16 #18.)*
 
-60. **`DataSourceLookup` value object has no constructor or validation** (`data_source_lookup.go`) -- Bare struct, no invariant enforcement. *(Unresolved from 4/16 #19.)*
+57. **`DataSourceLookup` value object has no constructor or validation** (`data_source_lookup.go`) -- Bare struct with two fields (`Code`, `Description`), no json tags, no invariant enforcement. *(Unresolved from 4/16 #19.)*
 
-61. **`DataSourceType` not validated in domain constructors** -- Command-level `oneof` validation exists, but `NewDataSource` still accepts any arbitrary string. *(Partially resolved from 4/16 #22.)*
+58. **`DataSourceType` not validated in domain constructors** -- Command-level `oneof` validation exists, but `NewDataSource` still accepts any arbitrary string for `Type`. *(Partially resolved from 4/16 #22.)*
 
 #### Code Quality
 
-62. **`DataSourceAttributes` typed as `any`** (`data_source_attributes.go:3`) -- Equivalent to `any`. Should be a sealed interface with a marker method. *(Unresolved from 4/16 #20.)*
+59. **`DataSourceAttributes` typed as `any`** (`data_source_attributes.go:3`) -- Equivalent to `any`. Should be a sealed interface with a marker method. *(Unresolved from 4/16 #20.)*
 
-63. **`time.Now()` called directly in the repository layer** (`tenant_repository.go:57`; `data_sources_repository.go:61`) -- Couples persistence to wall-clock time. *(Unresolved from 4/16 #24.)*
+60. **`time.Now()` called directly in the repository layer** (`tenant_repository.go:64`; `data_sources_repository.go:68`) -- Couples persistence to wall-clock time. *(Unresolved from 4/16 #24.)*
 
-64. **Inconsistent response envelope** -- List endpoints (`getTenants`, `getDataSources`, `getDataSourceLookup`) return a bare JSON array, while create/update endpoints return an `ApiResponse[T]` wrapper with a `message` field. Clients must handle two different response shapes. *(Unresolved from 4/16 #29.)*
+61. **Inconsistent response envelope** -- List endpoints (`getTenants`, `getDataSources`, `getDataSourceLookup`) return a bare JSON array, while create/update endpoints return an `ApiResponse[T]` wrapper with a `message` field. Clients must handle two different response shapes. *(Unresolved from 4/16 #29.)*
 
-65. **`getTenants` returns tenants with `DataSources` always `nil`** (`handlers.go:48-51`) -- The domain model declares the field but no code path populates it. *(Unresolved from 4/16 #30.)*
+62. **`getTenants` returns tenants with `DataSources` always `nil`** (`handlers.go:48-51`) -- The domain model declares the field but no code path populates it. *(Unresolved from 4/16 #30.)*
 
-66. **Stray semicolon** (`data_sources_service.go:28`) -- Bare `;` on its own line.
+63. **Stray semicolon** (`data_sources_service.go:29`) -- Bare `;` on its own line in the `Find` method. *(Unresolved from 4/17 #66.)*
 
 ---
 
@@ -202,19 +214,17 @@
 
 #### Bugs
 
-67. **`SendErrorResponse` missing mappings for `ErrInvalidID` and `ErrUnauthorized`** (`http.go:48-72`) -- These sentinel errors are defined in `error.go` but not handled in the switch. They fall through to the 500 default case. `ErrInvalidID` should map to 400; `ErrUnauthorized` should map to 401 or 403.
+64. **`SendErrorResponse` missing mappings for `ErrInvalidID` and `ErrUnauthorized`** (`http.go:58-83`) -- These sentinel errors are defined in `error.go` but not handled in the switch. They fall through to the 500 default case. `ErrInvalidID` should map to 400; `ErrUnauthorized` should map to 401 or 403. *(Unresolved from 4/17 #67.)*
 
-68. **`SendJsonResponse` accepts `headers` parameter but never applies them** (`http.go:33`) -- The `headers ...http.Header` variadic parameter is accepted but the body never iterates or sets them on the response. Callers expecting custom headers will be silently ignored.
+65. **`SendJsonResponse` accepts `headers` parameter but never applies them** (`http.go:38`) -- The `headers ...http.Header` variadic parameter is accepted but the body never iterates or sets them on the response. Callers expecting custom headers will be silently ignored. *(Unresolved from 4/17 #68.)*
 
-69. **`w.Write` error ignored** (`http.go:42`) -- `SendJsonResponse` calls `w.Write(out)` but discards the returned error. Should at minimum log it.
+66. **`w.Write` error ignored** (`http.go:47`) -- `SendJsonResponse` calls `w.Write(out)` but discards the returned error. Should at minimum log it. *(Unresolved from 4/17 #69.)*
 
 #### Code Quality
 
-70. **`ValidateStruct` has a redundant pattern** (`validate.go:19-25`) -- `if err := v.Struct(s); err != nil { return err }; return nil` is equivalent to `return v.Struct(s)`. Idiomatic Go prefers the simpler form.
+67. **`ValidateStruct` has a redundant pattern** (`validate/validate.go:19-23`) -- `if err := v.Struct(s); err != nil { return err }; return nil` is equivalent to `return v.Struct(s)`. Similarly, `IsValidationErr` uses `if !ok { return false }; return true` instead of just `return ok`. Idiomatic Go prefers the simpler forms. *(Unresolved from 4/17 #70.)*
 
-71. **In-memory transactions are no-ops** (`inmemory_database.go`) -- `BeginTx`/`CommitTx`/`RollbackTx` do nothing. No atomicity guarantees for multi-step operations like `CreateVersion` in the forms service.
-
-72. **No `json.Decoder` error mapping** -- `json.SyntaxError`, `json.UnmarshalTypeError`, and related decoding errors are not mapped in `SendErrorResponse`. Any service delegating JSON parse errors to the shared handler will produce a 500 for malformed client input. Should map these to HTTP 400.
+68. **In-memory transactions are no-ops** (`database/inmemory_database.go`) -- `BeginTx` stores an empty struct in context; `CommitTx`/`RollbackTx` return `nil` in all code paths. No atomicity guarantees for multi-step operations like `CreateVersion` in the forms service. *(Unresolved from 4/17 #71.)*
 
 ---
 
@@ -222,60 +232,71 @@
 
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
-| **P0** | 22 | `nil` route handlers will panic at runtime | Submissions |
-| **P0** | 23 | `Database` nil -- `Close()` will panic | Submissions |
-| **P0** | 24 | `SubmissionsService` never wired -- nil pointer | Submissions |
-| **P0** | 42 | `removeDataSource` mapped to `PUT` not `DELETE` | Tenants |
-| **P0** | 25 | Entry point is a stub (no HTTP server) | Submissions |
-| **P1** | 1 | Handlers swallow JSON parse errors (empty 200) | Forms |
-| **P1** | 43 | JSON parse errors map to 500 | Tenants |
-| **P1** | 72 | No `json.Decoder` error mapping in shared pkg | Shared |
-| **P1** | 67 | `ErrInvalidID`/`ErrUnauthorized` map to 500 | Shared |
-| **P1** | 44 | `ErrDataSourceAttrParse` dead code | Tenants |
-| **P1** | 45 | `Remove` returns 204 for non-existent entities | Tenants |
-| **P2** | 3, 26, 46 | `core.go` imports adapters (hex violation) | All |
-| **P2** | 4, 47 | Services receive full Repository (ISP) | Forms, Tenants |
-| **P2** | 5, 30, 48 | Handlers receive full Application | All |
-| **P2** | 6, 29 | `Find()` has no tenant filtering | Forms, Submissions |
-| **P2** | 11, 54 | Domain validation unimplemented | Forms, Tenants |
-| **P2** | 35 | No domain constructors | Submissions |
-| **P2** | 49 | DataSource created without parent Tenant check | Tenants |
-| **P2** | 18 | Forms commands have no `validate` struct tags | Forms |
-| **P2** | 8, 31, 52 | Unnecessary goroutine/channel pattern | All |
-| **P2** | 27 | Inconsistent router (stdlib vs chi) | Submissions |
-| **P2** | 28 | No tenant middleware | Submissions |
-| **P3** | 10, 32, 53 | Zero test files | All |
-| **P3** | 12, 37, 55 | No domain events | All |
-| **P3** | 13, 56 | Incomplete error-to-HTTP mapping | Forms, Tenants |
-| **P3** | 17, 39, 62 | `any`-typed attributes (no type safety) | All |
-| **P3** | 9, 63 | `time.Now()` in repository layer | Forms, Tenants |
-| **P3** | 64 | Inconsistent response envelope | Tenants |
-| **P3** | 19 | `validator.New()` per command constructor | Forms |
-| **P3** | 21, 71 | In-memory transactions are no-ops | Forms, Shared |
+| **P0** | 20 | `nil` route handlers will panic at runtime | Submissions |
+| **P0** | 21 | `Database` nil -- `Close()` will panic | Submissions |
+| **P0** | 22 | `SubmissionsService` never wired -- nil pointer | Submissions |
+| **P0** | 23 | Entry point is a stub (no HTTP server) | Submissions |
+| **P1** | 64 | `ErrInvalidID`/`ErrUnauthorized` map to 500 | Shared |
+| **P1** | 41 | `ErrDataSourceAttrParse` not wrapped on unmarshal | Tenants |
+| **P1** | 42 | `Remove` returns nil for non-existent entities (repo layer) | Tenants |
+| **P2** | 2, 24, 43 | `core.go` imports adapters (hex violation) | All |
+| **P2** | 3, 44 | Services receive full Repository (ISP) | Forms, Tenants |
+| **P2** | 4, 28, 45 | Handlers receive full Application | All |
+| **P2** | 5, 27 | `Find()` has no tenant filtering | Forms, Submissions |
+| **P2** | 10, 51 | Domain validation unimplemented | Forms, Tenants |
+| **P2** | 33 | No domain constructors | Submissions |
+| **P2** | 46 | DataSource created without parent Tenant check | Tenants |
+| **P2** | 7, 29, 49 | Unnecessary goroutine/channel pattern | All |
+| **P2** | 25 | Inconsistent router (stdlib vs chi) | Submissions |
+| **P2** | 26 | No tenant middleware | Submissions |
+| **P2** | 1 | Hardcoded `"placeholder"` user ID | Forms |
+| **P3** | 9, 30, 50 | Zero test files | All |
+| **P3** | 11, 35, 52 | No domain events | All |
+| **P3** | 12, 53 | Incomplete error-to-HTTP mapping | Forms, Tenants |
+| **P3** | 16, 38, 59 | `any`-typed attributes (no type safety) | All |
+| **P3** | 8, 60 | `time.Now()` in repository/service layers | Forms, Tenants |
+| **P3** | 61 | Inconsistent response envelope | Tenants |
+| **P3** | 19, 68 | In-memory transactions are no-ops | Forms, Shared |
+| **P3** | 17 | `FieldResponse` DTO omits Attributes | Forms |
+| **P3** | 63 | Stray semicolon | Tenants |
+| **P3** | 67 | Redundant validation patterns | Shared |
 
 ---
 
 ## Summary
 
-### Progress Since 4/16
+### Progress Since 4/17
 
-Twelve issues from the prior review cycle have been resolved. The tenants service continues its accelerated improvement pace, fixing JSON parse error handling in handlers, adding validation struct tags to data source commands, implementing the strategy pattern for attribute deserialization, correcting the persistence typo, and properly propagating domain constructor errors. The forms service also resolved three issues: the `getForms` DTO bug, the `section.go` receiver mismatch, and the missing `DateFieldAttributes` base embedding.
+Eight issues from the prior review cycle have been resolved, with one additional partial resolution. The most impactful fixes were:
+
+- **Forms handlers no longer swallow JSON parse errors** -- all three problematic handlers (`createForm`, `updateForm`, `createVersion`) now call `sendErrorResponse`, eliminating the empty-200 bug that had persisted since the 4/13 review.
+- **Forms commands now have validation struct tags** -- `baseFormCommand`, `baseVersionCommand`, `PublishVersionCommand`, and `RetireVersionCommand` all enforce required fields and length constraints via `validate` tags.
+- **`validator.New()` per-call eliminated** -- validation is now handled by the service layer using the package-level singleton in `pkg/common/validate`.
+- **`removeDataSource` route fixed** -- correctly mapped to `DELETE` instead of `PUT`.
+- **`ReadJsonPayload` now wraps decode errors with `ErrDecodeJSON`** -- combined with the new `ErrDecodeJSON` case in `SendErrorResponse`, this resolves the global JSON-parse-to-500 issue for all services using the shared pipeline.
+- **`ErrDataSourceAttrParse` partially fixed** -- the unknown-type error path now wraps the sentinel, but the JSON unmarshal path still does not.
+- **`Exists` key mismatch fixed** (unstaged) -- `data_sources_repository.go:Exists` now uses the composite key `getDataSourceKey(tenantID, id)` instead of `string(id)`.
 
 ### Current State
 
-**Forms Service** is the most mature of the three. Its domain model is well-designed with a clear version lifecycle state machine, proper page/section/field hierarchy with position enforcement, and bidirectional DTO mapping. The primary gaps are three handlers that still swallow JSON parse errors, no validation struct tags on form commands, and the aggregate boundary between `Form` and `Version` being unclear from a DDD perspective.
+**Forms Service** is the most mature of the three. With JSON parse error handling and command validation now resolved, the primary gaps are: the hardcoded `"placeholder"` user IDs in publish/retire, the aggregate boundary ambiguity between `Form` and `Version`, the `FieldResponse` DTO silently dropping attributes, and the continued absence of domain validation and test coverage. The hexagonal dependency violation in `core.go` and the ISP violation in the service layer remain the top architectural concerns.
 
-**Tenants Service** has a clean hexagonal structure and has resolved most of the DTO/validation issues from prior reviews. A new route registration bug was found (`removeDataSource` on `PUT` instead of `DELETE`), and the JSON-parse-to-500 pipeline remains the most impactful open bug. The `DataSource` orphan problem (no tenant existence check) is the top architectural concern.
+**Tenants Service** has resolved the critical `removeDataSource` route bug, the JSON-parse-to-500 pipeline, and the `Exists` key mismatch. The `DataSource` orphan problem (no tenant existence check), incomplete attribute types (missing json tags, empty `ScheduledDataSourceAttributes`), the `parseAttributes` error wrapping gap, and the stray semicolon remain.
 
-**Submissions Service** is in early development and has the most critical issues: the entry point is a stub, the service implementation is never wired, `nil` handlers will panic, and the `Database` nil reference will panic on shutdown. The service needs fundamental wiring before it can function.
+**Submissions Service** has not changed since the prior review. It remains non-functional end-to-end: the entry point is a stub, the service is never wired, 4 routes have `nil` handlers, and the `Database` nil reference will panic on shutdown. No write operations, no DTOs, no middleware, and no tests exist.
 
-**Shared Package** (`pkg/common`) has three issues that affect all services: missing `ErrInvalidID`/`ErrUnauthorized` error-to-HTTP mappings, no `json.Decoder` error handling (making JSON parse errors 500s globally), and the unused `headers` parameter in `SendJsonResponse`.
+**Shared Package** (`pkg/common`) resolved the `json.Decoder` error mapping issue by wrapping decode errors in `ReadJsonPayload` with `ErrDecodeJSON`. The remaining issues are: missing `ErrInvalidID`/`ErrUnauthorized` HTTP mappings, the unused `headers` parameter in `SendJsonResponse`, the ignored `w.Write` error, and the no-op in-memory transactions.
+
+### New Issues Found
+
+1. **`FieldResponse` DTO omits `Attributes`** (Forms #17) -- Field attribute data is silently dropped in API responses.
+2. **`ReplaySubmissionCommand` is an empty struct** (Submissions #37) -- Cannot specify replay parameters.
+3. **`time.Now()` also in forms service layer** (Forms #8, expanded) -- `PublishVersion` and `RetireVersion` call `time.Now()` directly in business logic, not just the repository layer.
 
 ### Highest-Impact Improvements
 
 1. **Wire the submissions service** -- fix the entry point, bootstrap wiring, nil handlers, and nil database (P0 -- service is non-functional)
-2. **Fix the tenants `removeDataSource` route** from `PUT` to `DELETE` (P0 -- wrong HTTP method)
-3. **Map `json.Decoder` errors to HTTP 400** in `pkg/common/http.go` and fix the three forms handlers that swallow parse errors (P1 -- client errors produce 500s or empty responses)
-4. **Add `ErrInvalidID` and `ErrUnauthorized` mappings** to `SendErrorResponse` (P1 -- auth/validation errors produce 500s)
-5. **Fix the hexagonal dependency violation** in `core.go` across all three services (P2 -- foundational architecture)
-6. **Add test coverage** starting with service and handler layers (P3 -- long-term reliability)
+2. **Add `ErrInvalidID` and `ErrUnauthorized` mappings** to `SendErrorResponse` (P1 -- auth/validation errors produce 500s)
+3. **Wrap `parseAttributes` errors with `ErrDataSourceAttrParse`** in `dto/request.go` (P1 -- malformed attribute JSON produces 500)
+4. **Fix the hexagonal dependency violation** in `core.go` across all three services (P2 -- foundational architecture)
+5. **Add test coverage** starting with service and handler layers (P3 -- long-term reliability)
