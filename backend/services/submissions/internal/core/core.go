@@ -19,7 +19,7 @@ type Application struct {
 	repository *ports.Repository
 }
 
-func NewApplication(settings *ApplicationSettings) (*Application, error) {
+func NewApplication(settings ApplicationSettings) (*Application, error) {
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 	r, err := persistence.Bootstrap(settings.Persistence, logger)
 

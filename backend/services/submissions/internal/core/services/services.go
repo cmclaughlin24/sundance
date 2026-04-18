@@ -8,6 +8,6 @@ import (
 
 func Bootstrap(logger *log.Logger, repository *ports.Repository) *ports.Services {
 	return &ports.Services{
-		Submissions: nil,
+		Submissions: NewSubmissionsService(logger, repository),
 	}
 }

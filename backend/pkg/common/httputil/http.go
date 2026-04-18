@@ -1,10 +1,13 @@
-package common
+package httputil
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 )
 
 var (
@@ -56,19 +59,19 @@ func SendErrorResponse(w http.ResponseWriter, err error) {
 	}
 
 	switch {
-	case errors.Is(err, ErrDecodeJSON):
+	case errors.Is(err, ErrDecodeJSON) || validate.IsValidationErr(err):
 		SendJsonResponse(w, http.StatusBadRequest, ApiErrorResponse{
 			Message:    "Bad Request",
 			Error:      err.Error(),
 			StatusCode: http.StatusBadRequest,
 		})
-	case errors.Is(err, ErrNotFound):
+	case errors.Is(err, common.ErrNotFound):
 		SendJsonResponse(w, http.StatusNotFound, ApiErrorResponse{
 			Message:    "Not Found",
 			Error:      err.Error(),
 			StatusCode: http.StatusNotFound,
 		})
-	case errors.Is(err, ErrExists):
+	case errors.Is(err, common.ErrExists):
 		SendJsonResponse(w, http.StatusConflict, ApiErrorResponse{
 			Message:    "Conflict",
 			Error:      err.Error(),

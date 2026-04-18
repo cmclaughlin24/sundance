@@ -3,7 +3,8 @@ package rest
 import (
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
+	"github.com/cmclaughlin24/sundance/submissions/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/submissions/internal/core"
 	"github.com/cmclaughlin24/sundance/submissions/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/submissions/internal/core/ports"
@@ -38,12 +39,16 @@ func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			httputil.SendErrorResponse(w, res.err)
 			return
 		}
 
-		// TODO: Convert submission domain object to dto.
-		common.SendJsonResponse(w, http.StatusOK, res.data)
+		dtos := make([]*dto.SubmissionResponse, 0, len(res.data))
+		for _, submission := range res.data {
+			dtos = append(dtos, dto.SubmissionToResponse(submission))
+		}
+
+		httputil.SendJsonResponse(w, http.StatusOK, dtos)
 	}
 }
 
@@ -53,7 +58,7 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 
 	query, err := ports.NewFindByIdQuery(referenceID, "")
 	if err != nil {
-		common.SendErrorResponse(w, err)
+		httputil.SendErrorResponse(w, err)
 		return
 	}
 
@@ -68,16 +73,30 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			common.SendErrorResponse(w, res.err)
+			httputil.SendErrorResponse(w, res.err)
 			return
 		}
 
-		// TODO: Convert submission domain object to dto.
-		common.SendJsonResponse(w, http.StatusOK, res.data)
+		httputil.SendJsonResponse(w, http.StatusOK, dto.SubmissionToResponse(res.data))
 	}
 }
+
+func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {}
+
+func (h *handlers) getSubmissionAttempts(w http.ResponseWriter, r *http.Request) {}
+
+func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {}
+
+func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request) {}
 
 func (h *handlers) getReferenceIdPathValue(r *http.Request) domain.ReferenceID {
 	id := r.PathValue("referenceId")
 	return domain.ReferenceID(id)
+}
+
+func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
+	switch {
+	default:
+		httputil.SendErrorResponse(w, err)
+	}
 }

@@ -1,11 +1,9 @@
 package rest
 
 import (
-	"errors"
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
@@ -50,7 +48,7 @@ func (h *handlers) getTenants(w http.ResponseWriter, r *http.Request) {
 			dtos = append(dtos, dto.TenantToResponse(tenant))
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dtos)
+		httputil.SendJsonResponse(w, http.StatusOK, dtos)
 	}
 }
 
@@ -73,7 +71,7 @@ func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dto.TenantToResponse(res.data))
+		httputil.SendJsonResponse(w, http.StatusOK, dto.TenantToResponse(res.data))
 	}
 }
 
@@ -81,7 +79,7 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Tenant], 1)
 
 	var body dto.TenantRequest
-	if err := common.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -103,7 +101,7 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[dto.TenantResponse]{
+		httputil.SendJsonResponse(w, http.StatusCreated, httputil.ApiResponse[dto.TenantResponse]{
 			Message: "Successfully created!",
 			Data:    *dto.TenantToResponse(res.data),
 		})
@@ -115,7 +113,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Tenant], 1)
 
 	var body dto.TenantRequest
-	if err := common.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -137,7 +135,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dto.TenantResponse]{
+		httputil.SendJsonResponse(w, http.StatusOK, httputil.ApiResponse[dto.TenantResponse]{
 			Message: "Successfully updated!",
 			Data:    *dto.TenantToResponse(res.data),
 		})
@@ -192,7 +190,7 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 			dtos = append(dtos, dto.DataSourceToResponse(source))
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dtos)
+		httputil.SendJsonResponse(w, http.StatusOK, dtos)
 	}
 }
 
@@ -216,7 +214,7 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dto.DataSourceToResponse(res.data))
+		httputil.SendJsonResponse(w, http.StatusOK, dto.DataSourceToResponse(res.data))
 	}
 }
 
@@ -225,7 +223,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.DataSource], 1)
 
 	var body dto.DataSourceRequest
-	if err := common.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -253,7 +251,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[dto.DataSourceResponse]{
+		httputil.SendJsonResponse(w, http.StatusCreated, httputil.ApiResponse[dto.DataSourceResponse]{
 			Message: "Successfully created!",
 			Data:    *dto.DataSourceToResponse(res.data),
 		})
@@ -266,7 +264,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.DataSource], 1)
 
 	var body dto.DataSourceRequest
-	if err := common.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -294,7 +292,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[dto.DataSourceResponse]{
+		httputil.SendJsonResponse(w, http.StatusOK, httputil.ApiResponse[dto.DataSourceResponse]{
 			Message: "Successfully updated!",
 			Data:    *dto.DataSourceToResponse(res.data),
 		})
@@ -350,7 +348,7 @@ func (h *handlers) getDataSourceLookup(w http.ResponseWriter, r *http.Request) {
 			dtos = append(dtos, dto.DataSourceLookupToResponse(lookup))
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dtos)
+		httputil.SendJsonResponse(w, http.StatusOK, dtos)
 	}
 }
 
@@ -361,15 +359,7 @@ func (h *handlers) getTenantIDPathValue(r *http.Request) domain.TenantID {
 
 func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 	switch {
-	case validate.IsValidationErr(err) || errors.Is(err, dto.ErrDataSourceAttrParse):
-		common.SendJsonResponse(w, http.StatusBadRequest, common.ApiErrorResponse{
-			Message:    "Bad Request",
-			Error:      err.Error(),
-			StatusCode: http.StatusBadRequest,
-		})
 	default:
-		common.SendErrorResponse(w, err)
+		httputil.SendErrorResponse(w, err)
 	}
-
 }
-

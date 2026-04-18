@@ -3,8 +3,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
@@ -49,7 +48,7 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 			dtos = append(dtos, dto.FormToResponse(form))
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dtos)
+		httputil.SendJsonResponse(w, http.StatusOK, dtos)
 	}
 }
 
@@ -80,7 +79,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dto.FormToResponse(res.data))
+		httputil.SendJsonResponse(w, http.StatusOK, dto.FormToResponse(res.data))
 	}
 }
 
@@ -94,7 +93,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Form], 1)
 
 	var body dto.UpsertFormRequest
-	if err := common.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -116,7 +115,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[*dto.FormResponse]{
+		httputil.SendJsonResponse(w, http.StatusCreated, httputil.ApiResponse[*dto.FormResponse]{
 			Message: "Successfully created!",
 			Data:    dto.FormToResponse(res.data),
 		})
@@ -134,7 +133,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Form], 1)
 
 	var body dto.UpsertFormRequest
-	if err := common.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -156,7 +155,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[*dto.FormResponse]{
+		httputil.SendJsonResponse(w, http.StatusOK, httputil.ApiResponse[*dto.FormResponse]{
 			Message: "Successfully updated!",
 			Data:    dto.FormToResponse(res.data),
 		})
@@ -194,7 +193,7 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 			dtos = append(dtos, dto.VersionToResponse(v))
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dtos)
+		httputil.SendJsonResponse(w, http.StatusOK, dtos)
 	}
 }
 
@@ -225,7 +224,7 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, dto.VersionToResponse(res.data))
+		httputil.SendJsonResponse(w, http.StatusOK, dto.VersionToResponse(res.data))
 	}
 }
 
@@ -240,7 +239,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Version], 1)
 
 	var body dto.CreateVersionDto
-	if err := common.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -262,7 +261,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusCreated, common.ApiResponse[*dto.VersionResponseDto]{
+		httputil.SendJsonResponse(w, http.StatusCreated, httputil.ApiResponse[*dto.VersionResponseDto]{
 			Message: "Successfully created!",
 			Data:    dto.VersionToResponse(res.data),
 		})
@@ -281,7 +280,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Version], 1)
 
 	var body dto.UpdateVersionDto
-	if err := common.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -309,7 +308,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[*dto.VersionResponseDto]{
+		httputil.SendJsonResponse(w, http.StatusOK, httputil.ApiResponse[*dto.VersionResponseDto]{
 			Message: "Successfully updated!",
 			Data:    dto.VersionToResponse(res.data),
 		})
@@ -344,7 +343,7 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[any]{
+		httputil.SendJsonResponse(w, http.StatusOK, httputil.ApiResponse[any]{
 			Message: "Successfully published!",
 			Data:    nil,
 		})
@@ -379,7 +378,7 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		common.SendJsonResponse(w, http.StatusOK, common.ApiResponse[any]{
+		httputil.SendJsonResponse(w, http.StatusOK, httputil.ApiResponse[any]{
 			Message: "Successfully retired!",
 			Data:    nil,
 		})
@@ -398,14 +397,7 @@ func (h *handlers) getVersionIdPathValue(r *http.Request) domain.VersionID {
 
 func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 	switch {
-	case validate.IsValidationErr(err):
-		common.SendJsonResponse(w, http.StatusBadRequest, common.ApiErrorResponse{
-			Message:    "Bad Request",
-			Error:      err.Error(),
-			StatusCode: http.StatusBadRequest,
-		})
 	default:
-		common.SendErrorResponse(w, err)
+		httputil.SendErrorResponse(w, err)
 	}
-
 }

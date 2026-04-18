@@ -12,6 +12,7 @@ type Submission struct {
 	ID          SubmissionID
 	TenantID    string
 	FormID      string
+	VersionID   string
 	ReferenceID ReferenceID
 	Status      SubmissionStatus
 	Payload     any
