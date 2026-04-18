@@ -32,8 +32,10 @@ type TenantRequest struct {
 }
 
 type DataSourceRequest struct {
-	Type       domain.DataSourceType `json:"type" validate:"required"`
-	Attributes any                   `json:"attributes" validate:"required"`
+	Name        string                `json:"name" validate:"required"`
+	Description string                `json:"description" validate:"required"`
+	Type        domain.DataSourceType `json:"type" validate:"required"`
+	Attributes  any                   `json:"attributes" validate:"required"`
 }
 
 func RequestToDataSourceAttributes(dataSourceType domain.DataSourceType, raw any) (domain.DataSourceAttributes, error) {

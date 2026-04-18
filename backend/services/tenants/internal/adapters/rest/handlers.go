@@ -234,7 +234,13 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command := ports.NewCreateDataSourceCommand(tenantID, body.Type, attributes)
+	command := ports.NewCreateDataSourceCommand(
+		tenantID,
+		body.Name,
+		body.Description,
+		body.Type,
+		attributes,
+	)
 
 	go func() {
 		defer close(resultChan)
@@ -275,7 +281,14 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command := ports.NewUpdateDataSourceCommand(domain.DataSourceID(sourceID), tenantID, body.Type, attributes)
+	command := ports.NewUpdateDataSourceCommand(
+		domain.DataSourceID(sourceID),
+		tenantID,
+		body.Name,
+		body.Description,
+		body.Type,
+		attributes,
+	)
 
 	go func() {
 		defer close(resultChan)

@@ -20,24 +20,28 @@ var (
 )
 
 type DataSource struct {
-	ID         DataSourceID
-	TenantID   TenantID
-	Type       DataSourceType
-	Attributes DataSourceAttributes
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	ID          DataSourceID
+	TenantID    TenantID
+	Name        string
+	Description string
+	Type        DataSourceType
+	Attributes  DataSourceAttributes
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
-func NewDataSource(id DataSourceID, tenantID TenantID, sourceType DataSourceType, attributes DataSourceAttributes) (*DataSource, error) {
+func NewDataSource(id DataSourceID, tenantID TenantID, name, description string, sourceType DataSourceType, attributes DataSourceAttributes) (*DataSource, error) {
 	if !isValidAttributeType(sourceType, attributes) {
 		return nil, ErrInvalidSourceTypeAttributes
 	}
 
 	return &DataSource{
-		ID:         id,
-		TenantID:   tenantID,
-		Type:       sourceType,
-		Attributes: attributes,
+		ID:          id,
+		TenantID:    tenantID,
+		Name:        name,
+		Description: description,
+		Type:        sourceType,
+		Attributes:  attributes,
 	}, nil
 }
 

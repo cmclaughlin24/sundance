@@ -26,7 +26,7 @@ func (s *DataSourcesService) Find(ctx context.Context, query *ports.ListDataSour
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
-;
+
 	return s.repository.DataSources.Find(ctx, query.TenantID)
 }
 
@@ -39,7 +39,14 @@ func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDa
 		return nil, err
 	}
 
-	ds, err := domain.NewDataSource("", command.TenantID, command.Type, command.Attributes)
+	ds, err := domain.NewDataSource(
+		"",
+		command.TenantID,
+		command.Name,
+		command.Description,
+		command.Type,
+		command.Attributes,
+	)
 
 	if err != nil {
 		return nil, err
@@ -59,7 +66,14 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 		return nil, err
 	}
 
-	ds, err := domain.NewDataSource(command.ID, command.TenantID, command.Type, command.Attributes)
+	ds, err := domain.NewDataSource(
+		command.ID,
+		command.TenantID,
+		command.Name,
+		command.Description,
+		command.Type,
+		command.Attributes,
+	)
 
 	if err != nil {
 		return nil, err

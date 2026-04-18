@@ -38,9 +38,11 @@ func NewUpdateTenantCommand(id domain.TenantID, name, description string) *Updat
 }
 
 type baseDataSourceCommand struct {
-	TenantID   domain.TenantID             `validate:"required"`
-	Type       domain.DataSourceType       `validate:"oneof=static scheduled query"`
-	Attributes domain.DataSourceAttributes `validate:"required"`
+	TenantID    domain.TenantID             `validate:"required"`
+	Name        string                      `validate:"required,max=75"`
+	Description string                      `validate:"required,max=250"`
+	Type        domain.DataSourceType       `validate:"oneof=static scheduled query"`
+	Attributes  domain.DataSourceAttributes `validate:"required"`
 }
 
 type CreateDataSourceCommand struct {
@@ -49,14 +51,18 @@ type CreateDataSourceCommand struct {
 
 func NewCreateDataSourceCommand(
 	tenantId domain.TenantID,
+	name,
+	description string,
 	sourceType domain.DataSourceType,
 	attr domain.DataSourceAttributes,
 ) *CreateDataSourceCommand {
 	return &CreateDataSourceCommand{
 		baseDataSourceCommand: baseDataSourceCommand{
-			TenantID:   tenantId,
-			Type:       sourceType,
-			Attributes: attr,
+			TenantID:    tenantId,
+			Name:        name,
+			Description: description,
+			Type:        sourceType,
+			Attributes:  attr,
 		},
 	}
 }
@@ -69,6 +75,8 @@ type UpdateDataSourceCommand struct {
 func NewUpdateDataSourceCommand(
 	id domain.DataSourceID,
 	tenantId domain.TenantID,
+	name,
+	description string,
 	sourceType domain.DataSourceType,
 	attr domain.DataSourceAttributes,
 ) *UpdateDataSourceCommand {
@@ -76,6 +84,8 @@ func NewUpdateDataSourceCommand(
 		ID: id,
 		baseDataSourceCommand: baseDataSourceCommand{
 			TenantID:   tenantId,
+			Name:        name,
+			Description: description,
 			Type:       sourceType,
 			Attributes: attr,
 		},
