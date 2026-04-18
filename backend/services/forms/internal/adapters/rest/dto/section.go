@@ -1,19 +1,19 @@
 package dto
 
-import "github.com/cmclaughlin24/sundance/forms/internal/core/domain"
+import "github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 
 type SectionRequest struct {
-	Key      string     `json:"key"`
-	Name     string     `json:"name"`
-	Position int        `json:"position"`
+	Key      string         `json:"key"`
+	Name     string         `json:"name"`
+	Position int            `json:"position"`
 	Fields   []FieldRequest `json:"fields"`
 }
 
 type SectionResponse struct {
-	ID         domain.SectionID              `json:"id"`
-	Key        string                        `json:"key"`
-	Name       string                        `json:"name"`
-	Position   int                           `json:"position"`
+	ID         domain.SectionID           `json:"id"`
+	Key        string                     `json:"key"`
+	Name       string                     `json:"name"`
+	Position   int                        `json:"position"`
 	Fields     []*FieldResponse           `json:"fields"`
 	Conditions []*ConditionalRuleResponse `json:"conditions"`
 }

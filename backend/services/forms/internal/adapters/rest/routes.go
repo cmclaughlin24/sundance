@@ -3,7 +3,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/forms/internal/core"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
 	"github.com/go-chi/chi/v5"
 )
 

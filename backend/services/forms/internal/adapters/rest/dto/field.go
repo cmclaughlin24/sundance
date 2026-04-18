@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/cmclaughlin24/sundance/forms/internal/core/domain"
+import "github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 
 type FieldRequest struct {
 	Key        string `json:"key"`
@@ -11,11 +11,11 @@ type FieldRequest struct {
 }
 
 type FieldResponse struct {
-	ID         domain.FieldID                `json:"id"`
-	Key        string                        `json:"key"`
-	Name       string                        `json:"name"`
-	FieldType  string                        `json:"fieldType"`
-	Position   int                           `json:"position"`
+	ID         domain.FieldID             `json:"id"`
+	Key        string                     `json:"key"`
+	Name       string                     `json:"name"`
+	FieldType  string                     `json:"fieldType"`
+	Position   int                        `json:"position"`
 	Conditions []*ConditionalRuleResponse `json:"conditions"`
 }
 

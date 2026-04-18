@@ -3,7 +3,7 @@ package dto
 import (
 	"time"
 
-	"github.com/cmclaughlin24/sundance/forms/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 )
 
 type CreateVersionDto struct{}
@@ -23,7 +23,7 @@ type VersionResponseDto struct {
 	RetiredAt     time.Time            `json:"retiredAt"`
 	CreatedAt     time.Time            `json:"createdAt"`
 	UpdatedAt     time.Time            `json:"updatedAt"`
-	Pages         []*PageResponse   `json:"pages"`
+	Pages         []*PageResponse      `json:"pages"`
 }
 
 func VersionToResponse(version *domain.Version) *VersionResponseDto {

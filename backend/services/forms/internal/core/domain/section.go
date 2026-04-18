@@ -3,7 +3,7 @@ package domain
 import (
 	"errors"
 
-	"github.com/cmclaughlin24/sundance/forms/internal/types"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/types"
 )
 
 type SectionID string

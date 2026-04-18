@@ -3,7 +3,7 @@ package dto
 import (
 	"time"
 
-	"github.com/cmclaughlin24/sundance/forms/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 )
 
 type UpsertFormRequest struct {

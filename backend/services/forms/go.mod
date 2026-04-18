@@ -1,4 +1,4 @@
-module github.com/cmclaughlin24/sundance/forms
+module github.com/cmclaughlin24/sundance/backend/services/forms
 
 go 1.25.3
 

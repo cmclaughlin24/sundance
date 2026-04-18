@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/cmclaughlin24/sundance/forms/internal/core/domain"
+import "github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 
 type ConditionalRuleResponse struct {
 	ID domain.ConditionalRuleID `json:"id"`

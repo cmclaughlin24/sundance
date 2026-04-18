@@ -1,19 +1,19 @@
 package dto
 
-import "github.com/cmclaughlin24/sundance/forms/internal/core/domain"
+import "github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 
 type PageRequest struct {
-	Key      string       `json:"key"`
-	Name     string       `json:"name"`
-	Position int          `json:"position"`
+	Key      string           `json:"key"`
+	Name     string           `json:"name"`
+	Position int              `json:"position"`
 	Sections []SectionRequest `json:"sections"`
 }
 
 type PageResponse struct {
-	ID         domain.PageID                 `json:"id"`
-	Key        string                        `json:"key"`
-	Name       string                        `json:"name"`
-	Position   int                           `json:"position"`
+	ID         domain.PageID              `json:"id"`
+	Key        string                     `json:"key"`
+	Name       string                     `json:"name"`
+	Position   int                        `json:"position"`
 	Sections   []*SectionResponse         `json:"sections"`
 	Conditions []*ConditionalRuleResponse `json:"conditions"`
 }
