@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/cmclaughlin24/sundance/submissions/internal/adapters/persistence/inmemory"
-	"github.com/cmclaughlin24/sundance/submissions/internal/core/ports"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/persistence/inmemory"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
 )
 
 type PersistenceDriver string

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/database"
-	"github.com/cmclaughlin24/sundance/submissions/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
 )
 
 type Repository struct {

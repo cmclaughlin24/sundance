@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/cmclaughlin24/sundance/submissions/internal/adapters/persistence"
-	"github.com/cmclaughlin24/sundance/submissions/internal/core/ports"
-	"github.com/cmclaughlin24/sundance/submissions/internal/core/services"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/persistence"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/services"
 )
 
 type ApplicationSettings struct {

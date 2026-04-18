@@ -3,7 +3,7 @@ package dto
 import (
 	"time"
 
-	"github.com/cmclaughlin24/sundance/submissions/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
 )
 
 type SubmissionResponse struct {

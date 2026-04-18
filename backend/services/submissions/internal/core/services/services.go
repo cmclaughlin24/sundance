@@ -3,7 +3,7 @@ package services
 import (
 	"log"
 
-	"github.com/cmclaughlin24/sundance/submissions/internal/core/ports"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
 )
 
 func Bootstrap(logger *log.Logger, repository *ports.Repository) *ports.Services {

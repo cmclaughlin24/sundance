@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/cmclaughlin24/sundance/submissions/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
 )
 
 type Services struct {
@@ -15,5 +15,5 @@ type SubmissionsService interface {
 	FindById(context.Context, *FindByIdQuery[domain.SubmissionID]) (*domain.Submission, error)
 	FindByReferenceId(context.Context, *FindByIdQuery[domain.ReferenceID]) (*domain.Submission, error)
 	FindAttempts(context.Context) ([]*domain.SubmissionAttempt, error)
-	Replay(context.Context, ReplaySubmissionCommand) error 
+	Replay(context.Context, ReplaySubmissionCommand) error
 }

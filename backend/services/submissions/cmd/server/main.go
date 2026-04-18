@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/submissions/internal/adapters/rest"
-	"github.com/cmclaughlin24/sundance/submissions/internal/core"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/rest"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
 )
 
 const port = 80

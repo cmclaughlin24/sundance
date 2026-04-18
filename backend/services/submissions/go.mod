@@ -1,4 +1,4 @@
-module github.com/cmclaughlin24/sundance/submissions
+module github.com/cmclaughlin24/sundance/backend/services/submissions
 
 go 1.25.3
 

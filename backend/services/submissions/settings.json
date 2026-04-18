@@ -1,0 +1,6 @@
+{
+  "persistence": {
+    "driver": "in-memory",
+    "options": {}
+  }
+}

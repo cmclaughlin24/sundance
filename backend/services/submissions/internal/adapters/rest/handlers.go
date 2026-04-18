@@ -4,10 +4,10 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
-	"github.com/cmclaughlin24/sundance/submissions/internal/adapters/rest/dto"
-	"github.com/cmclaughlin24/sundance/submissions/internal/core"
-	"github.com/cmclaughlin24/sundance/submissions/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/submissions/internal/core/ports"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/rest/dto"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
 )
 
 type result[T any] struct {
