@@ -15,7 +15,7 @@ type SubmissionResponse struct {
 	Status      domain.SubmissionStatus `json:"status"`
 	Payload     any                     `json:"payload"`
 	CreatedAt   time.Time               `json:"createdAt"`
-	UpdatedAt   time.Time               `json:"createdBy"`
+	UpdatedAt   time.Time               `json:"updatedAt"`
 }
 
 func SubmissionToResponse(s *domain.Submission) *SubmissionResponse {
