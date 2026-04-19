@@ -10,23 +10,23 @@ import (
 )
 
 type SubmissionsService struct {
-	logger     *log.Logger
-	repository *ports.Repository
+	logger                *log.Logger
+	submissionsRepository ports.SubmissionsRepository
 }
 
 func NewSubmissionsService(logger *log.Logger, repository *ports.Repository) *SubmissionsService {
 	return &SubmissionsService{
-		logger:     logger,
-		repository: repository,
+		logger:                logger,
+		submissionsRepository: repository.Submissions,
 	}
 }
 
 func (s *SubmissionsService) Find(ctx context.Context) ([]*domain.Submission, error) {
-	return s.repository.Submissions.Find(ctx)
+	return s.submissionsRepository.Find(ctx)
 }
 
 func (s *SubmissionsService) FindById(ctx context.Context, query *ports.FindByIdQuery[domain.SubmissionID]) (*domain.Submission, error) {
-	submission, err := s.repository.Submissions.FindById(ctx, query.ID)
+	submission, err := s.submissionsRepository.FindById(ctx, query.ID)
 
 	if err != nil {
 		return nil, err
@@ -40,7 +40,7 @@ func (s *SubmissionsService) FindById(ctx context.Context, query *ports.FindById
 }
 
 func (s *SubmissionsService) FindByReferenceId(ctx context.Context, query *ports.FindByIdQuery[domain.ReferenceID]) (*domain.Submission, error) {
-	submission, err := s.repository.Submissions.FindByReferenceId(ctx, query.ID)
+	submission, err := s.submissionsRepository.FindByReferenceId(ctx, query.ID)
 
 	if err != nil {
 		return nil, err

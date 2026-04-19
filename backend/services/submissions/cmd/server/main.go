@@ -3,44 +3,57 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/persistence"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/rest"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
 )
 
-const port = 80
+type settings struct {
+	Port        int                             `json:"port"`
+	Persistence persistence.PersistenceSettings `json:"persistence"`
+}
 
 func main() {
 	settingsPath := flag.String("settings", "settings.json", "Path to settings JSON file")
 	flag.Parse()
 
-	var settings core.ApplicationSettings
+	var settings settings
 
 	if err := common.ReadJsonFile(*settingsPath, &settings); err != nil {
 		panic(err)
 	}
 
-	app, err := core.NewApplication(settings)
+	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	r, err := persistence.Bootstrap(settings.Persistence, logger)
 
 	if err != nil {
-		panic(err)
+		logger.Fatal(err)
+	}
+
+	app, err := core.NewApplication(logger, r)
+
+	if err != nil {
+		logger.Fatal(err)
 	}
 
 	defer app.Close()
 	mux := rest.NewRoutes(app)
 
 	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", port),
+		Addr:         fmt.Sprintf(":%d", settings.Port),
 		Handler:      mux,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
 
-	app.Logger.Printf("application listening on :%d", port)
+	app.Logger.Printf("application listening on :%d", settings.Port)
 
 	if err := server.ListenAndServe(); err != nil {
 		app.Logger.Fatal(err)

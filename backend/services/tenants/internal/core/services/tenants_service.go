@@ -11,23 +11,23 @@ import (
 )
 
 type TenantsService struct {
-	logger     *log.Logger
-	repository *ports.Repository
+	logger            *log.Logger
+	tenantsRepository ports.TenantsRepository
 }
 
 func NewTenantsService(logger *log.Logger, repository *ports.Repository) *TenantsService {
 	return &TenantsService{
-		logger:     logger,
-		repository: repository,
+		logger:            logger,
+		tenantsRepository: repository.Tenants,
 	}
 }
 
 func (s *TenantsService) Find(ctx context.Context) ([]*domain.Tenant, error) {
-	return s.repository.Tenants.Find(ctx)
+	return s.tenantsRepository.Find(ctx)
 }
 
 func (s *TenantsService) FindById(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
-	return s.repository.Tenants.FindById(ctx, id)
+	return s.tenantsRepository.FindById(ctx, id)
 }
 
 func (s *TenantsService) Create(ctx context.Context, command *ports.CreateTenantCommand) (*domain.Tenant, error) {
@@ -41,7 +41,7 @@ func (s *TenantsService) Create(ctx context.Context, command *ports.CreateTenant
 		return nil, err
 	}
 
-	tenant, err := s.repository.Tenants.Upsert(ctx, t)
+	tenant, err := s.tenantsRepository.Upsert(ctx, t)
 
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenant
 		return nil, err
 	}
 
-	tenant, err := s.repository.Tenants.Upsert(ctx, t)
+	tenant, err := s.tenantsRepository.Upsert(ctx, t)
 
 	if err != nil {
 		return nil, err
@@ -71,7 +71,7 @@ func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenant
 }
 
 func (s *TenantsService) Remove(ctx context.Context, id domain.TenantID) error {
-	exists, err := s.repository.Tenants.Exists(ctx, id)
+	exists, err := s.tenantsRepository.Exists(ctx, id)
 
 	if err != nil {
 		return err
@@ -81,5 +81,5 @@ func (s *TenantsService) Remove(ctx context.Context, id domain.TenantID) error {
 		return common.ErrNotFound
 	}
 
-	return s.repository.Tenants.Remove(ctx, id)
+	return s.tenantsRepository.Remove(ctx, id)
 }

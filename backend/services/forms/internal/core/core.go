@@ -2,16 +2,10 @@ package core
 
 import (
 	"log"
-	"os"
 
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/persistence"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/services"
 )
-
-type ApplicationSettings struct {
-	Persistence persistence.PersistenceSettings `json:"persistence"`
-}
 
 type Application struct {
 	Logger     *log.Logger
@@ -19,20 +13,13 @@ type Application struct {
 	repository *ports.Repository
 }
 
-func NewApplication(settings ApplicationSettings) (*Application, error) {
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
-	r, err := persistence.Bootstrap(settings.Persistence, logger)
-
-	if err != nil {
-		return nil, err
-	}
-
-	s := services.Bootstrap(logger, r)
+func NewApplication(logger *log.Logger, repository *ports.Repository) (*Application, error) {
+	s := services.Bootstrap(logger, repository)
 
 	return &Application{
 		Logger:     logger,
 		Services:   s,
-		repository: r,
+		repository: repository,
 	}, nil
 }
 

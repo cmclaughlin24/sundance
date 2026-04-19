@@ -11,14 +11,14 @@ import (
 )
 
 type DataSourcesService struct {
-	logger     *log.Logger
-	repository *ports.Repository
+	logger                *log.Logger
+	dataSourcesRepository ports.DataSourcesRepository
 }
 
 func NewDataSourcesService(logger *log.Logger, repository *ports.Repository) *DataSourcesService {
 	return &DataSourcesService{
-		logger:     logger,
-		repository: repository,
+		logger:                logger,
+		dataSourcesRepository: repository.DataSources,
 	}
 }
 
@@ -27,11 +27,11 @@ func (s *DataSourcesService) Find(ctx context.Context, query *ports.ListDataSour
 		return nil, err
 	}
 
-	return s.repository.DataSources.Find(ctx, query.TenantID)
+	return s.dataSourcesRepository.Find(ctx, query.TenantID)
 }
 
 func (s *DataSourcesService) FindById(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) (*domain.DataSource, error) {
-	return s.repository.DataSources.FindById(ctx, tenantID, sourceID)
+	return s.dataSourcesRepository.FindById(ctx, tenantID, sourceID)
 }
 
 func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
@@ -52,7 +52,7 @@ func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDa
 		return nil, err
 	}
 
-	dataSource, err := s.repository.DataSources.Upsert(ctx, ds)
+	dataSource, err := s.dataSourcesRepository.Upsert(ctx, ds)
 
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 		return nil, err
 	}
 
-	dataSource, err := s.repository.DataSources.Upsert(ctx, ds)
+	dataSource, err := s.dataSourcesRepository.Upsert(ctx, ds)
 
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 }
 
 func (s *DataSourcesService) Remove(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) error {
-	exists, err := s.repository.DataSources.Exists(ctx, tenantID, sourceID)
+	exists, err := s.dataSourcesRepository.Exists(ctx, tenantID, sourceID)
 
 	if err != nil {
 		return err
@@ -99,11 +99,11 @@ func (s *DataSourcesService) Remove(ctx context.Context, tenantID domain.TenantI
 		return common.ErrNotFound
 	}
 
-	return s.repository.DataSources.Remove(ctx, tenantID, sourceID)
+	return s.dataSourcesRepository.Remove(ctx, tenantID, sourceID)
 }
 
 func (s *DataSourcesService) Lookup(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) ([]*domain.DataSourceLookup, error) {
-	_, err := s.repository.DataSources.FindById(ctx, tenantID, sourceID)
+	_, err := s.dataSourcesRepository.FindById(ctx, tenantID, sourceID)
 
 	if err != nil {
 		return nil, err

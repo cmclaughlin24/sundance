@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
@@ -372,6 +373,13 @@ func (h *handlers) getTenantIDPathValue(r *http.Request) domain.TenantID {
 
 func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 	switch {
+	case errors.Is(domain.ErrInvalidSourceTypeAttributes, err):
+		httputil.SendJsonResponse(w, http.StatusBadRequest, httputil.ApiErrorResponse{
+			Message: "Bad Request",
+			Error: err.Error(),
+			StatusCode: http.StatusBadRequest,
+		})
+
 	default:
 		httputil.SendErrorResponse(w, err)
 	}

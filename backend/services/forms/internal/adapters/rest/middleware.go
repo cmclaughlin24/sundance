@@ -5,7 +5,7 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
 )
 
 const tenantIDHeader = "X-Tenant-ID"
@@ -21,7 +21,7 @@ func tenantMiddleware(next http.Handler) http.Handler {
 		tenantID := r.Header.Get(tenantIDHeader)
 
 		if tenantID == "" {
-			common.SendErrorResponse(w, ErrMissingTenantID)
+			httputil.SendErrorResponse(w, ErrMissingTenantID)
 			return
 		}
 

@@ -6,25 +6,28 @@ import (
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/database"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
 )
 
 type FormsService struct {
-	logger     *log.Logger
-	repository *ports.Repository
+	logger          *log.Logger
+	database        database.Database
+	formsRepository ports.FormsRepository
 }
 
 func NewFormsService(logger *log.Logger, repository *ports.Repository) *FormsService {
 	return &FormsService{
-		logger:     logger,
-		repository: repository,
+		logger:          logger,
+		database:        repository.Database,
+		formsRepository: repository.Forms,
 	}
 }
 
 func (s *FormsService) Find(ctx context.Context) ([]*domain.Form, error) {
-	return s.repository.Forms.Find(ctx)
+	return s.formsRepository.Find(ctx)
 }
 
 func (s *FormsService) FindById(ctx context.Context, query *ports.FindByIDQuery) (*domain.Form, error) {
@@ -32,7 +35,7 @@ func (s *FormsService) FindById(ctx context.Context, query *ports.FindByIDQuery)
 		return nil, err
 	}
 
-	form, err := s.repository.Forms.FindById(ctx, query.FormID)
+	form, err := s.formsRepository.FindById(ctx, query.FormID)
 
 	if err != nil {
 		return nil, err
@@ -56,7 +59,7 @@ func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormComm
 		return nil, err
 	}
 
-	form, err = s.repository.Forms.Create(ctx, form)
+	form, err = s.formsRepository.Create(ctx, form)
 
 	if err != nil {
 		return nil, err
@@ -74,7 +77,7 @@ func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormComm
 		return nil, err
 	}
 
-	form, err := s.repository.Forms.FindById(ctx, command.ID)
+	form, err := s.formsRepository.FindById(ctx, command.ID)
 
 	if err != nil {
 		return nil, err
@@ -84,7 +87,7 @@ func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormComm
 		return nil, err
 	}
 
-	form, err = s.repository.Forms.Update(ctx, form)
+	form, err = s.formsRepository.Update(ctx, form)
 
 	if err != nil {
 		return nil, err
@@ -102,7 +105,7 @@ func (s *FormsService) FindVersions(ctx context.Context, query *ports.FindVersio
 		return nil, err
 	}
 
-	return s.repository.Forms.FindVersions(ctx, query.FormID)
+	return s.formsRepository.FindVersions(ctx, query.FormID)
 }
 
 func (s *FormsService) FindVersion(ctx context.Context, query *ports.FindVersionByIDQuery) (*domain.Version, error) {
@@ -114,7 +117,7 @@ func (s *FormsService) FindVersion(ctx context.Context, query *ports.FindVersion
 		return nil, err
 	}
 
-	return s.repository.Forms.FindVersion(ctx, query.FormID, query.VersionID)
+	return s.formsRepository.FindVersion(ctx, query.FormID, query.VersionID)
 }
 
 func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateVersionCommand) (*domain.Version, error) {
@@ -126,15 +129,15 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 		return nil, err
 	}
 
-	txCtx, err := s.repository.Database.BeginTx(ctx)
+	txCtx, err := s.database.BeginTx(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer s.repository.Database.RollbackTx(txCtx)
+	defer s.database.RollbackTx(txCtx)
 
-	versionNum, err := s.repository.Forms.FindNextVersionNumber(txCtx, command.FormID)
+	versionNum, err := s.formsRepository.FindNextVersionNumber(txCtx, command.FormID)
 
 	if err != nil {
 		return nil, err
@@ -146,13 +149,13 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 		return nil, err
 	}
 
-	version, err = s.repository.Forms.CreateVersion(txCtx, version)
+	version, err = s.formsRepository.CreateVersion(txCtx, version)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if err := s.repository.Database.CommitTx(txCtx); err != nil {
+	if err := s.database.CommitTx(txCtx); err != nil {
 		return nil, err
 	}
 
@@ -168,7 +171,7 @@ func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateV
 		return nil, err
 	}
 
-	version, err := s.repository.Forms.FindVersion(ctx, command.FormID, command.VersionID)
+	version, err := s.formsRepository.FindVersion(ctx, command.FormID, command.VersionID)
 
 	if err != nil {
 		return nil, err
@@ -178,7 +181,7 @@ func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateV
 		return nil, err
 	}
 
-	version, err = s.repository.Forms.UpdateVersion(ctx, version)
+	version, err = s.formsRepository.UpdateVersion(ctx, version)
 
 	if err != nil {
 		return nil, err
@@ -196,7 +199,7 @@ func (s *FormsService) PublishVersion(ctx context.Context, command *ports.Publis
 		return nil, err
 	}
 
-	version, err := s.repository.Forms.FindVersion(ctx, command.FormID, command.VersionID)
+	version, err := s.formsRepository.FindVersion(ctx, command.FormID, command.VersionID)
 
 	if err != nil {
 		return nil, err
@@ -206,7 +209,7 @@ func (s *FormsService) PublishVersion(ctx context.Context, command *ports.Publis
 		return nil, err
 	}
 
-	version, err = s.repository.Forms.UpdateVersion(ctx, version)
+	version, err = s.formsRepository.UpdateVersion(ctx, version)
 
 	if err != nil {
 		return nil, err
@@ -224,7 +227,7 @@ func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireV
 		return nil, err
 	}
 
-	version, err := s.repository.Forms.FindVersion(ctx, command.FormID, command.VersionID)
+	version, err := s.formsRepository.FindVersion(ctx, command.FormID, command.VersionID)
 
 	if err != nil {
 		return nil, err
@@ -234,7 +237,7 @@ func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireV
 		return nil, err
 	}
 
-	version, err = s.repository.Forms.UpdateVersion(ctx, version)
+	version, err = s.formsRepository.UpdateVersion(ctx, version)
 
 	if err != nil {
 		return nil, err
@@ -244,7 +247,7 @@ func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireV
 }
 
 func (s *FormsService) isValidAccess(ctx context.Context, tenantId string, formId domain.FormID) error {
-	form, err := s.repository.Forms.FindById(ctx, formId)
+	form, err := s.formsRepository.FindById(ctx, formId)
 
 	if err != nil {
 		return err

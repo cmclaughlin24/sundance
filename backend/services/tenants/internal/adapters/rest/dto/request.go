@@ -46,7 +46,7 @@ func RequestToDataSourceAttributes(dataSourceType domain.DataSourceType, raw any
 	attrBytes, err := json.Marshal(raw)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w, %w", ErrDataSourceAttrParse, err)
 	}
 
 	strategy, err := attributeParserStrategies.Get(dataSourceType)
@@ -58,7 +58,7 @@ func RequestToDataSourceAttributes(dataSourceType domain.DataSourceType, raw any
 	return strategy(attrBytes)
 }
 
-func parseAttributes[T any](data []byte) (domain.DataSourceAttributes, error) {
+func parseAttributes[T domain.DataSourceAttributes](data []byte) (domain.DataSourceAttributes, error) {
 	var attributes T
 
 	if err := json.Unmarshal(data, &attributes); err != nil {
