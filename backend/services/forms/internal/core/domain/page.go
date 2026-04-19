@@ -2,8 +2,6 @@ package domain
 
 import (
 	"errors"
-
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/types"
 )
 
 type PageID string
@@ -48,7 +46,7 @@ func (p *Page) SetSections(sections ...*Section) error {
 		_, exists := p.Sections[section.Position]
 
 		if exists {
-			return types.ErrDuplicatePosition
+			return ErrDuplicatePosition
 		}
 
 		p.Sections[section.Position] = section

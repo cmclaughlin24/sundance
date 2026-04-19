@@ -1,11 +1,15 @@
 package domain
 
-type FieldAttributes any
+type FieldAttributes interface {
+	isFieldAttribute()
+}
 
 type BaseFieldAttributes struct {
 	IsReadOnly bool
 	IsRequired bool
 }
+
+func (a BaseFieldAttributes) isFieldAttribute() {}
 
 type TextFieldAttributes struct {
 	BaseFieldAttributes
@@ -39,4 +43,3 @@ type DateFieldAttributes struct {
 	MinDate *string
 	MaxDate *string
 }
-

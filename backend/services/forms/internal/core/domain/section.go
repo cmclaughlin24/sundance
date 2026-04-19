@@ -2,8 +2,6 @@ package domain
 
 import (
 	"errors"
-
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/types"
 )
 
 type SectionID string
@@ -48,7 +46,7 @@ func (s *Section) SetFields(fields ...*Field) error {
 		_, exists := s.Fields[field.Position]
 
 		if exists {
-			return types.ErrDuplicatePosition
+			return ErrDuplicatePosition
 		}
 
 		s.Fields[field.Position] = field

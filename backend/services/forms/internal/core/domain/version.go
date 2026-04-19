@@ -3,8 +3,6 @@ package domain
 import (
 	"errors"
 	"time"
-
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/types"
 )
 
 type VersionStatus string
@@ -65,7 +63,7 @@ func (v *Version) SetPages(pages ...*Page) error {
 		_, exists := v.Pages[page.Position]
 
 		if exists {
-			return types.ErrDuplicatePosition
+			return ErrDuplicatePosition
 		}
 
 		v.Pages[page.Position] = page
