@@ -36,6 +36,8 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 3. **Inconsistent response envelope** (Previously Tenants #51) -- List endpoints (`getTenants`, `getDataSources`, `getDataSourceLookup`) return a bare JSON array, while create/update endpoints return an `ApiResponse[T]` wrapper with a `message` field. This is an intentional convention: GET list operations return the collection directly, while CUD operations return the response envelope.
 
+4. **REST handlers hold a reference to the full `Application`** (Previously Forms #2, Submissions #16, Tenants #32) -- The `handlers` struct takes `*core.Application` rather than narrowed dependencies. `Application` acts as a dependency container assembled at the composition root (`main.go`) that groups the application's top-level dependencies. It exports only `Logger` and `Services` (the `repository` field is unexported and inaccessible to the adapter layer). Passing the container directly avoids cascading signature changes through `newHandlers` and `Routes` when new cross-cutting concerns (e.g., config, metrics) are added to `Application`. The surface area exposed to handlers is already minimal.
+
 ---
 
 ## Remaining Issues
@@ -48,9 +50,7 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 #### Architectural
 
-2. **REST handlers hold a reference to the full `Application`** (`handlers.go:18-19`) -- The `handlers` struct takes `*core.Application` rather than just `*ports.Services` or the specific service interface. *(Unresolved from 4/13 #9, 4/17 #4, 4/18 #4.)*
-
-3. **`Find()` has no tenant filtering** (`form_service.go:26-28`) -- Returns all forms across all tenants. Every other query enforces tenant isolation. *(Unresolved from 4/13 #10, 4/17 #5, 4/18 #5.)*
+2. **`Find()` has no tenant filtering** (`form_service.go:26-28`) -- Returns all forms across all tenants. Every other query enforces tenant isolation. *(Unresolved from 4/13 #10, 4/17 #5, 4/18 #5.)*
 
 4. **Aggregate boundaries unclear** -- `Form` has no `Versions` field; `Version` can be loaded/modified independently without going through `Form`. *(Unresolved from 4/13 #11, 4/17 #6, 4/18 #6.)*
 
@@ -86,9 +86,7 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 #### Architectural
 
-16. **REST handlers hold a reference to the full `Application`** (`handlers.go:18-20`) -- Same pattern as other services. *(Unresolved from 4/17 #28, 4/18 #26.)*
-
-17. **No tenant middleware** -- No `middleware.go` implementation exists (file is empty). The `getSubmissionByReferenceID` handler passes an empty string `""` as the tenantID to `NewFindByIdQuery`. *(Unresolved from 4/17 #26, 4/18 #24.)*
+16. **No tenant middleware** -- No `middleware.go` implementation exists (file is empty). The `getSubmissionByReferenceID` handler passes an empty string `""` as the tenantID to `NewFindByIdQuery`. *(Unresolved from 4/17 #26, 4/18 #24.)*
 
 18. **`Find()` has no tenant filtering** (`submissions_service.go:24-26`) -- Returns all submissions across all tenants. *(Unresolved from 4/17 #27, 4/18 #25.)*
 
@@ -128,9 +126,7 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 #### Architectural
 
-32. **REST handlers hold a reference to the full `Application`** (`handlers.go:18-19`) -- Same pattern as other services. *(Unresolved from 4/16 #7, 4/17 #45, 4/18 #43.)*
-
-33. **`DataSource` can be created without verifying its parent `Tenant` exists** (`data_sources_service.go:37-62`) -- `Create` validates the command and calls `Upsert` directly without checking that the `TenantID` corresponds to an existing tenant. Allows orphaned data sources. *(Unresolved from 4/16 #8, 4/17 #46, 4/18 #44.)*
+32. **`DataSource` can be created without verifying its parent `Tenant` exists** (`data_sources_service.go:37-62`) -- `Create` validates the command and calls `Upsert` directly without checking that the `TenantID` corresponds to an existing tenant. Allows orphaned data sources. *(Unresolved from 4/16 #8, 4/17 #46, 4/18 #44.)*
 
 34. **`Find()` in tenants service has no pagination or filtering** (`tenants_service.go:25-27`) -- Returns every tenant in a single unbounded response. *(Unresolved from 4/16 #10, 4/17 #48, 4/18 #45.)*
 
@@ -183,8 +179,7 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
 | **P1** | 46 | `ErrInvalidID`/`ErrUnauthorized` map to 500 | Shared |
-| **P2** | 2, 16, 32 | Handlers receive full Application | All |
-| **P2** | 3, 18 | `Find()` has no tenant filtering | Forms, Submissions |
+| **P2** | 2, 18 | `Find()` has no tenant filtering | Forms, Submissions |
 | **P2** | 7, 37 | Domain validation unimplemented | Forms, Tenants |
 | **P2** | 24 | No domain constructors | Submissions |
 | **P2** | 33 | DataSource created without parent Tenant check | Tenants |
@@ -234,7 +229,7 @@ Additionally, two issues have been moved to Will Not Fix and one new feature was
 
 ### Current State
 
-**Forms Service** remains the most mature. Several P2/P3 architectural and code quality issues are now resolved (`ErrDuplicatePosition` domain purity, `FieldAttributes` type safety, attribute parsing consistency). The primary remaining gaps are: the hardcoded `"placeholder"` user IDs, the aggregate boundary ambiguity between `Form` and `Version`, the `FieldResponse` DTO silently dropping attributes, the `ErrMissingTenantID`-to-500 mapping bug, and the continued absence of domain validation and test coverage. The handlers still receive the full `Application` struct.
+**Forms Service** remains the most mature. Several P2/P3 architectural and code quality issues are now resolved (`ErrDuplicatePosition` domain purity, `FieldAttributes` type safety, attribute parsing consistency). The primary remaining gaps are: the hardcoded `"placeholder"` user IDs, the aggregate boundary ambiguity between `Form` and `Version`, the `FieldResponse` DTO silently dropping attributes, the `ErrMissingTenantID`-to-500 mapping bug, and the continued absence of domain validation and test coverage.
 
 **Tenants Service** has made significant progress: the hexagonal violation is fixed, services follow ISP, `DataSourceAttributes` uses a sealed interface, the `parseAttributes` error wrapping P1 is resolved, error wrapping format is consistent, and `DataSource` now carries `Name` and `Description` fields. The `DataSource` orphan problem (no tenant existence check), incomplete attribute types (missing json tags, empty `ScheduledDataSourceAttributes`), and incomplete error-to-HTTP mapping remain.
 
@@ -246,5 +241,4 @@ Additionally, two issues have been moved to Will Not Fix and one new feature was
 
 1. **Add `ErrInvalidID` and `ErrUnauthorized` mappings** to `SendErrorResponse` (P1 -- auth/validation errors produce 500s)
 2. **Fix `ErrMissingTenantID` mapping** in forms middleware or `SendErrorResponse` (P2 -- missing tenant header produces 500)
-3. **Narrow handler dependencies** to `*ports.Services` instead of `*core.Application` across all three services (P2 -- principle of least privilege)
-4. **Add test coverage** starting with service and handler layers (P3 -- long-term reliability)
+3. **Add test coverage** starting with service and handler layers (P3 -- long-term reliability)
