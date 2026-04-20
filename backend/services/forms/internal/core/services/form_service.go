@@ -16,6 +16,7 @@ type FormsService struct {
 	logger          *log.Logger
 	database        database.Database
 	formsRepository ports.FormsRepository
+	baseService
 }
 
 func NewFormsService(logger *log.Logger, repository *ports.Repository) *FormsService {
@@ -31,6 +32,11 @@ func (s *FormsService) Find(ctx context.Context) ([]*domain.Form, error) {
 }
 
 func (s *FormsService) FindById(ctx context.Context, query *ports.FindByIDQuery) (*domain.Form, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
@@ -41,7 +47,7 @@ func (s *FormsService) FindById(ctx context.Context, query *ports.FindByIDQuery)
 		return nil, err
 	}
 
-	if form.TenantID != query.TenantID {
+	if form.TenantID != tenantID {
 		return nil, common.ErrUnauthorized
 	}
 
@@ -49,11 +55,16 @@ func (s *FormsService) FindById(ctx context.Context, query *ports.FindByIDQuery)
 }
 
 func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormCommand) (*domain.Form, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
 
-	form, err := domain.NewForm(domain.FormID(""), command.TenantID, command.Name, command.Description)
+	form, err := domain.NewForm(domain.FormID(""), tenantID, command.Name, command.Description)
 
 	if err != nil {
 		return nil, err
@@ -69,11 +80,16 @@ func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormComm
 }
 
 func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormCommand) (*domain.Form, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, command.TenantID, command.ID); err != nil {
+	if err := s.isValidAccess(ctx, tenantID, command.ID); err != nil {
 		return nil, err
 	}
 
@@ -97,11 +113,16 @@ func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormComm
 }
 
 func (s *FormsService) FindVersions(ctx context.Context, query *ports.FindVersionsQuery) ([]*domain.Version, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, query.TenantID, query.FormID); err != nil {
+	if err := s.isValidAccess(ctx, tenantID, query.FormID); err != nil {
 		return nil, err
 	}
 
@@ -109,11 +130,16 @@ func (s *FormsService) FindVersions(ctx context.Context, query *ports.FindVersio
 }
 
 func (s *FormsService) FindVersion(ctx context.Context, query *ports.FindVersionByIDQuery) (*domain.Version, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, query.TenantID, query.FormID); err != nil {
+	if err := s.isValidAccess(ctx, tenantID, query.FormID); err != nil {
 		return nil, err
 	}
 
@@ -121,11 +147,16 @@ func (s *FormsService) FindVersion(ctx context.Context, query *ports.FindVersion
 }
 
 func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateVersionCommand) (*domain.Version, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, command.TenantID, command.FormID); err != nil {
+	if err := s.isValidAccess(ctx, tenantID, command.FormID); err != nil {
 		return nil, err
 	}
 
@@ -163,11 +194,16 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 }
 
 func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateVersionCommand) (*domain.Version, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, command.TenantID, command.FormID); err != nil {
+	if err := s.isValidAccess(ctx, tenantID, command.FormID); err != nil {
 		return nil, err
 	}
 
@@ -191,11 +227,16 @@ func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateV
 }
 
 func (s *FormsService) PublishVersion(ctx context.Context, command *ports.PublishVersionCommand) (*domain.Version, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, command.TenantID, command.FormID); err != nil {
+	if err := s.isValidAccess(ctx, tenantID, command.FormID); err != nil {
 		return nil, err
 	}
 
@@ -219,11 +260,16 @@ func (s *FormsService) PublishVersion(ctx context.Context, command *ports.Publis
 }
 
 func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireVersionCommand) (*domain.Version, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, command.TenantID, command.FormID); err != nil {
+	if err := s.isValidAccess(ctx, tenantID, command.FormID); err != nil {
 		return nil, err
 	}
 
@@ -246,14 +292,14 @@ func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireV
 	return version, nil
 }
 
-func (s *FormsService) isValidAccess(ctx context.Context, tenantId string, formId domain.FormID) error {
-	form, err := s.formsRepository.FindById(ctx, formId)
+func (s *FormsService) isValidAccess(ctx context.Context, tenantID string, formID domain.FormID) error {
+	form, err := s.formsRepository.FindById(ctx, formID)
 
 	if err != nil {
 		return err
 	}
 
-	if form.TenantID != tenantId {
+	if form.TenantID != tenantID {
 		return common.ErrUnauthorized
 	}
 

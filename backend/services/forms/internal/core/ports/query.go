@@ -5,19 +5,17 @@ import (
 )
 
 type baseFindQuery struct {
-	FormID   domain.FormID `validate:"required"`
-	TenantID string        `validate:"required"`
+	FormID domain.FormID `validate:"required"`
 }
 
 type FindByIDQuery struct {
 	baseFindQuery
 }
 
-func NewFindByIDQuery(formID domain.FormID, tenantID string) *FindByIDQuery {
+func NewFindByIDQuery(formID domain.FormID) *FindByIDQuery {
 	return &FindByIDQuery{
 		baseFindQuery{
-			FormID:   formID,
-			TenantID: tenantID,
+			FormID: formID,
 		},
 	}
 }
@@ -26,11 +24,10 @@ type FindVersionsQuery struct {
 	baseFindQuery
 }
 
-func NewFindVersionsQuery(formID domain.FormID, tenantID string) *FindVersionsQuery {
+func NewFindVersionsQuery(formID domain.FormID) *FindVersionsQuery {
 	return &FindVersionsQuery{
 		baseFindQuery{
-			FormID:   formID,
-			TenantID: tenantID,
+			FormID: formID,
 		},
 	}
 }
@@ -40,11 +37,10 @@ type FindVersionByIDQuery struct {
 	VersionID domain.VersionID `validate:"required"`
 }
 
-func NewFindVersionByIDQuery(formID domain.FormID, tenantID string, versionID domain.VersionID) *FindVersionByIDQuery {
+func NewFindVersionByIDQuery(formID domain.FormID, versionID domain.VersionID) *FindVersionByIDQuery {
 	return &FindVersionByIDQuery{
 		baseFindQuery: baseFindQuery{
-			FormID:   formID,
-			TenantID: tenantID,
+			FormID: formID,
 		},
 		VersionID: versionID,
 	}
