@@ -12,6 +12,7 @@ import (
 
 type DataSourcesService struct {
 	logger                *log.Logger
+	tenantsRepository     ports.TenantsRepository
 	dataSourcesRepository ports.DataSourcesRepository
 }
 
@@ -19,6 +20,7 @@ func NewDataSourcesService(logger *log.Logger, repository *ports.Repository) *Da
 	return &DataSourcesService{
 		logger:                logger,
 		dataSourcesRepository: repository.DataSources,
+		tenantsRepository:     repository.Tenants,
 	}
 }
 
@@ -36,6 +38,10 @@ func (s *DataSourcesService) FindById(ctx context.Context, tenantID domain.Tenan
 
 func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
 	if err := validate.ValidateStruct(command); err != nil {
+		return nil, err
+	}
+
+	if err := s.tenantExists(ctx, command.TenantID); err != nil {
 		return nil, err
 	}
 
@@ -66,6 +72,10 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 		return nil, err
 	}
 
+	if err := s.tenantExists(ctx, command.TenantID); err != nil {
+		return nil, err
+	}
+
 	ds, err := domain.NewDataSource(
 		command.ID,
 		command.TenantID,
@@ -89,6 +99,10 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 }
 
 func (s *DataSourcesService) Remove(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) error {
+	if err := s.tenantExists(ctx, tenantID); err != nil {
+		return err
+	}
+
 	exists, err := s.dataSourcesRepository.Exists(ctx, tenantID, sourceID)
 
 	if err != nil {
@@ -112,4 +126,18 @@ func (s *DataSourcesService) Lookup(ctx context.Context, tenantID domain.TenantI
 	// TODO: Implement data source lookup strategy pattern based on the type of data source.
 
 	return nil, nil
+}
+
+func (s *DataSourcesService) tenantExists(ctx context.Context, tenantID domain.TenantID) error {
+	exists, err := s.tenantsRepository.Exists(ctx, tenantID)
+
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return common.ErrNotFound
+	}
+
+	return nil
 }
