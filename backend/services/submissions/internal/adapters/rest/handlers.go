@@ -8,6 +8,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
+	"github.com/go-chi/chi/v5"
 )
 
 type result[T any] struct {
@@ -90,7 +91,7 @@ func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request) {}
 
 func (h *handlers) getReferenceIdPathValue(r *http.Request) domain.ReferenceID {
-	id := r.PathValue("referenceId")
+	id := chi.URLParam(r, "referenceId")
 	return domain.ReferenceID(id)
 }
 

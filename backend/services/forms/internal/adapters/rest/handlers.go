@@ -8,6 +8,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
+	"github.com/go-chi/chi/v5"
 )
 
 type result[T any] struct {
@@ -332,12 +333,12 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getFormIdPathValue(r *http.Request) domain.FormID {
-	id := r.PathValue("formId")
+	id := chi.URLParam(r, "formId")
 	return domain.FormID(id)
 }
 
 func (h *handlers) getVersionIdPathValue(r *http.Request) domain.VersionID {
-	id := r.PathValue("versionId")
+	id := chi.URLParam(r, "versionId")
 	return domain.VersionID(id)
 }
 

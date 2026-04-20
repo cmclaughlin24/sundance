@@ -9,6 +9,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
+	"github.com/go-chi/chi/v5"
 )
 
 type result[T any] struct {
@@ -195,7 +196,7 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
-	sourceID := r.PathValue("dataSourceId")
+	sourceID := chi.URLParam(r, "dataSourceId")
 	resultChan := make(chan result[*domain.DataSource], 1)
 
 	go func() {
@@ -262,7 +263,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
-	sourceID := r.PathValue("dataSourceId")
+	sourceID := chi.URLParam(r, "dataSourceId")
 	resultChan := make(chan result[*domain.DataSource], 1)
 
 	var body dto.DataSourceRequest
@@ -308,7 +309,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) removeDataSource(w http.ResponseWriter, r *http.Request) {
-	sourceID := r.PathValue("dataSourceId")
+	sourceID := chi.URLParam(r, "dataSourceId")
 	resultChan := make(chan result[any], 1)
 
 	go func() {
@@ -331,7 +332,7 @@ func (h *handlers) removeDataSource(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getDataSourceLookup(w http.ResponseWriter, r *http.Request) {
-	sourceID := r.PathValue("dataSourceId")
+	sourceID := chi.URLParam(r, "dataSourceId")
 	resultChan := make(chan result[[]*domain.DataSourceLookup], 1)
 
 	go func() {
@@ -359,7 +360,7 @@ func (h *handlers) getDataSourceLookup(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getTenantIDPathValue(r *http.Request) domain.TenantID {
-	id := r.PathValue("tenantId")
+	id := chi.URLParam(r, "tenantId")
 	return domain.TenantID(id)
 }
 
