@@ -3,6 +3,7 @@ package rest
 import (
 	"net/http"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 	"github.com/go-chi/chi/v5"
 )
@@ -20,22 +21,22 @@ func NewRoutes(app *core.Application) http.Handler {
 				tenantRoutes.Get("/", h.getTenant)
 				tenantRoutes.Put("/", h.updateTenant)
 				tenantRoutes.Delete("/", h.removeTenant)
-
-				tenantRoutes.Route("/data-sources", func(dataSourcesRoutes chi.Router) {
-					dataSourcesRoutes.Get("/", h.getDataSources)
-					dataSourcesRoutes.Post("/", h.createDataSource)
-
-					dataSourcesRoutes.Route("/{dataSourceId}", func(dataSourceRoutes chi.Router) {
-						dataSourceRoutes.Get("/", h.getDataSource)
-						dataSourceRoutes.Put("/", h.updateDataSource)
-						dataSourceRoutes.Delete("/", h.removeDataSource)
-						dataSourceRoutes.Get("/look-ups", h.getDataSourceLookup)
-					})
-				})
-
 			})
 		})
 
+		routes.Route("/data-sources", func(dataSourcesRoutes chi.Router) {
+			dataSourcesRoutes.Use(httputil.TenantMiddleware("X-Tenant-ID"))
+
+			dataSourcesRoutes.Get("/", h.getDataSources)
+			dataSourcesRoutes.Post("/", h.createDataSource)
+
+			dataSourcesRoutes.Route("/{dataSourceId}", func(dataSourceRoutes chi.Router) {
+				dataSourceRoutes.Get("/", h.getDataSource)
+				dataSourceRoutes.Put("/", h.updateDataSource)
+				dataSourceRoutes.Delete("/", h.removeDataSource)
+				dataSourceRoutes.Get("/look-ups", h.getDataSourceLookup)
+			})
+		})
 	})
 
 	return mux

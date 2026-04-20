@@ -3,6 +3,7 @@ package rest
 import (
 	"net/http"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
 	"github.com/go-chi/chi/v5"
 )
@@ -10,6 +11,8 @@ import (
 func NewRoutes(app *core.Application) http.Handler {
 	h := newHandlers(app)
 	mux := chi.NewRouter()
+
+	mux.Use(httputil.TenantMiddleware("X-Tenant-ID"))
 
 	mux.Route("/api/v1", func(routes chi.Router) {
 		routes.Route("/submissions", func(submissionsRoutes chi.Router) {

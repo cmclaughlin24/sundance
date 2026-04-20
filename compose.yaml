@@ -29,13 +29,13 @@ services:
     develop:
       watch:
         - action: sync
-          path: .
+          path: ./backend
           target: /app
           ignore:
-            - ./services/submissions
-            - ./services/tenants
+            - ./backend/services/submissions
+            - ./backend/services/tenants
         - action: rebuild
-          path: ./services/forms/go.mod
+          path: ./backend/services/forms/go.mod
   submissions:
     build:
       context: ./backend
@@ -47,13 +47,13 @@ services:
     develop:
       watch:
         - action: sync
-          path: .
+          path: ./backend
           target: /app
           ignore:
-            - ./services/forms
-            - ./services/tenants
+            - ./backend/services/forms
+            - ./backend/services/tenants
         - action: rebuild
-          path: ./services/submissions/go.mod
+          path: ./backend/services/submissions/go.mod
   tenants:
     build:
       context: ./backend
@@ -65,12 +65,12 @@ services:
     develop:
       watch:
         - action: sync
-          path: .
+          path: ./backend
           target: /app
           ignore:
-            - ./services/forms
-            - ./services/submissions
+            - ./backend/services/forms
+            - ./backend/services/submissions
         - action: rebuild
-          path: ./services/tenants/go.mod
+          path: ./backend/services/tenants/go.mod
 volumes:
   mongodb:
