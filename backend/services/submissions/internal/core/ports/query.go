@@ -1,22 +1,13 @@
 package ports
 
-import "github.com/go-playground/validator/v10"
-
 type FindByIdQuery[T any] struct {
-	ID       T
-	TenantID string
+	ID T `validate:"required"`
 }
 
-func NewFindByIdQuery[T any](id T, tenantID string) (*FindByIdQuery[T], error) {
+func NewFindByIdQuery[T any](id T) *FindByIdQuery[T] {
 	query := &FindByIdQuery[T]{
-		ID:       id,
-		TenantID: tenantID,
+		ID: id,
 	}
 
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	if err := validate.Struct(query); err != nil {
-		return nil, err
-	}
-
-	return query, nil
+	return query
 }

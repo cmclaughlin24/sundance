@@ -56,12 +56,7 @@ func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Request) {
 	referenceID := h.getReferenceIdPathValue(r)
 	resultChan := make(chan result[*domain.Submission], 1)
-
-	query, err := ports.NewFindByIdQuery(referenceID, "")
-	if err != nil {
-		httputil.SendErrorResponse(w, err)
-		return
-	}
+	query := ports.NewFindByIdQuery(referenceID)
 
 	go func() {
 		defer close(resultChan)

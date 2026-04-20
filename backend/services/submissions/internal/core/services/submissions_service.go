@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
 )
@@ -12,6 +13,7 @@ import (
 type SubmissionsService struct {
 	logger                *log.Logger
 	submissionsRepository ports.SubmissionsRepository
+	baseService
 }
 
 func NewSubmissionsService(logger *log.Logger, repository *ports.Repository) *SubmissionsService {
@@ -26,13 +28,22 @@ func (s *SubmissionsService) Find(ctx context.Context) ([]*domain.Submission, er
 }
 
 func (s *SubmissionsService) FindById(ctx context.Context, query *ports.FindByIdQuery[domain.SubmissionID]) (*domain.Submission, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := validate.ValidateStruct(query); err != nil {
+		return nil, err
+	}
+
 	submission, err := s.submissionsRepository.FindById(ctx, query.ID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if submission.TenantID != query.TenantID {
+	if submission.TenantID != tenantID {
 		return nil, common.ErrUnauthorized
 	}
 
@@ -40,13 +51,22 @@ func (s *SubmissionsService) FindById(ctx context.Context, query *ports.FindById
 }
 
 func (s *SubmissionsService) FindByReferenceId(ctx context.Context, query *ports.FindByIdQuery[domain.ReferenceID]) (*domain.Submission, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := validate.ValidateStruct(query); err != nil {
+		return nil, err
+	}
+
 	submission, err := s.submissionsRepository.FindByReferenceId(ctx, query.ID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if submission.TenantID != query.TenantID {
+	if submission.TenantID != tenantID {
 		return nil, common.ErrUnauthorized
 	}
 

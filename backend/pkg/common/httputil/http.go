@@ -59,11 +59,17 @@ func SendErrorResponse(w http.ResponseWriter, err error) {
 	}
 
 	switch {
-	case errors.Is(err, ErrDecodeJSON) || validate.IsValidationErr(err):
+	case errors.Is(err, ErrDecodeJSON) || errors.Is(err, common.ErrInvalidID) || validate.IsValidationErr(err):
 		SendJsonResponse(w, http.StatusBadRequest, ApiErrorResponse{
 			Message:    "Bad Request",
 			Error:      err.Error(),
 			StatusCode: http.StatusBadRequest,
+		})
+	case errors.Is(err, common.ErrUnauthorized):
+		SendJsonResponse(w, http.StatusUnauthorized, ApiErrorResponse{
+			Message:    "Unauthorized",
+			Error:      err.Error(),
+			StatusCode: http.StatusUnauthorized,
 		})
 	case errors.Is(err, common.ErrNotFound):
 		SendJsonResponse(w, http.StatusNotFound, ApiErrorResponse{
