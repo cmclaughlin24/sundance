@@ -46,7 +46,7 @@ func RequestToDataSourceAttributes(dataSourceType domain.DataSourceType, raw any
 	attrBytes, err := json.Marshal(raw)
 
 	if err != nil {
-		return nil, fmt.Errorf("%w, %w", ErrDataSourceAttrParse, err)
+		return nil, fmt.Errorf("%w: %w", ErrDataSourceAttrParse, err)
 	}
 
 	strategy, err := attributeParserStrategies.Get(dataSourceType)
