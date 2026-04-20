@@ -18,6 +18,18 @@
 
 11. ~~`NewFindByIdQuery` creates `validator.New()` per call~~ (Submissions #17, P3) -- The constructor has been simplified to a plain struct builder that returns `*FindByIdQuery[T]` (no error). The `validator` import has been removed entirely. The `ID` field now has a `validate:"required"` tag, and validation is performed in the service layer via `validate.ValidateStruct(query)`, consistent with forms and tenants. *(Unstaged.)*
 
+12. ~~`SendJsonResponse` accepts `headers` but never applies them~~ (Shared #43, P3) -- The function now iterates over the `headers` variadic parameter and sets each header key-value pair on the response (`httputil/http.go:45-51`). *(Unstaged.)*
+
+13. ~~`w.Write` error ignored~~ (Shared #44, P3) -- The return value from `w.Write(out)` is now captured and returned from the function (`httputil/http.go:56`). Handlers that care about write failures can now handle the error. *(Unstaged.)*
+
+14. ~~`IsValidationErr` uses type assertion instead of `errors.As`~~ (Shared #45, P1) -- Changed from `_, ok := err.(validator.ValidationErrors)` to the idiomatic `errors.As(err, &validator.ValidationErrors{})` pattern. This correctly handles wrapped validation errors (`httputil/http.go:10`). *(Unstaged.)*
+
+15. ~~`SendErrorResponse` discards `SendJsonResponse` return errors~~ (Shared #46, P3) -- The function now returns `error` (signature changed from `void`). Every case branch uses `return SendJsonResponse(...)`, propagating write failures to callers. *(Unstaged.)*
+
+16. ~~`ValidateStruct` redundant pattern~~ (Shared #47, P3) -- Simplified from `if err := v.Struct(s); err != nil { return err }; return nil` to `return v.Struct(s)` (`validate/validate.go:13`). *(Unstaged.)*
+
+17. ~~`IsValidationErr` redundant boolean pattern~~ (Shared #48, P3) -- Simplified from multi-line `if/return` to single `return errors.As(...)` expression (`validate/validate.go:10`). *(Unstaged.)*
+
 5. ~~Inconsistent multi-tenancy approach~~ (Tenants #35) -- The `/data-sources` route group now uses `tenants.TenantMiddleware("X-Tenant-ID")` (`routes.go:28`). The `/tenants` route group intentionally has no tenant-scoping middleware since tenant CRUD operations are administrative and not scoped to a single tenant (moved to Will Not Fix).
 
 6. ~~`r.PathValue()` vs `chi.URLParam()` router mismatch~~ (All services) -- All three services now use `chi.URLParam()` instead of the stdlib `r.PathValue()` to extract path parameters. Forms: `getFormIdPathValue`, `getVersionIdPathValue`. Submissions: `getReferenceIdPathValue`. Tenants: `getDataSource`, `updateDataSource`, `removeDataSource`, `getDataSourceLookup`, `getTenantIDPathValue`. *(Unstaged.)*
@@ -158,31 +170,10 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 ---
 
-### Shared Package (`pkg/common`)
-
-#### Bugs
-
-43. **`SendJsonResponse` accepts `headers` parameter but never applies them** (`httputil/http.go:41`) -- The `headers ...http.Header` variadic parameter is accepted but the body never iterates or sets them on the response. *(Unresolved from 4/17 #65, 4/18 #61, 4/19 #47.)*
-
-44. **`w.Write` error ignored** (`httputil/http.go:50`) -- `SendJsonResponse` calls `w.Write(out)` but discards the returned error. *(Unresolved from 4/17 #66, 4/18 #62, 4/19 #48.)*
-
-45. **`IsValidationErr` uses type assertion instead of `errors.As`** (`validate/validate.go:10`) -- `_, ok := err.(validator.ValidationErrors)` is a direct type assertion that will fail if the `ValidationErrors` is wrapped inside another error (e.g., via `fmt.Errorf("%w", err)`). The idiomatic Go approach is `errors.As(err, &ve)`. This matters because `IsValidationErr` is called by `SendErrorResponse` to decide the 400 mapping -- if any layer ever wraps a validation error, it would fall through to 500. *(New.)*
-
-46. **`SendErrorResponse` discards `SendJsonResponse` return errors** (`httputil/http.go:63,69,75,81,87`) -- Every call to `SendJsonResponse` inside `SendErrorResponse` ignores the returned `error`. If JSON marshaling or writing fails, the error is silently swallowed. Since `SendErrorResponse` returns nothing, callers have no way to know the error response failed to send. *(New.)*
-
-#### Code Quality
-
-47. **`ValidateStruct` has a redundant pattern** (`validate/validate.go:19-25`) -- `if err := v.Struct(s); err != nil { return err }; return nil` is equivalent to `return v.Struct(s)`. *(Unresolved from 4/17 #67, 4/18 #63, 4/19 #49.)*
-
-48. **`IsValidationErr` has the same redundant boolean pattern** (`validate/validate.go:9-17`) -- `if !ok { return false }; return true` is equivalent to `return ok`. *(New.)*
-
----
-
 ## Priority Summary
 
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
-| **P1** | 45 | `IsValidationErr` uses type assertion instead of `errors.As` | Shared |
 | **P2** | 2, 16 | `Find()` has no tenant filtering | Forms, Submissions |
 | **P2** | 7, 34 | Domain validation unimplemented | Forms, Tenants |
 | **P2** | 23 | No domain constructors | Submissions |
@@ -198,8 +189,6 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 | **P3** | 4, 42 | `time.Now()` in repository/service layers | Forms, Tenants |
 | **P3** | 15 | Map iteration non-deterministic in DTO mappers | Forms |
 | **P3** | 14 | `publishVersion`/`retireVersion` discard returned version | Forms |
-| **P3** | 46 | `SendErrorResponse` discards `SendJsonResponse` errors | Shared |
-| **P3** | 47, 48 | Redundant validation patterns | Shared |
 | **P3** | 17 | `sendErrorResponse` dead code | Submissions |
 
 ---
@@ -208,7 +197,7 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 ### Progress Since 4/19
 
-Eleven issues from the prior review have been resolved:
+Seventeen issues from the prior review have been resolved:
 
 - **`ConditionalRule` replaced with full `Rule` domain object** (Forms) -- The empty stub has been replaced with a proper `Rule` entity supporting three rule types (`visible`, `required`, `readonly`) and an `Expression` field. A `baseWithRules` mixin is embedded by `Page`, `Section`, and `Field`, with `SetRules()` enforcing duplicate-type prevention via `ErrDuplicateRuleType`. New DTOs (`RuleRequest`, `RuleResponse`) and mappers support rules throughout the request/response pipeline.
 - **`FieldResponse` DTO now includes `Attributes` and `Rules`** (Forms) -- Field attribute data and rules are no longer silently dropped in API responses.
@@ -221,17 +210,20 @@ Eleven issues from the prior review have been resolved:
 - **`FindByIdQuery` unvalidated `TenantID` field removed** (Submissions, unstaged) -- The field has been removed entirely, eliminating the no-op validation concern.
 - **`SendErrorResponse` now maps `ErrInvalidID` and `ErrUnauthorized`** (Shared, unstaged) -- `ErrInvalidID` is mapped to 400 Bad Request alongside `ErrDecodeJSON` and validation errors. `ErrUnauthorized` has a new dedicated case returning 401 Unauthorized. This was the longest-standing P1 in the codebase (first identified 4/17).
 - **`NewFindByIdQuery` no longer creates `validator.New()` per call** (Submissions, unstaged) -- The constructor is now a plain struct builder returning `*FindByIdQuery[T]` (no error). The `validator` import has been removed. The `ID` field has a `validate:"required"` tag, and validation is performed in the service layer via `validate.ValidateStruct(query)`, consistent with forms and tenants.
+- **`SendJsonResponse` now applies custom headers** (Shared, unstaged) -- The function iterates over the `headers` variadic parameter and sets each header on the response.
+- **`SendJsonResponse` returns write errors** (Shared, unstaged) -- The return value from `w.Write(out)` is now captured and returned.
+- **`IsValidationErr` uses `errors.As`** (Shared, unstaged) -- Changed from direct type assertion to idiomatic `errors.As()`, correctly handling wrapped validation errors.
+- **`SendErrorResponse` returns errors** (Shared, unstaged) -- The function signature changed from `void` to `error`, propagating write failures to callers.
+- **`ValidateStruct` simplified** (Shared, unstaged) -- Redundant `if/return` pattern removed.
+- **`IsValidationErr` simplified** (Shared, unstaged) -- Redundant boolean pattern removed.
 
 ### New Issues Found
 
-1. **`IsValidationErr` uses type assertion instead of `errors.As`** (Shared #46, P1) -- A wrapped validation error would bypass the 400 mapping and produce a 500.
-2. **Tenant removal doesn't cascade-delete DataSources** (Tenants #32, P2) -- Deleting a tenant leaves its data sources orphaned.
-3. **Empty handler stubs return 200 OK** (Submissions #19, P2) -- Four unimplemented endpoints are reachable and return misleading 200 responses.
-4. **Redundant double-fetch in forms `Update()`** (Forms #5, P2) -- `isValidAccess()` and the subsequent `FindById()` fetch the same form twice.
-5. **Map iteration non-deterministic in DTO mappers** (Forms #15, P3) -- Pages, sections, fields, and rules appear in random order in responses.
-6. **`publishVersion`/`retireVersion` discard returned version** (Forms #14, P3) -- Clients receive `nil` data despite a successful operation.
-7. **`SendErrorResponse` discards `SendJsonResponse` errors** (Shared #47, P3) -- Failed error responses are silently swallowed.
-8. **`IsValidationErr` redundant boolean pattern** (Shared #49, P3) -- Same style issue as `ValidateStruct`.
+1. **Tenant removal doesn't cascade-delete DataSources** (Tenants #32, P2) -- Deleting a tenant leaves its data sources orphaned.
+2. **Empty handler stubs return 200 OK** (Submissions #19, P2) -- Four unimplemented endpoints are reachable and return misleading 200 responses.
+3. **Redundant double-fetch in forms `Update()`** (Forms #5, P2) -- `isValidAccess()` and the subsequent `FindById()` fetch the same form twice.
+4. **Map iteration non-deterministic in DTO mappers** (Forms #15, P3) -- Pages, sections, fields, and rules appear in random order in responses.
+5. **`publishVersion`/`retireVersion` discard returned version** (Forms #14, P3) -- Clients receive `nil` data despite a successful operation.
 
 ### Current State
 
@@ -241,11 +233,10 @@ Eleven issues from the prior review have been resolved:
 
 **Submissions Service** has made notable progress. Tenant middleware is now wired at the router level, and the service layer now properly extracts the tenant from context for `FindById` and `FindByReferenceId` (unstaged), consistent with the forms and tenants services. Four handler stubs still return misleading 200 OK responses. The service still lacks write operations, domain constructors, request DTOs, and test coverage.
 
-**Shared Package** (`pkg/common`) has resolved its longest-standing P1: `SendErrorResponse` now maps `ErrInvalidID` to 400 and `ErrUnauthorized` to 401 (unstaged). The `IsValidationErr` type assertion issue remains P1 because it affects the correctness of error-to-HTTP mapping for wrapped validation errors. The unused `headers` parameter in `SendJsonResponse`, the ignored `w.Write` error, and the redundant validation patterns remain.
+**Shared Package** (`pkg/common`) has resolved its longest-standing P1 and all other issues in the package. `SendErrorResponse` now maps `ErrInvalidID` to 400 and `ErrUnauthorized` to 401, `IsValidationErr` uses `errors.As`, custom headers are applied, write errors are returned, return values are propagated to callers, and both `ValidateStruct` and `IsValidationErr` have been simplified. The shared package is now issue-free.
 
 ### Highest-Impact Improvements
 
-1. **Change `IsValidationErr` to use `errors.As`** (P1 -- wrapped validation errors silently produce 500s)
-2. **Fix `ErrMissingTenantID` mapping** in `SendErrorResponse` (P2 -- missing tenant header produces 500)
-3. **Add tenant filtering to `Find()` methods** across forms and submissions (P2 -- data isolation)
-4. **Add test coverage** starting with service and handler layers (P3 -- long-term reliability)
+1. **Fix `ErrMissingTenantID` mapping** in `SendErrorResponse` (P2 -- missing tenant header produces 500)
+2. **Add tenant filtering to `Find()` methods** across forms and submissions (P2 -- data isolation)
+3. **Add test coverage** starting with service and handler layers (P3 -- long-term reliability)

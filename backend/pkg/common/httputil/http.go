@@ -45,46 +45,52 @@ func SendJsonResponse(w http.ResponseWriter, statusCode int, data any, headers .
 		return err
 	}
 
+	for _, header := range headers {
+		for key, value := range header {
+			w.Header()[key] = value
+		}
+	}
+
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	w.Write(out)
+	_, err = w.Write(out)
 
-	return nil
+	return err
 }
 
 // Sends an error response with the appropriate HTTP status code based on the type of error provided.
-func SendErrorResponse(w http.ResponseWriter, err error) {
+func SendErrorResponse(w http.ResponseWriter, err error) error {
 	if err == nil {
-		return
+		return nil
 	}
 
 	switch {
 	case errors.Is(err, ErrDecodeJSON) || errors.Is(err, common.ErrInvalidID) || validate.IsValidationErr(err):
-		SendJsonResponse(w, http.StatusBadRequest, ApiErrorResponse{
+		return SendJsonResponse(w, http.StatusBadRequest, ApiErrorResponse{
 			Message:    "Bad Request",
 			Error:      err.Error(),
 			StatusCode: http.StatusBadRequest,
 		})
 	case errors.Is(err, common.ErrUnauthorized):
-		SendJsonResponse(w, http.StatusUnauthorized, ApiErrorResponse{
+		return SendJsonResponse(w, http.StatusUnauthorized, ApiErrorResponse{
 			Message:    "Unauthorized",
 			Error:      err.Error(),
 			StatusCode: http.StatusUnauthorized,
 		})
 	case errors.Is(err, common.ErrNotFound):
-		SendJsonResponse(w, http.StatusNotFound, ApiErrorResponse{
+		return SendJsonResponse(w, http.StatusNotFound, ApiErrorResponse{
 			Message:    "Not Found",
 			Error:      err.Error(),
 			StatusCode: http.StatusNotFound,
 		})
 	case errors.Is(err, common.ErrExists):
-		SendJsonResponse(w, http.StatusConflict, ApiErrorResponse{
+		return SendJsonResponse(w, http.StatusConflict, ApiErrorResponse{
 			Message:    "Conflict",
 			Error:      err.Error(),
 			StatusCode: http.StatusConflict,
 		})
 	default:
-		SendJsonResponse(w, http.StatusInternalServerError, ApiErrorResponse{
+		return SendJsonResponse(w, http.StatusInternalServerError, ApiErrorResponse{
 			Message:    "Internal Server Error",
 			Error:      err.Error(),
 			StatusCode: http.StatusInternalServerError,
