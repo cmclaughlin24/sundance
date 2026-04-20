@@ -14,6 +14,7 @@ type DataSourcesService struct {
 	logger                *log.Logger
 	tenantsRepository     ports.TenantsRepository
 	dataSourcesRepository ports.DataSourcesRepository
+	baseService
 }
 
 func NewDataSourcesService(logger *log.Logger, repository *ports.Repository) *DataSourcesService {
@@ -25,29 +26,44 @@ func NewDataSourcesService(logger *log.Logger, repository *ports.Repository) *Da
 }
 
 func (s *DataSourcesService) Find(ctx context.Context, query *ports.ListDataSourceQuery) ([]*domain.DataSource, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
 
-	return s.dataSourcesRepository.Find(ctx, query.TenantID)
+	return s.dataSourcesRepository.Find(ctx, tenantID)
 }
 
-func (s *DataSourcesService) FindById(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) (*domain.DataSource, error) {
+func (s *DataSourcesService) FindById(ctx context.Context, sourceID domain.DataSourceID) (*domain.DataSource, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	return s.dataSourcesRepository.FindById(ctx, tenantID, sourceID)
 }
 
 func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
 
-	if err := s.tenantExists(ctx, command.TenantID); err != nil {
+	if err := s.tenantExists(ctx, tenantID); err != nil {
 		return nil, err
 	}
 
 	ds, err := domain.NewDataSource(
 		"",
-		command.TenantID,
+		tenantID,
 		command.Name,
 		command.Description,
 		command.Type,
@@ -68,17 +84,22 @@ func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDa
 }
 
 func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
 
-	if err := s.tenantExists(ctx, command.TenantID); err != nil {
+	if err := s.tenantExists(ctx, tenantID); err != nil {
 		return nil, err
 	}
 
 	ds, err := domain.NewDataSource(
 		command.ID,
-		command.TenantID,
+		tenantID,
 		command.Name,
 		command.Description,
 		command.Type,
@@ -98,7 +119,12 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 	return dataSource, nil
 }
 
-func (s *DataSourcesService) Remove(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) error {
+func (s *DataSourcesService) Remove(ctx context.Context, sourceID domain.DataSourceID) error {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return err
+	}
+
 	if err := s.tenantExists(ctx, tenantID); err != nil {
 		return err
 	}
@@ -116,8 +142,13 @@ func (s *DataSourcesService) Remove(ctx context.Context, tenantID domain.TenantI
 	return s.dataSourcesRepository.Remove(ctx, tenantID, sourceID)
 }
 
-func (s *DataSourcesService) Lookup(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) ([]*domain.DataSourceLookup, error) {
-	_, err := s.dataSourcesRepository.FindById(ctx, tenantID, sourceID)
+func (s *DataSourcesService) Lookup(ctx context.Context, sourceID domain.DataSourceID) ([]*domain.DataSourceLookup, error) {
+	tenantID, err := s.getTenantFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = s.dataSourcesRepository.FindById(ctx, tenantID, sourceID)
 
 	if err != nil {
 		return nil, err

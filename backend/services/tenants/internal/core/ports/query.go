@@ -1,15 +1,9 @@
 package ports
 
-import (
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
-)
-
 type ListDataSourceQuery struct {
-	TenantID domain.TenantID `validate:"required"`
+	// TODO: Add pagination support through embedded struct.
 }
 
-func NewListDataSourceQuery(tenantId domain.TenantID) *ListDataSourceQuery {
-	return &ListDataSourceQuery{
-		TenantID: tenantId,
-	}
+func NewListDataSourceQuery() *ListDataSourceQuery {
+	return &ListDataSourceQuery{}
 }

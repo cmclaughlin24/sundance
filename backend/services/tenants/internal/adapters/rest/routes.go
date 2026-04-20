@@ -3,7 +3,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/tenants"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 	"github.com/go-chi/chi/v5"
 )
@@ -25,7 +25,7 @@ func NewRoutes(app *core.Application) http.Handler {
 		})
 
 		routes.Route("/data-sources", func(dataSourcesRoutes chi.Router) {
-			dataSourcesRoutes.Use(httputil.TenantMiddleware("X-Tenant-ID"))
+			dataSourcesRoutes.Use(tenants.TenantMiddleware("X-Tenant-ID"))
 
 			dataSourcesRoutes.Get("/", h.getDataSources)
 			dataSourcesRoutes.Post("/", h.createDataSource)
