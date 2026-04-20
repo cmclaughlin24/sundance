@@ -62,7 +62,7 @@ func parseAttributes[T domain.DataSourceAttributes](data []byte) (domain.DataSou
 	var attributes T
 
 	if err := json.Unmarshal(data, &attributes); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w: %w", ErrDataSourceAttrParse, err)
 	}
 
 	return attributes, nil
