@@ -16,10 +16,10 @@ type Field struct {
 	ID         FieldID
 	Key        string
 	Name       string
-	FieldType  FieldType
+	Type       FieldType
 	Attributes FieldAttributes
 	Position   int
-	Conditions []*ConditionalRule
+	baseWithRules
 }
 
 func NewField(id FieldID, key, name string, fieldType FieldType, attributes FieldAttributes, position int) (*Field, error) {
@@ -27,7 +27,7 @@ func NewField(id FieldID, key, name string, fieldType FieldType, attributes Fiel
 		ID:         id,
 		Key:        key,
 		Name:       name,
-		FieldType:  fieldType,
+		Type:       fieldType,
 		Attributes: attributes,
 		Position:   position,
 	}

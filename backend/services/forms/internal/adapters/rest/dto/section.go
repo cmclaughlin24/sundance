@@ -7,15 +7,16 @@ type SectionRequest struct {
 	Name     string         `json:"name"`
 	Position int            `json:"position"`
 	Fields   []FieldRequest `json:"fields"`
+	Rules    []RuleRequest  `json:"rules"`
 }
 
 type SectionResponse struct {
-	ID         domain.SectionID           `json:"id"`
-	Key        string                     `json:"key"`
-	Name       string                     `json:"name"`
-	Position   int                        `json:"position"`
-	Fields     []*FieldResponse           `json:"fields"`
-	Conditions []*ConditionalRuleResponse `json:"conditions"`
+	ID       domain.SectionID `json:"id"`
+	Key      string           `json:"key"`
+	Name     string           `json:"name"`
+	Position int              `json:"position"`
+	Fields   []*FieldResponse `json:"fields"`
+	Rules    []*RuleResponse  `json:"rules"`
 }
 
 func RequestToSection(dto SectionRequest) (*domain.Section, error) {
@@ -31,12 +32,21 @@ func RequestToSection(dto SectionRequest) (*domain.Section, error) {
 		fields = append(fields, field)
 	}
 
+	rules, err := RequestsToRules(dto.Rules)
+	if err != nil {
+		return nil, err
+	}
+
 	section, err := domain.NewSection("", dto.Key, dto.Name, dto.Position)
 	if err != nil {
 		return nil, err
 	}
 
 	if err := section.SetFields(fields...); err != nil {
+		return nil, err
+	}
+
+	if err := section.SetRules(rules...); err != nil {
 		return nil, err
 	}
 
@@ -53,14 +63,14 @@ func SectionToResponse(section *domain.Section) *SectionResponse {
 		fields = append(fields, FieldToResponse(f))
 	}
 
-	conditions := ConditionalRulesToResponse(section.Conditions...)
+	rules := RuleToResponse(section.Rules)
 
 	return &SectionResponse{
-		ID:         section.ID,
-		Key:        section.Key,
-		Name:       section.Name,
-		Position:   section.Position,
-		Fields:     fields,
-		Conditions: conditions,
+		ID:       section.ID,
+		Key:      section.Key,
+		Name:     section.Name,
+		Position: section.Position,
+		Fields:   fields,
+		Rules:    rules,
 	}
 }

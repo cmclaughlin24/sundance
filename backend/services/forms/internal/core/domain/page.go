@@ -11,12 +11,12 @@ var (
 )
 
 type Page struct {
-	ID         PageID
-	Key        string
-	Name       string
-	Position   int
-	Sections   map[int]*Section
-	Conditions []*ConditionalRule
+	ID       PageID
+	Key      string
+	Name     string
+	Position int
+	Sections map[int]*Section
+	baseWithRules
 }
 
 func NewPage(id PageID, key, name string, position int) (*Page, error) {

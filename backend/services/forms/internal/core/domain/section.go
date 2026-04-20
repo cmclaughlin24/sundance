@@ -11,12 +11,12 @@ var (
 )
 
 type Section struct {
-	ID         SectionID
-	Key        string
-	Name       string
-	Position   int
-	Fields     map[int]*Field
-	Conditions []*ConditionalRule
+	ID       SectionID
+	Key      string
+	Name     string
+	Position int
+	Fields   map[int]*Field
+	baseWithRules
 }
 
 func NewSection(id SectionID, key, name string, position int) (*Section, error) {

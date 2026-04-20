@@ -7,15 +7,16 @@ type PageRequest struct {
 	Name     string           `json:"name"`
 	Position int              `json:"position"`
 	Sections []SectionRequest `json:"sections"`
+	Rules    []RuleRequest    `json:"rules"`
 }
 
 type PageResponse struct {
-	ID         domain.PageID              `json:"id"`
-	Key        string                     `json:"key"`
-	Name       string                     `json:"name"`
-	Position   int                        `json:"position"`
-	Sections   []*SectionResponse         `json:"sections"`
-	Conditions []*ConditionalRuleResponse `json:"conditions"`
+	ID       domain.PageID      `json:"id"`
+	Key      string             `json:"key"`
+	Name     string             `json:"name"`
+	Position int                `json:"position"`
+	Sections []*SectionResponse `json:"sections"`
+	Rules    []*RuleResponse    `json:"rules"`
 }
 
 func RequestToPages(dto UpdateVersionDto) ([]*domain.Page, error) {
@@ -47,12 +48,21 @@ func RequestToPage(dto PageRequest) (*domain.Page, error) {
 		sections = append(sections, section)
 	}
 
+	rules, err := RequestsToRules(dto.Rules)
+	if err != nil {
+		return nil, err
+	}
+
 	page, err := domain.NewPage("", dto.Key, dto.Name, dto.Position)
 	if err != nil {
 		return nil, err
 	}
 
 	if err := page.SetSections(sections...); err != nil {
+		return nil, err
+	}
+
+	if err := page.SetRules(rules...); err != nil {
 		return nil, err
 	}
 
@@ -69,14 +79,14 @@ func PageToResponse(page *domain.Page) *PageResponse {
 		sections = append(sections, SectionToResponse(s))
 	}
 
-	conditions := ConditionalRulesToResponse(page.Conditions...)
+	rules := RuleToResponse(page.Rules)
 
 	return &PageResponse{
-		ID:         page.ID,
-		Key:        page.Key,
-		Name:       page.Name,
-		Position:   page.Position,
-		Sections:   sections,
-		Conditions: conditions,
+		ID:       page.ID,
+		Key:      page.Key,
+		Name:     page.Name,
+		Position: page.Position,
+		Sections: sections,
+		Rules:    rules,
 	}
 }
