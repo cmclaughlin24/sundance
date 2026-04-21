@@ -10,9 +10,9 @@
 
 4. ~~No tenant middleware~~ (Submissions #16, P2) -- `routes.go` now applies `tenants.TenantMiddleware("X-Tenant-ID")` to the submissions router (line 15), consistent with the forms service.
 
-8. ~~`getSubmissionByReferenceID` passes empty string for TenantID~~ (Submissions #16, P1) -- `FindByIdQuery` no longer carries a `TenantID` field. Tenant ownership checking has been moved to the service layer: `SubmissionsService` now embeds `baseService` and both `FindById()` and `FindByReferenceId()` extract the tenant from context via `getTenantFromContext()`, consistent with the forms and tenants services. The handler now calls `NewFindByIdQuery(referenceID)` without a tenant parameter. *(Unstaged.)*
+8. ~~Tenant extraction performed in service layer via `baseService.getTenantFromContext()`~~ (All services) -- Tenant extraction has been moved from the service layer to the handler layer across all three services, following hexagonal architecture. Handlers now call `getTenantFromContext(r)` and pass the tenant ID into commands and queries. `base_service.go` has been deleted from forms, submissions, and tenants services. Specifically: all 10 forms handlers, the `getSubmissionByReferenceID` submissions handler, and all 6 tenants data-source handlers now extract the tenant and pass it via typed command/query structs. New types added: `RemoveDataSourceCommand`, `GetDataSourceLookupsCommand`, `FindDataSourceByIDQuery`. The `Lookup` method signature changed from `Lookup(context.Context, domain.DataSourceID)` to `Lookup(context.Context, *GetDataSourceLookupsCommand)`. `FindById` changed from `FindById(context.Context, domain.DataSourceID)` to `FindById(context.Context, *FindDataSourceByIDQuery)`. `Remove` changed from `Remove(context.Context, domain.DataSourceID)` to `Remove(context.Context, *RemoveDataSourceCommand)`. This resolves the prior issue of `getSubmissionByReferenceID` passing an empty TenantID (Submissions #16, P1). *(Unstaged.)*
 
-9. ~~`FindByIdQuery` fields have no `validate` tags~~ (Submissions #19, P3) -- The `TenantID` field has been removed from `FindByIdQuery` entirely, eliminating the unvalidated field. *(Unstaged.)*
+9. ~~`FindByIdQuery` fields have no `validate` tags~~ (Submissions #19, P3) -- `FindByIdQuery` now carries a `TenantID string` field with `validate:"required"` alongside the existing `ID T` field with `validate:"required"`. The `NewFindByIdQuery` constructor accepts `tenantID` as its first parameter and assigns it to the struct. Validation is performed in the service layer via `validate.ValidateStruct(query)`. *(Unstaged.)*
 
 10. ~~`SendErrorResponse` missing mappings for `ErrInvalidID` and `ErrUnauthorized`~~ (Shared #46, P1) -- `ErrInvalidID` has been added to the 400 Bad Request case alongside `ErrDecodeJSON` and validation errors. `ErrUnauthorized` has a new dedicated case returning 401 Unauthorized. Both the HTTP wire status and the response body `StatusCode` field are correct (`httputil/http.go:62-73`). *(Unstaged.)*
 
@@ -29,6 +29,8 @@
 16. ~~`ValidateStruct` redundant pattern~~ (Shared #47, P3) -- Simplified from `if err := v.Struct(s); err != nil { return err }; return nil` to `return v.Struct(s)` (`validate/validate.go:13`). *(Unstaged.)*
 
 17. ~~`IsValidationErr` redundant boolean pattern~~ (Shared #48, P3) -- Simplified from multi-line `if/return` to single `return errors.As(...)` expression (`validate/validate.go:10`). *(Unstaged.)*
+
+18. ~~`sendErrorResponse` method is dead code~~ (Submissions #20, P3) -- The `sendErrorResponse` method on the submissions handlers is now called in `getSubmissions` (line 44), `getSubmissionByReferenceID` (lines 60, 79). Previously it existed but was never invoked. *(Unstaged.)*
 
 5. ~~Inconsistent multi-tenancy approach~~ (Tenants #35) -- The `/data-sources` route group now uses `tenants.TenantMiddleware("X-Tenant-ID")` (`routes.go:28`). The `/tenants` route group intentionally has no tenant-scoping middleware since tenant CRUD operations are administrative and not scoped to a single tenant (moved to Will Not Fix).
 
@@ -104,8 +106,6 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 16. **`Find()` has no tenant filtering** (`submissions_service.go:27-29`) -- Returns all submissions across all tenants. *(Unresolved from 4/17 #27, 4/18 #25, 4/19 #18.)*
 
-17. **`sendErrorResponse` method is dead code** (`handlers.go:97-101`) -- The method exists but is never called. All handlers call `httputil.SendErrorResponse` directly. *(Unresolved from 4/19 #20.)*
-
 19. **Four handler stubs return 200 OK with empty body** (`handlers.go:84-91`) -- `createSubmission`, `getSubmissionAttempts`, `getSubmissionStatus`, and `replaySubmission` are registered in the router but have empty function bodies. They return HTTP 200 with zero-length body and no `Content-Type` header, which is misleading to clients. These should either return 501 Not Implemented or not be registered. *(New.)*
 
 #### Missing Functionality
@@ -160,13 +160,15 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 39. **`DataSourceAttributes` concrete types incomplete** (`data_source_attributes.go`) -- `ScheduledDataSourceAttributes` has zero fields. `StaticDataSourceAttributes` and `QueryDataSourceAttributes` lack `json` struct tags, so JSON marshaling uses Go's default capitalized field names. *(Unresolved from 4/16 #18, 4/17 #56, 4/18 #54, 4/19 #42.)*
 
-40. **`DataSourceLookup` value object has no constructor or validation** (`data_source_lookup.go`) -- Bare struct with two fields, no json tags, no invariant enforcement. *(Unresolved from 4/16 #19, 4/17 #57, 4/18 #55, 4/19 #43.)*
+40. **`DataSourceLookup` value object has no validation** (`data_source_lookup.go`) -- `NewDataSourceLookup(code, description)` constructor has been added, but it performs no validation and has no json tags on the struct fields. *(Partially resolved from 4/16 #19, 4/17 #57, 4/18 #55, 4/19 #43.)*
 
 41. **`DataSourceType` not validated in domain constructors** -- Command-level `oneof` validation exists, but `NewDataSource` still accepts any arbitrary string for `Type`. *(Unresolved from 4/16 #22, 4/17 #58, 4/18 #56, 4/19 #44.)*
 
 #### Code Quality
 
 42. **`time.Now()` called directly in the repository layer** (`tenant_repository.go:64`; `data_sources_repository.go:69`). *(Unresolved from 4/16 #24, 4/17 #60, 4/18 #58, 4/19 #45.)*
+
+43. **`ErrInvalidSourceType` defined but unused** (`data_source.go:19`) -- The error variable is declared but never referenced anywhere. Only `ErrInvalidSourceTypeAttributes` is used. *(New.)*
 
 ---
 
@@ -189,7 +191,7 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 | **P3** | 4, 42 | `time.Now()` in repository/service layers | Forms, Tenants |
 | **P3** | 15 | Map iteration non-deterministic in DTO mappers | Forms |
 | **P3** | 14 | `publishVersion`/`retireVersion` discard returned version | Forms |
-| **P3** | 17 | `sendErrorResponse` dead code | Submissions |
+
 
 ---
 
@@ -197,7 +199,7 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 ### Progress Since 4/19
 
-Seventeen issues from the prior review have been resolved:
+Nineteen issues from the prior review have been resolved:
 
 - **`ConditionalRule` replaced with full `Rule` domain object** (Forms) -- The empty stub has been replaced with a proper `Rule` entity supporting three rule types (`visible`, `required`, `readonly`) and an `Expression` field. A `baseWithRules` mixin is embedded by `Page`, `Section`, and `Field`, with `SetRules()` enforcing duplicate-type prevention via `ErrDuplicateRuleType`. New DTOs (`RuleRequest`, `RuleResponse`) and mappers support rules throughout the request/response pipeline.
 - **`FieldResponse` DTO now includes `Attributes` and `Rules`** (Forms) -- Field attribute data and rules are no longer silently dropped in API responses.
@@ -206,16 +208,18 @@ Seventeen issues from the prior review have been resolved:
 - **Tenant middleware applied to tenants service data-sources routes** (Tenants) -- The `/data-sources` route group now uses the shared tenant middleware. The `/tenants` route group intentionally has no tenant middleware (moved to Will Not Fix).
 - **`r.PathValue()` replaced with `chi.URLParam()` across all services** (All, unstaged) -- All path parameter extraction methods now use chi's `URLParam()` function, fixing a potential silent empty-string bug when using chi's router.
 - **`form_service.go` renamed to `forms_service.go`** (Forms, unstaged) -- Naming now matches the `FormsService` type and the convention used by sibling services.
-- **`getSubmissionByReferenceID` tenant isolation fixed** (Submissions, unstaged) -- `FindByIdQuery` no longer carries a `TenantID` field. `SubmissionsService` now embeds `baseService` and extracts the tenant from context in both `FindById()` and `FindByReferenceId()`, consistent with the forms and tenants services.
-- **`FindByIdQuery` unvalidated `TenantID` field removed** (Submissions, unstaged) -- The field has been removed entirely, eliminating the no-op validation concern.
+- **Hexagonal architecture: tenant extraction moved from service layer to handler layer** (All services, unstaged) -- `base_service.go` (containing `getTenantFromContext()`) has been deleted from all three services. Handlers now extract the tenant via `getTenantFromContext(r)` and pass it into commands/queries. All forms handlers (10), the submissions `getSubmissionByReferenceID` handler, and all tenants data-source handlers (6) have been updated. New types: `RemoveDataSourceCommand`, `GetDataSourceLookupsCommand`, `FindDataSourceByIDQuery`. The `DataSourcesService` interface methods `FindById`, `Remove`, and `Lookup` now accept typed command/query structs instead of bare `domain.DataSourceID`. This also resolves the prior `getSubmissionByReferenceID` empty TenantID bug (Submissions #16, P1).
+- **`FindByIdQuery` now has validated `TenantID` field** (Submissions, unstaged) -- `FindByIdQuery` carries `TenantID string` with `validate:"required"`. The `NewFindByIdQuery` constructor accepts and assigns `tenantID`. Validation is performed in the service layer via `validate.ValidateStruct(query)`.
 - **`SendErrorResponse` now maps `ErrInvalidID` and `ErrUnauthorized`** (Shared, unstaged) -- `ErrInvalidID` is mapped to 400 Bad Request alongside `ErrDecodeJSON` and validation errors. `ErrUnauthorized` has a new dedicated case returning 401 Unauthorized. This was the longest-standing P1 in the codebase (first identified 4/17).
-- **`NewFindByIdQuery` no longer creates `validator.New()` per call** (Submissions, unstaged) -- The constructor is now a plain struct builder returning `*FindByIdQuery[T]` (no error). The `validator` import has been removed. The `ID` field has a `validate:"required"` tag, and validation is performed in the service layer via `validate.ValidateStruct(query)`, consistent with forms and tenants.
+- **`NewFindByIdQuery` no longer creates `validator.New()` per call** (Submissions, unstaged) -- The constructor is now a plain struct builder returning `*FindByIdQuery[T]` (no error). The `validator` import has been removed. Validation is performed in the service layer.
 - **`SendJsonResponse` now applies custom headers** (Shared, unstaged) -- The function iterates over the `headers` variadic parameter and sets each header on the response.
 - **`SendJsonResponse` returns write errors** (Shared, unstaged) -- The return value from `w.Write(out)` is now captured and returned.
 - **`IsValidationErr` uses `errors.As`** (Shared, unstaged) -- Changed from direct type assertion to idiomatic `errors.As()`, correctly handling wrapped validation errors.
 - **`SendErrorResponse` returns errors** (Shared, unstaged) -- The function signature changed from `void` to `error`, propagating write failures to callers.
 - **`ValidateStruct` simplified** (Shared, unstaged) -- Redundant `if/return` pattern removed.
 - **`IsValidationErr` simplified** (Shared, unstaged) -- Redundant boolean pattern removed.
+- **`sendErrorResponse` no longer dead code** (Submissions, unstaged) -- The method is now called in `getSubmissions` and `getSubmissionByReferenceID` handlers instead of calling `httputil.SendErrorResponse` directly.
+- **`DataSourceLookup` now has a constructor** (Tenants, unstaged) -- `NewDataSourceLookup(code, description)` has been added. Struct still lacks json tags and validation.
 
 ### New Issues Found
 
@@ -224,16 +228,17 @@ Seventeen issues from the prior review have been resolved:
 3. **Redundant double-fetch in forms `Update()`** (Forms #5, P2) -- `isValidAccess()` and the subsequent `FindById()` fetch the same form twice.
 4. **Map iteration non-deterministic in DTO mappers** (Forms #15, P3) -- Pages, sections, fields, and rules appear in random order in responses.
 5. **`publishVersion`/`retireVersion` discard returned version** (Forms #14, P3) -- Clients receive `nil` data despite a successful operation.
+6. **`ErrInvalidSourceType` defined but unused** (Tenants #43, P3) -- Error variable declared but never referenced.
 
 ### Current State
 
-**Forms Service** remains the most mature. The `Rule` domain object and `FieldResponse` DTO fixes are significant additions that bring the forms domain model closer to feature-complete. The chi `URLParam()` fix and file rename (both unstaged) are minor but welcome cleanups. The primary remaining gaps are: the hardcoded `"placeholder"` user IDs, the aggregate boundary ambiguity between `Form` and `Version`, the redundant double-fetch in `Update()`, the non-deterministic map iteration in response DTOs, and the continued absence of domain validation and test coverage.
+**Forms Service** remains the most mature. The `Rule` domain object, `FieldResponse` DTO fixes, and the hexagonal architecture refactor (tenant extraction moved to handlers, passed via commands/queries) are significant improvements. The primary remaining gaps are: the hardcoded `"placeholder"` user IDs, `Find()` with no tenant filtering, the aggregate boundary ambiguity between `Form` and `Version`, the redundant double-fetch in `Update()`, the non-deterministic map iteration in response DTOs, and the continued absence of domain validation and test coverage.
 
-**Tenants Service** has made meaningful progress with the parent tenant existence check on DataSource operations and tenant middleware on the data-sources route group. The remaining gaps are: the cascade-delete problem when removing tenants, incomplete attribute types (missing json tags, empty `ScheduledDataSourceAttributes`), the stub `Lookup` method, and incomplete error-to-HTTP mapping.
+**Tenants Service** has made meaningful progress with the parent tenant existence check, tenant middleware on data-source routes, and the hexagonal architecture refactor. All data-source operations now receive tenant via typed commands/queries, and `Lookup`, `FindById`, and `Remove` have been updated to accept structured types instead of bare IDs. The remaining gaps are: the cascade-delete problem when removing tenants, incomplete attribute types (missing json tags, empty `ScheduledDataSourceAttributes`), the stub `Lookup` method, unused `ErrInvalidSourceType`, and incomplete error-to-HTTP mapping.
 
-**Submissions Service** has made notable progress. Tenant middleware is now wired at the router level, and the service layer now properly extracts the tenant from context for `FindById` and `FindByReferenceId` (unstaged), consistent with the forms and tenants services. Four handler stubs still return misleading 200 OK responses. The service still lacks write operations, domain constructors, request DTOs, and test coverage.
+**Submissions Service** has made notable progress. Tenant middleware is wired at the router level, and the hexagonal architecture refactor moves tenant extraction to the handler layer with tenant passed via `FindByIdQuery`. The `sendErrorResponse` method is now actively used. Four handler stubs still return misleading 200 OK responses. `Find()` still has no tenant filtering. The service still lacks write operations, domain constructors, request DTOs, and test coverage.
 
-**Shared Package** (`pkg/common`) has resolved its longest-standing P1 and all other issues in the package. `SendErrorResponse` now maps `ErrInvalidID` to 400 and `ErrUnauthorized` to 401, `IsValidationErr` uses `errors.As`, custom headers are applied, write errors are returned, return values are propagated to callers, and both `ValidateStruct` and `IsValidationErr` have been simplified. The shared package is now issue-free.
+**Shared Package** (`pkg/common`) remains issue-free. All prior issues have been resolved.
 
 ### Highest-Impact Improvements
 
