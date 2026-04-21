@@ -38,6 +38,7 @@ func NewUpdateTenantCommand(id domain.TenantID, name, description string) *Updat
 }
 
 type baseDataSourceCommand struct {
+	TenantID    domain.TenantID             `validate:"required"`
 	Name        string                      `validate:"required,max=75"`
 	Description string                      `validate:"required,max=250"`
 	Type        domain.DataSourceType       `validate:"oneof=static scheduled query"`
@@ -49,6 +50,7 @@ type CreateDataSourceCommand struct {
 }
 
 func NewCreateDataSourceCommand(
+	tenantID domain.TenantID,
 	name,
 	description string,
 	sourceType domain.DataSourceType,
@@ -56,6 +58,7 @@ func NewCreateDataSourceCommand(
 ) *CreateDataSourceCommand {
 	return &CreateDataSourceCommand{
 		baseDataSourceCommand: baseDataSourceCommand{
+			TenantID:    tenantID,
 			Name:        name,
 			Description: description,
 			Type:        sourceType,
@@ -70,6 +73,7 @@ type UpdateDataSourceCommand struct {
 }
 
 func NewUpdateDataSourceCommand(
+	tenantID domain.TenantID,
 	id domain.DataSourceID,
 	name,
 	description string,
@@ -79,10 +83,35 @@ func NewUpdateDataSourceCommand(
 	return &UpdateDataSourceCommand{
 		ID: id,
 		baseDataSourceCommand: baseDataSourceCommand{
+			TenantID:    tenantID,
 			Name:        name,
 			Description: description,
-			Type:       sourceType,
-			Attributes: attr,
+			Type:        sourceType,
+			Attributes:  attr,
 		},
+	}
+}
+
+type RemoveDataSourceCommand struct {
+	ID       domain.DataSourceID `validate:"required"`
+	TenantID domain.TenantID     `validate:"required"`
+}
+
+func NewRemoveDataSourceCommand(tenantID domain.TenantID, sourceID domain.DataSourceID) *RemoveDataSourceCommand {
+	return &RemoveDataSourceCommand{
+		TenantID: tenantID,
+		ID:       sourceID,
+	}
+}
+
+type GetDataSourceLookupsCommand struct {
+	TenantID domain.TenantID     `validate:"required"`
+	ID       domain.DataSourceID `validate:"required"`
+}
+
+func NewGetDataSourceLookupsCommand(tenantID domain.TenantID, sourceID domain.DataSourceID) *GetDataSourceLookupsCommand {
+	return &GetDataSourceLookupsCommand{
+		TenantID: tenantID,
+		ID: sourceID,
 	}
 }

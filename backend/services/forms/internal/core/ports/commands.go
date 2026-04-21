@@ -5,6 +5,7 @@ import (
 )
 
 type baseFormCommand struct {
+	TenantID    string `validate:"required"`
 	Name        string `validate:"required,max=75"`
 	Description string `validate:"required,max=250"`
 }
@@ -13,9 +14,10 @@ type CreateFormCommand struct {
 	baseFormCommand
 }
 
-func NewCreateFormCommand(name, description string) *CreateFormCommand {
+func NewCreateFormCommand(tenantID, name, description string) *CreateFormCommand {
 	return &CreateFormCommand{
 		baseFormCommand: baseFormCommand{
+			TenantID:    tenantID,
 			Name:        name,
 			Description: description,
 		},
@@ -27,9 +29,10 @@ type UpdateFormCommand struct {
 	ID domain.FormID `validate:"required"`
 }
 
-func NewUpdateFormCommand(id domain.FormID, name, description string) *UpdateFormCommand {
+func NewUpdateFormCommand(tenantID string, id domain.FormID, name, description string) *UpdateFormCommand {
 	return &UpdateFormCommand{
 		baseFormCommand: baseFormCommand{
+			TenantID:    tenantID,
 			Name:        name,
 			Description: description,
 		},
@@ -38,17 +41,19 @@ func NewUpdateFormCommand(id domain.FormID, name, description string) *UpdateFor
 }
 
 type baseVersionCommand struct {
-	FormID domain.FormID `validate:"required"`
+	TenantID string        `validate:"required"`
+	FormID   domain.FormID `validate:"required"`
 }
 
 type CreateVersionCommand struct {
 	baseVersionCommand
 }
 
-func NewCreateVersionCommand(formId domain.FormID) *CreateVersionCommand {
+func NewCreateVersionCommand(tenantID string, formId domain.FormID) *CreateVersionCommand {
 	return &CreateVersionCommand{
 		baseVersionCommand{
-			FormID: formId,
+			TenantID: tenantID,
+			FormID:   formId,
 		},
 	}
 }
@@ -59,10 +64,11 @@ type UpdateVersionCommand struct {
 	Pages     []*domain.Page
 }
 
-func NewUpdateVersionCommand(id domain.VersionID, formID domain.FormID, pages []*domain.Page) *UpdateVersionCommand {
+func NewUpdateVersionCommand(tenantID string, id domain.VersionID, formID domain.FormID, pages []*domain.Page) *UpdateVersionCommand {
 	return &UpdateVersionCommand{
 		baseVersionCommand: baseVersionCommand{
-			FormID: formID,
+			TenantID: tenantID,
+			FormID:   formID,
 		},
 		VersionID: id,
 		Pages:     pages,
@@ -75,10 +81,11 @@ type PublishVersionCommand struct {
 	UserID    string           `validate:"required"`
 }
 
-func NewPublishVersionCommand(formID domain.FormID, versionID domain.VersionID, userID string) *PublishVersionCommand {
+func NewPublishVersionCommand(tenantID string, formID domain.FormID, versionID domain.VersionID, userID string) *PublishVersionCommand {
 	return &PublishVersionCommand{
 		baseVersionCommand: baseVersionCommand{
-			FormID: formID,
+			TenantID: tenantID,
+			FormID:   formID,
 		},
 		VersionID: versionID,
 		UserID:    userID,
@@ -91,10 +98,11 @@ type RetireVersionCommand struct {
 	UserID    string           `validate:"required"`
 }
 
-func NewRetireVersionCommand(formID domain.FormID, versionID domain.VersionID, userID string) *RetireVersionCommand {
+func NewRetireVersionCommand(tenantID string, formID domain.FormID, versionID domain.VersionID, userID string) *RetireVersionCommand {
 	return &RetireVersionCommand{
 		baseVersionCommand: baseVersionCommand{
-			FormID: formID,
+			TenantID: tenantID,
+			FormID:   formID,
 		},
 		VersionID: versionID,
 		UserID:    userID,

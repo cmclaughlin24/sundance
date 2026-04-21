@@ -16,6 +16,7 @@ const (
 )
 
 var (
+	ErrInvalidSourceType           = errors.New("invalid data source type")
 	ErrInvalidSourceTypeAttributes = errors.New("invalid data source attributes for type")
 )
 
@@ -30,7 +31,14 @@ type DataSource struct {
 	UpdatedAt   time.Time
 }
 
-func NewDataSource(id DataSourceID, tenantID TenantID, name, description string, sourceType DataSourceType, attributes DataSourceAttributes) (*DataSource, error) {
+func NewDataSource(
+	id DataSourceID,
+	tenantID TenantID,
+	name,
+	description string,
+	sourceType DataSourceType,
+	attributes DataSourceAttributes,
+) (*DataSource, error) {
 	if !isValidAttributeType(sourceType, attributes) {
 		return nil, ErrInvalidSourceTypeAttributes
 	}

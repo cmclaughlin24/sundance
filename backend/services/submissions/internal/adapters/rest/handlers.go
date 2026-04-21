@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/tenants"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
@@ -40,7 +41,7 @@ func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			httputil.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -54,9 +55,15 @@ func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := h.getTenantFromContext(r)
+	if err != nil {
+		h.sendErrorResponse(w, err)
+		return
+	}
+
 	referenceID := h.getReferenceIdPathValue(r)
 	resultChan := make(chan result[*domain.Submission], 1)
-	query := ports.NewFindByIdQuery(referenceID)
+	query := ports.NewFindByIdQuery(tenantID, referenceID)
 
 	go func() {
 		defer close(resultChan)
@@ -69,7 +76,7 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 		return
 	case res := <-resultChan:
 		if res.err != nil {
-			httputil.SendErrorResponse(w, res.err)
+			h.sendErrorResponse(w, res.err)
 			return
 		}
 
@@ -84,6 +91,16 @@ func (h *handlers) getSubmissionAttempts(w http.ResponseWriter, r *http.Request)
 func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {}
 
 func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request) {}
+
+func (h *handlers) getTenantFromContext(r *http.Request) (string, error) {
+	tenantID, err := tenants.TenantFromContext(r.Context())
+
+	if err != nil {
+		return "", err
+	}
+
+	return tenantID, nil
+}
 
 func (h *handlers) getReferenceIdPathValue(r *http.Request) domain.ReferenceID {
 	id := chi.URLParam(r, "referenceId")

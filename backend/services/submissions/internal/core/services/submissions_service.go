@@ -13,7 +13,6 @@ import (
 type SubmissionsService struct {
 	logger                *log.Logger
 	submissionsRepository ports.SubmissionsRepository
-	baseService
 }
 
 func NewSubmissionsService(logger *log.Logger, repository *ports.Repository) *SubmissionsService {
@@ -28,11 +27,6 @@ func (s *SubmissionsService) Find(ctx context.Context) ([]*domain.Submission, er
 }
 
 func (s *SubmissionsService) FindById(ctx context.Context, query *ports.FindByIdQuery[domain.SubmissionID]) (*domain.Submission, error) {
-	tenantID, err := s.getTenantFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
@@ -43,7 +37,7 @@ func (s *SubmissionsService) FindById(ctx context.Context, query *ports.FindById
 		return nil, err
 	}
 
-	if submission.TenantID != tenantID {
+	if submission.TenantID != query.TenantID {
 		return nil, common.ErrUnauthorized
 	}
 
@@ -51,11 +45,6 @@ func (s *SubmissionsService) FindById(ctx context.Context, query *ports.FindById
 }
 
 func (s *SubmissionsService) FindByReferenceId(ctx context.Context, query *ports.FindByIdQuery[domain.ReferenceID]) (*domain.Submission, error) {
-	tenantID, err := s.getTenantFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
@@ -66,7 +55,7 @@ func (s *SubmissionsService) FindByReferenceId(ctx context.Context, query *ports
 		return nil, err
 	}
 
-	if submission.TenantID != tenantID {
+	if submission.TenantID != query.TenantID {
 		return nil, common.ErrUnauthorized
 	}
 

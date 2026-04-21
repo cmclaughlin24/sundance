@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/tenants"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
@@ -54,8 +55,14 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := h.getTenantFromContext(r)
+	if err != nil {
+		httputil.SendErrorResponse(w, err)
+		return
+	}
+
 	formID := h.getFormIdPathValue(r)
-	query := ports.NewFindByIDQuery(formID)
+	query := ports.NewFindByIDQuery(tenantID, formID)
 	resultChan := make(chan result[*domain.Form], 1)
 
 	go func() {
@@ -78,6 +85,12 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := h.getTenantFromContext(r)
+	if err != nil {
+		httputil.SendErrorResponse(w, err)
+		return
+	}
+
 	resultChan := make(chan result[*domain.Form], 1)
 
 	var body dto.UpsertFormRequest
@@ -86,7 +99,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command := ports.NewCreateFormCommand(body.Name, body.Description)
+	command := ports.NewCreateFormCommand(tenantID, body.Name, body.Description)
 
 	go func() {
 		defer close(resultChan)
@@ -111,6 +124,12 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := h.getTenantFromContext(r)
+	if err != nil {
+		httputil.SendErrorResponse(w, err)
+		return
+	}
+
 	formID := h.getFormIdPathValue(r)
 	resultChan := make(chan result[*domain.Form], 1)
 
@@ -120,7 +139,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command := ports.NewUpdateFormCommand(formID, body.Name, body.Description)
+	command := ports.NewUpdateFormCommand(tenantID, formID, body.Name, body.Description)
 
 	go func() {
 		defer close(resultChan)
@@ -145,8 +164,14 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := h.getTenantFromContext(r)
+	if err != nil {
+		httputil.SendErrorResponse(w, err)
+		return
+	}
+
 	formID := h.getFormIdPathValue(r)
-	query := ports.NewFindVersionsQuery(formID)
+	query := ports.NewFindVersionsQuery(tenantID, formID)
 	resultChan := make(chan result[[]*domain.Version], 1)
 
 	go func() {
@@ -174,10 +199,15 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := h.getTenantFromContext(r)
+	if err != nil {
+		httputil.SendErrorResponse(w, err)
+		return
+	}
 
 	formID := h.getFormIdPathValue(r)
 	versionID := h.getVersionIdPathValue(r)
-	query := ports.NewFindVersionByIDQuery(formID, versionID)
+	query := ports.NewFindVersionByIDQuery(tenantID, formID, versionID)
 	resultChan := make(chan result[*domain.Version], 1)
 
 	go func() {
@@ -200,6 +230,12 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := h.getTenantFromContext(r)
+	if err != nil {
+		httputil.SendErrorResponse(w, err)
+		return
+	}
+
 	formID := h.getFormIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
@@ -209,7 +245,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command := ports.NewCreateVersionCommand(formID)
+	command := ports.NewCreateVersionCommand(tenantID, formID)
 
 	go func() {
 		defer close(resultChan)
@@ -234,6 +270,12 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := h.getTenantFromContext(r)
+	if err != nil {
+		httputil.SendErrorResponse(w, err)
+		return
+	}
+
 	formID := h.getFormIdPathValue(r)
 	versionID := h.getVersionIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
@@ -250,7 +292,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	command := ports.NewUpdateVersionCommand(versionID, formID, pages)
+	command := ports.NewUpdateVersionCommand(tenantID, versionID, formID, pages)
 
 	go func() {
 		defer close(resultChan)
@@ -275,11 +317,17 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := h.getTenantFromContext(r)
+	if err != nil {
+		httputil.SendErrorResponse(w, err)
+		return
+	}
+
 	formID := h.getFormIdPathValue(r)
 	versionID := h.getVersionIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 	// FIXME: Remove temporary placeholder for user ID.
-	command := ports.NewPublishVersionCommand(formID, versionID, "placeholder")
+	command := ports.NewPublishVersionCommand(tenantID, formID, versionID, "placeholder")
 
 	go func() {
 		defer close(resultChan)
@@ -304,11 +352,17 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := h.getTenantFromContext(r)
+	if err != nil {
+		httputil.SendErrorResponse(w, err)
+		return
+	}
+
 	formId := h.getFormIdPathValue(r)
 	versionId := h.getVersionIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 	// FIXME: Remove temporary placeholder for user ID.
-	command := ports.NewRetireVersionCommand(formId, versionId, "placeholder")
+	command := ports.NewRetireVersionCommand(tenantID, formId, versionId, "placeholder")
 
 	go func() {
 		defer close(resultChan)
@@ -330,6 +384,16 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 			Data:    nil,
 		})
 	}
+}
+
+func (h *handlers) getTenantFromContext(r *http.Request) (string, error) {
+	tenantID, err := tenants.TenantFromContext(r.Context())
+
+	if err != nil {
+		return "", err
+	}
+
+	return tenantID, nil
 }
 
 func (h *handlers) getFormIdPathValue(r *http.Request) domain.FormID {

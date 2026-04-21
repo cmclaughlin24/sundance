@@ -1,12 +1,14 @@
 package ports
 
 type FindByIdQuery[T any] struct {
-	ID T `validate:"required"`
+	TenantID string `validate:"required"`
+	ID       T      `validate:"required"`
 }
 
-func NewFindByIdQuery[T any](id T) *FindByIdQuery[T] {
+func NewFindByIdQuery[T any](tenantID string, id T) *FindByIdQuery[T] {
 	query := &FindByIdQuery[T]{
-		ID: id,
+		TenantID: tenantID,
+		ID:       id,
 	}
 
 	return query

@@ -21,9 +21,9 @@ type TenantsService interface {
 
 type DataSourcesService interface {
 	Find(context.Context, *ListDataSourceQuery) ([]*domain.DataSource, error)
-	FindById(context.Context, domain.DataSourceID) (*domain.DataSource, error)
+	FindById(context.Context, *FindDataSourceByIDQuery) (*domain.DataSource, error)
 	Create(context.Context, *CreateDataSourceCommand) (*domain.DataSource, error)
 	Update(context.Context, *UpdateDataSourceCommand) (*domain.DataSource, error)
-	Remove(context.Context, domain.DataSourceID) error
-	Lookup(context.Context, domain.DataSourceID) ([]*domain.DataSourceLookup, error)
+	Remove(context.Context, *RemoveDataSourceCommand) error
+	Lookup(context.Context, *GetDataSourceLookupsCommand) ([]*domain.DataSourceLookup, error)
 }
