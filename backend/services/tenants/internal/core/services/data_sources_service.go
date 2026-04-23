@@ -33,11 +33,11 @@ func (s *DataSourcesService) Find(ctx context.Context, query *ports.ListDataSour
 }
 
 func (s *DataSourcesService) FindById(ctx context.Context, query *ports.FindDataSourceByIDQuery) (*domain.DataSource, error) {
-	if err := s.tenantExists(ctx, query.TenantID); err != nil {
+	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
 
-	if err := validate.ValidateStruct(query); err != nil {
+	if err := s.tenantExists(ctx, query.TenantID); err != nil {
 		return nil, err
 	}
 
@@ -129,6 +129,10 @@ func (s *DataSourcesService) Remove(ctx context.Context, command *ports.RemoveDa
 }
 
 func (s *DataSourcesService) Lookup(ctx context.Context, command *ports.GetDataSourceLookupsCommand) ([]*domain.DataSourceLookup, error) {
+	if err := validate.ValidateStruct(command); err != nil {
+		return nil, err
+	}
+
 	_, err := s.dataSourcesRepository.FindById(ctx, command.TenantID, command.ID)
 
 	if err != nil {
