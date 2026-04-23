@@ -58,6 +58,7 @@ func FieldToResponse(field *domain.Field) *FieldResponse {
 		return nil
 	}
 
+	attr := fieldAttributesToResponse(field.Attributes)
 	rules := RuleToResponse(field.GetRules())
 
 	return &FieldResponse{
@@ -66,7 +67,7 @@ func FieldToResponse(field *domain.Field) *FieldResponse {
 		Name:       field.Name,
 		Type:       string(field.Type),
 		Position:   field.Position,
-		Attributes: field.Attributes,
+		Attributes: attr,
 		Rules:      rules,
 	}
 }

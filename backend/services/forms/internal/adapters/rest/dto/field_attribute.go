@@ -61,3 +61,86 @@ func parseAttributes[T domain.FieldAttributes](data []byte) (domain.FieldAttribu
 
 	return attributes, nil
 }
+
+type baseFieldAttributeResponse struct {
+	IsRequired bool `json:"isRequired"`
+	IsReadOnly bool `json:"isReadOnly"`
+}
+
+type textFieldAttributesResponse struct {
+	baseFieldAttributeResponse
+	MinLength   *int   `json:"minLength"`
+	MaxLength   *int   `json:"maxLength"`
+	Pattern     string `json:"pattern"`
+	Placeholder string `json:"placeholder"`
+}
+
+type numberFieldAttributesResponse struct {
+	baseFieldAttributeResponse
+	Min  *float64 `json:"min"`
+	Max  *float64 `json:"max"`
+	Step *float64 `json:"step"`
+}
+
+type selectFieldAttributesResponse struct {
+	baseFieldAttributeResponse
+	Multiple    bool `json:"multiple"`
+	MinSelected *int `json:"minSelected"`
+	MaxSelected *int `json:"maxSelected"`
+}
+
+type checkboxFieldAttributesResponse struct {
+	baseFieldAttributeResponse
+	IsCheckedByDefault bool `json:"isCheckedByDefault"`
+}
+
+type dateFieldAttributesResponse struct {
+	baseFieldAttributeResponse
+	MinDate *string `json:"minDate"`
+	MaxDate *string `json:"maxDate"`
+}
+
+func fieldAttributesToResponse(attr domain.FieldAttributes) any {
+	base := baseFieldAttributeResponse{
+		IsRequired: attr.GetIsRequired(),
+		IsReadOnly: attr.GetIsReadOnly(),
+	}
+
+	switch t := attr.(type) {
+	case domain.TextFieldAttributes:
+		return textFieldAttributesResponse{
+			baseFieldAttributeResponse: base,
+			MinLength:                  t.MinLength,
+			MaxLength:                  t.MaxLength,
+			Pattern:                    t.Pattern,
+			Placeholder:                t.Placeholder,
+		}
+	case domain.NumberFieldAttributes:
+		return numberFieldAttributesResponse{
+			baseFieldAttributeResponse: base,
+			Min:                        t.Min,
+			Max:                        t.Max,
+			Step:                       t.Step,
+		}
+	case domain.SelectFieldAttributes:
+		return selectFieldAttributesResponse{
+			baseFieldAttributeResponse: base,
+			Multiple:                   t.Multiple,
+			MinSelected:                t.MinSelected,
+			MaxSelected:                t.MaxSelected,
+		}
+	case domain.CheckboxFieldAttributes:
+		return checkboxFieldAttributesResponse{
+			baseFieldAttributeResponse: base,
+			IsCheckedByDefault:         t.IsCheckedByDefault,
+		}
+	case domain.DateFieldAttributes:
+		return dateFieldAttributesResponse{
+			baseFieldAttributeResponse: base,
+			MinDate:                    t.MinDate,
+			MaxDate:                    t.MaxDate,
+		}
+	default:
+		return attr
+	}
+}

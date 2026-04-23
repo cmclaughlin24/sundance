@@ -1,7 +1,8 @@
 package domain
 
 type FieldAttributes interface {
-	isFieldAttribute()
+	GetIsRequired() bool
+	GetIsReadOnly() bool
 }
 
 type BaseFieldAttributes struct {
@@ -9,7 +10,13 @@ type BaseFieldAttributes struct {
 	IsRequired bool
 }
 
-func (a BaseFieldAttributes) isFieldAttribute() {}
+func (a BaseFieldAttributes) GetIsRequired() bool {
+	return a.IsRequired
+}
+
+func (a BaseFieldAttributes) GetIsReadOnly() bool {
+	return a.IsReadOnly
+}
 
 type TextFieldAttributes struct {
 	BaseFieldAttributes
