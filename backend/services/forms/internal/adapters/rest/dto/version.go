@@ -6,9 +6,9 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 )
 
-type CreateVersionDto struct{}
+type CreateVersionRequest struct{}
 
-type UpdateVersionDto struct {
+type UpdateVersionRequest struct {
 	Pages []PageRequest `json:"pages"`
 }
 

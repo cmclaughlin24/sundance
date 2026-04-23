@@ -239,7 +239,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 	formID := h.getFormIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
-	var body dto.CreateVersionDto
+	var body dto.CreateVersionRequest
 	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
@@ -280,7 +280,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 	versionID := h.getVersionIdPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
-	var body dto.UpdateVersionDto
+	var body dto.UpdateVersionRequest
 	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return

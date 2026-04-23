@@ -19,7 +19,7 @@ type PageResponse struct {
 	Rules    []*RuleResponse    `json:"rules"`
 }
 
-func RequestToPages(dto UpdateVersionDto) ([]*domain.Page, error) {
+func RequestToPages(dto UpdateVersionRequest) ([]*domain.Page, error) {
 	pages := make([]*domain.Page, 0, len(dto.Pages))
 
 	for _, p := range dto.Pages {
