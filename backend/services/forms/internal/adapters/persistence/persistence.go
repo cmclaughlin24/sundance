@@ -1,10 +1,12 @@
 package persistence
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/persistence/inmemory"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/persistence/mongodb"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
 )
 
@@ -12,6 +14,7 @@ type PersistenceDriver string
 
 const (
 	PersistenceDriverInMemory PersistenceDriver = "in-memory"
+	PersistenceDriverMongodb  PersistenceDriver = "mongodb"
 )
 
 type bootstrapFn func(PersistenceOptions, *log.Logger) (*ports.Repository, error)
@@ -29,6 +32,8 @@ func Bootstrap(settings PersistenceSettings, logger *log.Logger) (*ports.Reposit
 	switch settings.Driver {
 	case PersistenceDriverInMemory:
 		fn = bootstrapInMemory
+	case PersistenceDriverMongodb:
+		fn = bootstrapMongoDB
 	}
 
 	if fn == nil {
@@ -40,4 +45,41 @@ func Bootstrap(settings PersistenceSettings, logger *log.Logger) (*ports.Reposit
 
 func bootstrapInMemory(_ PersistenceOptions, logger *log.Logger) (*ports.Repository, error) {
 	return inmemory.Bootstrap(logger), nil
+}
+
+func bootstrapMongoDB(o PersistenceOptions, logger *log.Logger) (*ports.Repository, error) {
+	options, err := parseOptions[mongodb.MongoDBOpts](o)
+
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = mongodb.Connect(
+		mongodb.WithHost(options.Host),
+		mongodb.WithPort(options.Port),
+		mongodb.WithUsername(options.Username),
+		mongodb.WithPassword(options.Password),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &ports.Repository{}, nil
+}
+
+func parseOptions[T PersistenceOptions](options PersistenceOptions) (T, error) {
+	data, err := json.Marshal(options)
+
+	if err != nil {
+		return *new(T), err
+	}
+
+	var opts T
+
+	if err := json.Unmarshal(data, &opts); err != nil {
+		return *new(T), err
+	}
+
+	return opts, nil
 }

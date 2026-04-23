@@ -72,5 +72,7 @@ services:
             - ./backend/services/submissions
         - action: rebuild
           path: ./backend/services/tenants/go.mod
+    depends_on:
+      - mongo
 volumes:
   mongodb:
