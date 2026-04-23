@@ -26,16 +26,14 @@ var attributeParserStrategies = strategy.NewStrategies[domain.DataSourceType, at
 		return parseAttributes[domain.QueryDataSourceAttributes](data)
 	})
 
-type TenantRequest struct {
-	Name        string `json:"name" validate:"required"`
-	Description string `json:"description" validate:"required"`
-}
+func parseAttributes[T domain.DataSourceAttributes](data []byte) (domain.DataSourceAttributes, error) {
+	var attributes T
 
-type DataSourceRequest struct {
-	Name        string                `json:"name" validate:"required"`
-	Description string                `json:"description" validate:"required"`
-	Type        domain.DataSourceType `json:"type" validate:"required"`
-	Attributes  any                   `json:"attributes" validate:"required"`
+	if err := json.Unmarshal(data, &attributes); err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrDataSourceAttrParse, err)
+	}
+
+	return attributes, nil
 }
 
 func RequestToDataSourceAttributes(dataSourceType domain.DataSourceType, raw any) (domain.DataSourceAttributes, error) {
@@ -56,14 +54,4 @@ func RequestToDataSourceAttributes(dataSourceType domain.DataSourceType, raw any
 	}
 
 	return strategy(attrBytes)
-}
-
-func parseAttributes[T domain.DataSourceAttributes](data []byte) (domain.DataSourceAttributes, error) {
-	var attributes T
-
-	if err := json.Unmarshal(data, &attributes); err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrDataSourceAttrParse, err)
-	}
-
-	return attributes, nil
 }
