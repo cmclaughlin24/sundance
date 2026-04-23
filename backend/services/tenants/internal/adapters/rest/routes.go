@@ -38,7 +38,7 @@ func NewRoutes(app *core.Application) http.Handler {
 				dataSourceRoutes.Get("/", h.getDataSource)
 				dataSourceRoutes.Put("/", h.updateDataSource)
 				dataSourceRoutes.Delete("/", h.removeDataSource)
-				dataSourceRoutes.Get("/look-ups", h.getDataSourceLookup)
+				dataSourceRoutes.Get("/look-ups", h.getLookups)
 			})
 		})
 	})

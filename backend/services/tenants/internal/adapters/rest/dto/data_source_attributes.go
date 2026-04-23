@@ -55,3 +55,40 @@ func RequestToDataSourceAttributes(dataSourceType domain.DataSourceType, raw any
 
 	return strategy(attrBytes)
 }
+
+type staticDataSourceAttributesResponse struct {
+	Data []*LookupResponse `json:"data"`
+}
+
+type scheduledDataSourceAttributesResponse struct {
+	Data []*LookupResponse `json:"data"`
+}
+
+type queryDataSourceAttributesResponse struct {
+	Type     domain.QueryDataSourceType `json:"type"`
+	Resource string                     `json:"resource"`
+}
+
+func dataSourceAttributesToResponse(attr domain.DataSourceAttributes) any {
+	switch t := attr.(type) {
+	case domain.QueryDataSourceAttributes:
+		return queryDataSourceAttributesResponse{
+			Type:     t.Type,
+			Resource: t.Resource,
+		}
+	case domain.ScheduledDataSourceAttributes:
+		data := LookupsToResponse(t.Data)
+
+		return scheduledDataSourceAttributesResponse{
+			Data: data,
+		}
+	case domain.StaticDataSourceAttributes:
+		data := LookupsToResponse(t.Data)
+
+		return staticDataSourceAttributesResponse{
+			Data: data,
+		}
+	default:
+		return attr
+	}
+}

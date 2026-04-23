@@ -25,5 +25,5 @@ type DataSourcesService interface {
 	Create(context.Context, *CreateDataSourceCommand) (*domain.DataSource, error)
 	Update(context.Context, *UpdateDataSourceCommand) (*domain.DataSource, error)
 	Remove(context.Context, *RemoveDataSourceCommand) error
-	Lookup(context.Context, *GetDataSourceLookupsCommand) ([]*domain.DataSourceLookup, error)
+	Lookup(context.Context, *GetDataSourceLookupsCommand) ([]*domain.Lookup, error)
 }

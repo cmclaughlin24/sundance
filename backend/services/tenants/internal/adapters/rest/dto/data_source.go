@@ -25,13 +25,15 @@ type DataSourceResponse struct {
 }
 
 func DataSourceToResponse(source *domain.DataSource) *DataSourceResponse {
+	attr := dataSourceAttributesToResponse(source.Attributes)
+
 	return &DataSourceResponse{
 		ID:          source.ID,
 		TenantID:    source.TenantID,
 		Name:        source.Name,
 		Description: source.Description,
 		Type:        source.Type,
-		Attributes:  source.Attributes,
+		Attributes:  attr,
 		CreatedAt:   source.CreatedAt,
 		UpdatedAt:   source.UpdatedAt,
 	}

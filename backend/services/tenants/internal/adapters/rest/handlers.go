@@ -366,7 +366,7 @@ func (h *handlers) removeDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) getDataSourceLookup(w http.ResponseWriter, r *http.Request) {
+func (h *handlers) getLookups(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := h.getTenantFromContext(r)
 	if err != nil {
 		httputil.SendErrorResponse(w, err)
@@ -374,13 +374,13 @@ func (h *handlers) getDataSourceLookup(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sourceID := chi.URLParam(r, "dataSourceId")
-	resultChan := make(chan result[[]*domain.DataSourceLookup], 1)
+	resultChan := make(chan result[[]*domain.Lookup], 1)
 	command := ports.NewGetDataSourceLookupsCommand(tenantID, domain.DataSourceID(sourceID))
 
 	go func() {
 		defer close(resultChan)
 		lookups, err := h.app.Services.DataSources.Lookup(r.Context(), command)
-		resultChan <- result[[]*domain.DataSourceLookup]{lookups, err}
+		resultChan <- result[[]*domain.Lookup]{lookups, err}
 	}()
 
 	select {
@@ -392,11 +392,7 @@ func (h *handlers) getDataSourceLookup(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]*dto.DataSourceLookupResponse, 0, len(res.data))
-		for _, lookup := range res.data {
-			dtos = append(dtos, dto.DataSourceLookupToResponse(lookup))
-		}
-
+		dtos := dto.LookupsToResponse(res.data)
 		httputil.SendJsonResponse(w, http.StatusOK, dtos)
 	}
 }

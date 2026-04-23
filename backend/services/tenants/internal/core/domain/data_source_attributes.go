@@ -10,12 +10,12 @@ func (b baseDataSourceAttributes) isDataSourceAttributes() {}
 
 type StaticDataSourceAttributes struct {
 	baseDataSourceAttributes
-	Data []DataSourceLookup
+	Data []*Lookup
 }
 
 type ScheduledDataSourceAttributes struct {
 	baseDataSourceAttributes
-	Data []DataSourceLookup
+	Data []*Lookup
 }
 
 type QueryDataSourceType string
@@ -28,5 +28,5 @@ const (
 type QueryDataSourceAttributes struct {
 	baseDataSourceAttributes
 	Type     QueryDataSourceType
-	Endpoint string
+	Resource string
 }
