@@ -57,7 +57,7 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := h.getTenantFromContext(r)
 	if err != nil {
-		httputil.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -87,7 +87,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := h.getTenantFromContext(r)
 	if err != nil {
-		httputil.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -126,7 +126,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := h.getTenantFromContext(r)
 	if err != nil {
-		httputil.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -166,7 +166,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := h.getTenantFromContext(r)
 	if err != nil {
-		httputil.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -201,7 +201,7 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := h.getTenantFromContext(r)
 	if err != nil {
-		httputil.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -232,7 +232,7 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := h.getTenantFromContext(r)
 	if err != nil {
-		httputil.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -272,7 +272,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := h.getTenantFromContext(r)
 	if err != nil {
-		httputil.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -319,7 +319,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := h.getTenantFromContext(r)
 	if err != nil {
-		httputil.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 
@@ -354,7 +354,7 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := h.getTenantFromContext(r)
 	if err != nil {
-		httputil.SendErrorResponse(w, err)
+		h.sendErrorResponse(w, err)
 		return
 	}
 

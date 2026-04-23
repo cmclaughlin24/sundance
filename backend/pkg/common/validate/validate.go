@@ -17,8 +17,10 @@ func ValidateStruct(s any) error {
 	return v.Struct(s)
 }
 
-func NewTypeValidator[T comparable](values []T) func(T) bool {
+func NewTypeValidator[T comparable](types []T) func(T) bool {
+	cpy := slices.Clone(types)
+
 	return func(t T) bool {
-		return slices.Contains(values, t)
+		return slices.Contains(cpy, t)
 	}
 }

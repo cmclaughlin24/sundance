@@ -36,7 +36,7 @@ func ReadJsonPayload[T any](r *http.Request, data T) error {
 	return nil
 }
 
-// Reads the JSON payload from the http.Request, decodes it into the provided data structure of tyep T, and
+// Reads the JSON payload from the http.Request, decodes it into the provided data structure of type T, and
 // validates the decoded data.
 func ReadValidateJsonPayload[T any](r *http.Request, data T) error {
 	if err := ReadJsonPayload(r, data); err != nil {

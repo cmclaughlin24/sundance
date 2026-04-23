@@ -418,7 +418,7 @@ func (h *handlers) getTenantIDPathValue(r *http.Request) domain.TenantID {
 
 func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 	switch {
-	case errors.Is(err, domain.ErrInvalidSourceTypeAttributes):
+	case isBadRequest(err):
 		httputil.SendJsonResponse(w, http.StatusBadRequest, httputil.ApiErrorResponse{
 			Message:    "Bad Request",
 			Error:      err.Error(),
@@ -428,4 +428,11 @@ func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 	default:
 		httputil.SendErrorResponse(w, err)
 	}
+}
+
+func isBadRequest(err error) bool {
+	return errors.Is(err, dto.ErrDataSourceAttrParse) ||
+		errors.Is(err, domain.ErrInvalidSourceType) ||
+		errors.Is(err, domain.ErrInvalidSourceTypeAttributes)
+
 }
