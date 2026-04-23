@@ -15,9 +15,11 @@ type Tenant struct {
 }
 
 func NewTenant(id TenantID, name, description string) (*Tenant, error) {
-	return &Tenant{
+	t := &Tenant{
 		ID:          id,
 		Name:        name,
 		Description: description,
-	}, nil
+	}
+
+	return t, nil
 }

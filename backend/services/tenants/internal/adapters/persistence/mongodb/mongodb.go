@@ -3,7 +3,9 @@ package mongodb
 import (
 	"context"
 	"fmt"
+	"log"
 
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
@@ -66,5 +68,15 @@ func WithUsername(username string) func(*MongoDBOpts) {
 func WithPassword(password string) func(*MongoDBOpts) {
 	return func(o *MongoDBOpts) {
 		o.Password = password
+	}
+}
+
+func Bootstrap(client *mongo.Client, logger *log.Logger) *ports.Repository {
+	db := client.Database("tenants")
+
+	return &ports.Repository{
+		Database:    NewMongoDBDatabase(client, db),
+		DataSources: NewMongoDBDataSourcesRepository(db, logger),
+		Tenants:     NewMongoDBTenantsRepository(db, logger),
 	}
 }
