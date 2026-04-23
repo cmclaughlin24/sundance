@@ -8,6 +8,7 @@ import (
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 	"github.com/google/uuid"
 )
 
@@ -17,7 +18,7 @@ type InmemoryDataSourceRepository struct {
 	logger      *log.Logger
 }
 
-func NewInmemoryDataSourceRepository(logger *log.Logger) *InmemoryDataSourceRepository {
+func NewInmemoryDataSourceRepository(logger *log.Logger) ports.DataSourcesRepository {
 	return &InmemoryDataSourceRepository{
 		dataSources: make(map[string]*domain.DataSource),
 		logger:      logger,

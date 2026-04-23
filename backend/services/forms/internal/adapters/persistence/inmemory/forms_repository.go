@@ -8,6 +8,7 @@ import (
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
 	"github.com/google/uuid"
 )
 
@@ -18,7 +19,7 @@ type InMemoryFormsRepository struct {
 	logger   *log.Logger
 }
 
-func NewInMemoryFormsRepository(logger *log.Logger) *InMemoryFormsRepository {
+func NewInMemoryFormsRepository(logger *log.Logger) ports.FormsRepository{
 	return &InMemoryFormsRepository{
 		forms:    make(map[string]*domain.Form),
 		versions: make(map[string]map[string]*domain.Version),

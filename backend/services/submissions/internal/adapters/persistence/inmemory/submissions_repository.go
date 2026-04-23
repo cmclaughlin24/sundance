@@ -7,6 +7,7 @@ import (
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
 )
 
 type InMemorySubmissionsRepository struct {
@@ -15,7 +16,7 @@ type InMemorySubmissionsRepository struct {
 	logger      *log.Logger
 }
 
-func NewInMemorySubmissionsRepository(logger *log.Logger) *InMemorySubmissionsRepository {
+func NewInMemorySubmissionsRepository(logger *log.Logger) ports.SubmissionsRepository {
 	return &InMemorySubmissionsRepository{
 		submissions: make(map[string]*domain.Submission),
 		logger:      logger,
