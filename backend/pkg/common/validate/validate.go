@@ -2,6 +2,7 @@ package validate
 
 import (
 	"errors"
+	"slices"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -14,4 +15,10 @@ func IsValidationErr(err error) bool {
 
 func ValidateStruct(s any) error {
 	return v.Struct(s)
+}
+
+func NewTypeValidator[T comparable](values []T) func(T) bool {
+	return func(t T) bool {
+		return slices.Contains(values, t)
+	}
 }

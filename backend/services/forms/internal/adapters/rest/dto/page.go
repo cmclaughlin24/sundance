@@ -79,7 +79,7 @@ func PageToResponse(page *domain.Page) *PageResponse {
 		sections = append(sections, SectionToResponse(s))
 	}
 
-	rules := RuleToResponse(page.Rules)
+	rules := RuleToResponse(page.GetRules())
 
 	return &PageResponse{
 		ID:       page.ID,

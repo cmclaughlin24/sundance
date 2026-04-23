@@ -4,16 +4,19 @@ type DataSourceAttributes interface {
 	isDataSourceAttributes()
 }
 
-type StaticDataSourceAttributes struct {
-	Data any
-}
+type baseDataSourceAttributes struct{}
 
-func (a StaticDataSourceAttributes) isDataSourceAttributes() {}
+func (b baseDataSourceAttributes) isDataSourceAttributes() {}
+
+type StaticDataSourceAttributes struct {
+	baseDataSourceAttributes
+	Data []DataSourceLookup
+}
 
 type ScheduledDataSourceAttributes struct {
+	baseDataSourceAttributes
+	Data []DataSourceLookup
 }
-
-func (a ScheduledDataSourceAttributes) isDataSourceAttributes() {}
 
 type QueryDataSourceType string
 
@@ -23,8 +26,7 @@ const (
 )
 
 type QueryDataSourceAttributes struct {
+	baseDataSourceAttributes
 	Type     QueryDataSourceType
 	Endpoint string
 }
-
-func (a QueryDataSourceAttributes) isDataSourceAttributes() {}

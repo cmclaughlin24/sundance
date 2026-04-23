@@ -1,6 +1,10 @@
 package domain
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
+)
 
 type RuleID string
 
@@ -13,6 +17,7 @@ const (
 )
 
 var (
+	ErrInvalidRuleType   = errors.New("invalid rule type")
 	ErrDuplicateRuleType = errors.New("duplicate rule type")
 )
 
@@ -23,34 +28,55 @@ type Rule struct {
 }
 
 func NewRule(id RuleID, ruleType RuleType, expression string) (*Rule, error) {
-	cr := &Rule{
+	if !isValidRuleType(ruleType) {
+		return nil, ErrInvalidFieldType
+	}
+
+	return &Rule{
 		ID:         id,
 		Type:       ruleType,
 		Expression: expression,
-	}
+	}, nil
 
-	// TODO: Implement domain validation.
-
-	return cr, nil
 }
 
+var isValidRuleType = validate.NewTypeValidator([]RuleType{
+	RuleTypeVisible,
+	RuleTypeRequired,
+	RuleTypeReadOnly,
+})
+
 type baseWithRules struct {
-	Rules map[RuleType]*Rule
+	rules map[RuleType]*Rule
+}
+
+func (b *baseWithRules) GetRules() map[RuleType]*Rule {
+	return b.rules
+}
+
+func (b *baseWithRules) GetRule(ruleType RuleType) *Rule {
+	r, ok := b.rules[ruleType]
+
+	if !ok {
+		return nil
+	}
+
+	return r
 }
 
 func (b *baseWithRules) SetRules(rules ...*Rule) error {
-	if b.Rules == nil {
-		b.Rules = make(map[RuleType]*Rule)
+	if b.rules == nil {
+		b.rules = make(map[RuleType]*Rule)
 	}
 
 	for _, rule := range rules {
-		_, exists := b.Rules[rule.Type]
+		_, exists := b.rules[rule.Type]
 
 		if exists {
 			return ErrDuplicateRuleType
 		}
 
-		b.Rules[rule.Type] = rule
+		b.rules[rule.Type] = rule
 	}
 
 	return nil

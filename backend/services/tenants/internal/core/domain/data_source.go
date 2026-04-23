@@ -3,6 +3,8 @@ package domain
 import (
 	"errors"
 	"time"
+
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 )
 
 type DataSourceID string
@@ -39,6 +41,10 @@ func NewDataSource(
 	sourceType DataSourceType,
 	attributes DataSourceAttributes,
 ) (*DataSource, error) {
+	if !isValidSourceType(sourceType) {
+		return nil, ErrInvalidSourceType
+	}
+
 	if !isValidAttributeType(sourceType, attributes) {
 		return nil, ErrInvalidSourceTypeAttributes
 	}
@@ -52,6 +58,12 @@ func NewDataSource(
 		Attributes:  attributes,
 	}, nil
 }
+
+var isValidSourceType = validate.NewTypeValidator([]DataSourceType{
+	DataSourceTypeStatic,
+	DataSourceTypeScheduled,
+	DataSourceTypeQuery,
+})
 
 func isValidAttributeType(sourceType DataSourceType, attributes DataSourceAttributes) bool {
 	switch attributes.(type) {

@@ -94,7 +94,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Form], 1)
 
 	var body dto.UpsertFormRequest
-	if err := httputil.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -134,7 +134,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Form], 1)
 
 	var body dto.UpsertFormRequest
-	if err := httputil.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -240,7 +240,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Version], 1)
 
 	var body dto.CreateVersionDto
-	if err := httputil.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -281,7 +281,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Version], 1)
 
 	var body dto.UpdateVersionDto
-	if err := httputil.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}

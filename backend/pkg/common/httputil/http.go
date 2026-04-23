@@ -25,7 +25,7 @@ type ApiErrorResponse struct {
 	StatusCode int    `json:"statusCode"`
 }
 
-// Reads the JSON payload from the `http.Request` and decodes it into the provided data structure of type `T`.
+// Reads the JSON payload from the http.Request and decodes it into the provided data structure of type T.
 func ReadJsonPayload[T any](r *http.Request, data T) error {
 	decoder := json.NewDecoder(r.Body)
 
@@ -36,7 +36,17 @@ func ReadJsonPayload[T any](r *http.Request, data T) error {
 	return nil
 }
 
-// Encodes the provided data as JSON and writes it to the `http.ResponseWriter` with the specified status code and
+// Reads the JSON payload from the http.Request, decodes it into the provided data structure of tyep T, and
+// validates the decoded data.
+func ReadValidateJsonPayload[T any](r *http.Request, data T) error {
+	if err := ReadJsonPayload(r, data); err != nil {
+		return err
+	}
+
+	return validate.ValidateStruct(data)
+}
+
+// Encodes the provided data as JSON and writes it to the http.ResponseWriter with the specified status code and
 // optional headers.
 func SendJsonResponse(w http.ResponseWriter, statusCode int, data any, headers ...http.Header) error {
 	out, err := json.Marshal(data)

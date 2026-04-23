@@ -82,7 +82,7 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Tenant], 1)
 
 	var body dto.TenantRequest
-	if err := httputil.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -116,7 +116,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Tenant], 1)
 
 	var body dto.TenantRequest
-	if err := httputil.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -242,7 +242,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.DataSource], 1)
 
 	var body dto.DataSourceRequest
-	if err := httputil.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -294,7 +294,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.DataSource], 1)
 
 	var body dto.DataSourceRequest
-	if err := httputil.ReadJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}

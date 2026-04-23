@@ -58,7 +58,7 @@ func FieldToResponse(field *domain.Field) *FieldResponse {
 		return nil
 	}
 
-	rules := RuleToResponse(field.Rules)
+	rules := RuleToResponse(field.GetRules())
 
 	return &FieldResponse{
 		ID:         field.ID,
