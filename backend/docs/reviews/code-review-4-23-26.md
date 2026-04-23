@@ -84,6 +84,8 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 16. **`CreateVersionDto` is an empty struct deserialized from request body** (`dto/version.go:9`, `handlers.go:242-246`) -- `createVersion` calls `ReadValidateJsonPayload(r, &body)` where `body` is `CreateVersionDto struct{}`. The request body is read and decoded into a type with no fields, meaning any payload is silently discarded. Either the DTO should carry fields or the `ReadValidateJsonPayload` call should be removed. *(Unresolved from 4/22 #16.)*
 
+41. **`FindVersions` returns `ErrNotFound` when form has no versions** (`forms_repository.go:93-96`) -- If a form exists but has no entry in the versions map (which happens when a form is created before any version is added), `FindVersions` returns `common.ErrNotFound` rather than an empty slice. This will produce a 404 when listing versions of a new form. *(New.)*
+
 ---
 
 ### Submissions Service
@@ -120,6 +122,8 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 29. **`SubmissionsRepository.FindByReferenceId` does a linear scan** (`submissions_repository.go`) -- Iterates over all entries comparing `ReferenceID`. No secondary index. *(Unresolved from 4/17 #40, 4/18 #39, 4/19 #31, 4/20 #28, 4/22 #29.)*
 
+42. **Context cancel drops response silently** (`handlers.go:39-41`, `74-76`) -- When the request context is cancelled, the `select` on `r.Context().Done()` returns without writing any HTTP response. The client receives a connection drop with no status code. *(New.)*
+
 45. **In-memory submissions repository map keyed by `string` instead of `SubmissionID`** (`submissions_repository.go:14`) -- The map key is `string`, but the domain uses `domain.SubmissionID` (a named `string` type). `FindById` does `r.submissions[string(id)]`. The map should be `map[domain.SubmissionID]*domain.Submission` for type safety. *(New.)*
 
 ---
@@ -154,13 +158,13 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 ---
 
-### Shared Package
-
-41. **`FindVersions` returns `ErrNotFound` when form has no versions** (`forms_repository.go:93-96`) -- If a form exists but has no entry in the versions map (which happens when a form is created before any version is added), `FindVersions` returns `common.ErrNotFound` rather than an empty slice. This will produce a 404 when listing versions of a new form. *(New.)*
-
-42. **Context cancel drops response silently** (submissions `handlers.go:39-41`, `74-76`) -- When the request context is cancelled, the `select` on `r.Context().Done()` returns without writing any HTTP response. The client receives a connection drop with no status code. *(New.)*
+### Cross-Service
 
 43. **No graceful shutdown** (all services, e.g. submissions `cmd/server/main.go:58-60`) -- `server.ListenAndServe()` blocks until error, and `log.Fatal` calls `os.Exit`, preventing `defer app.Close()` from executing. There is no signal handling (`os.Signal`) or `server.Shutdown(ctx)` call. *(New.)*
+
+---
+
+### Shared Package
 
 44. **500 errors leak `err.Error()` to clients** (`httputil/http.go:103-107`) -- The `default` case in `SendErrorResponse` returns the raw error string in the JSON response body. In production, this could expose internal details (database errors, file paths, stack traces). Should return a generic message and log the real error server-side. *(New.)*
 
