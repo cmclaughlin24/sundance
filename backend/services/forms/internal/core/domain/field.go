@@ -39,6 +39,7 @@ func NewField(id FieldID, key, name string, fieldType FieldType, attributes Fiel
 	}
 
 	if !isValidFieldAttributes(fieldType, attributes) {
+		return nil, ErrInvalidFieldAttributes
 	}
 
 	return &Field{

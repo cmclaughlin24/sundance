@@ -107,11 +107,11 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 }
 
 func (s *DataSourcesService) Remove(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
-	if err := s.tenantExists(ctx, command.TenantID); err != nil {
+	if err := validate.ValidateStruct(command); err != nil {
 		return err
 	}
 
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := s.tenantExists(ctx, command.TenantID); err != nil {
 		return err
 	}
 

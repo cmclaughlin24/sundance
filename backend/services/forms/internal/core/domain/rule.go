@@ -29,7 +29,7 @@ type Rule struct {
 
 func NewRule(id RuleID, ruleType RuleType, expression string) (*Rule, error) {
 	if !isValidRuleType(ruleType) {
-		return nil, ErrInvalidFieldType
+		return nil, ErrInvalidRuleType
 	}
 
 	return &Rule{
