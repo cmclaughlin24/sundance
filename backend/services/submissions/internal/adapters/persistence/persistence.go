@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/persistence/mongodb"
+	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/persistence/inmemory"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/persistence/mongodb"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
 )
 
@@ -48,24 +49,24 @@ func bootstrapInMemory(_ PersistenceOptions, logger *log.Logger) (*ports.Reposit
 }
 
 func bootstrapMongoDB(o PersistenceOptions, logger *log.Logger) (*ports.Repository, error) {
-	options, err := parseOptions[mongodb.MongoDBOpts](o)
+	options, err := parseOptions[database.MongoDBOpts](o)
 
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = mongodb.Connect(
-		mongodb.WithHost(options.Host),
-		mongodb.WithPort(options.Port),
-		mongodb.WithUsername(options.Username),
-		mongodb.WithPassword(options.Password),
+	client, err := database.ConnectMongoDB(
+		database.MongoDBWithHost(options.Host),
+		database.MongoDBWithPort(options.Port),
+		database.MongoDBWithUsername(options.Username),
+		database.MongoDBWithPassword(options.Password),
 	)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &ports.Repository{}, nil
+	return mongodb.Bootstrap(client, logger), nil
 }
 
 func parseOptions[T PersistenceOptions](options PersistenceOptions) (T, error) {

@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/database"
+	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 )
 

@@ -8,4 +8,3 @@ type Database interface {
 	CommitTx(context.Context) error
 	RollbackTx(context.Context) error
 }
-

@@ -2,11 +2,11 @@ package mongodb
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 	"github.com/google/uuid"
@@ -16,34 +16,22 @@ import (
 )
 
 type mongoDBDataSourcesRepository struct {
-	mongodbBaseRepository[dataSourceDocument]
+	base *database.MongoDBRepository[dataSourceDocument]
 }
 
 func newMongoDBDataSourcesRepository(db *mongo.Database, logger *log.Logger) ports.DataSourcesRepository {
+	repository := database.NewMongoDBRepository[dataSourceDocument](
+		db.Collection("data_sources"),
+		logger,
+	)
+
 	return &mongoDBDataSourcesRepository{
-		mongodbBaseRepository[dataSourceDocument]{
-			collection: db.Collection("data_sources"),
-			logger:     logger,
-		},
+		base: repository,
 	}
 }
 
 func (r *mongoDBDataSourcesRepository) Find(ctx context.Context, tenantID domain.TenantID) ([]*domain.DataSource, error) {
-	var documents []dataSourceDocument
-
-	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
-		cursor, err := r.collection.Find(sctx, bson.M{"tenant_id": tenantID})
-
-		if err != nil {
-			return err
-		}
-
-		if err = cursor.All(sctx, &documents); err != nil {
-			return fmt.Errorf("an error occurred reading the documents: %w", err)
-		}
-
-		return nil
-	})
+	documents, err := r.base.Find(ctx, bson.M{"tenant_id": tenantID})
 
 	if err != nil {
 		return nil, err
@@ -64,7 +52,7 @@ func (r *mongoDBDataSourcesRepository) Find(ctx context.Context, tenantID domain
 	return dataSources, nil
 }
 func (r *mongoDBDataSourcesRepository) FindById(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) (*domain.DataSource, error) {
-	result, err := r.findById(ctx, bson.M{"_id": sourceID, "tenant_id": tenantID})
+	result, err := r.base.FindById(ctx, bson.M{"_id": sourceID, "tenant_id": tenantID})
 
 	if err != nil {
 		return nil, err
@@ -74,7 +62,7 @@ func (r *mongoDBDataSourcesRepository) FindById(ctx context.Context, tenantID do
 }
 
 func (r *mongoDBDataSourcesRepository) Exists(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) (bool, error) {
-	return r.exists(ctx, bson.M{"_id": sourceID, "tenant_id": tenantID})
+	return r.base.Exists(ctx, bson.M{"_id": sourceID, "tenant_id": tenantID})
 }
 
 func (r *mongoDBDataSourcesRepository) Upsert(ctx context.Context, ds *domain.DataSource) (*domain.DataSource, error) {
@@ -98,7 +86,7 @@ func (r *mongoDBDataSourcesRepository) Upsert(ctx context.Context, ds *domain.Da
 
 	var result dataSourceDocument
 	err = mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
-		return r.collection.FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
+		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
 	})
 
 	if err != nil {
@@ -110,7 +98,7 @@ func (r *mongoDBDataSourcesRepository) Upsert(ctx context.Context, ds *domain.Da
 
 func (r *mongoDBDataSourcesRepository) Remove(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) error {
 	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
-		result, err := r.collection.DeleteOne(sctx, bson.M{"_id": sourceID, "tenant_id": tenantID})
+		result, err := r.base.Collection().DeleteOne(sctx, bson.M{"_id": sourceID, "tenant_id": tenantID})
 
 		if err != nil {
 			return err

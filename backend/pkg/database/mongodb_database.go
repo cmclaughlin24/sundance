@@ -1,9 +1,8 @@
-package mongodb
+package database
 
 import (
 	"context"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/database"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
@@ -11,7 +10,7 @@ type MongoDBDatabase struct {
 	client *mongo.Client
 }
 
-func NewMongoDBDatabase(client *mongo.Client, _ *mongo.Database) database.Database {
+func NewMongoDBDatabase(client *mongo.Client, _ *mongo.Database) Database {
 	return &MongoDBDatabase{
 		client: client,
 	}
