@@ -4,12 +4,10 @@ import (
 	"context"
 	"log"
 	"sync"
-	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
-	"github.com/google/uuid"
 )
 
 type InMemoryFormsRepository struct {
@@ -53,35 +51,10 @@ func (r *InMemoryFormsRepository) FindById(ctx context.Context, id domain.FormID
 	return form, nil
 }
 
-func (r *InMemoryFormsRepository) Create(ctx context.Context, form *domain.Form) (*domain.Form, error) {
+func (r *InMemoryFormsRepository) Upsert(ctx context.Context, form *domain.Form) (*domain.Form, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	now := time.Now()
-
-	if form.ID == "" {
-		form.ID = domain.FormID(uuid.New().String())
-		form.CreatedAt = now
-	}
-
-	form.UpdatedAt = now
-	r.forms[string(form.ID)] = form
-
-	return form, nil
-}
-
-func (r *InMemoryFormsRepository) Update(ctx context.Context, form *domain.Form) (*domain.Form, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	existing, exists := r.forms[string(form.ID)]
-
-	if !exists {
-		return nil, common.ErrNotFound
-	}
-
-	form.CreatedAt = existing.CreatedAt
-	form.UpdatedAt = time.Now()
 	r.forms[string(form.ID)] = form
 
 	return form, nil
@@ -148,10 +121,6 @@ func (r *InMemoryFormsRepository) FindNextVersionNumber(ctx context.Context, for
 func (r *InMemoryFormsRepository) CreateVersion(ctx context.Context, version *domain.Version) (*domain.Version, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
-
-	if version.ID == "" {
-		version.ID = domain.VersionID(uuid.New().String())
-	}
 
 	formVersions, ok := r.versions[string(version.FormID)]
 
