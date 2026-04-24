@@ -18,7 +18,7 @@ type FormsService struct {
 	formsRepository ports.FormsRepository
 }
 
-func NewFormsService(logger *log.Logger, repository *ports.Repository) *FormsService {
+func NewFormsService(logger *log.Logger, repository *ports.Repository) ports.FormsService {
 	return &FormsService{
 		logger:          logger,
 		database:        repository.Database,

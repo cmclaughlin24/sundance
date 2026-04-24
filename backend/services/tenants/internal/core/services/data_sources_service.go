@@ -16,7 +16,7 @@ type DataSourcesService struct {
 	dataSourcesRepository ports.DataSourcesRepository
 }
 
-func NewDataSourcesService(logger *log.Logger, repository *ports.Repository) *DataSourcesService {
+func NewDataSourcesService(logger *log.Logger, repository *ports.Repository) ports.DataSourcesService {
 	return &DataSourcesService{
 		logger:                logger,
 		dataSourcesRepository: repository.DataSources,

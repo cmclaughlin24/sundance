@@ -15,7 +15,7 @@ type TenantsService struct {
 	tenantsRepository ports.TenantsRepository
 }
 
-func NewTenantsService(logger *log.Logger, repository *ports.Repository) *TenantsService {
+func NewTenantsService(logger *log.Logger, repository *ports.Repository) ports.TenantsService {
 	return &TenantsService{
 		logger:            logger,
 		tenantsRepository: repository.Tenants,
