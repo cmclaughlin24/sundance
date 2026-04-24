@@ -54,6 +54,12 @@
 
 26. ~~`base_repository.go` generic moved to shared package~~ (All services, P3) -- The tenants-local `mongodbBaseRepository[T]` has been replaced by the exported `database.MongoDBRepository[T]` in `pkg/database/mongodb_repository.go`, with `Find`, `FindById`, `Exists`, `Collection()`, and `Logger()` methods. Both tenants repos now use `base *database.MongoDBRepository[T]` composition. Available to all services. *(Extends resolved #20.)*
 
+27. ~~MongoDB `Upsert` overwrites `CreatedAt` with zero time on update path~~ (Tenants, P1) -- Resolved by moving ID generation and timestamp management to the domain layer. `NewTenant` and `NewDataSource` now set `CreatedAt` at creation time. Domain mutation methods (`tenant.Update()`, `ds.Update()`) set `UpdatedAt`. Repositories are pure persistence — they store whatever the domain provides and never touch timestamps. `CreatedAt` is set once in the domain factory and never overwritten. *(Resolved from 4/23 #28.)*
+
+28. ~~UUID generation and timestamp management duplicated across persistence layers with inconsistent behavior~~ (Tenants, P2) -- UUID generation moved to domain factories (`NewTenant`, `NewDataSource`). Timestamp management moved to domain factories (create) and domain mutation methods (update). Both in-memory and MongoDB repositories stripped of ID generation, `time.Now()` calls, and `CreatedAt` preservation logic. Behavior is now consistent across all persistence implementations. *(Resolved from 4/23 #31.)*
+
+29. ~~`time.Now()` called directly in the repository layer~~ (Tenants, P3) -- All `time.Now()` calls removed from both in-memory and MongoDB tenants repositories. Timestamps are now set in the domain layer via `NewTenant`/`NewDataSource` (creation) and `Update()` methods (mutation). *(Resolved from 4/16 #24, 4/17 #60, 4/18 #58, 4/19 #45, 4/20 #40, 4/22 #41, 4/23 #33. Note: Forms service still has `time.Now()` in repository/service layers.)*
+
 ---
 
 ## Will Not Fix
@@ -160,31 +166,23 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 ### Tenants Service
 
-#### Bugs
-
-28. **MongoDB `Upsert` overwrites `CreatedAt` with zero time on update path** (`tenants_repository.go:94-102`; `data_sources_repository.go:100-108`) -- On the update branch (`t.ID != ""`), `CreatedAt` is not set. The `$set` operation via `toTenantDocument(t)` / `toDataSourceDocument(ds)` writes the zero value of `time.Time` to `created_at`. The in-memory implementation preserves `CreatedAt` from the existing record, but the MongoDB implementation does not. The `// TODO: Move to the domain layer` comments acknowledge the underlying issue but the current code is actively destructive on updates. *(New.)*
-
 #### Architectural
 
-29. **`Find()` in tenants service has no pagination or filtering** (`tenants_service.go:25-27`) -- Returns every tenant in a single unbounded response. `ListDataSourceQuery` in `query.go` is an empty struct with a `// TODO: Add pagination support` comment. *(Unresolved from 4/16 #10, 4/17 #48, 4/18 #45, 4/19 #34, 4/20 #29, 4/22 #30, 4/23 #27.)*
+28. **`Find()` in tenants service has no pagination or filtering** (`tenants_service.go:25-27`) -- Returns every tenant in a single unbounded response. `ListDataSourceQuery` in `query.go` is an empty struct with a `// TODO: Add pagination support` comment. *(Unresolved from 4/16 #10, 4/17 #48, 4/18 #45, 4/19 #34, 4/20 #29, 4/22 #30, 4/23 #27.)*
 
-30. **Tenant removal does not cascade-delete DataSources** (`tenants_service.go:73-84`) -- When a tenant is removed, only the tenant record is deleted. Any `DataSource` records associated with that tenant remain orphaned in the data sources store. There is no cascade delete and no service-level cleanup. *(Unresolved from 4/20 #30, 4/22 #31, 4/23 #28.)*
-
-31. **UUID generation and timestamp management duplicated across persistence layers with inconsistent behavior** (`tenants_repository.go:98-101`; `data_sources_repository.go:104-107`; `inmemory/tenant_repository.go:67-69`; `inmemory/data_sources_repository.go:73-76`) -- The same domain concern (identity assignment, lifecycle timestamps) is now implemented in both in-memory and MongoDB repositories with different behavior: in-memory preserves `CreatedAt` on update, MongoDB overwrites it with zero time. ID generation is a domain concern that should live in domain factories, not persistence adapters. The `// TODO: Move to the domain layer` comments acknowledge this. *(Unresolved from 4/23 #28, expanded with MongoDB duplication.)*
+29. **Tenant removal does not cascade-delete DataSources** (`tenants_service.go:73-84`) -- When a tenant is removed, only the tenant record is deleted. Any `DataSource` records associated with that tenant remain orphaned in the data sources store. There is no cascade delete and no service-level cleanup. *(Unresolved from 4/20 #30, 4/22 #31, 4/23 #28.)*
 
 #### Missing Functionality
 
-32. **Domain validation unimplemented** (`tenant.go:17-22`) -- `NewTenant` returns `(*Tenant, error)` but never validates or returns an error. `NewDataSource` now validates type and attribute-type agreement but does not validate empty `TenantID` or field lengths. *(Partially resolved from 4/16 #13, 4/17 #51, 4/18 #49, 4/19 #37, 4/20 #32, 4/22 #33, 4/23 #29.)*
+30. **Domain validation unimplemented** (`tenant.go:17-22`) -- `NewTenant` returns `(*Tenant, error)` but never validates or returns an error. `NewDataSource` now validates type and attribute-type agreement but does not validate empty `TenantID` or field lengths. *(Partially resolved from 4/16 #13, 4/17 #51, 4/18 #49, 4/19 #37, 4/20 #32, 4/22 #33, 4/23 #29.)*
 
-33. **`Lookup` service method is a stub** (`data_sources_service.go:131-145`) -- Returns `nil, nil` after verifying the data source exists. Contains `// TODO: Implement data source lookup strategy pattern`. *(Unresolved from 4/16 #17, 4/17 #55, 4/18 #53, 4/19 #41, 4/20 #36, 4/22 #37, 4/23 #30.)*
+31. **`Lookup` service method is a stub** (`data_sources_service.go:131-145`) -- Returns `nil, nil` after verifying the data source exists. Contains `// TODO: Implement data source lookup strategy pattern`. *(Unresolved from 4/16 #17, 4/17 #55, 4/18 #53, 4/19 #41, 4/20 #36, 4/22 #37, 4/23 #30.)*
 
-34. **`Lookup` value object has no validation** (`lookup.go`) -- `NewLookup(value, label)` constructor performs no validation and has no json tags on the struct fields. *(Unresolved from 4/16 #19, 4/17 #57, 4/18 #55, 4/19 #43, 4/20 #38, 4/22 #39, 4/23 #32.)*
+32. **`Lookup` value object has no validation** (`lookup.go`) -- `NewLookup(value, label)` constructor performs no validation and has no json tags on the struct fields. *(Unresolved from 4/16 #19, 4/17 #57, 4/18 #55, 4/19 #43, 4/20 #38, 4/22 #39, 4/23 #32.)*
 
 #### Code Quality
 
-35. **`time.Now()` called directly in the repository layer** (`inmemory/tenant_repository.go:64`; `inmemory/data_sources_repository.go:69`; `tenants_repository.go:101`; `data_sources_repository.go:107`). Now present in both in-memory and MongoDB repositories. *(Unresolved from 4/16 #24, 4/17 #60, 4/18 #58, 4/19 #45, 4/20 #40, 4/22 #41, 4/23 #33.)*
-
-36. **`Ping` uses `context.Background()` with no timeout** (`pkg/database/mongodb.go:43`) -- If MongoDB is unreachable, the service hangs forever at startup. Should use `context.WithTimeout`. *(Unresolved from 4/23 #36, file location updated.)*
+33. **`Ping` uses `context.Background()` with no timeout** (`pkg/database/mongodb.go:43`) -- If MongoDB is unreachable, the service hangs forever at startup. Should use `context.WithTimeout`. *(Unresolved from 4/23 #36, file location updated.)*
 
 ---
 
@@ -192,19 +190,19 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 #### Architectural
 
-37. **Zero test files** in all three services and `pkg/common/`. *(Unresolved from 4/13 #12, 4/17 #9, 4/18 #10, 4/19 #6, 4/20 #6, 4/22 #6 (Forms); 4/17 #30, 4/18 #29, 4/19 #21, 4/20 #18, 4/22 #19 (Submissions); 4/16 #12, 4/17 #50, 4/18 #48, 4/19 #36, 4/20 #31, 4/22 #32 (Tenants); 4/23 #34.)*
+34. **Zero test files** in all three services and `pkg/common/`. *(Unresolved from 4/13 #12, 4/17 #9, 4/18 #10, 4/19 #6, 4/20 #6, 4/22 #6 (Forms); 4/17 #30, 4/18 #29, 4/19 #21, 4/20 #18, 4/22 #19 (Submissions); 4/16 #12, 4/17 #50, 4/18 #48, 4/19 #36, 4/20 #31, 4/22 #32 (Tenants); 4/23 #34.)*
 
-38. **No domain events** for cross-service communication. *(Unresolved from 4/13 #14, 4/17 #11, 4/18 #12, 4/19 #8, 4/20 #8, 4/22 #8 (Forms); 4/17 #35, 4/18 #34, 4/19 #26, 4/20 #23, 4/22 #24 (Submissions); 4/16 #14, 4/17 #52, 4/18 #50, 4/19 #38, 4/20 #33, 4/22 #34 (Tenants); 4/23 #35.)*
+35. **No domain events** for cross-service communication. *(Unresolved from 4/13 #14, 4/17 #11, 4/18 #12, 4/19 #8, 4/20 #8, 4/22 #8 (Forms); 4/17 #35, 4/18 #34, 4/19 #26, 4/20 #23, 4/22 #24 (Submissions); 4/16 #14, 4/17 #52, 4/18 #50, 4/19 #38, 4/20 #33, 4/22 #34 (Tenants); 4/23 #35.)*
 
-39. **No real authentication** -- `X-Tenant-ID` is blindly trusted across all services. *(Unresolved from 4/13 #16, 4/17 #13, 4/18 #14, 4/19 #10, 4/20 #10, 4/22 #10 (Forms); 4/17 #36, 4/18 #35, 4/19 #27, 4/20 #24, 4/22 #25 (Submissions); 4/16 #16, 4/17 #54, 4/18 #52, 4/19 #40, 4/20 #35, 4/22 #36 (Tenants); 4/23 #36.)*
+36. **No real authentication** -- `X-Tenant-ID` is blindly trusted across all services. *(Unresolved from 4/13 #16, 4/17 #13, 4/18 #14, 4/19 #10, 4/20 #10, 4/22 #10 (Forms); 4/17 #36, 4/18 #35, 4/19 #27, 4/20 #24, 4/22 #25 (Submissions); 4/16 #16, 4/17 #54, 4/18 #52, 4/19 #40, 4/20 #35, 4/22 #36 (Tenants); 4/23 #36.)*
 
-40. **No graceful shutdown** (all services, e.g. submissions `cmd/server/main.go:58-60`) -- `server.ListenAndServe()` blocks until error, and `log.Fatal` calls `os.Exit`, preventing `defer app.Close()` from executing. There is no signal handling (`os.Signal`) or `server.Shutdown(ctx)` call. *(Unresolved from 4/23 #37.)*
+37. **No graceful shutdown** (all services, e.g. submissions `cmd/server/main.go:58-60`) -- `server.ListenAndServe()` blocks until error, and `log.Fatal` calls `os.Exit`, preventing `defer app.Close()` from executing. There is no signal handling (`os.Signal`) or `server.Shutdown(ctx)` call. *(Unresolved from 4/23 #37.)*
 
 ---
 
 ### Shared Package
 
-41. **500 errors leak `err.Error()` to clients** (`httputil/http.go:103-107`) -- The `default` case in `SendErrorResponse` returns the raw error string in the JSON response body. In production, this could expose internal details (database errors, file paths, stack traces). Should return a generic message and log the real error server-side. *(Unresolved from 4/23 #38.)*
+38. **500 errors leak `err.Error()` to clients** (`httputil/http.go:103-107`) -- The `default` case in `SendErrorResponse` returns the raw error string in the JSON response body. In production, this could expose internal details (database errors, file paths, stack traces). Should return a generic message and log the real error server-side. *(Unresolved from 4/23 #38.)*
 
 ---
 
@@ -213,28 +211,26 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
 | **P0** | 15 | `bootstrapMongoDB` returns empty `Repository{}` -- crash on any repo call | Forms, Submissions |
-| **P1** | 28 | MongoDB `Upsert` overwrites `CreatedAt` with zero time on update | Tenants |
 | **P2** | 2, 16 | `Find()` has no tenant filtering | Forms, Submissions |
-| **P2** | 6, 32 | Domain validation unimplemented | Forms, Tenants |
+| **P2** | 6, 30 | Domain validation unimplemented | Forms, Tenants |
 | **P2** | 20 | No domain constructors | Submissions |
 | **P2** | 1 | Hardcoded `"placeholder"` user ID | Forms |
 | **P2** | 10 | `ErrMissingTenantID` maps to 500 | Shared |
-| **P2** | 30 | Tenant removal doesn't cascade-delete DataSources | Tenants |
+| **P2** | 29 | Tenant removal doesn't cascade-delete DataSources | Tenants |
 | **P2** | 17 | Empty handler stubs return 200 OK | Submissions |
 | **P2** | 5 | Redundant double-fetch in `Update()` | Forms |
-| **P2** | 41 | 500 errors leak `err.Error()` to clients | Shared |
-| **P2** | 31 | UUID/timestamp management duplicated with inconsistent behavior | Tenants |
-| **P3** | 37 | Zero test files | All |
-| **P3** | 38 | No domain events | All |
+| **P2** | 38 | 500 errors leak `err.Error()` to clients | Shared |
+| **P3** | 34 | Zero test files | All |
+| **P3** | 35 | No domain events | All |
 | **P3** | 7 | Incomplete error-to-HTTP mapping | Forms |
 | **P3** | 23 | `any`-typed attributes (no type safety) | Submissions |
-| **P3** | 4, 35 | `time.Now()` in repository/service layers | Forms, Tenants |
+| **P3** | 4 | `time.Now()` in repository/service layers | Forms |
 | **P3** | 12 | Map iteration non-deterministic in DTO mappers | Forms |
 | **P3** | 11 | `publishVersion`/`retireVersion` discard returned version | Forms |
 | **P3** | 13 | `CreateVersionDto` empty struct deserialized | Forms |
 | **P3** | 14 | `FindVersions` returns 404 for empty version list | Forms |
-| **P3** | 40 | No graceful shutdown | All |
-| **P3** | 36 | `Ping` uses `context.Background()` with no timeout | All |
+| **P3** | 37 | No graceful shutdown | All |
+| **P3** | 33 | `Ping` uses `context.Background()` with no timeout | All |
 
 ---
 
@@ -275,15 +271,15 @@ Staged changes extract shared infrastructure to a new `pkg/database` module:
 ### New Issues Found
 
 1. **Forms/Submissions `bootstrapMongoDB` returns empty `Repository{}`** (#15, P0) -- `persistence.go` now correctly passes client to `mongodb.Bootstrap`, but `Bootstrap` still returns `&ports.Repository{}` with nil fields. MongoDB repos not yet implemented for these services.
-2. **MongoDB `Upsert` overwrites `CreatedAt` with zero time** (#28, P1) -- Destructive on every update operation.
-3. **UUID/timestamp duplicated with inconsistent behavior** (#31, P2) -- In-memory preserves `CreatedAt`, MongoDB does not.
-4. **`Ping` with no timeout** (#36, P3) -- Services hang forever if MongoDB unreachable.
+2. ~~**MongoDB `Upsert` overwrites `CreatedAt` with zero time** (#28, P1)~~ -- Resolved. ID generation and timestamps moved to domain layer.
+3. ~~**UUID/timestamp duplicated with inconsistent behavior** (#31, P2)~~ -- Resolved. Domain factories and mutation methods now own identity and timestamps; repositories are pure persistence.
+4. **`Ping` with no timeout** (#33, P3) -- Services hang forever if MongoDB unreachable.
 
 ### Current State
 
 **Forms Service** gained explicit field attribute response DTOs and naming convention fixes. The `persistence.go` now correctly passes the MongoDB client to `Bootstrap`, but `Bootstrap` still returns an empty `Repository{}` since MongoDB repos are not yet implemented. The service remains the most functionally complete. All prior issues remain open.
 
-**Tenants Service** saw the largest improvement with full MongoDB repository implementations, document mappers, and a `MongoDBDatabase` with real transaction support. Unstaged changes further improve code quality: `ErrNoDocuments` now maps to `ErrNotFound`, `Close()` properly disconnects, repo types are unexported, naming is consistent, and `omitempty` is removed from BSON `_id` tags. Staged changes extract the base repository and `MongoDBDatabase` to the shared `pkg/database` module. The remaining MongoDB-layer bug is `CreatedAt` destruction on update. Code duplication between in-memory and MongoDB repositories (UUID generation, timestamp management) with inconsistent behavior is a growing concern.
+**Tenants Service** saw the largest improvement with full MongoDB repository implementations, document mappers, and a `MongoDBDatabase` with real transaction support. Unstaged changes further improve code quality: `ErrNoDocuments` now maps to `ErrNotFound`, `Close()` properly disconnects, repo types are unexported, naming is consistent, and `omitempty` is removed from BSON `_id` tags. Staged changes extract the base repository and `MongoDBDatabase` to the shared `pkg/database` module. ID generation and timestamp management have been moved from the persistence layer to the domain layer: `NewTenant`/`NewDataSource` generate UUIDs and set `CreatedAt`, while `Update()` domain methods set `UpdatedAt`. Both in-memory and MongoDB repositories are now pure persistence with consistent behavior.
 
 **Submissions Service** is unchanged functionally. Its `persistence.go` now passes the client to `Bootstrap`, but like forms, the `Bootstrap` returns an empty `Repository{}`. The domain model remains entirely anemic.
 
@@ -292,7 +288,6 @@ Staged changes extract shared infrastructure to a new `pkg/database` module:
 ### Highest-Impact Improvements
 
 1. **Implement MongoDB repositories for forms and submissions** (P0 -- `Bootstrap` still returns empty `Repository{}`)
-2. **Preserve `CreatedAt` on MongoDB update path** (P1 -- data corruption on every update)
-3. **Fix `ErrMissingTenantID` mapping** in `SendErrorResponse` (P2 -- missing tenant header produces 500)
-4. **Add tenant filtering to `Find()` methods** across forms and submissions (P2 -- data isolation)
-5. **Add test coverage** starting with `pkg/database` and service layers (P3 -- long-term reliability)
+2. **Fix `ErrMissingTenantID` mapping** in `SendErrorResponse` (P2 -- missing tenant header produces 500)
+3. **Add tenant filtering to `Find()` methods** across forms and submissions (P2 -- data isolation)
+4. **Add test coverage** starting with `pkg/database` and service layers (P3 -- long-term reliability)
