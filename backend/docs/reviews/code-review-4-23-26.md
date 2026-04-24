@@ -46,6 +46,8 @@
 
 22. ~~`MongoDBDatabase` stores unused `db *mongo.Database` field~~ (Tenants, P3) -- The `db` field has been removed. `BeginTx` now uses `db.client.StartSession()` directly. Constructor accepts `_ *mongo.Database` (ignored). *(Resolved from 4/23 #45.)*
 
+23. ~~`DataSourceAttributes` concrete types lack json tags~~ (Tenants, P3) -- The DTO adapter layer now defines explicit response structs with json tags for all three attribute types (`dto/data_source_attributes.go`), with a `dataSourceAttributesToResponse` mapper. Domain types correctly do not carry serialization tags -- the adapter layer owns that concern, which is the proper hexagonal architecture approach. *(Resolved from 4/16 #18, 4/17 #56, 4/18 #54, 4/19 #42, 4/20 #37, 4/22 #38, 4/23 #31.)*
+
 ---
 
 ## Will Not Fix
@@ -168,15 +170,13 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 33. **`Lookup` service method is a stub** (`data_sources_service.go:131-145`) -- Returns `nil, nil` after verifying the data source exists. Contains `// TODO: Implement data source lookup strategy pattern`. *(Unresolved from 4/16 #17, 4/17 #55, 4/18 #53, 4/19 #41, 4/20 #36, 4/22 #37, 4/23 #30.)*
 
-34. **`DataSourceAttributes` concrete types lack json tags** (`data_source_attributes.go`) -- `StaticDataSourceAttributes`, `ScheduledDataSourceAttributes`, and `QueryDataSourceAttributes` have no `json` struct tags, so JSON marshaling uses Go's default capitalized field names (`Data`, `Type`, `Endpoint`). The new DTO response structs (`dto/data_source_attributes.go`) correctly define json tags, but the domain types themselves remain untagged. *(Unresolved from 4/16 #18, 4/17 #56, 4/18 #54, 4/19 #42, 4/20 #37, 4/22 #38, 4/23 #31.)*
-
-35. **`Lookup` value object has no validation** (`lookup.go`) -- `NewLookup(value, label)` constructor performs no validation and has no json tags on the struct fields. *(Unresolved from 4/16 #19, 4/17 #57, 4/18 #55, 4/19 #43, 4/20 #38, 4/22 #39, 4/23 #32.)*
+34. **`Lookup` value object has no validation** (`lookup.go`) -- `NewLookup(value, label)` constructor performs no validation and has no json tags on the struct fields. *(Unresolved from 4/16 #19, 4/17 #57, 4/18 #55, 4/19 #43, 4/20 #38, 4/22 #39, 4/23 #32.)*
 
 #### Code Quality
 
-36. **`time.Now()` called directly in the repository layer** (`inmemory/tenant_repository.go:64`; `inmemory/data_sources_repository.go:69`; `tenants_repository.go:101`; `data_sources_repository.go:107`). Now present in both in-memory and MongoDB repositories. *(Unresolved from 4/16 #24, 4/17 #60, 4/18 #58, 4/19 #45, 4/20 #40, 4/22 #41, 4/23 #33.)*
+35. **`time.Now()` called directly in the repository layer** (`inmemory/tenant_repository.go:64`; `inmemory/data_sources_repository.go:69`; `tenants_repository.go:101`; `data_sources_repository.go:107`). Now present in both in-memory and MongoDB repositories. *(Unresolved from 4/16 #24, 4/17 #60, 4/18 #58, 4/19 #45, 4/20 #40, 4/22 #41, 4/23 #33.)*
 
-37. **`Ping` uses `context.Background()` with no timeout** (`mongodb/mongodb.go:38`) -- If MongoDB is unreachable, the service hangs forever at startup. Should use `context.WithTimeout`. *(New.)*
+36. **`Ping` uses `context.Background()` with no timeout** (`mongodb/mongodb.go:38`) -- If MongoDB is unreachable, the service hangs forever at startup. Should use `context.WithTimeout`. *(New.)*
 
 ---
 
@@ -184,25 +184,25 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 #### Architectural
 
-38. **Triplicated MongoDB connection code** (`forms/.../mongodb/mongodb.go`; `submissions/.../mongodb/mongodb.go`; `tenants/.../mongodb/mongodb.go`) -- `MongoDBOpts` struct, `Connect()` function, and all `With*` option functions are copy-pasted identically across all three services (~71 lines each). Should be extracted to `pkg/common/database/` alongside the `Database` interface and `InMemoryDatabase`. *(New.)*
+37. **Triplicated MongoDB connection code** (`forms/.../mongodb/mongodb.go`; `submissions/.../mongodb/mongodb.go`; `tenants/.../mongodb/mongodb.go`) -- `MongoDBOpts` struct, `Connect()` function, and all `With*` option functions are copy-pasted identically across all three services (~71 lines each). Should be extracted to `pkg/common/database/` alongside the `Database` interface and `InMemoryDatabase`. *(New.)*
 
-39. **Triplicated `persistence.go` bootstrap pattern** (`forms/.../persistence/persistence.go`; `submissions/.../persistence/persistence.go`; `tenants/.../persistence/persistence.go`) -- `PersistenceDriver` type, constants, `PersistenceSettings`, `PersistenceOptions`, `Bootstrap()`, and `parseOptions[T]()` are nearly identical across all three services. The only difference is which `inmemory.Bootstrap` and `mongodb.Bootstrap` they call. Should be generalized. *(New.)*
+38. **Triplicated `persistence.go` bootstrap pattern** (`forms/.../persistence/persistence.go`; `submissions/.../persistence/persistence.go`; `tenants/.../persistence/persistence.go`) -- `PersistenceDriver` type, constants, `PersistenceSettings`, `PersistenceOptions`, `Bootstrap()`, and `parseOptions[T]()` are nearly identical across all three services. The only difference is which `inmemory.Bootstrap` and `mongodb.Bootstrap` they call. Should be generalized. *(New.)*
 
-40. **`MongoDBDatabase` only implemented for tenants** -- Forms and submissions have no `MongoDBDatabase` implementation. Their `bootstrapMongoDB` returns a `Repository` with a nil `Database` field, which will panic when `Application.Close()` calls `repository.Database.Close()`. *(New.)*
+39. **`MongoDBDatabase` only implemented for tenants** -- Forms and submissions have no `MongoDBDatabase` implementation. Their `bootstrapMongoDB` returns a `Repository` with a nil `Database` field, which will panic when `Application.Close()` calls `repository.Database.Close()`. *(New.)*
 
-41. **Zero test files** in all three services and `pkg/common/`. *(Unresolved from 4/13 #12, 4/17 #9, 4/18 #10, 4/19 #6, 4/20 #6, 4/22 #6 (Forms); 4/17 #30, 4/18 #29, 4/19 #21, 4/20 #18, 4/22 #19 (Submissions); 4/16 #12, 4/17 #50, 4/18 #48, 4/19 #36, 4/20 #31, 4/22 #32 (Tenants); 4/23 #34.)*
+40. **Zero test files** in all three services and `pkg/common/`. *(Unresolved from 4/13 #12, 4/17 #9, 4/18 #10, 4/19 #6, 4/20 #6, 4/22 #6 (Forms); 4/17 #30, 4/18 #29, 4/19 #21, 4/20 #18, 4/22 #19 (Submissions); 4/16 #12, 4/17 #50, 4/18 #48, 4/19 #36, 4/20 #31, 4/22 #32 (Tenants); 4/23 #34.)*
 
-42. **No domain events** for cross-service communication. *(Unresolved from 4/13 #14, 4/17 #11, 4/18 #12, 4/19 #8, 4/20 #8, 4/22 #8 (Forms); 4/17 #35, 4/18 #34, 4/19 #26, 4/20 #23, 4/22 #24 (Submissions); 4/16 #14, 4/17 #52, 4/18 #50, 4/19 #38, 4/20 #33, 4/22 #34 (Tenants); 4/23 #35.)*
+41. **No domain events** for cross-service communication. *(Unresolved from 4/13 #14, 4/17 #11, 4/18 #12, 4/19 #8, 4/20 #8, 4/22 #8 (Forms); 4/17 #35, 4/18 #34, 4/19 #26, 4/20 #23, 4/22 #24 (Submissions); 4/16 #14, 4/17 #52, 4/18 #50, 4/19 #38, 4/20 #33, 4/22 #34 (Tenants); 4/23 #35.)*
 
-43. **No real authentication** -- `X-Tenant-ID` is blindly trusted across all services. *(Unresolved from 4/13 #16, 4/17 #13, 4/18 #14, 4/19 #10, 4/20 #10, 4/22 #10 (Forms); 4/17 #36, 4/18 #35, 4/19 #27, 4/20 #24, 4/22 #25 (Submissions); 4/16 #16, 4/17 #54, 4/18 #52, 4/19 #40, 4/20 #35, 4/22 #36 (Tenants); 4/23 #36.)*
+42. **No real authentication** -- `X-Tenant-ID` is blindly trusted across all services. *(Unresolved from 4/13 #16, 4/17 #13, 4/18 #14, 4/19 #10, 4/20 #10, 4/22 #10 (Forms); 4/17 #36, 4/18 #35, 4/19 #27, 4/20 #24, 4/22 #25 (Submissions); 4/16 #16, 4/17 #54, 4/18 #52, 4/19 #40, 4/20 #35, 4/22 #36 (Tenants); 4/23 #36.)*
 
-44. **No graceful shutdown** (all services, e.g. submissions `cmd/server/main.go:58-60`) -- `server.ListenAndServe()` blocks until error, and `log.Fatal` calls `os.Exit`, preventing `defer app.Close()` from executing. There is no signal handling (`os.Signal`) or `server.Shutdown(ctx)` call. *(Unresolved from 4/23 #37.)*
+43. **No graceful shutdown** (all services, e.g. submissions `cmd/server/main.go:58-60`) -- `server.ListenAndServe()` blocks until error, and `log.Fatal` calls `os.Exit`, preventing `defer app.Close()` from executing. There is no signal handling (`os.Signal`) or `server.Shutdown(ctx)` call. *(Unresolved from 4/23 #37.)*
 
 ---
 
 ### Shared Package
 
-45. **500 errors leak `err.Error()` to clients** (`httputil/http.go:103-107`) -- The `default` case in `SendErrorResponse` returns the raw error string in the JSON response body. In production, this could expose internal details (database errors, file paths, stack traces). Should return a generic message and log the real error server-side. *(Unresolved from 4/23 #38.)*
+44. **500 errors leak `err.Error()` to clients** (`httputil/http.go:103-107`) -- The `default` case in `SendErrorResponse` returns the raw error string in the JSON response body. In production, this could expose internal details (database errors, file paths, stack traces). Should return a generic message and log the real error server-side. *(Unresolved from 4/23 #38.)*
 
 ---
 
@@ -220,23 +220,22 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 | **P2** | 30 | Tenant removal doesn't cascade-delete DataSources | Tenants |
 | **P2** | 17 | Empty handler stubs return 200 OK | Submissions |
 | **P2** | 5 | Redundant double-fetch in `Update()` | Forms |
-| **P2** | 45 | 500 errors leak `err.Error()` to clients | Shared |
+| **P2** | 44 | 500 errors leak `err.Error()` to clients | Shared |
 | **P2** | 31 | UUID/timestamp management duplicated with inconsistent behavior | Tenants |
-| **P2** | 38 | Triplicated MongoDB connection code | All |
-| **P2** | 39 | Triplicated `persistence.go` bootstrap pattern | All |
-| **P2** | 40 | `MongoDBDatabase` only implemented for tenants | Forms, Submissions |
-| **P3** | 41 | Zero test files | All |
-| **P3** | 42 | No domain events | All |
+| **P2** | 37 | Triplicated MongoDB connection code | All |
+| **P2** | 38 | Triplicated `persistence.go` bootstrap pattern | All |
+| **P2** | 39 | `MongoDBDatabase` only implemented for tenants | Forms, Submissions |
+| **P3** | 40 | Zero test files | All |
+| **P3** | 41 | No domain events | All |
 | **P3** | 7 | Incomplete error-to-HTTP mapping | Forms |
 | **P3** | 23 | `any`-typed attributes (no type safety) | Submissions |
-| **P3** | 4, 36 | `time.Now()` in repository/service layers | Forms, Tenants |
+| **P3** | 4, 35 | `time.Now()` in repository/service layers | Forms, Tenants |
 | **P3** | 12 | Map iteration non-deterministic in DTO mappers | Forms |
 | **P3** | 11 | `publishVersion`/`retireVersion` discard returned version | Forms |
 | **P3** | 13 | `CreateVersionDto` empty struct deserialized | Forms |
-| **P3** | 34 | `DataSourceAttributes` types lack json tags | Tenants |
 | **P3** | 14 | `FindVersions` returns 404 for empty version list | Forms |
-| **P3** | 44 | No graceful shutdown | All |
-| **P3** | 37 | `Ping` uses `context.Background()` with no timeout | All |
+| **P3** | 43 | No graceful shutdown | All |
+| **P3** | 36 | `Ping` uses `context.Background()` with no timeout | All |
 
 ---
 
@@ -264,16 +263,17 @@ Additionally, unstaged changes address several issues:
 - **`base_repository.go` now generic with shared methods** (Tenants) -- `mongodbBaseRepository[T any]` with `findById` and `exists`, eliminating duplicated boilerplate in both MongoDB repos.
 - **`omitempty` removed from `_id` BSON tags** (Tenants) -- Both document structs now use `bson:"_id"`.
 - **Unused `db *mongo.Database` field removed from `MongoDBDatabase`** (Tenants) -- `BeginTx` now uses `db.client.StartSession()` directly.
+- **`DataSourceAttributes` json serialization handled by DTO layer** (Tenants) -- Explicit response structs with json tags added in `dto/data_source_attributes.go`. Domain types correctly omit serialization tags per hexagonal architecture.
 
 ### New Issues Found
 
 1. **Forms/Submissions `bootstrapMongoDB` returns empty `Repository{}`** (#15, P0) -- Client is discarded; any MongoDB-backed call will panic.
 2. **MongoDB `Upsert` overwrites `CreatedAt` with zero time** (#28, P1) -- Destructive on every update operation.
-3. **Triplicated MongoDB connection code** (#38, P2) -- ~71 identical lines in each service.
-4. **Triplicated `persistence.go` bootstrap** (#39, P2) -- Nearly identical factory pattern in each service.
-5. **`MongoDBDatabase` only implemented for tenants** (#40, P2) -- Forms/submissions have no MongoDB Database implementation.
+3. **Triplicated MongoDB connection code** (#37, P2) -- ~71 identical lines in each service.
+4. **Triplicated `persistence.go` bootstrap** (#38, P2) -- Nearly identical factory pattern in each service.
+5. **`MongoDBDatabase` only implemented for tenants** (#39, P2) -- Forms/submissions have no MongoDB Database implementation.
 6. **UUID/timestamp duplicated with inconsistent behavior** (#31, P2) -- In-memory preserves `CreatedAt`, MongoDB does not.
-7. **`Ping` with no timeout** (#37, P3) -- Services hang forever if MongoDB unreachable.
+7. **`Ping` with no timeout** (#36, P3) -- Services hang forever if MongoDB unreachable.
 
 ### Current State
 
