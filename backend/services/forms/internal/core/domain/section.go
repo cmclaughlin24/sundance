@@ -2,6 +2,8 @@ package domain
 
 import (
 	"errors"
+
+	"github.com/google/uuid"
 )
 
 type SectionID string
@@ -15,17 +17,17 @@ type Section struct {
 	Key      string
 	Name     string
 	Position int
-	Fields   map[int]*Field
+	fields   map[int]*Field
 	baseWithRules
 }
 
-func NewSection(id SectionID, key, name string, position int) (*Section, error) {
+func NewSection(key, name string, position int) (*Section, error) {
 	s := &Section{
-		ID:       id,
+		ID:       SectionID(uuid.NewString()),
 		Key:      key,
 		Name:     name,
 		Position: position,
-		Fields:   make(map[int]*Field),
+		fields:   make(map[int]*Field),
 	}
 
 	// TODO: Implement domain specific validation.
@@ -33,23 +35,36 @@ func NewSection(id SectionID, key, name string, position int) (*Section, error) 
 	return s, nil
 }
 
+func HydrateSection(id SectionID, key, name string, position int) *Section {
+	return &Section{
+		ID:       id,
+		Key:      key,
+		Name:     name,
+		Position: position,
+	}
+}
+
+func (s *Section) GetFields() map[int]*Field {
+	return s.fields
+}
+
 func (s *Section) SetFields(fields ...*Field) error {
 	if s == nil {
 		return ErrInvalidSection
 	}
 
-	if s.Fields == nil {
-		s.Fields = make(map[int]*Field)
+	if s.fields == nil {
+		s.fields = make(map[int]*Field)
 	}
 
 	for _, field := range fields {
-		_, exists := s.Fields[field.Position]
+		_, exists := s.fields[field.Position]
 
 		if exists {
 			return ErrDuplicatePosition
 		}
 
-		s.Fields[field.Position] = field
+		s.fields[field.Position] = field
 	}
 
 	return nil
@@ -60,7 +75,13 @@ func (s *Section) UpdateFields(fields ...*Field) error {
 		return ErrInvalidSection
 	}
 
-	s.Fields = make(map[int]*Field)
+	old := s.fields
+	s.fields = make(map[int]*Field)
 
-	return s.SetFields(fields...)
+	if err := s.SetFields(fields...); err != nil {
+		s.fields = old
+		return err
+	}
+
+	return nil
 }

@@ -34,7 +34,6 @@ func RequestToField(dto FieldRequest) (*domain.Field, error) {
 	}
 
 	f, err := domain.NewField(
-		"",
 		dto.Key,
 		dto.Name,
 		domain.FieldType(dto.Type),

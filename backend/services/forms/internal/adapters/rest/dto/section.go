@@ -37,7 +37,7 @@ func RequestToSection(dto SectionRequest) (*domain.Section, error) {
 		return nil, err
 	}
 
-	section, err := domain.NewSection("", dto.Key, dto.Name, dto.Position)
+	section, err := domain.NewSection(dto.Key, dto.Name, dto.Position)
 	if err != nil {
 		return nil, err
 	}
@@ -58,9 +58,11 @@ func SectionToResponse(section *domain.Section) *SectionResponse {
 		return nil
 	}
 
-	fields := make([]*FieldResponse, 0, len(section.Fields))
-	for _, f := range section.Fields {
-		fields = append(fields, FieldToResponse(f))
+	fields := section.GetFields()
+	dtos := make([]*FieldResponse, 0, len(fields))
+
+	for _, f := range fields {
+		dtos = append(dtos, FieldToResponse(f))
 	}
 
 	rules := RuleToResponse(section.GetRules())
@@ -70,7 +72,7 @@ func SectionToResponse(section *domain.Section) *SectionResponse {
 		Key:      section.Key,
 		Name:     section.Name,
 		Position: section.Position,
-		Fields:   fields,
+		Fields:   dtos,
 		Rules:    rules,
 	}
 }

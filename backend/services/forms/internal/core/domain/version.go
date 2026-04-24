@@ -3,6 +3,8 @@ package domain
 import (
 	"errors"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type VersionStatus string
@@ -23,26 +25,27 @@ var (
 type VersionID string
 
 type Version struct {
-	ID            VersionID
-	FormID        FormID
-	Version       int
-	Status        VersionStatus
-	PublishedByID string
-	PublishedAt   time.Time
-	RetiredByID   string
-	RetiredAt     time.Time
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
-	Pages         map[int]*Page
+	ID          VersionID
+	FormID      FormID
+	Version     int
+	Status      VersionStatus
+	PublishedBy string
+	PublishedAt time.Time
+	RetiredBy   string
+	RetiredAt   time.Time
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	pages       map[int]*Page
 }
 
-func NewVersion(id VersionID, formID FormID, version int, status VersionStatus) (*Version, error) {
+func NewVersion(formID FormID, version int, status VersionStatus) (*Version, error) {
 	v := &Version{
-		ID:      id,
-		FormID:  formID,
-		Version: version,
-		Status:  status,
-		Pages:   make(map[int]*Page),
+		ID:        VersionID(uuid.NewString()),
+		FormID:    formID,
+		Version:   version,
+		Status:    status,
+		pages:     make(map[int]*Page),
+		CreatedAt: time.Now(),
 	}
 
 	// TODO: Implement domain specific validation.
@@ -50,23 +53,53 @@ func NewVersion(id VersionID, formID FormID, version int, status VersionStatus) 
 	return v, nil
 }
 
+func HydrateVersion(
+	id VersionID,
+	formID FormID,
+	version int,
+	status VersionStatus,
+	publishedBy string,
+	publishedAt time.Time,
+	retiredBy string,
+	retiredAt,
+	createdAt,
+	updatedAt time.Time,
+) *Version {
+	return &Version{
+		ID:          id,
+		FormID:      formID,
+		Version:     version,
+		Status:      status,
+		PublishedBy: publishedBy,
+		PublishedAt: publishedAt,
+		RetiredBy:   retiredBy,
+		RetiredAt:   retiredAt,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+	}
+}
+
+func (v *Version) GetPages() map[int]*Page {
+	return v.pages
+}
+
 func (v *Version) SetPages(pages ...*Page) error {
 	if v == nil {
 		return ErrInvalidVersion
 	}
 
-	if v.Pages == nil {
-		v.Pages = make(map[int]*Page)
+	if v.pages == nil {
+		v.pages = make(map[int]*Page)
 	}
 
 	for _, page := range pages {
-		_, exists := v.Pages[page.Position]
+		_, exists := v.pages[page.Position]
 
 		if exists {
 			return ErrDuplicatePosition
 		}
 
-		v.Pages[page.Position] = page
+		v.pages[page.Position] = page
 	}
 
 	return nil
@@ -81,9 +114,17 @@ func (v *Version) UpdatePages(pages ...*Page) error {
 		return ErrVersionLocked
 	}
 
-	v.Pages = make(map[int]*Page)
+	old := v.pages
+	v.pages = make(map[int]*Page)
 
-	return v.SetPages(pages...)
+	if err := v.SetPages(); err != nil {
+		v.pages = old
+		return err
+	}
+
+	v.UpdatedAt = time.Now()
+
+	return nil
 }
 
 func (v *Version) Publish(publishedBy string, publishedAt time.Time) error {
@@ -100,7 +141,7 @@ func (v *Version) Publish(publishedBy string, publishedAt time.Time) error {
 	}
 
 	v.Status = VersionStatusActive
-	v.PublishedByID = publishedBy
+	v.PublishedBy = publishedBy
 	v.PublishedAt = publishedAt
 
 	return nil
@@ -120,7 +161,7 @@ func (v *Version) Retire(retiredBy string, retiredAt time.Time) error {
 	}
 
 	v.Status = VersionStatusRetired
-	v.RetiredByID = retiredBy
+	v.RetiredBy = retiredBy
 	v.RetiredAt = retiredAt
 
 	return nil

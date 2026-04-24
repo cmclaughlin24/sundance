@@ -56,7 +56,7 @@ func (r *MongoDBRepository[T]) Find(ctx context.Context, filter bson.M) ([]T, er
 	return documents, nil
 }
 
-func (r *MongoDBRepository[T]) FindById(ctx context.Context, filter bson.M) (T, error) {
+func (r *MongoDBRepository[T]) FindOne(ctx context.Context, filter bson.M) (T, error) {
 	var result T
 
 	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {

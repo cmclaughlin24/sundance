@@ -31,9 +31,11 @@ func VersionToResponse(version *domain.Version) *VersionResponseDto {
 		return nil
 	}
 
-	pages := make([]*PageResponse, 0, len(version.Pages))
-	for _, p := range version.Pages {
-		pages = append(pages, PageToResponse(p))
+	pages := version.GetPages()
+	dtos := make([]*PageResponse, 0, len(pages))
+
+	for _, p := range pages {
+		dtos = append(dtos, PageToResponse(p))
 	}
 
 	return &VersionResponseDto{
@@ -41,12 +43,12 @@ func VersionToResponse(version *domain.Version) *VersionResponseDto {
 		FormID:        version.FormID,
 		Version:       version.Version,
 		Status:        version.Status,
-		PublishedByID: version.PublishedByID,
+		PublishedByID: version.PublishedBy,
 		PublishedAt:   version.PublishedAt,
-		RetiredByID:   version.RetiredByID,
+		RetiredByID:   version.RetiredBy,
 		RetiredAt:     version.RetiredAt,
 		CreatedAt:     version.CreatedAt,
 		UpdatedAt:     version.UpdatedAt,
-		Pages:         pages,
+		Pages:         dtos,
 	}
 }

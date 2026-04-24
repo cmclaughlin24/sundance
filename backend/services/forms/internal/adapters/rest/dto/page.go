@@ -53,7 +53,7 @@ func RequestToPage(dto PageRequest) (*domain.Page, error) {
 		return nil, err
 	}
 
-	page, err := domain.NewPage("", dto.Key, dto.Name, dto.Position)
+	page, err := domain.NewPage(dto.Key, dto.Name, dto.Position)
 	if err != nil {
 		return nil, err
 	}
@@ -74,9 +74,11 @@ func PageToResponse(page *domain.Page) *PageResponse {
 		return nil
 	}
 
-	sections := make([]*SectionResponse, 0, len(page.Sections))
-	for _, s := range page.Sections {
-		sections = append(sections, SectionToResponse(s))
+	sections := page.GetSections()
+	dtos := make([]*SectionResponse, 0, len(sections))
+
+	for _, s := range sections {
+		dtos = append(dtos, SectionToResponse(s))
 	}
 
 	rules := RuleToResponse(page.GetRules())
@@ -86,7 +88,7 @@ func PageToResponse(page *domain.Page) *PageResponse {
 		Key:      page.Key,
 		Name:     page.Name,
 		Position: page.Position,
-		Sections: sections,
+		Sections: dtos,
 		Rules:    rules,
 	}
 }

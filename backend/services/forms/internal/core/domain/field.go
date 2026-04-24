@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
+	"github.com/google/uuid"
 )
 
 type FieldID string
@@ -19,7 +20,7 @@ const (
 )
 
 var (
-	ErrInvalidFieldType = errors.New("invalid field type")
+	ErrInvalidFieldType       = errors.New("invalid field type")
 	ErrInvalidFieldAttributes = errors.New("invalid field attributes for type")
 )
 
@@ -33,7 +34,7 @@ type Field struct {
 	baseWithRules
 }
 
-func NewField(id FieldID, key, name string, fieldType FieldType, attributes FieldAttributes, position int) (*Field, error) {
+func NewField(key, name string, fieldType FieldType, attributes FieldAttributes, position int) (*Field, error) {
 	if !isValidFieldType(fieldType) {
 		return nil, ErrInvalidFieldType
 	}
@@ -43,13 +44,24 @@ func NewField(id FieldID, key, name string, fieldType FieldType, attributes Fiel
 	}
 
 	return &Field{
-		ID:         id,
+		ID:         FieldID(uuid.NewString()),
 		Key:        key,
 		Name:       name,
 		Type:       fieldType,
 		Attributes: attributes,
 		Position:   position,
 	}, nil
+}
+
+func HydrateField(id FieldID, key, name string, fieldType FieldType, attr FieldAttributes, position int) *Field {
+	return &Field{
+		ID:         id,
+		Key:        key,
+		Name:       name,
+		Type:       fieldType,
+		Attributes: attr,
+		Position:   position,
+	}
 }
 
 var isValidFieldType = validate.NewTypeValidator([]FieldType{

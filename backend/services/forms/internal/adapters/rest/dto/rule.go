@@ -15,7 +15,6 @@ type RuleResponse struct {
 
 func RequestToRule(dto RuleRequest) (*domain.Rule, error) {
 	return domain.NewRule(
-		"",
 		domain.RuleType(dto.Type),
 		dto.Expression,
 	)

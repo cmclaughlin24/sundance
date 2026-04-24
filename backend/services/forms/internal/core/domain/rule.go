@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
+	"github.com/google/uuid"
 )
 
 type RuleID string
@@ -27,17 +28,24 @@ type Rule struct {
 	Expression string
 }
 
-func NewRule(id RuleID, ruleType RuleType, expression string) (*Rule, error) {
+func NewRule(ruleType RuleType, expression string) (*Rule, error) {
 	if !isValidRuleType(ruleType) {
 		return nil, ErrInvalidRuleType
 	}
 
 	return &Rule{
-		ID:         id,
+		ID:         RuleID(uuid.NewString()),
 		Type:       ruleType,
 		Expression: expression,
 	}, nil
+}
 
+func HydrateRule(id RuleID, ruleType RuleType, expression string) *Rule {
+	return &Rule{
+		ID:         id,
+		Type:       ruleType,
+		Expression: expression,
+	}
 }
 
 var isValidRuleType = validate.NewTypeValidator([]RuleType{

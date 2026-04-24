@@ -3,7 +3,6 @@ module github.com/cmclaughlin24/sundance/backend/services/forms
 go 1.25.3
 
 require (
-	github.com/cmclaughlin24/sundance/backend/pkg/common v0.0.0-20260423162049-af7305d9dfc2
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/google/uuid v1.6.0
 	go.mongodb.org/mongo-driver/v2 v2.5.1
