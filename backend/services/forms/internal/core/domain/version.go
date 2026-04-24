@@ -140,9 +140,11 @@ func (v *Version) Publish(publishedBy string, publishedAt time.Time) error {
 		return ErrPublishedByRequired
 	}
 
+	now := time.Now()
 	v.Status = VersionStatusActive
 	v.PublishedBy = publishedBy
-	v.PublishedAt = publishedAt
+	v.PublishedAt = now
+	v.UpdatedAt = now
 
 	return nil
 }
@@ -160,9 +162,11 @@ func (v *Version) Retire(retiredBy string, retiredAt time.Time) error {
 		return ErrRetiredByRequired
 	}
 
+	now := time.Now()
 	v.Status = VersionStatusRetired
 	v.RetiredBy = retiredBy
-	v.RetiredAt = retiredAt
+	v.RetiredAt = now
+	v.UpdatedAt = now
 
 	return nil
 }
