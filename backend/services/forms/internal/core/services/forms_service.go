@@ -54,13 +54,13 @@ func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormComm
 		return nil, err
 	}
 
-	form, err := domain.NewForm(domain.FormID(""), command.TenantID, command.Name, command.Description)
+	form, err := domain.NewForm(command.TenantID, command.Name, command.Description)
 
 	if err != nil {
 		return nil, err
 	}
 
-	form, err = s.formsRepository.Create(ctx, form)
+	form, err = s.formsRepository.Upsert(ctx, form)
 
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormComm
 		return nil, err
 	}
 
-	form, err = s.formsRepository.Update(ctx, form)
+	form, err = s.formsRepository.Upsert(ctx, form)
 
 	if err != nil {
 		return nil, err
@@ -145,13 +145,13 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 		return nil, err
 	}
 
-	version, err := domain.NewVersion("", command.FormID, versionNum, domain.VersionStatusDraft)
+	version, err := domain.NewVersion(command.FormID, versionNum, domain.VersionStatusDraft)
 
 	if err != nil {
 		return nil, err
 	}
 
-	version, err = s.formsRepository.CreateVersion(txCtx, version)
+	version, err = s.formsRepository.UpsertVersion(txCtx, version)
 
 	if err != nil {
 		return nil, err
@@ -183,7 +183,7 @@ func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateV
 		return nil, err
 	}
 
-	version, err = s.formsRepository.UpdateVersion(ctx, version)
+	version, err = s.formsRepository.UpsertVersion(ctx, version)
 
 	if err != nil {
 		return nil, err
@@ -211,7 +211,7 @@ func (s *FormsService) PublishVersion(ctx context.Context, command *ports.Publis
 		return nil, err
 	}
 
-	version, err = s.formsRepository.UpdateVersion(ctx, version)
+	version, err = s.formsRepository.UpsertVersion(ctx, version)
 
 	if err != nil {
 		return nil, err
@@ -239,7 +239,7 @@ func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireV
 		return nil, err
 	}
 
-	version, err = s.formsRepository.UpdateVersion(ctx, version)
+	version, err = s.formsRepository.UpsertVersion(ctx, version)
 
 	if err != nil {
 		return nil, err

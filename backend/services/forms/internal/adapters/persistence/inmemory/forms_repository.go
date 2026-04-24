@@ -118,7 +118,7 @@ func (r *InMemoryFormsRepository) FindNextVersionNumber(ctx context.Context, for
 	return maxVersion + 1, nil
 }
 
-func (r *InMemoryFormsRepository) CreateVersion(ctx context.Context, version *domain.Version) (*domain.Version, error) {
+func (r *InMemoryFormsRepository) UpsertVersion(ctx context.Context, version *domain.Version) (*domain.Version, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -127,27 +127,6 @@ func (r *InMemoryFormsRepository) CreateVersion(ctx context.Context, version *do
 	if !ok {
 		formVersions = make(map[string]*domain.Version)
 		r.versions[string(version.FormID)] = formVersions
-	}
-
-	formVersions[string(version.ID)] = version
-
-	return version, nil
-}
-
-func (r *InMemoryFormsRepository) UpdateVersion(ctx context.Context, version *domain.Version) (*domain.Version, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	formVersions, ok := r.versions[string(version.FormID)]
-
-	if !ok {
-		return nil, common.ErrNotFound
-	}
-
-	_, ok = formVersions[string(version.ID)]
-
-	if !ok {
-		return nil, common.ErrNotFound
 	}
 
 	formVersions[string(version.ID)] = version
