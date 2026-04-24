@@ -4,12 +4,10 @@ import (
 	"context"
 	"log"
 	"sync"
-	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
-	"github.com/google/uuid"
 )
 
 type inMemoryTenantRepository struct {
@@ -62,22 +60,6 @@ func (r *inMemoryTenantRepository) Upsert(ctx context.Context, tenant *domain.Te
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	now := time.Now()
-
-	if tenant.ID == "" {
-		tenant.ID = domain.TenantID(uuid.New().String())
-		tenant.CreatedAt = now
-	} else {
-		existing, exists := r.tenants[string(tenant.ID)]
-
-		if !exists {
-			return nil, common.ErrNotFound
-		}
-
-		tenant.CreatedAt = existing.CreatedAt
-	}
-
-	tenant.UpdatedAt = now
 	r.tenants[string(tenant.ID)] = tenant
 
 	return tenant, nil

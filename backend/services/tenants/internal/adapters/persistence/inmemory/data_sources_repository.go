@@ -4,12 +4,10 @@ import (
 	"context"
 	"log"
 	"sync"
-	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
-	"github.com/google/uuid"
 )
 
 type inMemoryDataSourceRepository struct {
@@ -67,24 +65,7 @@ func (r *inMemoryDataSourceRepository) Upsert(ctx context.Context, ds *domain.Da
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	now := time.Now()
 	key := getDataSourceKey(ds.TenantID, ds.ID)
-
-	if ds.ID == "" {
-		ds.ID = domain.DataSourceID(uuid.New().String())
-		key = getDataSourceKey(ds.TenantID, ds.ID)
-		ds.CreatedAt = now
-	} else {
-		existing, exists := r.dataSources[key]
-
-		if !exists {
-			return nil, common.ErrNotFound
-		}
-
-		ds.CreatedAt = existing.CreatedAt
-	}
-
-	ds.UpdatedAt = now
 	r.dataSources[key] = ds
 
 	return ds, nil
