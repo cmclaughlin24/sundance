@@ -117,7 +117,7 @@ func (v *Version) UpdatePages(pages ...*Page) error {
 	old := v.pages
 	v.pages = make(map[int]*Page)
 
-	if err := v.SetPages(); err != nil {
+	if err := v.SetPages(pages...); err != nil {
 		v.pages = old
 		return err
 	}
