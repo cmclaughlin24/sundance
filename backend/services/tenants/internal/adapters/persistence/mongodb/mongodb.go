@@ -76,7 +76,7 @@ func Bootstrap(client *mongo.Client, logger *log.Logger) *ports.Repository {
 
 	return &ports.Repository{
 		Database:    NewMongoDBDatabase(client, db),
-		DataSources: NewMongoDBDataSourcesRepository(db, logger),
-		Tenants:     NewMongoDBTenantsRepository(db, logger),
+		DataSources: newMongoDBDataSourcesRepository(db, logger),
+		Tenants:     newMongoDBTenantsRepository(db, logger),
 	}
 }

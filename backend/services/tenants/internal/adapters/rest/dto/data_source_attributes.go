@@ -38,7 +38,7 @@ func parseAttributes[T domain.DataSourceAttributes](data []byte) (domain.DataSou
 
 func RequestToDataSourceAttributes(dataSourceType domain.DataSourceType, raw any) (domain.DataSourceAttributes, error) {
 	if dataSourceType == "" {
-		return nil, errors.New("field type is required")
+		return nil, errors.New("data source type is required")
 	}
 
 	attrBytes, err := json.Marshal(raw)

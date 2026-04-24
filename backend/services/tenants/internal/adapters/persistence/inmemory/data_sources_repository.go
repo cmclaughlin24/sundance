@@ -12,20 +12,20 @@ import (
 	"github.com/google/uuid"
 )
 
-type InmemoryDataSourceRepository struct {
+type inMemoryDataSourceRepository struct {
 	mu          sync.RWMutex
 	dataSources map[string]*domain.DataSource
 	logger      *log.Logger
 }
 
-func NewInmemoryDataSourceRepository(logger *log.Logger) ports.DataSourcesRepository {
-	return &InmemoryDataSourceRepository{
+func newInMemoryDataSourceRepository(logger *log.Logger) ports.DataSourcesRepository {
+	return &inMemoryDataSourceRepository{
 		dataSources: make(map[string]*domain.DataSource),
 		logger:      logger,
 	}
 }
 
-func (r *InmemoryDataSourceRepository) Find(ctx context.Context, tenantID domain.TenantID) ([]*domain.DataSource, error) {
+func (r *inMemoryDataSourceRepository) Find(ctx context.Context, tenantID domain.TenantID) ([]*domain.DataSource, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -41,7 +41,7 @@ func (r *InmemoryDataSourceRepository) Find(ctx context.Context, tenantID domain
 	return result, nil
 }
 
-func (r *InmemoryDataSourceRepository) FindById(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) (*domain.DataSource, error) {
+func (r *inMemoryDataSourceRepository) FindById(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) (*domain.DataSource, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -55,7 +55,7 @@ func (r *InmemoryDataSourceRepository) FindById(ctx context.Context, tenantID do
 	return ds, nil
 }
 
-func (r *InmemoryDataSourceRepository) Exists(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) (bool, error) {
+func (r *inMemoryDataSourceRepository) Exists(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) (bool, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	key := getDataSourceKey(tenantID, id)
@@ -63,7 +63,7 @@ func (r *InmemoryDataSourceRepository) Exists(ctx context.Context, tenantID doma
 	return exists, nil
 }
 
-func (r *InmemoryDataSourceRepository) Upsert(ctx context.Context, ds *domain.DataSource) (*domain.DataSource, error) {
+func (r *inMemoryDataSourceRepository) Upsert(ctx context.Context, ds *domain.DataSource) (*domain.DataSource, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -90,7 +90,7 @@ func (r *InmemoryDataSourceRepository) Upsert(ctx context.Context, ds *domain.Da
 	return ds, nil
 }
 
-func (r *InmemoryDataSourceRepository) Remove(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) error {
+func (r *inMemoryDataSourceRepository) Remove(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

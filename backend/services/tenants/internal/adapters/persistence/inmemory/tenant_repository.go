@@ -12,20 +12,20 @@ import (
 	"github.com/google/uuid"
 )
 
-type InmemoryTenantRepository struct {
+type inMemoryTenantRepository struct {
 	mu      sync.RWMutex
 	tenants map[string]*domain.Tenant
 	logger  *log.Logger
 }
 
-func NewInmemoryTenantRepository(logger *log.Logger) ports.TenantsRepository {
-	return &InmemoryTenantRepository{
+func newInMemoryTenantRepository(logger *log.Logger) ports.TenantsRepository {
+	return &inMemoryTenantRepository{
 		tenants: make(map[string]*domain.Tenant),
 		logger:  logger,
 	}
 }
 
-func (r *InmemoryTenantRepository) Find(ctx context.Context) ([]*domain.Tenant, error) {
+func (r *inMemoryTenantRepository) Find(ctx context.Context) ([]*domain.Tenant, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -38,7 +38,7 @@ func (r *InmemoryTenantRepository) Find(ctx context.Context) ([]*domain.Tenant, 
 	return tenants, nil
 }
 
-func (r *InmemoryTenantRepository) FindById(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
+func (r *inMemoryTenantRepository) FindById(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -51,14 +51,14 @@ func (r *InmemoryTenantRepository) FindById(ctx context.Context, id domain.Tenan
 	return tenant, nil
 }
 
-func (r *InmemoryTenantRepository) Exists(ctx context.Context, id domain.TenantID) (bool, error) {
+func (r *inMemoryTenantRepository) Exists(ctx context.Context, id domain.TenantID) (bool, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	_, exists := r.tenants[string(id)]
 	return exists, nil
 }
 
-func (r *InmemoryTenantRepository) Upsert(ctx context.Context, tenant *domain.Tenant) (*domain.Tenant, error) {
+func (r *inMemoryTenantRepository) Upsert(ctx context.Context, tenant *domain.Tenant) (*domain.Tenant, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -83,7 +83,7 @@ func (r *InmemoryTenantRepository) Upsert(ctx context.Context, tenant *domain.Te
 	return tenant, nil
 }
 
-func (r *InmemoryTenantRepository) Remove(ctx context.Context, id domain.TenantID) error {
+func (r *inMemoryTenantRepository) Remove(ctx context.Context, id domain.TenantID) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

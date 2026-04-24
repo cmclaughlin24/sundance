@@ -9,22 +9,20 @@ import (
 
 type MongoDBDatabase struct {
 	client *mongo.Client
-	db     *mongo.Database
 }
 
-func NewMongoDBDatabase(client *mongo.Client, db *mongo.Database) database.Database {
+func NewMongoDBDatabase(client *mongo.Client, _ *mongo.Database) database.Database {
 	return &MongoDBDatabase{
 		client: client,
-		db:     db,
 	}
 }
 
 func (db *MongoDBDatabase) Close() error {
-	return nil
+	return db.client.Disconnect(context.Background())
 }
 
 func (db *MongoDBDatabase) BeginTx(ctx context.Context) (context.Context, error) {
-	session, err := db.db.Client().StartSession()
+	session, err := db.client.StartSession()
 
 	if err != nil {
 		return ctx, err

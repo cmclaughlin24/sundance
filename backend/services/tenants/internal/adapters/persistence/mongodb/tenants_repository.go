@@ -15,20 +15,20 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-type MongoDBTenantsRepository struct {
-	mongodbBaseRepository
+type mongoDBTenantsRepository struct {
+	mongodbBaseRepository[tenantDocument]
 }
 
-func NewMongoDBTenantsRepository(db *mongo.Database, logger *log.Logger) ports.TenantsRepository {
-	return &MongoDBTenantsRepository{
-		mongodbBaseRepository{
+func newMongoDBTenantsRepository(db *mongo.Database, logger *log.Logger) ports.TenantsRepository {
+	return &mongoDBTenantsRepository{
+		mongodbBaseRepository[tenantDocument]{
 			collection: db.Collection("tenants"),
 			logger:     logger,
 		},
 	}
 }
 
-func (r *MongoDBTenantsRepository) Find(ctx context.Context) ([]*domain.Tenant, error) {
+func (r *mongoDBTenantsRepository) Find(ctx context.Context) ([]*domain.Tenant, error) {
 	var documents []tenantDocument
 
 	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
@@ -58,12 +58,8 @@ func (r *MongoDBTenantsRepository) Find(ctx context.Context) ([]*domain.Tenant, 
 	return tenants, nil
 }
 
-func (r *MongoDBTenantsRepository) FindById(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
-	var result tenantDocument
-
-	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
-		return r.collection.FindOne(sctx, bson.M{"_id": id}).Decode(&result)
-	})
+func (r *mongoDBTenantsRepository) FindById(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
+	result, err := r.findById(ctx, bson.M{"_id": id})
 
 	if err != nil {
 		return nil, err
@@ -72,26 +68,11 @@ func (r *MongoDBTenantsRepository) FindById(ctx context.Context, id domain.Tenan
 	return fromTenantDocument(&result), nil
 }
 
-func (r *MongoDBTenantsRepository) Exists(ctx context.Context, id domain.TenantID) (bool, error) {
-	filter := bson.M{"_id": id}
-	opts := options.Count().SetLimit(1)
-	var count int64
-
-	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
-		c, err := r.collection.CountDocuments(sctx, filter, opts)
-
-		if err != nil {
-			return err
-		}
-
-		count = c
-		return nil
-	})
-
-	return count > 0, err
+func (r *mongoDBTenantsRepository) Exists(ctx context.Context, id domain.TenantID) (bool, error) {
+	return r.exists(ctx, bson.M{"_id": id})
 }
 
-func (r *MongoDBTenantsRepository) Upsert(ctx context.Context, t *domain.Tenant) (*domain.Tenant, error) {
+func (r *mongoDBTenantsRepository) Upsert(ctx context.Context, t *domain.Tenant) (*domain.Tenant, error) {
 	now := time.Now()
 
 	// TODO: Move to the domain layer of the application.
@@ -118,7 +99,7 @@ func (r *MongoDBTenantsRepository) Upsert(ctx context.Context, t *domain.Tenant)
 	return fromTenantDocument(&result), nil
 }
 
-func (r *MongoDBTenantsRepository) Remove(ctx context.Context, id domain.TenantID) error {
+func (r *mongoDBTenantsRepository) Remove(ctx context.Context, id domain.TenantID) error {
 	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
 		result, err := r.collection.DeleteOne(sctx, bson.M{"_id": id})
 

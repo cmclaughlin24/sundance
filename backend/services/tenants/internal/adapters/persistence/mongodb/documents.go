@@ -9,7 +9,7 @@ import (
 )
 
 type tenantDocument struct {
-	ID          string    `bson:"_id,omitempty"`
+	ID          string    `bson:"_id"`
 	Name        string    `bson:"name"`
 	Description string    `bson:"description"`
 	CreatedAt   time.Time `bson:"created_at"`
@@ -37,7 +37,7 @@ func fromTenantDocument(t *tenantDocument) *domain.Tenant {
 }
 
 type dataSourceDocument struct {
-	ID          string    `bson:"_id,omitempty"`
+	ID          string    `bson:"_id"`
 	TenantID    string    `bson:"tenant_id"`
 	Name        string    `bson:"name"`
 	Description string    `bson:"description"`
