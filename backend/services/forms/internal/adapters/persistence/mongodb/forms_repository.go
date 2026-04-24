@@ -107,8 +107,28 @@ func (r *mongoDBFormsRepository) FindVersion(ctx context.Context, formID domain.
 	return fromVersionDocument(&document)
 }
 
-func (r *mongoDBFormsRepository) FindNextVersionNumber(context.Context, domain.FormID) (int, error) {
-	return 0, nil
+func (r *mongoDBFormsRepository) FindNextVersionNumber(ctx context.Context, formID domain.FormID) (int, error) {
+	filter := bson.M{"form_id": formID}
+	opts := options.Find().SetSort(bson.M{"version": -1}).SetLimit(1).SetProjection(bson.M{"version": 1})
+
+	cursor, err := r.versions.Collection().Find(ctx, filter, opts)
+
+	if err != nil {
+		return 0, err
+	}
+
+	defer cursor.Close(ctx)
+
+	var documents []versionDocument
+	if err := cursor.All(ctx, &documents); err != nil {
+		return 0, err
+	}
+
+	if len(documents) == 0 {
+		return 1, nil
+	}
+
+	return documents[0].Version + 1, nil
 }
 
 func (r *mongoDBFormsRepository) UpsertVersion(ctx context.Context, v *domain.Version) (*domain.Version, error) {
