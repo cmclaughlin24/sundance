@@ -14,7 +14,7 @@ import (
 
 type mongoDBFormsRepository struct {
 	forms    *database.MongoDBRepository[formDocument]
-	versions *database.MongoDBRepository[any]
+	versions *database.MongoDBRepository[versionDocument]
 }
 
 func NewMongoDBFormsRepository(db *mongo.Database, logger *log.Logger) ports.FormsRepository {
@@ -22,7 +22,7 @@ func NewMongoDBFormsRepository(db *mongo.Database, logger *log.Logger) ports.For
 		db.Collection("forms"),
 		logger,
 	)
-	versionsRepository := database.NewMongoDBRepository[any](
+	versionsRepository := database.NewMongoDBRepository[versionDocument](
 		db.Collection("versions"),
 		logger,
 	)
@@ -76,18 +76,60 @@ func (r *mongoDBFormsRepository) Upsert(ctx context.Context, f *domain.Form) (*d
 	return fromFormDocument(&result), nil
 }
 
-func (r *mongoDBFormsRepository) FindVersions(context.Context, domain.FormID) ([]*domain.Version, error) {
-	return nil, nil
+func (r *mongoDBFormsRepository) FindVersions(ctx context.Context, formID domain.FormID) ([]*domain.Version, error) {
+	documents, err := r.versions.Find(ctx, bson.M{"form_id": formID})
+
+	if err != nil {
+		return nil, err
+	}
+
+	versions := make([]*domain.Version, 0, len(documents))
+	for _, document := range documents {
+		v, err := fromVersionDocument(&document)
+
+		if err != nil {
+			return nil, err
+		}
+
+		versions = append(versions, v)
+	}
+
+	return versions, nil
 }
 
-func (r *mongoDBFormsRepository) FindVersion(context.Context, domain.FormID, domain.VersionID) (*domain.Version, error) {
-	return nil, nil
+func (r *mongoDBFormsRepository) FindVersion(ctx context.Context, formID domain.FormID, versionID domain.VersionID) (*domain.Version, error) {
+	document, err := r.versions.FindOne(ctx, bson.M{"form_id": formID, "_id": versionID})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return fromVersionDocument(&document)
 }
 
 func (r *mongoDBFormsRepository) FindNextVersionNumber(context.Context, domain.FormID) (int, error) {
 	return 0, nil
 }
 
-func (r *mongoDBFormsRepository) UpsertVersion(context.Context, *domain.Version) (*domain.Version, error) {
-	return nil, nil
+func (r *mongoDBFormsRepository) UpsertVersion(ctx context.Context, v *domain.Version) (*domain.Version, error) {
+	doc, err := toVersionDocument(v)
+
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.M{"_id": doc.ID}
+	update := bson.M{"$set": doc}
+	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
+
+	var result versionDocument
+	err = mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
+		return r.versions.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return fromVersionDocument(&result)
 }
