@@ -2,6 +2,8 @@ package domain
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type TenantID string
@@ -14,12 +16,33 @@ type Tenant struct {
 	UpdatedAt   time.Time
 }
 
-func NewTenant(id TenantID, name, description string) (*Tenant, error) {
+func NewTenant(name, description string) (*Tenant, error) {
+	t := &Tenant{
+		ID:          TenantID(uuid.NewString()),
+		Name:        name,
+		Description: description,
+		CreatedAt:   time.Now(),
+	}
+
+	return t, nil
+}
+
+func HydrateTenant(id TenantID, name, description string, createdAt, updatedAt time.Time) *Tenant {
 	t := &Tenant{
 		ID:          id,
 		Name:        name,
 		Description: description,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
 	}
 
-	return t, nil
+	return t
+}
+
+func (t *Tenant) Update(name, description string) error {
+	t.Name = name
+	t.Description = description
+	t.UpdatedAt = time.Now()
+
+	return nil
 }

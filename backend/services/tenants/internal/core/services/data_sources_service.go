@@ -54,7 +54,6 @@ func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDa
 	}
 
 	ds, err := domain.NewDataSource(
-		"",
 		command.TenantID,
 		command.Name,
 		command.Description,
@@ -84,21 +83,16 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 		return nil, err
 	}
 
-	ds, err := domain.NewDataSource(
-		command.ID,
-		command.TenantID,
-		command.Name,
-		command.Description,
-		command.Type,
-		command.Attributes,
-	)
-
+	ds, err := s.dataSourcesRepository.FindById(ctx, command.TenantID, command.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	dataSource, err := s.dataSourcesRepository.Upsert(ctx, ds)
+	if err := ds.Update(command.Name, command.Description, command.Type, command.Attributes); err != nil {
+		return nil, err
+	}
 
+	dataSource, err := s.dataSourcesRepository.Upsert(ctx, ds)
 	if err != nil {
 		return nil, err
 	}

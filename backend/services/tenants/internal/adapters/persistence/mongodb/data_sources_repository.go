@@ -3,13 +3,11 @@ package mongodb
 import (
 	"context"
 	"log"
-	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -66,15 +64,6 @@ func (r *mongoDBDataSourcesRepository) Exists(ctx context.Context, tenantID doma
 }
 
 func (r *mongoDBDataSourcesRepository) Upsert(ctx context.Context, ds *domain.DataSource) (*domain.DataSource, error) {
-	now := time.Now()
-
-	// TODO: Move to the domain layer of the application.
-	if ds.ID == "" {
-		ds.ID = domain.DataSourceID(uuid.New().String())
-		ds.CreatedAt = now
-	}
-	ds.UpdatedAt = now
-
 	doc, err := toDataSourceDocument(ds)
 	if err != nil {
 		return nil, err

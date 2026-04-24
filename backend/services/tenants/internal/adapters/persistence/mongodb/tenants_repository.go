@@ -3,13 +3,11 @@ package mongodb
 import (
 	"context"
 	"log"
-	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
-	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -61,15 +59,6 @@ func (r *mongoDBTenantsRepository) Exists(ctx context.Context, id domain.TenantI
 }
 
 func (r *mongoDBTenantsRepository) Upsert(ctx context.Context, t *domain.Tenant) (*domain.Tenant, error) {
-	now := time.Now()
-
-	// TODO: Move to the domain layer of the application.
-	if t.ID == "" {
-		t.ID = domain.TenantID(uuid.New().String())
-		t.CreatedAt = now
-	}
-	t.UpdatedAt = now
-
 	doc := toTenantDocument(t)
 	filter := bson.M{"_id": doc.ID}
 	update := bson.M{"$set": doc}

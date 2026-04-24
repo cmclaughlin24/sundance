@@ -27,13 +27,13 @@ func toTenantDocument(t *domain.Tenant) *tenantDocument {
 }
 
 func fromTenantDocument(t *tenantDocument) *domain.Tenant {
-	return &domain.Tenant{
-		ID:          domain.TenantID(t.ID),
-		Name:        t.Name,
-		Description: t.Description,
-		CreatedAt:   t.CreatedAt,
-		UpdatedAt:   t.UpdatedAt,
-	}
+	return domain.HydrateTenant(
+		domain.TenantID(t.ID),
+		t.Name,
+		t.Description,
+		t.CreatedAt,
+		t.UpdatedAt,
+	)
 }
 
 type dataSourceDocument struct {
@@ -74,16 +74,16 @@ func fromDataSourceDocument(ds *dataSourceDocument) (*domain.DataSource, error) 
 		return nil, err
 	}
 
-	return &domain.DataSource{
-		ID:          domain.DataSourceID(ds.ID),
-		TenantID:    domain.TenantID(ds.TenantID),
-		Name:        ds.Name,
-		Description: ds.Description,
-		Type:        sourceType,
-		Attributes:  attr,
-		CreatedAt:   ds.CreatedAt,
-		UpdatedAt:   ds.UpdatedAt,
-	}, nil
+	return domain.HydrateDataSource(
+		domain.DataSourceID(ds.ID),
+		domain.TenantID(ds.TenantID),
+		ds.Name,
+		ds.Description,
+		sourceType,
+		attr,
+		ds.CreatedAt,
+		ds.UpdatedAt,
+	), nil
 }
 
 type attributeParser func(bson.Raw) (domain.DataSourceAttributes, error)

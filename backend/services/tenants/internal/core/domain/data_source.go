@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
+	"github.com/google/uuid"
 )
 
 type DataSourceID string
@@ -34,29 +35,69 @@ type DataSource struct {
 }
 
 func NewDataSource(
-	id DataSourceID,
 	tenantID TenantID,
 	name,
 	description string,
 	sourceType DataSourceType,
-	attributes DataSourceAttributes,
+	attr DataSourceAttributes,
 ) (*DataSource, error) {
 	if !isValidSourceType(sourceType) {
 		return nil, ErrInvalidSourceType
 	}
 
-	if !isValidAttributeType(sourceType, attributes) {
+	if !isValidAttributeType(sourceType, attr) {
 		return nil, ErrInvalidSourceTypeAttributes
 	}
 
 	return &DataSource{
-		ID:          id,
+		ID:          DataSourceID(uuid.NewString()),
 		TenantID:    tenantID,
 		Name:        name,
 		Description: description,
 		Type:        sourceType,
-		Attributes:  attributes,
+		Attributes:  attr,
+		CreatedAt:   time.Now(),
 	}, nil
+}
+
+func HydrateDataSource(
+	ID DataSourceID,
+	tenantID TenantID,
+	name,
+	description string,
+	sourceType DataSourceType,
+	attr DataSourceAttributes,
+	createdAt,
+	updatedAt time.Time,
+) *DataSource {
+	return &DataSource{
+		ID:          ID,
+		TenantID:    tenantID,
+		Name:        name,
+		Description: description,
+		Type:        sourceType,
+		Attributes:  attr,
+		CreatedAt:   createdAt,
+		UpdatedAt:   updatedAt,
+	}
+}
+
+func (ds *DataSource) Update(name, description string, sourceType DataSourceType, attr DataSourceAttributes) error {
+	if !isValidSourceType(sourceType) {
+		return ErrInvalidSourceType
+	}
+
+	if !isValidAttributeType(sourceType, attr) {
+		return ErrInvalidSourceTypeAttributes
+	}
+
+	ds.Name = name
+	ds.Description = description
+	ds.Type = sourceType
+	ds.Attributes = attr
+	ds.UpdatedAt = time.Now()
+
+	return nil
 }
 
 var isValidSourceType = validate.NewTypeValidator([]DataSourceType{

@@ -35,7 +35,7 @@ func (s *TenantsService) Create(ctx context.Context, command *ports.CreateTenant
 		return nil, err
 	}
 
-	t, err := domain.NewTenant("", command.Name, command.Description)
+	t, err := domain.NewTenant(command.Name, command.Description)
 
 	if err != nil {
 		return nil, err
@@ -55,14 +55,16 @@ func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenant
 		return nil, err
 	}
 
-	t, err := domain.NewTenant(command.ID, command.Name, command.Description)
-
+	tenant, err := s.tenantsRepository.FindById(ctx, command.ID)
 	if err != nil {
 		return nil, err
 	}
 
-	tenant, err := s.tenantsRepository.Upsert(ctx, t)
+	if err := tenant.Update(command.Name, command.Description); err != nil {
+		return nil, err
+	}
 
+	tenant, err = s.tenantsRepository.Upsert(ctx, tenant)
 	if err != nil {
 		return nil, err
 	}
