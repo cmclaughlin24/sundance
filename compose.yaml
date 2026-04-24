@@ -2,11 +2,14 @@ services:
   mongo:
     image: mongo:latest
     restart: always
+    command: ["--replSet", "rs0"]
     volumes:
       - "mongodb:/data/db"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
+    healthcheck:
+      test: >
+        mongosh --eval "try { rs.status().ok } catch(e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}).ok }"
+      interval: 10s
+      start_period: 10s
   mongo-express:
     image: mongo-express:latest
     ports:
@@ -15,7 +18,7 @@ services:
       ME_CONFIG_BASICAUTH_USERNAME: user
       ME_CONFIG_BASICAUTH_PASSWORD: password
       ME_CONFIG_OPTIONS_EDITORTHEME: ambiance
-      ME_CONFIG_MONGODB_URL: mongodb://root:password@mongo:27017
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017
     depends_on:
       - mongo
   forms:
@@ -36,6 +39,8 @@ services:
             - ./backend/services/tenants
         - action: rebuild
           path: ./backend/services/forms/go.mod
+    depends_on:
+      - mongo
   submissions:
     build:
       context: ./backend
