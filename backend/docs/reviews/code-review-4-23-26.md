@@ -14,9 +14,21 @@
 
 6. ~~Typo "tyep" in doc comment~~ (Shared, P3) -- Fixed to "type" (`httputil/http.go:39`).
 
-7. **Tenants DTO file reorganization** (Tenants) -- `response.go` and `request.go` split into per-entity files: `tenant.go`, `data_source.go`, `data_source_attributes.go`, `data_source_lookup.go`. Purely structural, no functional changes.
+7. **Tenants DTO file reorganization** (Tenants) -- `response.go` and `request.go` split into per-entity files: `tenant.go`, `data_source.go`, `data_source_attributes.go`, `lookup.go`. Purely structural, no functional changes.
 
 8. ~~Incomplete error-to-HTTP mapping in tenants~~ (Tenants, P3) -- `ErrDataSourceAttrParse`, `ErrInvalidSourceType`, and `ErrInvalidSourceTypeAttributes` now map to 400 via `isBadRequest()`. `ErrStrategyNotFound` moved to Will Not Fix (see below). *(Resolved from 4/16 #15, 4/17 #53, 4/18 #51, 4/19 #39, 4/20 #34, 4/22 #35.)*
+
+9. **MongoDB connection infrastructure added** (All services) -- `Connect()` function with functional options pattern (`WithHost`, `WithPort`, `WithUsername`, `WithPassword`) added to all three services. Tenants service has full MongoDB repository implementations.
+
+10. **DI/persistence bootstrap pattern implemented** (All services) -- `persistence.go` in each service now supports switching between `in-memory` and `mongodb` drivers via `settings.json` configuration.
+
+11. **Forms field attribute response DTOs added** (Forms) -- Explicit response structs with json tags for all five field attribute types (`TextFieldAttributeResponse`, `NumberFieldAttributeResponse`, etc.) and a `fieldAttributesToResponse` mapper using type-switch (`dto/field_attribute.go`).
+
+12. **Tenants data source attribute response DTOs added** (Tenants) -- Response structs with json tags for all three attribute types and a `dataSourceAttributesToResponse` mapper (`dto/data_source_attributes.go`).
+
+13. **`MongoDBDatabase` implements `database.Database` interface** (Tenants) -- Full implementation with `BeginTx`/`CommitTx`/`RollbackTx` backed by MongoDB sessions, and `Close` method (`mongodb/mongodb_database.go`).
+
+14. **MongoDB document mappers implemented** (Tenants) -- `tenantDocument`, `dataSourceDocument` BSON structs with bidirectional mapping functions and attribute strategy deserialization (`mongodb/documents.go`).
 
 ---
 
@@ -46,115 +58,151 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 #### Bugs
 
-1. **`publishVersion` and `retireVersion` use hardcoded `"placeholder"` user ID** (`handlers.go:330`, `365`) -- The publish/retire state transitions record a fake user. Both have `// FIXME` comments but remain unresolved. *(Unresolved from 4/13 #3, 4/17 #1, 4/18 #1, 4/19 #1, 4/20 #1, 4/22 #1.)*
+1. **`publishVersion` and `retireVersion` use hardcoded `"placeholder"` user ID** (`handlers.go:330`, `365`) -- The publish/retire state transitions record a fake user. Both have `// FIXME` comments but remain unresolved. *(Unresolved from 4/13 #3, 4/17 #1, 4/18 #1, 4/19 #1, 4/20 #1, 4/22 #1, 4/23 #1.)*
 
 #### Architectural
 
-2. **`Find()` has no tenant filtering** (`forms_service.go:29-31`) -- Returns all forms across all tenants. Every other query enforces tenant isolation. The `getForms` handler (`handlers.go:30-55`) is also the only handler that never calls `getTenantFromContext`, meaning tenant context is never even read on this path. *(Unresolved from 4/13 #10, 4/17 #5, 4/18 #5, 4/19 #2, 4/20 #2, 4/22 #2.)*
+2. **`Find()` has no tenant filtering** (`forms_service.go:29-31`) -- Returns all forms across all tenants. Every other query enforces tenant isolation. The `getForms` handler (`handlers.go:30-55`) is also the only handler that never calls `getTenantFromContext`, meaning tenant context is never even read on this path. *(Unresolved from 4/13 #10, 4/17 #5, 4/18 #5, 4/19 #2, 4/20 #2, 4/22 #2, 4/23 #2.)*
 
-3. **Aggregate boundaries unclear** -- `Form` has no `Versions` field; `Version` can be loaded/modified independently without going through `Form`. *(Unresolved from 4/13 #11, 4/17 #6, 4/18 #6, 4/19 #4, 4/20 #3, 4/22 #3.)*
+3. **Aggregate boundaries unclear** -- `Form` has no `Versions` field; `Version` can be loaded/modified independently without going through `Form`. *(Unresolved from 4/13 #11, 4/17 #6, 4/18 #6, 4/19 #4, 4/20 #3, 4/22 #3, 4/23 #3.)*
 
-4. **`time.Now()` called directly in the repository and service layers** (`forms_repository.go:59`, `83`; `forms_service.go:210`, `238`) -- Should be injected via a `Clock` interface or function. *(Unresolved from 4/13 #26, 4/17 #8, 4/18 #8, 4/19 #5, 4/20 #4, 4/22 #4.)*
+4. **`time.Now()` called directly in the repository and service layers** (`forms_repository.go:59`, `83`; `forms_service.go:210`, `238`) -- Should be injected via a `Clock` interface or function. *(Unresolved from 4/13 #26, 4/17 #8, 4/18 #8, 4/19 #5, 4/20 #4, 4/22 #4, 4/23 #4.)*
 
-5. **Redundant double-fetch in `Update()`** (`forms_service.go:78-86`) -- `isValidAccess()` fetches the form from the repository to check tenant ownership, then `Update()` immediately fetches the same form again via `FindById()`. The form should be fetched once and reused. *(Unresolved from 4/20 #5, 4/22 #5.)*
+5. **Redundant double-fetch in `Update()`** (`forms_service.go:78-86`) -- `isValidAccess()` fetches the form from the repository to check tenant ownership, then `Update()` immediately fetches the same form again via `FindById()`. The form should be fetched once and reused. *(Unresolved from 4/20 #5, 4/22 #5, 4/23 #5.)*
 
 #### Missing Functionality
 
-6. **Domain validation partially unimplemented** (`form.go:29,42`, `version.go:48`, `page.go:31`, `section.go:31`) -- `NewField` and `NewRule` now validate their types, but `NewForm`, `NewVersion`, `NewPage`, and `NewSection` constructors still contain `// TODO: Implement domain specific validation`. *(Partially resolved from 4/13 #13, 4/17 #10, 4/18 #11, 4/19 #7, 4/20 #7, 4/22 #7.)*
+6. **Domain validation partially unimplemented** (`form.go:29,42`, `version.go:48`, `page.go:31`, `section.go:31`) -- `NewField` and `NewRule` now validate their types, but `NewForm`, `NewVersion`, `NewPage`, and `NewSection` constructors still contain `// TODO: Implement domain specific validation`. *(Partially resolved from 4/13 #13, 4/17 #10, 4/18 #11, 4/19 #7, 4/20 #7, 4/22 #7, 4/23 #6.)*
 
-7. **Incomplete error-to-HTTP mapping** -- `ErrMissingTenantID`, `ErrVersionLocked`, `ErrDuplicatePosition`, `ErrDuplicateRuleType`, `ErrPublishedByRequired`, `ErrRetiredByRequired`, `ErrInvalidFieldType`, `ErrInvalidFieldAttributes`, and `ErrInvalidRuleType` all fall through to the default 500 case in `common.SendErrorResponse`. The service-level `sendErrorResponse` (`handlers.go:409-413`) is an empty switch that delegates directly to `httputil.SendErrorResponse`. *(Unresolved from 4/13 #15, 4/17 #12, 4/18 #13, 4/19 #9, 4/20 #9, 4/22 #9.)*
+7. **Incomplete error-to-HTTP mapping** -- `ErrMissingTenantID`, `ErrVersionLocked`, `ErrDuplicatePosition`, `ErrDuplicateRuleType`, `ErrPublishedByRequired`, `ErrRetiredByRequired`, `ErrInvalidFieldType`, `ErrInvalidFieldAttributes`, and `ErrInvalidRuleType` all fall through to the default 500 case in `common.SendErrorResponse`. The service-level `sendErrorResponse` (`handlers.go:409-413`) is an empty switch that delegates directly to `httputil.SendErrorResponse`. *(Unresolved from 4/13 #15, 4/17 #12, 4/18 #13, 4/19 #9, 4/20 #9, 4/22 #9, 4/23 #7.)*
 
-8. **No `Delete` operation for forms.** No delete handler, service method, or repository method exists. *(Unresolved from 4/13 #17, 4/17 #14, 4/18 #15, 4/19 #11, 4/20 #11, 4/22 #11.)*
+8. **No `Delete` operation for forms.** No delete handler, service method, or repository method exists. *(Unresolved from 4/13 #17, 4/17 #14, 4/18 #15, 4/19 #11, 4/20 #11, 4/22 #11, 4/23 #8.)*
 
 #### Code Quality
 
-9. **Inconsistent constructor signatures** -- `NewForm`, `NewVersion`, `NewPage`, and `NewSection` return `(*Entity, error)` but never return errors (validation is TODO). Either implement validation or simplify the signature. `NewField` and `NewRule` now correctly use the error return. *(Partially resolved from 4/13 #23, 4/17 #18, 4/18 #19, 4/19 #14, 4/20 #12, 4/22 #12.)*
+9. **Inconsistent constructor signatures** -- `NewForm`, `NewVersion`, `NewPage`, and `NewSection` return `(*Entity, error)` but never return errors (validation is TODO). Either implement validation or simplify the signature. `NewField` and `NewRule` now correctly use the error return. *(Partially resolved from 4/13 #23, 4/17 #18, 4/18 #19, 4/19 #14, 4/20 #12, 4/22 #12, 4/23 #9.)*
 
-10. **`ErrMissingTenantID` maps to 500** (`middleware.go:15`) -- `TenantMiddleware` calls `httputil.SendErrorResponse(w, ErrMissingTenantID)` when the `X-Tenant-ID` header is absent. Since `ErrMissingTenantID` doesn't match any case in `SendErrorResponse`, it falls through to the 500 default. Should be 400. *(Unresolved from 4/19 #15, 4/20 #13, 4/22 #13.)*
+10. **`ErrMissingTenantID` maps to 500** (`middleware.go:15`) -- `TenantMiddleware` calls `httputil.SendErrorResponse(w, ErrMissingTenantID)` when the `X-Tenant-ID` header is absent. Since `ErrMissingTenantID` doesn't match any case in `SendErrorResponse`, it falls through to the 500 default. Should be 400. *(Unresolved from 4/19 #15, 4/20 #13, 4/22 #13, 4/23 #10.)*
 
-11. **`publishVersion` and `retireVersion` discard the returned `*domain.Version`** (`handlers.go:347-350`, `382-385`) -- Both handlers call the service, receive an updated `*domain.Version`, but respond with `Data: nil`. The mutated version state is never returned to the client. *(Unresolved from 4/20 #14, 4/22 #14.)*
+11. **`publishVersion` and `retireVersion` discard the returned `*domain.Version`** (`handlers.go:347-350`, `382-385`) -- Both handlers call the service, receive an updated `*domain.Version`, but respond with `Data: nil`. The mutated version state is never returned to the client. *(Unresolved from 4/20 #14, 4/22 #14, 4/23 #11.)*
 
-12. **Map iteration order non-deterministic in DTO response mappers** (`dto/version.go:34-36`, `dto/page.go:77-79`, `dto/section.go`) -- `VersionToResponse()`, `PageToResponse()`, and `SectionToResponse()` iterate over Go maps. The order of items in JSON array responses will be non-deterministic across requests. Pages, sections, and fields should be sorted by position key. *(Unresolved from 4/20 #15, 4/22 #15.)*
+12. **Map iteration order non-deterministic in DTO response mappers** (`dto/version.go:34-36`, `dto/page.go:77-79`, `dto/section.go`) -- `VersionToResponse()`, `PageToResponse()`, and `SectionToResponse()` iterate over Go maps. The order of items in JSON array responses will be non-deterministic across requests. Pages, sections, and fields should be sorted by position key. *(Unresolved from 4/20 #15, 4/22 #15, 4/23 #12.)*
 
-13. **`CreateVersionDto` is an empty struct deserialized from request body** (`dto/version.go:9`, `handlers.go:242-246`) -- `createVersion` calls `ReadValidateJsonPayload(r, &body)` where `body` is `CreateVersionDto struct{}`. The request body is read and decoded into a type with no fields, meaning any payload is silently discarded. Either the DTO should carry fields or the `ReadValidateJsonPayload` call should be removed. *(Unresolved from 4/22 #16.)*
+13. **`CreateVersionDto` is an empty struct deserialized from request body** (`dto/version.go:9`, `handlers.go:242-246`) -- `createVersion` calls `ReadValidateJsonPayload(r, &body)` where `body` is `CreateVersionDto struct{}`. The request body is read and decoded into a type with no fields, meaning any payload is silently discarded. Either the DTO should carry fields or the `ReadValidateJsonPayload` call should be removed. *(Unresolved from 4/22 #16, 4/23 #13.)*
 
-14. **`FindVersions` returns `ErrNotFound` when form has no versions** (`forms_repository.go:93-96`) -- If a form exists but has no entry in the versions map (which happens when a form is created before any version is added), `FindVersions` returns `common.ErrNotFound` rather than an empty slice. This will produce a 404 when listing versions of a new form. *(New.)*
+14. **`FindVersions` returns `ErrNotFound` when form has no versions** (`forms_repository.go:93-96`) -- If a form exists but has no entry in the versions map (which happens when a form is created before any version is added), `FindVersions` returns `common.ErrNotFound` rather than an empty slice. This will produce a 404 when listing versions of a new form. *(Unresolved from 4/23 #14.)*
 
 ---
 
 ### Submissions Service
 
+#### Bugs
+
+15. **Forms and Submissions `bootstrapMongoDB` connects but returns empty `&ports.Repository{}`** (`persistence.go:57-68`) -- `bootstrapMongoDB` calls `mongodb.Connect(...)` but assigns the returned client to `_` and returns `&ports.Repository{}` with nil interface fields. Any repository call will panic with a nil pointer dereference when the `mongodb` driver is selected. The tenants service correctly passes the client to `mongodb.Bootstrap(client, logger)`. *(New.)*
+
 #### Architectural
 
-15. **`Find()` has no tenant filtering** (`submissions_service.go:25-27`) -- Returns all submissions across all tenants. *(Unresolved from 4/17 #27, 4/18 #25, 4/19 #18, 4/20 #16, 4/22 #17.)*
+16. **`Find()` has no tenant filtering** (`submissions_service.go:25-27`) -- Returns all submissions across all tenants. *(Unresolved from 4/17 #27, 4/18 #25, 4/19 #18, 4/20 #16, 4/22 #17, 4/23 #15.)*
 
-16. **Four handler stubs return 200 OK with empty body** (`handlers.go:87-93`) -- `createSubmission`, `getSubmissionAttempts`, `getSubmissionStatus`, and `replaySubmission` are registered in the router but have empty function bodies. They return HTTP 200 with zero-length body and no `Content-Type` header. These should either return 501 Not Implemented or not be registered. *(Unresolved from 4/20 #17, 4/22 #18.)*
+17. **Four handler stubs return 200 OK with empty body** (`handlers.go:87-93`) -- `createSubmission`, `getSubmissionAttempts`, `getSubmissionStatus`, and `replaySubmission` are registered in the router but have empty function bodies. They return HTTP 200 with zero-length body and no `Content-Type` header. These should either return 501 Not Implemented or not be registered. *(Unresolved from 4/20 #17, 4/22 #18, 4/23 #16.)*
 
 #### Missing Functionality
 
-17. **`FindAttempts` and `Replay` service methods are stubs** (`submissions_service.go:65-71`) -- Return `nil, nil` and `nil` respectively. There is also no `SubmissionAttemptsRepository` in the secondary ports to back these methods. *(Unresolved from 4/17 #31, 4/18 #30, 4/19 #22, 4/20 #19, 4/22 #20.)*
+18. **`FindAttempts` and `Replay` service methods are stubs** (`submissions_service.go:65-71`) -- Return `nil, nil` and `nil` respectively. There is also no `SubmissionAttemptsRepository` in the secondary ports to back these methods. *(Unresolved from 4/17 #31, 4/18 #30, 4/19 #22, 4/20 #19, 4/22 #20, 4/23 #17.)*
 
-18. **Request DTOs not implemented** -- `dto/request.go` contains only the package declaration. No request DTOs exist for create/replay operations. *(Unresolved from 4/17 #32, 4/18 #31, 4/19 #23, 4/20 #20, 4/22 #21.)*
+19. **Request DTOs not implemented** -- `dto/request.go` contains only the package declaration. No request DTOs exist for create/replay operations. *(Unresolved from 4/17 #32, 4/18 #31, 4/19 #23, 4/20 #20, 4/22 #21, 4/23 #18.)*
 
-19. **No domain constructors** -- `Submission` and `SubmissionAttempt` are bare structs with no factory functions, no validation, and no business methods. *(Unresolved from 4/17 #33, 4/18 #32, 4/19 #24, 4/20 #21, 4/22 #22.)*
+20. **No domain constructors** -- `Submission` and `SubmissionAttempt` are bare structs with no factory functions, no validation, and no business methods. *(Unresolved from 4/17 #33, 4/18 #32, 4/19 #24, 4/20 #21, 4/22 #22, 4/23 #19.)*
 
-20. **No write operations in the repository interface** -- `SubmissionsRepository` only defines `Find`, `FindById`, `FindByReferenceId`. No `Create`, `Update`, or `Delete`. *(Unresolved from 4/17 #34, 4/18 #33, 4/19 #25, 4/20 #22, 4/22 #23.)*
+21. **No write operations in the repository interface** -- `SubmissionsRepository` only defines `Find`, `FindById`, `FindByReferenceId`. No `Create`, `Update`, or `Delete`. *(Unresolved from 4/17 #34, 4/18 #33, 4/19 #25, 4/20 #22, 4/22 #23, 4/23 #20.)*
 
-21. **`ReplaySubmissionCommand` is an empty struct** (`commands.go`) -- Has no fields, making it impossible to specify what to replay. *(Unresolved from 4/18 #36, 4/19 #28, 4/20 #25, 4/22 #26.)*
+22. **`ReplaySubmissionCommand` is an empty struct** (`commands.go`) -- Has no fields, making it impossible to specify what to replay. *(Unresolved from 4/18 #36, 4/19 #28, 4/20 #25, 4/22 #26, 4/23 #21.)*
 
 #### Code Quality
 
-22. **`Payload` typed as `any`** (`submission.go`) -- No type safety. `ErrorDetails` on `SubmissionAttempt` is also typed as `any`. *(Unresolved from 4/17 #38, 4/18 #37, 4/19 #29, 4/20 #26, 4/22 #27.)*
+23. **`Payload` typed as `any`** (`submission.go`) -- No type safety. `ErrorDetails` on `SubmissionAttempt` is also typed as `any`. *(Unresolved from 4/17 #38, 4/18 #37, 4/19 #29, 4/20 #26, 4/22 #27, 4/23 #22.)*
 
-23. **`SubmissionStatus` has no defined constants** -- `type SubmissionStatus string` is declared but no `const` block with valid status values exists. *(Unresolved from 4/17 #39, 4/18 #38, 4/19 #30, 4/20 #27, 4/22 #28.)*
+24. **`SubmissionStatus` has no defined constants** -- `type SubmissionStatus string` is declared but no `const` block with valid status values exists. *(Unresolved from 4/17 #39, 4/18 #38, 4/19 #30, 4/20 #27, 4/22 #28, 4/23 #23.)*
 
-24. **`SubmissionsRepository.FindByReferenceId` does a linear scan** (`submissions_repository.go`) -- Iterates over all entries comparing `ReferenceID`. No secondary index. *(Unresolved from 4/17 #40, 4/18 #39, 4/19 #31, 4/20 #28, 4/22 #29.)*
+25. **`SubmissionsRepository.FindByReferenceId` does a linear scan** (`submissions_repository.go`) -- Iterates over all entries comparing `ReferenceID`. No secondary index. *(Unresolved from 4/17 #40, 4/18 #39, 4/19 #31, 4/20 #28, 4/22 #29, 4/23 #24.)*
 
-25. **Context cancel drops response silently** (`handlers.go:39-41`, `74-76`) -- When the request context is cancelled, the `select` on `r.Context().Done()` returns without writing any HTTP response. The client receives a connection drop with no status code. *(New.)*
+26. **Context cancel drops response silently** (`handlers.go:39-41`, `74-76`) -- When the request context is cancelled, the `select` on `r.Context().Done()` returns without writing any HTTP response. The client receives a connection drop with no status code. *(Unresolved from 4/23 #25.)*
 
-26. **In-memory submissions repository map keyed by `string` instead of `SubmissionID`** (`submissions_repository.go:14`) -- The map key is `string`, but the domain uses `domain.SubmissionID` (a named `string` type). `FindById` does `r.submissions[string(id)]`. The map should be `map[domain.SubmissionID]*domain.Submission` for type safety. *(New.)*
+27. **In-memory submissions repository map keyed by `string` instead of `SubmissionID`** (`submissions_repository.go:14`) -- The map key is `string`, but the domain uses `domain.SubmissionID` (a named `string` type). `FindById` does `r.submissions[string(id)]`. The map should be `map[domain.SubmissionID]*domain.Submission` for type safety. *(Unresolved from 4/23 #26.)*
 
 ---
 
 ### Tenants Service
 
+#### Bugs
+
+28. **MongoDB `Upsert` overwrites `CreatedAt` with zero time on update path** (`tenants_repository.go:94-102`; `data_sources_repository.go:100-108`) -- On the update branch (`t.ID != ""`), `CreatedAt` is not set. The `$set` operation via `toTenantDocument(t)` / `toDataSourceDocument(ds)` writes the zero value of `time.Time` to `created_at`. The in-memory implementation preserves `CreatedAt` from the existing record, but the MongoDB implementation does not. The `// TODO: Move to the domain layer` comments acknowledge the underlying issue but the current code is actively destructive on updates. *(New.)*
+
+29. **`mongo.ErrNoDocuments` not translated to `common.ErrNotFound`** (`tenants_repository.go:61-73`; `data_sources_repository.go:67-79`) -- Both MongoDB `FindById` methods propagate the raw driver error. The HTTP layer maps `common.ErrNotFound` to 404, so a MongoDB not-found will fall through to the 500 default in `SendErrorResponse`. *(New.)*
+
 #### Architectural
 
-27. **`Find()` in tenants service has no pagination or filtering** (`tenants_service.go:25-27`) -- Returns every tenant in a single unbounded response. `ListDataSourceQuery` in `query.go` is an empty struct with a `// TODO: Add pagination support` comment. *(Unresolved from 4/16 #10, 4/17 #48, 4/18 #45, 4/19 #34, 4/20 #29, 4/22 #30.)*
+30. **`Find()` in tenants service has no pagination or filtering** (`tenants_service.go:25-27`) -- Returns every tenant in a single unbounded response. `ListDataSourceQuery` in `query.go` is an empty struct with a `// TODO: Add pagination support` comment. *(Unresolved from 4/16 #10, 4/17 #48, 4/18 #45, 4/19 #34, 4/20 #29, 4/22 #30, 4/23 #27.)*
 
-28. **Tenant removal does not cascade-delete DataSources** (`tenants_service.go:73-84`) -- When a tenant is removed, only the tenant record is deleted. Any `DataSource` records associated with that tenant remain orphaned in the data sources store. There is no cascade delete and no service-level cleanup. *(Unresolved from 4/20 #30, 4/22 #31.)*
+31. **Tenant removal does not cascade-delete DataSources** (`tenants_service.go:73-84`) -- When a tenant is removed, only the tenant record is deleted. Any `DataSource` records associated with that tenant remain orphaned in the data sources store. There is no cascade delete and no service-level cleanup. *(Unresolved from 4/20 #30, 4/22 #31, 4/23 #28.)*
+
+32. **UUID generation and timestamp management duplicated across persistence layers with inconsistent behavior** (`tenants_repository.go:98-101`; `data_sources_repository.go:104-107`; `inmemory/tenant_repository.go:67-69`; `inmemory/data_sources_repository.go:73-76`) -- The same domain concern (identity assignment, lifecycle timestamps) is now implemented in both in-memory and MongoDB repositories with different behavior: in-memory preserves `CreatedAt` on update, MongoDB overwrites it with zero time. ID generation is a domain concern that should live in domain factories, not persistence adapters. The `// TODO: Move to the domain layer` comments acknowledge this. *(Unresolved from 4/23 #28, expanded with MongoDB duplication.)*
 
 #### Missing Functionality
 
-29. **Domain validation unimplemented** (`tenant.go:17-22`) -- `NewTenant` returns `(*Tenant, error)` but never validates or returns an error. `NewDataSource` now validates type and attribute-type agreement but does not validate empty `TenantID` or field lengths. *(Partially resolved from 4/16 #13, 4/17 #51, 4/18 #49, 4/19 #37, 4/20 #32, 4/22 #33.)*
+33. **Domain validation unimplemented** (`tenant.go:17-22`) -- `NewTenant` returns `(*Tenant, error)` but never validates or returns an error. `NewDataSource` now validates type and attribute-type agreement but does not validate empty `TenantID` or field lengths. *(Partially resolved from 4/16 #13, 4/17 #51, 4/18 #49, 4/19 #37, 4/20 #32, 4/22 #33, 4/23 #29.)*
 
-30. **`Lookup` service method is a stub** (`data_sources_service.go:131-145`) -- Returns `nil, nil` after verifying the data source exists. Contains `// TODO: Implement data source lookup strategy pattern`. *(Unresolved from 4/16 #17, 4/17 #55, 4/18 #53, 4/19 #41, 4/20 #36, 4/22 #37.)*
+34. **`Lookup` service method is a stub** (`data_sources_service.go:131-145`) -- Returns `nil, nil` after verifying the data source exists. Contains `// TODO: Implement data source lookup strategy pattern`. *(Unresolved from 4/16 #17, 4/17 #55, 4/18 #53, 4/19 #41, 4/20 #36, 4/22 #37, 4/23 #30.)*
 
-31. **`DataSourceAttributes` concrete types lack json tags** (`data_source_attributes.go`) -- `StaticDataSourceAttributes`, `ScheduledDataSourceAttributes`, and `QueryDataSourceAttributes` have no `json` struct tags, so JSON marshaling uses Go's default capitalized field names (`Data`, `Type`, `Endpoint`). *(Unresolved from 4/16 #18, 4/17 #56, 4/18 #54, 4/19 #42, 4/20 #37, 4/22 #38.)*
+35. **`DataSourceAttributes` concrete types lack json tags** (`data_source_attributes.go`) -- `StaticDataSourceAttributes`, `ScheduledDataSourceAttributes`, and `QueryDataSourceAttributes` have no `json` struct tags, so JSON marshaling uses Go's default capitalized field names (`Data`, `Type`, `Endpoint`). The new DTO response structs (`dto/data_source_attributes.go`) correctly define json tags, but the domain types themselves remain untagged. *(Unresolved from 4/16 #18, 4/17 #56, 4/18 #54, 4/19 #42, 4/20 #37, 4/22 #38, 4/23 #31.)*
 
-32. **`DataSourceLookup` value object has no validation** (`data_source_lookup.go`) -- `NewDataSourceLookup(code, description)` constructor performs no validation and has no json tags on the struct fields. *(Unresolved from 4/16 #19, 4/17 #57, 4/18 #55, 4/19 #43, 4/20 #38, 4/22 #39.)*
+36. **`Lookup` value object has no validation** (`lookup.go`) -- `NewLookup(value, label)` constructor performs no validation and has no json tags on the struct fields. *(Unresolved from 4/16 #19, 4/17 #57, 4/18 #55, 4/19 #43, 4/20 #38, 4/22 #39, 4/23 #32.)*
 
 #### Code Quality
 
-33. **`time.Now()` called directly in the repository layer** (`tenant_repository.go:64`; `data_sources_repository.go:69`). *(Unresolved from 4/16 #24, 4/17 #60, 4/18 #58, 4/19 #45, 4/20 #40, 4/22 #41.)*
+37. **`time.Now()` called directly in the repository layer** (`inmemory/tenant_repository.go:64`; `inmemory/data_sources_repository.go:69`; `tenants_repository.go:101`; `data_sources_repository.go:107`). Now present in both in-memory and MongoDB repositories. *(Unresolved from 4/16 #24, 4/17 #60, 4/18 #58, 4/19 #45, 4/20 #40, 4/22 #41, 4/23 #33.)*
+
+38. **`MongoDBDatabase.Close()` is a no-op** (`mongodb_database.go:22-24`) -- Returns `nil` without calling `client.Disconnect(ctx)`. The `client` field is stored on the struct but never used for cleanup. `Application.Close()` calls `repository.Database.Close()`, which does nothing. This leaks the MongoDB connection pool on shutdown. *(New.)*
+
+39. **`Ping` uses `context.Background()` with no timeout** (`mongodb/mongodb.go:38`) -- If MongoDB is unreachable, the service hangs forever at startup. Should use `context.WithTimeout`. *(New.)*
+
+40. **Error message says "field type" instead of "data source type"** (`dto/data_source_attributes.go:41`) -- `return nil, errors.New("field type is required")`. Copy-paste error from the forms service. Should say "data source type is required". *(New.)*
+
+41. **Exported struct types with constructors returning interfaces** (`tenants_repository.go:18,22`; `data_sources_repository.go:18,22`) -- `MongoDBTenantsRepository` and `MongoDBDataSourcesRepository` are exported, but `NewMongoDBTenantsRepository` and `NewMongoDBDataSourcesRepository` return port interfaces. In idiomatic Go, if the constructor returns an interface, the concrete type should be unexported. If the concrete type is exported, the constructor should return the concrete type. *(New.)*
+
+42. **`Inmemory` naming inconsistency** (`inmemory/tenant_repository.go:15`; `inmemory/data_sources_repository.go:15`) -- Tenants in-memory repos use `InmemoryTenantRepository` and `InmemoryDataSourceRepository`, while forms uses `InMemoryFormsRepository`, submissions uses `InMemorySubmissionsRepository`, and the shared package uses `InMemoryDatabase`. Go convention for compound words is `InMemory`. *(Unresolved from 4/22, previously unnumbered.)*
+
+43. **`base_repository.go` is a 4-line file with no methods** (`mongodb/base_repository.go:9-12`) -- Unexported struct with `collection` and `logger` fields, embedded in both MongoDB repos. Adds a file for no behavioral benefit. Consider inlining these fields into each repository struct or adding shared methods. *(New.)*
+
+44. **`omitempty` on `_id` BSON tag is a latent risk** (`documents.go:33,40`) -- Both `tenantDocument` and `dataSourceDocument` use `bson:"_id,omitempty"`. If UUID assignment in `Upsert` is ever bypassed, MongoDB would auto-generate an ObjectID instead of failing. *(New.)*
+
+45. **`MongoDBDatabase` stores unused `db *mongo.Database` field** (`mongodb_database.go:10-13`) -- `BeginTx` accesses the client via `db.db.Client()` instead of using `db.client` directly. The `db *mongo.Database` field adds confusion with no benefit since the client is already stored separately. *(New.)*
 
 ---
 
 ### Cross-Service
 
-34. **Zero test files** in all three services and `pkg/common/`. *(Unresolved from 4/13 #12, 4/17 #9, 4/18 #10, 4/19 #6, 4/20 #6, 4/22 #6 (Forms); 4/17 #30, 4/18 #29, 4/19 #21, 4/20 #18, 4/22 #19 (Submissions); 4/16 #12, 4/17 #50, 4/18 #48, 4/19 #36, 4/20 #31, 4/22 #32 (Tenants); 4/23 #46 (Shared).)*
+#### Architectural
 
-35. **No domain events** for cross-service communication. *(Unresolved from 4/13 #14, 4/17 #11, 4/18 #12, 4/19 #8, 4/20 #8, 4/22 #8 (Forms); 4/17 #35, 4/18 #34, 4/19 #26, 4/20 #23, 4/22 #24 (Submissions); 4/16 #14, 4/17 #52, 4/18 #50, 4/19 #38, 4/20 #33, 4/22 #34 (Tenants).)*
+46. **Triplicated MongoDB connection code** (`forms/.../mongodb/mongodb.go`; `submissions/.../mongodb/mongodb.go`; `tenants/.../mongodb/mongodb.go`) -- `MongoDBOpts` struct, `Connect()` function, and all `With*` option functions are copy-pasted identically across all three services (~71 lines each). Should be extracted to `pkg/common/database/` alongside the `Database` interface and `InMemoryDatabase`. *(New.)*
 
-36. **No real authentication** -- `X-Tenant-ID` is blindly trusted across all services. *(Unresolved from 4/13 #16, 4/17 #13, 4/18 #14, 4/19 #10, 4/20 #10, 4/22 #10 (Forms); 4/17 #36, 4/18 #35, 4/19 #27, 4/20 #24, 4/22 #25 (Submissions); 4/16 #16, 4/17 #54, 4/18 #52, 4/19 #40, 4/20 #35, 4/22 #36 (Tenants).)*
+47. **Triplicated `persistence.go` bootstrap pattern** (`forms/.../persistence/persistence.go`; `submissions/.../persistence/persistence.go`; `tenants/.../persistence/persistence.go`) -- `PersistenceDriver` type, constants, `PersistenceSettings`, `PersistenceOptions`, `Bootstrap()`, and `parseOptions[T]()` are nearly identical across all three services. The only difference is which `inmemory.Bootstrap` and `mongodb.Bootstrap` they call. Should be generalized. *(New.)*
 
-37. **No graceful shutdown** (all services, e.g. submissions `cmd/server/main.go:58-60`) -- `server.ListenAndServe()` blocks until error, and `log.Fatal` calls `os.Exit`, preventing `defer app.Close()` from executing. There is no signal handling (`os.Signal`) or `server.Shutdown(ctx)` call. *(New.)*
+48. **`MongoDBDatabase` only implemented for tenants** -- Forms and submissions have no `MongoDBDatabase` implementation. Their `bootstrapMongoDB` returns a `Repository` with a nil `Database` field, which will panic when `Application.Close()` calls `repository.Database.Close()`. *(New.)*
+
+49. **Zero test files** in all three services and `pkg/common/`. *(Unresolved from 4/13 #12, 4/17 #9, 4/18 #10, 4/19 #6, 4/20 #6, 4/22 #6 (Forms); 4/17 #30, 4/18 #29, 4/19 #21, 4/20 #18, 4/22 #19 (Submissions); 4/16 #12, 4/17 #50, 4/18 #48, 4/19 #36, 4/20 #31, 4/22 #32 (Tenants); 4/23 #34.)*
+
+50. **No domain events** for cross-service communication. *(Unresolved from 4/13 #14, 4/17 #11, 4/18 #12, 4/19 #8, 4/20 #8, 4/22 #8 (Forms); 4/17 #35, 4/18 #34, 4/19 #26, 4/20 #23, 4/22 #24 (Submissions); 4/16 #14, 4/17 #52, 4/18 #50, 4/19 #38, 4/20 #33, 4/22 #34 (Tenants); 4/23 #35.)*
+
+51. **No real authentication** -- `X-Tenant-ID` is blindly trusted across all services. *(Unresolved from 4/13 #16, 4/17 #13, 4/18 #14, 4/19 #10, 4/20 #10, 4/22 #10 (Forms); 4/17 #36, 4/18 #35, 4/19 #27, 4/20 #24, 4/22 #25 (Submissions); 4/16 #16, 4/17 #54, 4/18 #52, 4/19 #40, 4/20 #35, 4/22 #36 (Tenants); 4/23 #36.)*
+
+52. **No graceful shutdown** (all services, e.g. submissions `cmd/server/main.go:58-60`) -- `server.ListenAndServe()` blocks until error, and `log.Fatal` calls `os.Exit`, preventing `defer app.Close()` from executing. There is no signal handling (`os.Signal`) or `server.Shutdown(ctx)` call. *(Unresolved from 4/23 #37.)*
 
 ---
 
 ### Shared Package
 
-38. **500 errors leak `err.Error()` to clients** (`httputil/http.go:103-107`) -- The `default` case in `SendErrorResponse` returns the raw error string in the JSON response body. In production, this could expose internal details (database errors, file paths, stack traces). Should return a generic message and log the real error server-side. *(New.)*
+53. **500 errors leak `err.Error()` to clients** (`httputil/http.go:103-107`) -- The `default` case in `SendErrorResponse` returns the raw error string in the JSON response body. In production, this could expose internal details (database errors, file paths, stack traces). Should return a generic message and log the real error server-side. *(Unresolved from 4/23 #38.)*
 
 ---
 
@@ -162,26 +210,41 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
-| **P2** | 2, 15 | `Find()` has no tenant filtering | Forms, Submissions |
-| **P2** | 6, 29 | Domain validation unimplemented | Forms, Tenants |
-| **P2** | 19 | No domain constructors | Submissions |
+| **P0** | 15 | `bootstrapMongoDB` returns empty `Repository{}` -- crash on any repo call | Forms, Submissions |
+| **P1** | 28 | MongoDB `Upsert` overwrites `CreatedAt` with zero time on update | Tenants |
+| **P1** | 29 | `mongo.ErrNoDocuments` not translated to `common.ErrNotFound` (404 -> 500) | Tenants |
+| **P1** | 38 | `MongoDBDatabase.Close()` is a no-op -- connection pool leak | Tenants |
+| **P2** | 2, 16 | `Find()` has no tenant filtering | Forms, Submissions |
+| **P2** | 6, 33 | Domain validation unimplemented | Forms, Tenants |
+| **P2** | 20 | No domain constructors | Submissions |
 | **P2** | 1 | Hardcoded `"placeholder"` user ID | Forms |
 | **P2** | 10 | `ErrMissingTenantID` maps to 500 | Shared |
-| **P2** | 28 | Tenant removal doesn't cascade-delete DataSources | Tenants |
-| **P2** | 16 | Empty handler stubs return 200 OK | Submissions |
+| **P2** | 31 | Tenant removal doesn't cascade-delete DataSources | Tenants |
+| **P2** | 17 | Empty handler stubs return 200 OK | Submissions |
 | **P2** | 5 | Redundant double-fetch in `Update()` | Forms |
-| **P2** | 38 | 500 errors leak `err.Error()` to clients | Shared |
-| **P3** | 34 | Zero test files | All |
-| **P3** | 35 | No domain events | All |
+| **P2** | 53 | 500 errors leak `err.Error()` to clients | Shared |
+| **P2** | 32 | UUID/timestamp management duplicated with inconsistent behavior | Tenants |
+| **P2** | 46 | Triplicated MongoDB connection code | All |
+| **P2** | 47 | Triplicated `persistence.go` bootstrap pattern | All |
+| **P2** | 48 | `MongoDBDatabase` only implemented for tenants | Forms, Submissions |
+| **P3** | 49 | Zero test files | All |
+| **P3** | 50 | No domain events | All |
 | **P3** | 7 | Incomplete error-to-HTTP mapping | Forms |
-| **P3** | 22 | `any`-typed attributes (no type safety) | Submissions |
-| **P3** | 4, 33 | `time.Now()` in repository/service layers | Forms, Tenants |
+| **P3** | 23 | `any`-typed attributes (no type safety) | Submissions |
+| **P3** | 4, 37 | `time.Now()` in repository/service layers | Forms, Tenants |
 | **P3** | 12 | Map iteration non-deterministic in DTO mappers | Forms |
 | **P3** | 11 | `publishVersion`/`retireVersion` discard returned version | Forms |
 | **P3** | 13 | `CreateVersionDto` empty struct deserialized | Forms |
-| **P3** | 31 | `DataSourceAttributes` types lack json tags | Tenants |
+| **P3** | 35 | `DataSourceAttributes` types lack json tags | Tenants |
 | **P3** | 14 | `FindVersions` returns 404 for empty version list | Forms |
-| **P3** | 37 | No graceful shutdown | All |
+| **P3** | 52 | No graceful shutdown | All |
+| **P3** | 39 | `Ping` uses `context.Background()` with no timeout | All |
+| **P3** | 40 | Error message says "field type" instead of "data source type" | Tenants |
+| **P3** | 41 | Exported struct types with constructors returning interfaces | Tenants |
+| **P3** | 42 | `Inmemory` naming inconsistency | Tenants |
+| **P3** | 43 | `base_repository.go` is 4 lines with no methods | Tenants |
+| **P3** | 44 | `omitempty` on `_id` BSON tag is latent risk | Tenants |
+| **P3** | 45 | `MongoDBDatabase` stores unused `db` field | Tenants |
 
 ---
 
@@ -189,39 +252,50 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 ### Progress Since 4/22
 
-One commit landed (`d25c645c tenants | refactor dto package`) reorganizing the tenants DTO package by splitting `response.go` and `request.go` into per-entity files (`tenant.go`, `data_source.go`, `data_source_attributes.go`, `data_source_lookup.go`). This is a structural improvement with no functional changes.
+Eight commits landed since the initial 4/23 review was written, representing the most significant infrastructure push of the project to date:
 
-Additionally, unstaged changes address several issues:
-
-- **`ErrDataSourceAttrParse` now maps to 400** (Tenants) -- New `isBadRequest()` helper in `handlers.go` checks `ErrDataSourceAttrParse`, `ErrInvalidSourceType`, and `ErrInvalidSourceTypeAttributes`.
-- **Consistent error response delegation in forms handlers** (Forms) -- All `getTenantFromContext` error paths now route through `h.sendErrorResponse` instead of bypassing it.
-- **`NewTypeValidator` defensively clones the slice** (Shared) -- `slices.Clone(types)` prevents mutation of the captured slice.
-- **Typo fix** (Shared) -- "tyep" corrected to "type" in `ReadValidateJsonPayload` doc comment.
-- **Issues #40 and #42 from the 4/22 review were already resolved** -- `DataSourceType` validation in `NewDataSource` and usage of `ErrInvalidSourceType` were both present at the time of the 4/22 review but incorrectly flagged as unresolved.
+- **MongoDB connection infrastructure** established across all three services with a functional options pattern (`Connect`, `WithHost`, `WithPort`, `WithUsername`, `WithPassword`).
+- **Tenants service MongoDB repositories** fully implemented with CRUD operations for both tenants and data sources, BSON document mapping, attribute strategy deserialization, and a `MongoDBDatabase` struct implementing the `database.Database` interface with real MongoDB session-based transactions.
+- **DI/persistence bootstrap** updated in all three services to support switching between `in-memory` and `mongodb` drivers via `settings.json` configuration.
+- **Forms field attribute response DTOs** added with explicit json-tagged response structs for all five attribute types and a type-switch mapper.
+- **Tenants data source attribute response DTOs** added with the same pattern.
+- **Forms naming convention fixes** applied.
+- **Tenants DTO reorganization** continued with `data_source_lookup.go` renamed to `lookup.go`.
 
 ### New Issues Found
 
-1. **`FindVersions` returns `ErrNotFound` when form has no versions** (Forms #14, P3) -- A newly created form with no versions produces a 404 instead of an empty list.
-2. **Context cancel drops response silently** (Submissions #25, P3) -- The `r.Context().Done()` branch returns without writing any HTTP response.
-3. **No graceful shutdown** (All #37, P3) -- No signal handling; `defer app.Close()` never executes due to `log.Fatal` calling `os.Exit`.
-4. **500 errors leak `err.Error()` to clients** (Shared #38, P2) -- Internal error strings returned verbatim in 500 JSON responses.
-5. **In-memory submissions repository map keyed by `string` instead of `SubmissionID`** (Submissions #26, P3) -- Breaks type safety of the named ID type.
-6. **Zero test files in `pkg/common/`** -- Consolidated into cross-service #34.
+1. **Forms/Submissions `bootstrapMongoDB` returns empty `Repository{}`** (#15, P0) -- Client is discarded; any MongoDB-backed call will panic.
+2. **MongoDB `Upsert` overwrites `CreatedAt` with zero time** (#28, P1) -- Destructive on every update operation.
+3. **`mongo.ErrNoDocuments` not translated to `common.ErrNotFound`** (#29, P1) -- 404 cases return 500.
+4. **`MongoDBDatabase.Close()` is a no-op** (#38, P1) -- Connection pool leak.
+5. **Triplicated MongoDB connection code** (#46, P2) -- ~71 identical lines in each service.
+6. **Triplicated `persistence.go` bootstrap** (#47, P2) -- Nearly identical factory pattern in each service.
+7. **`MongoDBDatabase` only implemented for tenants** (#48, P2) -- Forms/submissions have no MongoDB Database implementation.
+8. **UUID/timestamp duplicated with inconsistent behavior** (#32, P2) -- In-memory preserves `CreatedAt`, MongoDB does not.
+9. **`Ping` with no timeout** (#39, P3) -- Services hang forever if MongoDB unreachable.
+10. **Copy-paste "field type" error message** (#40, P3) -- Wrong domain context in error.
+11. **Exported types with interface-returning constructors** (#41, P3) -- Idiomatic Go violation.
+12. **`Inmemory` naming inconsistency** (#42, P3) -- Inconsistent with forms, submissions, and shared package.
+13. **`base_repository.go` empty struct file** (#43, P3) -- No behavioral value.
+14. **`omitempty` on `_id` BSON tag** (#44, P3) -- Latent risk.
+15. **Unused `db` field in `MongoDBDatabase`** (#45, P3) -- Confusion, no benefit.
 
 ### Current State
 
-**Forms Service** remains the most mature. Error response delegation is now consistent across all handlers (unstaged). The primary remaining gaps are: the hardcoded `"placeholder"` user IDs in publish/retire, `Find()` with no tenant filtering (and `getForms` not even reading tenant context), the redundant double-fetch in `Update()`, the `ErrMissingTenantID` -> 500 mapping bug, non-deterministic map iteration in DTO mappers, publish/retire discarding the returned version, `FindVersions` returning 404 for new forms, and the continued absence of test coverage.
+**Forms Service** gained explicit field attribute response DTOs and naming convention fixes. The service remains the most functionally complete, but its `bootstrapMongoDB` is non-functional (discards the client). All prior issues remain open.
 
-**Tenants Service** has improved with the DTO file reorganization and error mapping for `ErrDataSourceAttrParse`, `ErrInvalidSourceType`, and `ErrInvalidSourceTypeAttributes` via the new `isBadRequest()` helper. The remaining gaps are: cascade-delete on tenant removal, missing json tags on attribute structs, the stub `Lookup` method, and no test coverage.
+**Tenants Service** saw the largest improvement with full MongoDB repository implementations, document mappers, and a `MongoDBDatabase` with real transaction support. However, the MongoDB layer introduces several new bugs: `CreatedAt` destruction on update, `ErrNoDocuments` not mapping to `ErrNotFound`, and `Close()` not disconnecting the client. The `Ping` startup check has no timeout. Code duplication between in-memory and MongoDB repositories (UUID generation, timestamp management) with inconsistent behavior is a growing concern.
 
-**Submissions Service** is unchanged since 4/20. It has tenant middleware wired and tenant isolation on read paths, but four handler stubs return misleading 200 OK responses, `Find()` has no tenant filtering, and the domain model is entirely anemic (no constructors, no validation, no write operations, no status constants). Request DTOs are still empty.
+**Submissions Service** is unchanged functionally. Its `bootstrapMongoDB` has the same empty-Repository problem as forms. The domain model remains entirely anemic.
 
-**Shared Package** (`pkg/common`) gained the defensive `slices.Clone` in `NewTypeValidator` and the typo fix. `ErrMissingTenantID` still maps to 500. The `SendErrorResponse` default case leaks internal error details to clients.
+**Shared Package** (`pkg/common`) is unchanged. The triplicated MongoDB connection code and bootstrap pattern across all three services should be extracted here.
 
 ### Highest-Impact Improvements
 
-1. **Fix `ErrMissingTenantID` mapping** in `SendErrorResponse` (P2 -- missing tenant header produces 500 instead of 400)
-2. **Stop leaking `err.Error()` in 500 responses** (P2 -- security risk in production)
-3. **Add tenant filtering to `Find()` methods** across forms and submissions (P2 -- data isolation)
-4. **Eliminate redundant double-fetch** in forms `Update()` (P2 -- unnecessary repository call)
-5. **Add test coverage** starting with `pkg/common` and service layers (P3 -- long-term reliability)
+1. **Fix `bootstrapMongoDB` in forms and submissions** (P0 -- both crash if mongodb driver is selected)
+2. **Translate `mongo.ErrNoDocuments` to `common.ErrNotFound`** in tenants MongoDB repos (P1 -- incorrect HTTP status codes)
+3. **Preserve `CreatedAt` on MongoDB update path** (P1 -- data corruption on every update)
+4. **Implement `MongoDBDatabase.Close()` to call `client.Disconnect`** (P1 -- resource leak)
+5. **Extract shared MongoDB connection code to `pkg/common/database/`** (P2 -- eliminate ~140 lines of duplication)
+6. **Fix `ErrMissingTenantID` mapping** in `SendErrorResponse` (P2 -- missing tenant header produces 500)
+7. **Add tenant filtering to `Find()` methods** across forms and submissions (P2 -- data isolation)
