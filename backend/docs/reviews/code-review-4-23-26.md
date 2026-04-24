@@ -26,7 +26,7 @@
 
 12. **Tenants data source attribute response DTOs added** (Tenants) -- Response structs with json tags for all three attribute types and a `dataSourceAttributesToResponse` mapper (`dto/data_source_attributes.go`).
 
-13. **`MongoDBDatabase` implements `database.Database` interface** (Tenants) -- Full implementation with `BeginTx`/`CommitTx`/`RollbackTx` backed by MongoDB sessions, and `Close` method (`mongodb/mongodb_database.go`).
+13. **`MongoDBDatabase` implements `database.Database` interface** (All services) -- Full implementation with `BeginTx`/`CommitTx`/`RollbackTx` backed by MongoDB sessions, and `Close` method. Originally in `tenants/.../mongodb/mongodb_database.go`, now moved to `pkg/database/mongodb_database.go` (staged).
 
 14. **MongoDB document mappers implemented** (Tenants) -- `tenantDocument`, `dataSourceDocument` BSON structs with bidirectional mapping functions and attribute strategy deserialization (`mongodb/documents.go`).
 
@@ -48,6 +48,12 @@
 
 23. ~~`DataSourceAttributes` concrete types lack json tags~~ (Tenants, P3) -- The DTO adapter layer now defines explicit response structs with json tags for all three attribute types (`dto/data_source_attributes.go`), with a `dataSourceAttributesToResponse` mapper. Domain types correctly do not carry serialization tags -- the adapter layer owns that concern, which is the proper hexagonal architecture approach. *(Resolved from 4/16 #18, 4/17 #56, 4/18 #54, 4/19 #42, 4/20 #37, 4/22 #38, 4/23 #31.)*
 
+24. ~~Triplicated MongoDB connection code~~ (All services, P2) -- `MongoDBOpts`, `ConnectMongoDB()`, and all `MongoDBWith*` option functions extracted to new `pkg/database/mongodb.go` module. All three services' `mongodb.go` files had their duplicated connection code deleted and now import from `pkg/database`. *(Resolved from 4/23 #37.)*
+
+25. ~~`MongoDBDatabase` only implemented for tenants~~ (All services, P2) -- `MongoDBDatabase` moved from `tenants/.../mongodb/mongodb_database.go` to `pkg/database/mongodb_database.go`, making it available to all services. The tenants service `Bootstrap` wires it via `database.NewMongoDBDatabase(client, db)`. Forms and submissions will wire it when their MongoDB repositories are implemented. *(Resolved from 4/23 #39.)*
+
+26. ~~`base_repository.go` generic moved to shared package~~ (All services, P3) -- The tenants-local `mongodbBaseRepository[T]` has been replaced by the exported `database.MongoDBRepository[T]` in `pkg/database/mongodb_repository.go`, with `Find`, `FindById`, `Exists`, `Collection()`, and `Logger()` methods. Both tenants repos now use `base *database.MongoDBRepository[T]` composition. Available to all services. *(Extends resolved #20.)*
+
 ---
 
 ## Will Not Fix
@@ -67,6 +73,8 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 6. **`getTenantFromContext` return types differ across services** -- Forms and submissions return `(string, error)`, while tenants returns `(domain.TenantID, error)`. This is intentional: the tenants service owns the `TenantID` domain type and should use it; the other services do not own that type and correctly use `string`.
 
 7. **`ErrStrategyNotFound` falls through to 500** (Previously Tenants #35) -- `ErrStrategyNotFound` indicates a developer failed to register a strategy for a data source type, which is an internal programming error, not a client error. A 500 is the correct response. This should not be flagged in future reviews.
+
+8. **`persistence.go` bootstrap pattern duplicated across services** (Previously 4/23 #38) -- `PersistenceDriver`, `PersistenceSettings`, `PersistenceOptions`, `Bootstrap()`, and `parseOptions[T]()` are intentionally duplicated across services. Each service owns its persistence configuration and wires its own repositories. The shared MongoDB infrastructure (`ConnectMongoDB`, `MongoDBOpts`, `MongoDBRepository[T]`, `MongoDBDatabase`) has been extracted to `pkg/database/`. The remaining per-service scaffolding is lightweight and service-specific by design.
 
 ---
 
@@ -116,7 +124,7 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 #### Bugs
 
-15. **Forms and Submissions `bootstrapMongoDB` connects but returns empty `&ports.Repository{}`** (`persistence.go:57-68`) -- `bootstrapMongoDB` calls `mongodb.Connect(...)` but assigns the returned client to `_` and returns `&ports.Repository{}` with nil interface fields. Any repository call will panic with a nil pointer dereference when the `mongodb` driver is selected. The tenants service correctly passes the client to `mongodb.Bootstrap(client, logger)`. *(New.)*
+15. **Forms and Submissions `mongodb.Bootstrap` returns empty `&ports.Repository{}`** (`forms/.../mongodb/mongodb.go:10-12`; `submissions/.../mongodb/mongodb.go:10-12`) -- `persistence.go` now correctly passes the `*mongo.Client` to `mongodb.Bootstrap(client, logger)` (staged), but both `Bootstrap` functions return `&ports.Repository{}` with nil interface fields. Any repository call will panic with a nil pointer dereference when the `mongodb` driver is selected. MongoDB repositories need to be implemented for these services, following the tenants service pattern. *(Partially resolved from 4/23 #15 -- client no longer discarded, but repos not yet wired.)*
 
 #### Architectural
 
@@ -176,7 +184,7 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 35. **`time.Now()` called directly in the repository layer** (`inmemory/tenant_repository.go:64`; `inmemory/data_sources_repository.go:69`; `tenants_repository.go:101`; `data_sources_repository.go:107`). Now present in both in-memory and MongoDB repositories. *(Unresolved from 4/16 #24, 4/17 #60, 4/18 #58, 4/19 #45, 4/20 #40, 4/22 #41, 4/23 #33.)*
 
-36. **`Ping` uses `context.Background()` with no timeout** (`mongodb/mongodb.go:38`) -- If MongoDB is unreachable, the service hangs forever at startup. Should use `context.WithTimeout`. *(New.)*
+36. **`Ping` uses `context.Background()` with no timeout** (`pkg/database/mongodb.go:43`) -- If MongoDB is unreachable, the service hangs forever at startup. Should use `context.WithTimeout`. *(Unresolved from 4/23 #36, file location updated.)*
 
 ---
 
@@ -184,25 +192,19 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 
 #### Architectural
 
-37. **Triplicated MongoDB connection code** (`forms/.../mongodb/mongodb.go`; `submissions/.../mongodb/mongodb.go`; `tenants/.../mongodb/mongodb.go`) -- `MongoDBOpts` struct, `Connect()` function, and all `With*` option functions are copy-pasted identically across all three services (~71 lines each). Should be extracted to `pkg/common/database/` alongside the `Database` interface and `InMemoryDatabase`. *(New.)*
+37. **Zero test files** in all three services and `pkg/common/`. *(Unresolved from 4/13 #12, 4/17 #9, 4/18 #10, 4/19 #6, 4/20 #6, 4/22 #6 (Forms); 4/17 #30, 4/18 #29, 4/19 #21, 4/20 #18, 4/22 #19 (Submissions); 4/16 #12, 4/17 #50, 4/18 #48, 4/19 #36, 4/20 #31, 4/22 #32 (Tenants); 4/23 #34.)*
 
-38. **Triplicated `persistence.go` bootstrap pattern** (`forms/.../persistence/persistence.go`; `submissions/.../persistence/persistence.go`; `tenants/.../persistence/persistence.go`) -- `PersistenceDriver` type, constants, `PersistenceSettings`, `PersistenceOptions`, `Bootstrap()`, and `parseOptions[T]()` are nearly identical across all three services. The only difference is which `inmemory.Bootstrap` and `mongodb.Bootstrap` they call. Should be generalized. *(New.)*
+38. **No domain events** for cross-service communication. *(Unresolved from 4/13 #14, 4/17 #11, 4/18 #12, 4/19 #8, 4/20 #8, 4/22 #8 (Forms); 4/17 #35, 4/18 #34, 4/19 #26, 4/20 #23, 4/22 #24 (Submissions); 4/16 #14, 4/17 #52, 4/18 #50, 4/19 #38, 4/20 #33, 4/22 #34 (Tenants); 4/23 #35.)*
 
-39. **`MongoDBDatabase` only implemented for tenants** -- Forms and submissions have no `MongoDBDatabase` implementation. Their `bootstrapMongoDB` returns a `Repository` with a nil `Database` field, which will panic when `Application.Close()` calls `repository.Database.Close()`. *(New.)*
+39. **No real authentication** -- `X-Tenant-ID` is blindly trusted across all services. *(Unresolved from 4/13 #16, 4/17 #13, 4/18 #14, 4/19 #10, 4/20 #10, 4/22 #10 (Forms); 4/17 #36, 4/18 #35, 4/19 #27, 4/20 #24, 4/22 #25 (Submissions); 4/16 #16, 4/17 #54, 4/18 #52, 4/19 #40, 4/20 #35, 4/22 #36 (Tenants); 4/23 #36.)*
 
-40. **Zero test files** in all three services and `pkg/common/`. *(Unresolved from 4/13 #12, 4/17 #9, 4/18 #10, 4/19 #6, 4/20 #6, 4/22 #6 (Forms); 4/17 #30, 4/18 #29, 4/19 #21, 4/20 #18, 4/22 #19 (Submissions); 4/16 #12, 4/17 #50, 4/18 #48, 4/19 #36, 4/20 #31, 4/22 #32 (Tenants); 4/23 #34.)*
-
-41. **No domain events** for cross-service communication. *(Unresolved from 4/13 #14, 4/17 #11, 4/18 #12, 4/19 #8, 4/20 #8, 4/22 #8 (Forms); 4/17 #35, 4/18 #34, 4/19 #26, 4/20 #23, 4/22 #24 (Submissions); 4/16 #14, 4/17 #52, 4/18 #50, 4/19 #38, 4/20 #33, 4/22 #34 (Tenants); 4/23 #35.)*
-
-42. **No real authentication** -- `X-Tenant-ID` is blindly trusted across all services. *(Unresolved from 4/13 #16, 4/17 #13, 4/18 #14, 4/19 #10, 4/20 #10, 4/22 #10 (Forms); 4/17 #36, 4/18 #35, 4/19 #27, 4/20 #24, 4/22 #25 (Submissions); 4/16 #16, 4/17 #54, 4/18 #52, 4/19 #40, 4/20 #35, 4/22 #36 (Tenants); 4/23 #36.)*
-
-43. **No graceful shutdown** (all services, e.g. submissions `cmd/server/main.go:58-60`) -- `server.ListenAndServe()` blocks until error, and `log.Fatal` calls `os.Exit`, preventing `defer app.Close()` from executing. There is no signal handling (`os.Signal`) or `server.Shutdown(ctx)` call. *(Unresolved from 4/23 #37.)*
+40. **No graceful shutdown** (all services, e.g. submissions `cmd/server/main.go:58-60`) -- `server.ListenAndServe()` blocks until error, and `log.Fatal` calls `os.Exit`, preventing `defer app.Close()` from executing. There is no signal handling (`os.Signal`) or `server.Shutdown(ctx)` call. *(Unresolved from 4/23 #37.)*
 
 ---
 
 ### Shared Package
 
-44. **500 errors leak `err.Error()` to clients** (`httputil/http.go:103-107`) -- The `default` case in `SendErrorResponse` returns the raw error string in the JSON response body. In production, this could expose internal details (database errors, file paths, stack traces). Should return a generic message and log the real error server-side. *(Unresolved from 4/23 #38.)*
+41. **500 errors leak `err.Error()` to clients** (`httputil/http.go:103-107`) -- The `default` case in `SendErrorResponse` returns the raw error string in the JSON response body. In production, this could expose internal details (database errors, file paths, stack traces). Should return a generic message and log the real error server-side. *(Unresolved from 4/23 #38.)*
 
 ---
 
@@ -220,13 +222,10 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 | **P2** | 30 | Tenant removal doesn't cascade-delete DataSources | Tenants |
 | **P2** | 17 | Empty handler stubs return 200 OK | Submissions |
 | **P2** | 5 | Redundant double-fetch in `Update()` | Forms |
-| **P2** | 44 | 500 errors leak `err.Error()` to clients | Shared |
+| **P2** | 41 | 500 errors leak `err.Error()` to clients | Shared |
 | **P2** | 31 | UUID/timestamp management duplicated with inconsistent behavior | Tenants |
-| **P2** | 37 | Triplicated MongoDB connection code | All |
-| **P2** | 38 | Triplicated `persistence.go` bootstrap pattern | All |
-| **P2** | 39 | `MongoDBDatabase` only implemented for tenants | Forms, Submissions |
-| **P3** | 40 | Zero test files | All |
-| **P3** | 41 | No domain events | All |
+| **P3** | 37 | Zero test files | All |
+| **P3** | 38 | No domain events | All |
 | **P3** | 7 | Incomplete error-to-HTTP mapping | Forms |
 | **P3** | 23 | `any`-typed attributes (no type safety) | Submissions |
 | **P3** | 4, 35 | `time.Now()` in repository/service layers | Forms, Tenants |
@@ -234,7 +233,7 @@ These issues have been reviewed and accepted as intentional design decisions. Th
 | **P3** | 11 | `publishVersion`/`retireVersion` discard returned version | Forms |
 | **P3** | 13 | `CreateVersionDto` empty struct deserialized | Forms |
 | **P3** | 14 | `FindVersions` returns 404 for empty version list | Forms |
-| **P3** | 43 | No graceful shutdown | All |
+| **P3** | 40 | No graceful shutdown | All |
 | **P3** | 36 | `Ping` uses `context.Background()` with no timeout | All |
 
 ---
@@ -260,35 +259,40 @@ Additionally, unstaged changes address several issues:
 - **Copy-paste "field type" error message fixed** (Tenants) -- Now reads "data source type is required".
 - **MongoDB and in-memory repo types unexported** (Tenants) -- Struct types and constructors are now unexported; only `Bootstrap` factory functions are exported. Idiomatic Go convention.
 - **`Inmemory` naming inconsistency fixed** (Tenants) -- Renamed to `inMemory`, consistent with forms, submissions, and shared package.
-- **`base_repository.go` now generic with shared methods** (Tenants) -- `mongodbBaseRepository[T any]` with `findById` and `exists`, eliminating duplicated boilerplate in both MongoDB repos.
+- **`base_repository.go` now generic with shared methods** (Tenants) -- `mongodbBaseRepository[T any]` with `findById` and `exists`, eliminating duplicated boilerplate in both MongoDB repos. Subsequently moved to `pkg/database/mongodb_repository.go` as exported `MongoDBRepository[T]` (staged).
 - **`omitempty` removed from `_id` BSON tags** (Tenants) -- Both document structs now use `bson:"_id"`.
 - **Unused `db *mongo.Database` field removed from `MongoDBDatabase`** (Tenants) -- `BeginTx` now uses `db.client.StartSession()` directly.
 - **`DataSourceAttributes` json serialization handled by DTO layer** (Tenants) -- Explicit response structs with json tags added in `dto/data_source_attributes.go`. Domain types correctly omit serialization tags per hexagonal architecture.
 
+Staged changes extract shared infrastructure to a new `pkg/database` module:
+
+- **Triplicated MongoDB connection code extracted** (All services) -- `MongoDBOpts`, `ConnectMongoDB()`, and `MongoDBWith*` options moved to `pkg/database/mongodb.go`. All three services now import from `pkg/database` instead of maintaining local copies.
+- **`MongoDBDatabase` moved to shared package** (All services) -- `MongoDBDatabase` moved from `tenants/.../mongodb/mongodb_database.go` to `pkg/database/mongodb_database.go`, making it available to all services.
+- **`MongoDBRepository[T]` extracted to shared package** (All services) -- Generic base repository with `Find`, `FindById`, `Exists` moved from tenants-local `base_repository.go` to `pkg/database/mongodb_repository.go`. Tenants repos now use `base *database.MongoDBRepository[T]` composition.
+- **`database.Database` interface and `InMemoryDatabase` moved** -- From `pkg/common/database/` to new `pkg/database/` module. All services updated to import from the new path.
+- **Forms and Submissions `persistence.go` now pass client to `Bootstrap`** -- `bootstrapMongoDB` no longer discards the `*mongo.Client`. Both call `mongodb.Bootstrap(client, logger)`. Note: forms/submissions `Bootstrap` still returns `&ports.Repository{}` (MongoDB repos not yet implemented).
+
 ### New Issues Found
 
-1. **Forms/Submissions `bootstrapMongoDB` returns empty `Repository{}`** (#15, P0) -- Client is discarded; any MongoDB-backed call will panic.
+1. **Forms/Submissions `bootstrapMongoDB` returns empty `Repository{}`** (#15, P0) -- `persistence.go` now correctly passes client to `mongodb.Bootstrap`, but `Bootstrap` still returns `&ports.Repository{}` with nil fields. MongoDB repos not yet implemented for these services.
 2. **MongoDB `Upsert` overwrites `CreatedAt` with zero time** (#28, P1) -- Destructive on every update operation.
-3. **Triplicated MongoDB connection code** (#37, P2) -- ~71 identical lines in each service.
-4. **Triplicated `persistence.go` bootstrap** (#38, P2) -- Nearly identical factory pattern in each service.
-5. **`MongoDBDatabase` only implemented for tenants** (#39, P2) -- Forms/submissions have no MongoDB Database implementation.
-6. **UUID/timestamp duplicated with inconsistent behavior** (#31, P2) -- In-memory preserves `CreatedAt`, MongoDB does not.
-7. **`Ping` with no timeout** (#36, P3) -- Services hang forever if MongoDB unreachable.
+3. **UUID/timestamp duplicated with inconsistent behavior** (#31, P2) -- In-memory preserves `CreatedAt`, MongoDB does not.
+4. **`Ping` with no timeout** (#36, P3) -- Services hang forever if MongoDB unreachable.
 
 ### Current State
 
-**Forms Service** gained explicit field attribute response DTOs and naming convention fixes. The service remains the most functionally complete, but its `bootstrapMongoDB` is non-functional (discards the client). All prior issues remain open.
+**Forms Service** gained explicit field attribute response DTOs and naming convention fixes. The `persistence.go` now correctly passes the MongoDB client to `Bootstrap`, but `Bootstrap` still returns an empty `Repository{}` since MongoDB repos are not yet implemented. The service remains the most functionally complete. All prior issues remain open.
 
-**Tenants Service** saw the largest improvement with full MongoDB repository implementations, document mappers, and a `MongoDBDatabase` with real transaction support. Unstaged changes further improve code quality: `ErrNoDocuments` now maps to `ErrNotFound`, `Close()` properly disconnects, repo types are unexported, naming is consistent, `base_repository.go` is a useful generic, and `omitempty` is removed from BSON `_id` tags. The remaining MongoDB-layer bug is `CreatedAt` destruction on update. Code duplication between in-memory and MongoDB repositories (UUID generation, timestamp management) with inconsistent behavior is a growing concern.
+**Tenants Service** saw the largest improvement with full MongoDB repository implementations, document mappers, and a `MongoDBDatabase` with real transaction support. Unstaged changes further improve code quality: `ErrNoDocuments` now maps to `ErrNotFound`, `Close()` properly disconnects, repo types are unexported, naming is consistent, and `omitempty` is removed from BSON `_id` tags. Staged changes extract the base repository and `MongoDBDatabase` to the shared `pkg/database` module. The remaining MongoDB-layer bug is `CreatedAt` destruction on update. Code duplication between in-memory and MongoDB repositories (UUID generation, timestamp management) with inconsistent behavior is a growing concern.
 
-**Submissions Service** is unchanged functionally. Its `bootstrapMongoDB` has the same empty-Repository problem as forms. The domain model remains entirely anemic.
+**Submissions Service** is unchanged functionally. Its `persistence.go` now passes the client to `Bootstrap`, but like forms, the `Bootstrap` returns an empty `Repository{}`. The domain model remains entirely anemic.
 
-**Shared Package** (`pkg/common`) is unchanged. The triplicated MongoDB connection code and bootstrap pattern across all three services should be extracted here.
+**Shared Package** -- A new `pkg/database` module has been introduced (staged), consolidating `Database` interface, `InMemoryDatabase`, `MongoDBDatabase`, `ConnectMongoDB` with functional options, and `MongoDBRepository[T]` generic base. This eliminates ~140 lines of duplicated MongoDB connection code. `pkg/common` retains error types, HTTP utilities, tenant middleware, and validation.
 
 ### Highest-Impact Improvements
 
-1. **Fix `bootstrapMongoDB` in forms and submissions** (P0 -- both crash if mongodb driver is selected)
+1. **Implement MongoDB repositories for forms and submissions** (P0 -- `Bootstrap` still returns empty `Repository{}`)
 2. **Preserve `CreatedAt` on MongoDB update path** (P1 -- data corruption on every update)
-3. **Extract shared MongoDB connection code to `pkg/common/database/`** (P2 -- eliminate ~140 lines of duplication)
-4. **Fix `ErrMissingTenantID` mapping** in `SendErrorResponse` (P2 -- missing tenant header produces 500)
-5. **Add tenant filtering to `Find()` methods** across forms and submissions (P2 -- data isolation)
+3. **Fix `ErrMissingTenantID` mapping** in `SendErrorResponse` (P2 -- missing tenant header produces 500)
+4. **Add tenant filtering to `Find()` methods** across forms and submissions (P2 -- data isolation)
+5. **Add test coverage** starting with `pkg/database` and service layers (P3 -- long-term reliability)
