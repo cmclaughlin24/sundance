@@ -61,7 +61,7 @@ func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		tenant, err := h.app.Services.Tenants.FindById(r.Context(), tenantID)
+		tenant, err := h.app.Services.Tenants.FindByID(r.Context(), tenantID)
 		resultChan <- result[*domain.Tenant]{tenant, err}
 	}()
 
@@ -215,7 +215,7 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		source, err := h.app.Services.DataSources.FindById(r.Context(), query)
+		source, err := h.app.Services.DataSources.FindByID(r.Context(), query)
 		resultChan <- result[*domain.DataSource]{source, err}
 	}()
 

@@ -25,7 +25,7 @@ func main() {
 
 	var settings settings
 
-	if err := common.ReadJsonFile(*settingsPath, &settings); err != nil {
+	if err := common.ReadJSONFile(*settingsPath, &settings); err != nil {
 		panic(err)
 	}
 

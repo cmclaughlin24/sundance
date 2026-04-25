@@ -68,7 +68,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		form, err := h.app.Services.Forms.FindById(r.Context(), query)
+		form, err := h.app.Services.Forms.FindByID(r.Context(), query)
 		resultChan <- result[*domain.Form]{form, err}
 	}()
 

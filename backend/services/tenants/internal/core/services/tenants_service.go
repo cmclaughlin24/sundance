@@ -26,8 +26,8 @@ func (s *TenantsService) Find(ctx context.Context) ([]*domain.Tenant, error) {
 	return s.tenantsRepository.Find(ctx)
 }
 
-func (s *TenantsService) FindById(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
-	return s.tenantsRepository.FindById(ctx, id)
+func (s *TenantsService) FindByID(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
+	return s.tenantsRepository.FindByID(ctx, id)
 }
 
 func (s *TenantsService) Create(ctx context.Context, command *ports.CreateTenantCommand) (*domain.Tenant, error) {
@@ -55,7 +55,7 @@ func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenant
 		return nil, err
 	}
 
-	tenant, err := s.tenantsRepository.FindById(ctx, command.ID)
+	tenant, err := s.tenantsRepository.FindByID(ctx, command.ID)
 	if err != nil {
 		return nil, err
 	}

@@ -39,7 +39,7 @@ func (r *inMemoryDataSourceRepository) Find(ctx context.Context, tenantID domain
 	return result, nil
 }
 
-func (r *inMemoryDataSourceRepository) FindById(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) (*domain.DataSource, error) {
+func (r *inMemoryDataSourceRepository) FindByID(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) (*domain.DataSource, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

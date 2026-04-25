@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func ReadJsonFile[T any](path string, data *T) error {
+func ReadJSONFile[T any](path string, data *T) error {
 	file, err := os.Open(path)
 
 	if err != nil {

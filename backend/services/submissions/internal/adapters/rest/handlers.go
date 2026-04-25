@@ -63,11 +63,11 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 
 	referenceID := h.getReferenceIdPathValue(r)
 	resultChan := make(chan result[*domain.Submission], 1)
-	query := ports.NewFindByIdQuery(tenantID, referenceID)
+	query := ports.NewFindByIDQuery(tenantID, referenceID)
 
 	go func() {
 		defer close(resultChan)
-		submission, err := h.app.Services.Submissions.FindByReferenceId(r.Context(), query)
+		submission, err := h.app.Services.Submissions.FindByReferenceID(r.Context(), query)
 		resultChan <- result[*domain.Submission]{submission, err}
 	}()
 

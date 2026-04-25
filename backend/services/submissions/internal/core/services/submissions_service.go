@@ -26,12 +26,12 @@ func (s *SubmissionsService) Find(ctx context.Context) ([]*domain.Submission, er
 	return s.submissionsRepository.Find(ctx)
 }
 
-func (s *SubmissionsService) FindById(ctx context.Context, query *ports.FindByIdQuery[domain.SubmissionID]) (*domain.Submission, error) {
+func (s *SubmissionsService) FindByID(ctx context.Context, query *ports.FindByIDQuery[domain.SubmissionID]) (*domain.Submission, error) {
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
 
-	submission, err := s.submissionsRepository.FindById(ctx, query.ID)
+	submission, err := s.submissionsRepository.FindByID(ctx, query.ID)
 
 	if err != nil {
 		return nil, err
@@ -44,12 +44,12 @@ func (s *SubmissionsService) FindById(ctx context.Context, query *ports.FindById
 	return submission, nil
 }
 
-func (s *SubmissionsService) FindByReferenceId(ctx context.Context, query *ports.FindByIdQuery[domain.ReferenceID]) (*domain.Submission, error) {
+func (s *SubmissionsService) FindByReferenceID(ctx context.Context, query *ports.FindByIDQuery[domain.ReferenceID]) (*domain.Submission, error) {
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
 
-	submission, err := s.submissionsRepository.FindByReferenceId(ctx, query.ID)
+	submission, err := s.submissionsRepository.FindByReferenceID(ctx, query.ID)
 
 	if err != nil {
 		return nil, err

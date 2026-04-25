@@ -29,12 +29,12 @@ func (s *FormsService) Find(ctx context.Context) ([]*domain.Form, error) {
 	return s.formsRepository.Find(ctx)
 }
 
-func (s *FormsService) FindById(ctx context.Context, query *ports.FindByIDQuery) (*domain.Form, error) {
+func (s *FormsService) FindByID(ctx context.Context, query *ports.FindByIDQuery) (*domain.Form, error) {
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
 
-	form, err := s.formsRepository.FindById(ctx, query.FormID)
+	form, err := s.formsRepository.FindByID(ctx, query.FormID)
 
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormComm
 		return nil, err
 	}
 
-	form, err := s.formsRepository.FindById(ctx, command.ID)
+	form, err := s.formsRepository.FindByID(ctx, command.ID)
 
 	if err != nil {
 		return nil, err
@@ -246,7 +246,7 @@ func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireV
 }
 
 func (s *FormsService) isValidAccess(ctx context.Context, tenantID string, formID domain.FormID) error {
-	form, err := s.formsRepository.FindById(ctx, formID)
+	form, err := s.formsRepository.FindByID(ctx, formID)
 
 	if err != nil {
 		return err

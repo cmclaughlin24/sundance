@@ -32,7 +32,7 @@ func (s *DataSourcesService) Find(ctx context.Context, query *ports.ListDataSour
 	return s.dataSourcesRepository.Find(ctx, query.TenantID)
 }
 
-func (s *DataSourcesService) FindById(ctx context.Context, query *ports.FindDataSourceByIDQuery) (*domain.DataSource, error) {
+func (s *DataSourcesService) FindByID(ctx context.Context, query *ports.FindDataSourceByIDQuery) (*domain.DataSource, error) {
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (s *DataSourcesService) FindById(ctx context.Context, query *ports.FindData
 		return nil, err
 	}
 
-	return s.dataSourcesRepository.FindById(ctx, query.TenantID, query.ID)
+	return s.dataSourcesRepository.FindByID(ctx, query.TenantID, query.ID)
 }
 
 func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
@@ -83,7 +83,7 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 		return nil, err
 	}
 
-	ds, err := s.dataSourcesRepository.FindById(ctx, command.TenantID, command.ID)
+	ds, err := s.dataSourcesRepository.FindByID(ctx, command.TenantID, command.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func (s *DataSourcesService) Lookup(ctx context.Context, command *ports.GetDataS
 		return nil, err
 	}
 
-	_, err := s.dataSourcesRepository.FindById(ctx, command.TenantID, command.ID)
+	_, err := s.dataSourcesRepository.FindByID(ctx, command.TenantID, command.ID)
 
 	if err != nil {
 		return nil, err

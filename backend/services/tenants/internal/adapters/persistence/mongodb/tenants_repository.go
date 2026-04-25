@@ -44,7 +44,7 @@ func (r *mongoDBTenantsRepository) Find(ctx context.Context) ([]*domain.Tenant, 
 	return tenants, nil
 }
 
-func (r *mongoDBTenantsRepository) FindById(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
+func (r *mongoDBTenantsRepository) FindByID(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
 	result, err := r.base.FindOne(ctx, bson.M{"_id": id})
 
 	if err != nil {

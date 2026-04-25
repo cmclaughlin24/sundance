@@ -36,7 +36,7 @@ func (r *InMemorySubmissionsRepository) Find(ctx context.Context) ([]*domain.Sub
 	return submissions, nil
 }
 
-func (r *InMemorySubmissionsRepository) FindById(ctx context.Context, id domain.SubmissionID) (*domain.Submission, error) {
+func (r *InMemorySubmissionsRepository) FindByID(ctx context.Context, id domain.SubmissionID) (*domain.Submission, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -49,7 +49,7 @@ func (r *InMemorySubmissionsRepository) FindById(ctx context.Context, id domain.
 	return submission, nil
 }
 
-func (r *InMemorySubmissionsRepository) FindByReferenceId(ctx context.Context, referenceID domain.ReferenceID) (*domain.Submission, error) {
+func (r *InMemorySubmissionsRepository) FindByReferenceID(ctx context.Context, referenceID domain.ReferenceID) (*domain.Submission, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

@@ -38,7 +38,7 @@ func (r *InMemoryFormsRepository) Find(ctx context.Context) ([]*domain.Form, err
 	return forms, nil
 }
 
-func (r *InMemoryFormsRepository) FindById(ctx context.Context, id domain.FormID) (*domain.Form, error) {
+func (r *InMemoryFormsRepository) FindByID(ctx context.Context, id domain.FormID) (*domain.Form, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

@@ -14,6 +14,6 @@ type Repository struct {
 
 type SubmissionsRepository interface {
 	Find(context.Context) ([]*domain.Submission, error)
-	FindById(context.Context, domain.SubmissionID) (*domain.Submission, error)
-	FindByReferenceId(context.Context, domain.ReferenceID) (*domain.Submission, error)
+	FindByID(context.Context, domain.SubmissionID) (*domain.Submission, error)
+	FindByReferenceID(context.Context, domain.ReferenceID) (*domain.Submission, error)
 }

@@ -36,7 +36,7 @@ func (r *inMemoryTenantRepository) Find(ctx context.Context) ([]*domain.Tenant, 
 	return tenants, nil
 }
 
-func (r *inMemoryTenantRepository) FindById(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
+func (r *inMemoryTenantRepository) FindByID(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 

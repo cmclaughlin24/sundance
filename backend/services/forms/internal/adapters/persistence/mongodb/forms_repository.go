@@ -48,7 +48,7 @@ func (r *mongoDBFormsRepository) Find(ctx context.Context) ([]*domain.Form, erro
 	return forms, nil
 }
 
-func (r *mongoDBFormsRepository) FindById(ctx context.Context, formID domain.FormID) (*domain.Form, error) {
+func (r *mongoDBFormsRepository) FindByID(ctx context.Context, formID domain.FormID) (*domain.Form, error) {
 	document, err := r.forms.FindOne(ctx, bson.M{"_id": formID})
 
 	if err != nil {
