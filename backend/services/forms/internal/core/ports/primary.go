@@ -11,8 +11,8 @@ type Services struct {
 }
 
 type FormsService interface {
-	Find(context.Context) ([]*domain.Form, error)
-	FindByID(context.Context, *FindByIDQuery) (*domain.Form, error)
+	Find(context.Context, *FindFormsQuery) ([]*domain.Form, error)
+	FindByID(context.Context, *FindFormsByIDQuery) (*domain.Form, error)
 	Create(context.Context, *CreateFormCommand) (*domain.Form, error)
 	Update(context.Context, *UpdateFormCommand) (*domain.Form, error)
 	FindVersions(context.Context, *FindVersionsQuery) ([]*domain.Version, error)

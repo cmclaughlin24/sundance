@@ -25,13 +25,16 @@ func NewInMemoryFormsRepository(logger *log.Logger) ports.FormsRepository{
 	}
 }
 
-func (r *InMemoryFormsRepository) Find(ctx context.Context) ([]*domain.Form, error) {
+func (r *InMemoryFormsRepository) Find(ctx context.Context, f *ports.FormFilters) ([]*domain.Form, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	forms := make([]*domain.Form, 0, len(r.forms))
 
 	for _, form := range r.forms {
+		if f != nil && f.TenantID != "" && form.TenantID != f.TenantID {
+			continue
+		}
 		forms = append(forms, form)
 	}
 

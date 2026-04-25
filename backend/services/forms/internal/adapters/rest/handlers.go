@@ -29,11 +29,18 @@ func newHandlers(app *core.Application) *handlers {
 }
 
 func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := h.getTenantFromContext(r)
+	if err != nil {
+		h.sendErrorResponse(w, err)
+		return
+	}
+
+	query := ports.NewFindFormsQuery(tenantID)
 	resultChan := make(chan result[[]*domain.Form], 1)
 
 	go func() {
 		defer close(resultChan)
-		forms, err := h.app.Services.Forms.Find(r.Context())
+		forms, err := h.app.Services.Forms.Find(r.Context(), query)
 		resultChan <- result[[]*domain.Form]{forms, err}
 	}()
 
@@ -63,7 +70,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	formID := h.getFormIdPathValue(r)
-	query := ports.NewFindByIDQuery(tenantID, formID)
+	query := ports.NewFindFormsByIDQuery(tenantID, formID)
 	resultChan := make(chan result[*domain.Form], 1)
 
 	go func() {

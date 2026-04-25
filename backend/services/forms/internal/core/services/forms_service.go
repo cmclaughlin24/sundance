@@ -25,11 +25,17 @@ func NewFormsService(logger *log.Logger, repository *ports.Repository) ports.For
 	}
 }
 
-func (s *FormsService) Find(ctx context.Context) ([]*domain.Form, error) {
-	return s.formsRepository.Find(ctx)
+func (s *FormsService) Find(ctx context.Context, query *ports.FindFormsQuery) ([]*domain.Form, error) {
+	if err := validate.ValidateStruct(query); err != nil {
+		return nil, err
+	}
+
+	return s.formsRepository.Find(ctx, &ports.FormFilters{
+		TenantID: query.TenantID,
+	})
 }
 
-func (s *FormsService) FindByID(ctx context.Context, query *ports.FindByIDQuery) (*domain.Form, error) {
+func (s *FormsService) FindByID(ctx context.Context, query *ports.FindFormsByIDQuery) (*domain.Form, error) {
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}

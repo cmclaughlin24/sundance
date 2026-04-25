@@ -33,8 +33,14 @@ func newMongoDBFormsRepository(db *mongo.Database, logger *log.Logger) ports.For
 	}
 }
 
-func (r *mongoDBFormsRepository) Find(ctx context.Context) ([]*domain.Form, error) {
-	documents, err := r.forms.Find(ctx, bson.M{})
+func (r *mongoDBFormsRepository) Find(ctx context.Context, f *ports.FormFilters) ([]*domain.Form, error) {
+	var filter bson.M
+
+	if f != nil && f.TenantID != "" {
+		filter["tenant_id"] = f.TenantID
+	}
+
+	documents, err := r.forms.Find(ctx, filter)
 
 	if err != nil {
 		return nil, err
