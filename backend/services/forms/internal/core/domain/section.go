@@ -13,21 +13,23 @@ var (
 )
 
 type Section struct {
-	ID       SectionID
-	Key      string
-	Name     string
-	Position int
-	fields   map[int]*Field
-	baseWithRules
+	ID     SectionID
+	Key    string
+	Name   string
+	fields map[int]*Field
+	withPosition
+	withRules
 }
 
 func NewSection(key, name string, position int) (*Section, error) {
 	s := &Section{
-		ID:       SectionID(uuid.NewString()),
-		Key:      key,
-		Name:     name,
-		Position: position,
-		fields:   make(map[int]*Field),
+		ID:     SectionID(uuid.NewString()),
+		Key:    key,
+		Name:   name,
+		fields: make(map[int]*Field),
+		withPosition: withPosition{
+			position: position,
+		},
 	}
 
 	// TODO: Implement domain specific validation.
@@ -40,7 +42,10 @@ func HydrateSection(id SectionID, key, name string, position int) *Section {
 		ID:       id,
 		Key:      key,
 		Name:     name,
-		Position: position,
+		fields: make(map[int]*Field),
+		withPosition: withPosition{
+			position: position,
+		},
 	}
 }
 
@@ -58,13 +63,14 @@ func (s *Section) SetFields(fields ...*Field) error {
 	}
 
 	for _, field := range fields {
-		_, exists := s.fields[field.Position]
+		position := field.GetPosition()
+		_, exists := s.fields[position]
 
 		if exists {
 			return ErrDuplicatePosition
 		}
 
-		s.fields[field.Position] = field
+		s.fields[position] = field
 	}
 
 	return nil

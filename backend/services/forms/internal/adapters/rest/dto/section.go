@@ -1,6 +1,11 @@
 package dto
 
-import "github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
+import (
+	"maps"
+	"slices"
+
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
+)
 
 type SectionRequest struct {
 	Key      string         `json:"key"`
@@ -59,10 +64,11 @@ func SectionToResponse(section *domain.Section) *SectionResponse {
 	}
 
 	fields := section.GetFields()
+	positions := slices.Sorted(maps.Keys(fields))
 	dtos := make([]*FieldResponse, 0, len(fields))
 
-	for _, f := range fields {
-		dtos = append(dtos, FieldToResponse(f))
+	for _, p := range positions {
+		dtos = append(dtos, FieldToResponse(fields[p]))
 	}
 
 	rules := RuleToResponse(section.GetRules())
@@ -71,7 +77,7 @@ func SectionToResponse(section *domain.Section) *SectionResponse {
 		ID:       section.ID,
 		Key:      section.Key,
 		Name:     section.Name,
-		Position: section.Position,
+		Position: section.GetPosition(),
 		Fields:   dtos,
 		Rules:    rules,
 	}

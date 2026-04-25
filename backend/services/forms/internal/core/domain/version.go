@@ -93,13 +93,14 @@ func (v *Version) SetPages(pages ...*Page) error {
 	}
 
 	for _, page := range pages {
-		_, exists := v.pages[page.Position]
+		position := page.GetPosition()
+		_, exists := v.pages[position]
 
 		if exists {
 			return ErrDuplicatePosition
 		}
 
-		v.pages[page.Position] = page
+		v.pages[position] = page
 	}
 
 	return nil

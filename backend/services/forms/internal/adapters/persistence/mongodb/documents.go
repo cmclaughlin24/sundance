@@ -141,7 +141,7 @@ func toPageDocument(p *domain.Page) (*pageDocument, error) {
 		ID:       string(p.ID),
 		Key:      p.Key,
 		Name:     p.Name,
-		Position: p.Position,
+		Position: p.GetPosition(),
 		Sections: sections,
 		Rules:    rules,
 	}, nil
@@ -206,7 +206,7 @@ func toSectionDocument(s *domain.Section) (*sectionDocument, error) {
 		ID:       string(s.ID),
 		Key:      s.Key,
 		Name:     s.Name,
-		Position: s.Position,
+		Position: s.GetPosition(),
 		Fields:   fields,
 		Rules:    rules,
 	}, nil
@@ -268,7 +268,7 @@ func toFieldDocument(f *domain.Field) (*fieldDocument, error) {
 		Name:       f.Name,
 		Type:       string(f.Type),
 		Attributes: attr,
-		Position:   f.Position,
+		Position:   f.GetPosition(),
 		Rules:      rules,
 	}, nil
 }

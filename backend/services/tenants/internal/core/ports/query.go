@@ -25,3 +25,14 @@ func NewFindDataSourceByID(tenantID domain.TenantID, sourceID domain.DataSourceI
 	}
 }
 
+type GetDataSourceLookupsQuery struct {
+	TenantID domain.TenantID     `validate:"required"`
+	ID       domain.DataSourceID `validate:"required"`
+}
+
+func NewGetDataSourceLookupsQuery(tenantID domain.TenantID, sourceID domain.DataSourceID) *GetDataSourceLookupsQuery {
+	return &GetDataSourceLookupsQuery{
+		TenantID: tenantID,
+		ID:       sourceID,
+	}
+}

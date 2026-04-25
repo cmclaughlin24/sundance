@@ -1,6 +1,11 @@
 package dto
 
-import "github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
+import (
+	"maps"
+	"slices"
+
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
+)
 
 type PageRequest struct {
 	Key      string           `json:"key"`
@@ -75,10 +80,11 @@ func PageToResponse(page *domain.Page) *PageResponse {
 	}
 
 	sections := page.GetSections()
+	positions := slices.Sorted(maps.Keys(sections))
 	dtos := make([]*SectionResponse, 0, len(sections))
 
-	for _, s := range sections {
-		dtos = append(dtos, SectionToResponse(s))
+	for _, p := range positions {
+		dtos = append(dtos, SectionToResponse(sections[p]))
 	}
 
 	rules := RuleToResponse(page.GetRules())
@@ -87,7 +93,7 @@ func PageToResponse(page *domain.Page) *PageResponse {
 		ID:       page.ID,
 		Key:      page.Key,
 		Name:     page.Name,
-		Position: page.Position,
+		Position: page.GetPosition(),
 		Sections: dtos,
 		Rules:    rules,
 	}

@@ -65,7 +65,7 @@ func FieldToResponse(field *domain.Field) *FieldResponse {
 		Key:        field.Key,
 		Name:       field.Name,
 		Type:       string(field.Type),
-		Position:   field.Position,
+		Position:   field.GetPosition(),
 		Attributes: attr,
 		Rules:      rules,
 	}

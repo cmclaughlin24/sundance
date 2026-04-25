@@ -103,15 +103,3 @@ func NewRemoveDataSourceCommand(tenantID domain.TenantID, sourceID domain.DataSo
 		ID:       sourceID,
 	}
 }
-
-type GetDataSourceLookupsCommand struct {
-	TenantID domain.TenantID     `validate:"required"`
-	ID       domain.DataSourceID `validate:"required"`
-}
-
-func NewGetDataSourceLookupsCommand(tenantID domain.TenantID, sourceID domain.DataSourceID) *GetDataSourceLookupsCommand {
-	return &GetDataSourceLookupsCommand{
-		TenantID: tenantID,
-		ID: sourceID,
-	}
-}

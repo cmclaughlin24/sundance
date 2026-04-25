@@ -54,15 +54,15 @@ var isValidRuleType = validate.NewTypeValidator([]RuleType{
 	RuleTypeReadOnly,
 })
 
-type baseWithRules struct {
+type withRules struct {
 	rules map[RuleType]*Rule
 }
 
-func (b *baseWithRules) GetRules() map[RuleType]*Rule {
+func (b *withRules) GetRules() map[RuleType]*Rule {
 	return b.rules
 }
 
-func (b *baseWithRules) GetRule(ruleType RuleType) *Rule {
+func (b *withRules) GetRule(ruleType RuleType) *Rule {
 	r, ok := b.rules[ruleType]
 
 	if !ok {
@@ -72,7 +72,7 @@ func (b *baseWithRules) GetRule(ruleType RuleType) *Rule {
 	return r
 }
 
-func (b *baseWithRules) SetRules(rules ...*Rule) error {
+func (b *withRules) SetRules(rules ...*Rule) error {
 	if b.rules == nil {
 		b.rules = make(map[RuleType]*Rule)
 	}

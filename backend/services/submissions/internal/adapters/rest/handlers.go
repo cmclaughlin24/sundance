@@ -50,7 +50,7 @@ func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
 			dtos = append(dtos, dto.SubmissionToResponse(submission))
 		}
 
-		httputil.SendJsonResponse(w, http.StatusOK, dtos)
+		httputil.SendJSONResponse(w, http.StatusOK, dtos)
 	}
 }
 
@@ -80,7 +80,7 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 			return
 		}
 
-		httputil.SendJsonResponse(w, http.StatusOK, dto.SubmissionToResponse(res.data))
+		httputil.SendJSONResponse(w, http.StatusOK, dto.SubmissionToResponse(res.data))
 	}
 }
 

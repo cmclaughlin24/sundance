@@ -122,7 +122,7 @@ func (s *DataSourcesService) Remove(ctx context.Context, command *ports.RemoveDa
 	return s.dataSourcesRepository.Remove(ctx, command.TenantID, command.ID)
 }
 
-func (s *DataSourcesService) Lookup(ctx context.Context, command *ports.GetDataSourceLookupsCommand) ([]*domain.Lookup, error) {
+func (s *DataSourcesService) Lookup(ctx context.Context, command *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
 	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}

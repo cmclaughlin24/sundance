@@ -16,9 +16,9 @@ type Page struct {
 	ID       PageID
 	Key      string
 	Name     string
-	Position int
 	sections map[int]*Section
-	baseWithRules
+	withPosition
+	withRules
 }
 
 func NewPage(key, name string, position int) (*Page, error) {
@@ -26,8 +26,10 @@ func NewPage(key, name string, position int) (*Page, error) {
 		ID:       PageID(uuid.NewString()),
 		Key:      key,
 		Name:     name,
-		Position: position,
 		sections: make(map[int]*Section),
+		withPosition: withPosition{
+			position: position,
+		},
 	}
 
 	// TODO: Implement domain specific validation.
@@ -40,7 +42,10 @@ func HydratePage(id PageID, key, name string, position int) *Page {
 		ID:       id,
 		Key:      key,
 		Name:     name,
-		Position: position,
+		sections: make(map[int]*Section),
+		withPosition: withPosition{
+			position: position,
+		},
 	}
 }
 
@@ -58,13 +63,14 @@ func (p *Page) SetSections(sections ...*Section) error {
 	}
 
 	for _, section := range sections {
-		_, exists := p.sections[section.Position]
+		position := section.GetPosition()
+		_, exists := p.sections[position]
 
 		if exists {
 			return ErrDuplicatePosition
 		}
 
-		p.sections[section.Position] = section
+		p.sections[position] = section
 	}
 
 	return nil

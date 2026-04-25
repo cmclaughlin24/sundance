@@ -51,7 +51,7 @@ func (h *handlers) getTenants(w http.ResponseWriter, r *http.Request) {
 			dtos = append(dtos, dto.TenantToResponse(tenant))
 		}
 
-		httputil.SendJsonResponse(w, http.StatusOK, dtos)
+		httputil.SendJSONResponse(w, http.StatusOK, dtos)
 	}
 }
 
@@ -74,7 +74,7 @@ func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJsonResponse(w, http.StatusOK, dto.TenantToResponse(res.data))
+		httputil.SendJSONResponse(w, http.StatusOK, dto.TenantToResponse(res.data))
 	}
 }
 
@@ -82,7 +82,7 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Tenant], 1)
 
 	var body dto.TenantRequest
-	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -104,7 +104,7 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJsonResponse(w, http.StatusCreated, httputil.ApiResponse[dto.TenantResponse]{
+		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[dto.TenantResponse]{
 			Message: "Successfully created!",
 			Data:    *dto.TenantToResponse(res.data),
 		})
@@ -116,7 +116,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.Tenant], 1)
 
 	var body dto.TenantRequest
-	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -138,7 +138,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJsonResponse(w, http.StatusOK, httputil.ApiResponse[dto.TenantResponse]{
+		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[dto.TenantResponse]{
 			Message: "Successfully updated!",
 			Data:    *dto.TenantToResponse(res.data),
 		})
@@ -198,7 +198,7 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 			dtos = append(dtos, dto.DataSourceToResponse(source))
 		}
 
-		httputil.SendJsonResponse(w, http.StatusOK, dtos)
+		httputil.SendJSONResponse(w, http.StatusOK, dtos)
 	}
 }
 
@@ -228,7 +228,7 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJsonResponse(w, http.StatusOK, dto.DataSourceToResponse(res.data))
+		httputil.SendJSONResponse(w, http.StatusOK, dto.DataSourceToResponse(res.data))
 	}
 }
 
@@ -242,7 +242,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.DataSource], 1)
 
 	var body dto.DataSourceRequest
-	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -276,7 +276,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJsonResponse(w, http.StatusCreated, httputil.ApiResponse[dto.DataSourceResponse]{
+		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[dto.DataSourceResponse]{
 			Message: "Successfully created!",
 			Data:    *dto.DataSourceToResponse(res.data),
 		})
@@ -294,7 +294,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.DataSource], 1)
 
 	var body dto.DataSourceRequest
-	if err := httputil.ReadValidateJsonPayload(r, &body); err != nil {
+	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -329,7 +329,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJsonResponse(w, http.StatusOK, httputil.ApiResponse[dto.DataSourceResponse]{
+		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[dto.DataSourceResponse]{
 			Message: "Successfully updated!",
 			Data:    *dto.DataSourceToResponse(res.data),
 		})
@@ -375,7 +375,7 @@ func (h *handlers) getLookups(w http.ResponseWriter, r *http.Request) {
 
 	sourceID := chi.URLParam(r, "dataSourceId")
 	resultChan := make(chan result[[]*domain.Lookup], 1)
-	command := ports.NewGetDataSourceLookupsCommand(tenantID, domain.DataSourceID(sourceID))
+	command := ports.NewGetDataSourceLookupsQuery(tenantID, domain.DataSourceID(sourceID))
 
 	go func() {
 		defer close(resultChan)
@@ -393,7 +393,7 @@ func (h *handlers) getLookups(w http.ResponseWriter, r *http.Request) {
 		}
 
 		dtos := dto.LookupsToResponse(res.data)
-		httputil.SendJsonResponse(w, http.StatusOK, dtos)
+		httputil.SendJSONResponse(w, http.StatusOK, dtos)
 	}
 }
 
@@ -415,7 +415,7 @@ func (h *handlers) getTenantIDPathValue(r *http.Request) domain.TenantID {
 func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 	switch {
 	case isBadRequest(err):
-		httputil.SendJsonResponse(w, http.StatusBadRequest, httputil.ApiErrorResponse{
+		httputil.SendJSONResponse(w, http.StatusBadRequest, httputil.APIErrorResponse{
 			Message:    "Bad Request",
 			Error:      err.Error(),
 			StatusCode: http.StatusBadRequest,

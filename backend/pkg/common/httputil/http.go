@@ -14,19 +14,19 @@ var (
 	ErrDecodeJSON = errors.New("failed to parse json request")
 )
 
-type ApiResponse[T any] struct {
+type APIResponse[T any] struct {
 	Message string `json:"message"`
 	Data    T      `json:"data,omitempty"`
 }
 
-type ApiErrorResponse struct {
+type APIErrorResponse struct {
 	Message    string `json:"message"`
 	Error      string `json:"error"`
 	StatusCode int    `json:"statusCode"`
 }
 
 // Reads the JSON payload from the http.Request and decodes it into the provided data structure of type T.
-func ReadJsonPayload[T any](r *http.Request, data T) error {
+func ReadJSONPayload[T any](r *http.Request, data T) error {
 	decoder := json.NewDecoder(r.Body)
 
 	if err := decoder.Decode(data); err != nil {
@@ -38,8 +38,8 @@ func ReadJsonPayload[T any](r *http.Request, data T) error {
 
 // Reads the JSON payload from the http.Request, decodes it into the provided data structure of type T, and
 // validates the decoded data.
-func ReadValidateJsonPayload[T any](r *http.Request, data T) error {
-	if err := ReadJsonPayload(r, data); err != nil {
+func ReadValidateJSONPayload[T any](r *http.Request, data T) error {
+	if err := ReadJSONPayload(r, data); err != nil {
 		return err
 	}
 
@@ -48,7 +48,7 @@ func ReadValidateJsonPayload[T any](r *http.Request, data T) error {
 
 // Encodes the provided data as JSON and writes it to the http.ResponseWriter with the specified status code and
 // optional headers.
-func SendJsonResponse(w http.ResponseWriter, statusCode int, data any, headers ...http.Header) error {
+func SendJSONResponse(w http.ResponseWriter, statusCode int, data any, headers ...http.Header) error {
 	out, err := json.Marshal(data)
 
 	if err != nil {
@@ -76,31 +76,31 @@ func SendErrorResponse(w http.ResponseWriter, err error) error {
 
 	switch {
 	case errors.Is(err, ErrDecodeJSON) || errors.Is(err, common.ErrInvalidID) || validate.IsValidationErr(err):
-		return SendJsonResponse(w, http.StatusBadRequest, ApiErrorResponse{
+		return SendJSONResponse(w, http.StatusBadRequest, APIErrorResponse{
 			Message:    "Bad Request",
 			Error:      err.Error(),
 			StatusCode: http.StatusBadRequest,
 		})
 	case errors.Is(err, common.ErrUnauthorized):
-		return SendJsonResponse(w, http.StatusUnauthorized, ApiErrorResponse{
+		return SendJSONResponse(w, http.StatusUnauthorized, APIErrorResponse{
 			Message:    "Unauthorized",
 			Error:      err.Error(),
 			StatusCode: http.StatusUnauthorized,
 		})
 	case errors.Is(err, common.ErrNotFound):
-		return SendJsonResponse(w, http.StatusNotFound, ApiErrorResponse{
+		return SendJSONResponse(w, http.StatusNotFound, APIErrorResponse{
 			Message:    "Not Found",
 			Error:      err.Error(),
 			StatusCode: http.StatusNotFound,
 		})
 	case errors.Is(err, common.ErrExists):
-		return SendJsonResponse(w, http.StatusConflict, ApiErrorResponse{
+		return SendJSONResponse(w, http.StatusConflict, APIErrorResponse{
 			Message:    "Conflict",
 			Error:      err.Error(),
 			StatusCode: http.StatusConflict,
 		})
 	default:
-		return SendJsonResponse(w, http.StatusInternalServerError, ApiErrorResponse{
+		return SendJSONResponse(w, http.StatusInternalServerError, APIErrorResponse{
 			Message:    "Internal Server Error",
 			Error:      err.Error(),
 			StatusCode: http.StatusInternalServerError,

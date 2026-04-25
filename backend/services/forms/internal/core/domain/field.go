@@ -30,8 +30,8 @@ type Field struct {
 	Name       string
 	Type       FieldType
 	Attributes FieldAttributes
-	Position   int
-	baseWithRules
+	withPosition
+	withRules
 }
 
 func NewField(key, name string, fieldType FieldType, attributes FieldAttributes, position int) (*Field, error) {
@@ -49,7 +49,9 @@ func NewField(key, name string, fieldType FieldType, attributes FieldAttributes,
 		Name:       name,
 		Type:       fieldType,
 		Attributes: attributes,
-		Position:   position,
+		withPosition: withPosition{
+			position: position,
+		},
 	}, nil
 }
 
@@ -60,7 +62,9 @@ func HydrateField(id FieldID, key, name string, fieldType FieldType, attr FieldA
 		Name:       name,
 		Type:       fieldType,
 		Attributes: attr,
-		Position:   position,
+		withPosition: withPosition{
+			position: position,
+		},
 	}
 }
 
