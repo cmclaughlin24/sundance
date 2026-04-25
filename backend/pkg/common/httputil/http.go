@@ -102,7 +102,7 @@ func SendErrorResponse(w http.ResponseWriter, err error) error {
 	default:
 		return SendJSONResponse(w, http.StatusInternalServerError, APIErrorResponse{
 			Message:    "Internal Server Error",
-			Error:      err.Error(),
+			Error:      "An unexpected error occurred. Please contact support if the issue persists.",
 			StatusCode: http.StatusInternalServerError,
 		})
 	}

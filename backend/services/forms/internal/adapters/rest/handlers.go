@@ -354,7 +354,7 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 
 		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[any]{
 			Message: "Successfully published!",
-			Data:    nil,
+			Data:    dto.VersionToResponse(res.data),
 		})
 	}
 }
@@ -389,7 +389,7 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 
 		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[any]{
 			Message: "Successfully retired!",
-			Data:    nil,
+			Data:    dto.VersionToResponse(res.data),
 		})
 	}
 }
