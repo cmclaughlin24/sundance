@@ -67,7 +67,7 @@ func (r *InMemoryFormsRepository) FindVersions(ctx context.Context, formID domai
 	formVersions, ok := r.versions[string(formID)]
 
 	if !ok {
-		return nil, common.ErrNotFound
+		return make([]*domain.Version, 0), nil
 	}
 
 	versions := make([]*domain.Version, 0, len(formVersions))

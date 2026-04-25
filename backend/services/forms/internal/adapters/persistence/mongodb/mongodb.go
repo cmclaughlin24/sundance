@@ -13,6 +13,6 @@ func Bootstrap(client *mongo.Client, logger *log.Logger) *ports.Repository {
 
 	return &ports.Repository{
 		Database: database.NewMongoDBDatabase(client, db),
-		Forms:    NewMongoDBFormsRepository(db, logger),
+		Forms:    newMongoDBFormsRepository(db, logger),
 	}
 }

@@ -42,7 +42,7 @@ func (r *MongoDBRepository[T]) Find(ctx context.Context, filter bson.M) ([]T, er
 			return err
 		}
 
-		defer cursor.Close(ctx)
+		defer cursor.Close(sctx)
 
 		if err = cursor.All(sctx, &documents); err != nil {
 			return fmt.Errorf("an error occurred reading the documents: %w", err)

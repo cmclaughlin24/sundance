@@ -127,7 +127,7 @@ func (v *Version) UpdatePages(pages ...*Page) error {
 	return nil
 }
 
-func (v *Version) Publish(publishedBy string, publishedAt time.Time) error {
+func (v *Version) Publish(publishedBy string) error {
 	if v == nil {
 		return ErrInvalidVersion
 	}
@@ -149,7 +149,7 @@ func (v *Version) Publish(publishedBy string, publishedAt time.Time) error {
 	return nil
 }
 
-func (v *Version) Retire(retiredBy string, retiredAt time.Time) error {
+func (v *Version) Retire(retiredBy string) error {
 	if v == nil {
 		return ErrInvalidVersion
 	}

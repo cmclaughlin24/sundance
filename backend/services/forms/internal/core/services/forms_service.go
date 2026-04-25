@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"log"
-	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
@@ -49,7 +48,6 @@ func (s *FormsService) FindById(ctx context.Context, query *ports.FindByIDQuery)
 }
 
 func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormCommand) (*domain.Form, error) {
-
 	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
@@ -70,12 +68,7 @@ func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormComm
 }
 
 func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormCommand) (*domain.Form, error) {
-
 	if err := validate.ValidateStruct(command); err != nil {
-		return nil, err
-	}
-
-	if err := s.isValidAccess(ctx, command.TenantID, command.ID); err != nil {
 		return nil, err
 	}
 
@@ -83,6 +76,10 @@ func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormComm
 
 	if err != nil {
 		return nil, err
+	}
+
+	if form.TenantID != command.TenantID {
+		return nil, common.ErrUnauthorized
 	}
 
 	if err := form.Update(command.Name, command.Description); err != nil {
@@ -207,7 +204,7 @@ func (s *FormsService) PublishVersion(ctx context.Context, command *ports.Publis
 		return nil, err
 	}
 
-	if err := version.Publish(command.UserID, time.Now()); err != nil {
+	if err := version.Publish(command.UserID); err != nil {
 		return nil, err
 	}
 
@@ -235,7 +232,7 @@ func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireV
 		return nil, err
 	}
 
-	if err := version.Retire(command.UserID, time.Now()); err != nil {
+	if err := version.Retire(command.UserID); err != nil {
 		return nil, err
 	}
 
