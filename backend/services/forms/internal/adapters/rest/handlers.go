@@ -366,11 +366,11 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formId := h.getFormIDPathValue(r)
-	versionId := h.getVersionIDPathValue(r)
+	formID := h.getFormIDPathValue(r)
+	versionID := h.getVersionIDPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 	// FIXME: Remove temporary placeholder for user ID.
-	command := ports.NewRetireVersionCommand(tenantID, formId, versionId, "placeholder")
+	command := ports.NewRetireVersionCommand(tenantID, formID, versionID, "placeholder")
 
 	go func() {
 		defer close(resultChan)
