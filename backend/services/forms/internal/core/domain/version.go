@@ -76,6 +76,7 @@ func HydrateVersion(
 		RetiredAt:   retiredAt,
 		CreatedAt:   createdAt,
 		UpdatedAt:   updatedAt,
+		pages:       make(map[int]*Page),
 	}
 }
 

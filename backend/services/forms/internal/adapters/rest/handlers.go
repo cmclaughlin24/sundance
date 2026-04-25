@@ -69,7 +69,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formID := h.getFormIdPathValue(r)
+	formID := h.getFormIDPathValue(r)
 	query := ports.NewFindFormsByIDQuery(tenantID, formID)
 	resultChan := make(chan result[*domain.Form], 1)
 
@@ -138,7 +138,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formID := h.getFormIdPathValue(r)
+	formID := h.getFormIDPathValue(r)
 	resultChan := make(chan result[*domain.Form], 1)
 
 	var body dto.UpsertFormRequest
@@ -178,7 +178,7 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formID := h.getFormIdPathValue(r)
+	formID := h.getFormIDPathValue(r)
 	query := ports.NewFindVersionsQuery(tenantID, formID)
 	resultChan := make(chan result[[]*domain.Version], 1)
 
@@ -213,8 +213,8 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formID := h.getFormIdPathValue(r)
-	versionID := h.getVersionIdPathValue(r)
+	formID := h.getFormIDPathValue(r)
+	versionID := h.getVersionIDPathValue(r)
 	query := ports.NewFindVersionByIDQuery(tenantID, formID, versionID)
 	resultChan := make(chan result[*domain.Version], 1)
 
@@ -244,7 +244,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formID := h.getFormIdPathValue(r)
+	formID := h.getFormIDPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
 	var body dto.CreateVersionRequest
@@ -284,8 +284,8 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formID := h.getFormIdPathValue(r)
-	versionID := h.getVersionIdPathValue(r)
+	formID := h.getFormIDPathValue(r)
+	versionID := h.getVersionIDPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
 	var body dto.UpdateVersionRequest
@@ -331,8 +331,8 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formID := h.getFormIdPathValue(r)
-	versionID := h.getVersionIdPathValue(r)
+	formID := h.getFormIDPathValue(r)
+	versionID := h.getVersionIDPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 	// FIXME: Remove temporary placeholder for user ID.
 	command := ports.NewPublishVersionCommand(tenantID, formID, versionID, "placeholder")
@@ -366,8 +366,8 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	formId := h.getFormIdPathValue(r)
-	versionId := h.getVersionIdPathValue(r)
+	formId := h.getFormIDPathValue(r)
+	versionId := h.getVersionIDPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 	// FIXME: Remove temporary placeholder for user ID.
 	command := ports.NewRetireVersionCommand(tenantID, formId, versionId, "placeholder")
@@ -404,12 +404,12 @@ func (h *handlers) getTenantFromContext(r *http.Request) (string, error) {
 	return tenantID, nil
 }
 
-func (h *handlers) getFormIdPathValue(r *http.Request) domain.FormID {
+func (h *handlers) getFormIDPathValue(r *http.Request) domain.FormID {
 	id := chi.URLParam(r, "formId")
 	return domain.FormID(id)
 }
 
-func (h *handlers) getVersionIdPathValue(r *http.Request) domain.VersionID {
+func (h *handlers) getVersionIDPathValue(r *http.Request) domain.VersionID {
 	id := chi.URLParam(r, "versionId")
 	return domain.VersionID(id)
 }

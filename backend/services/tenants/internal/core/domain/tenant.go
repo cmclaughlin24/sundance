@@ -1,10 +1,13 @@
 package domain
 
 import (
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+var ErrInvalidTenant = errors.New("invalid tenant")
 
 type TenantID string
 
@@ -40,6 +43,10 @@ func HydrateTenant(id TenantID, name, description string, createdAt, updatedAt t
 }
 
 func (t *Tenant) Update(name, description string) error {
+	if t == nil {
+		return ErrInvalidTenant
+	}
+
 	t.Name = name
 	t.Description = description
 	t.UpdatedAt = time.Now()

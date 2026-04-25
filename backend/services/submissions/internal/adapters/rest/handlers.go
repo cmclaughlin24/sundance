@@ -61,7 +61,7 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	referenceID := h.getReferenceIdPathValue(r)
+	referenceID := h.getReferenceIDPathValue(r)
 	resultChan := make(chan result[*domain.Submission], 1)
 	query := ports.NewFindByIDQuery(tenantID, referenceID)
 
@@ -102,7 +102,7 @@ func (h *handlers) getTenantFromContext(r *http.Request) (string, error) {
 	return tenantID, nil
 }
 
-func (h *handlers) getReferenceIdPathValue(r *http.Request) domain.ReferenceID {
+func (h *handlers) getReferenceIDPathValue(r *http.Request) domain.ReferenceID {
 	id := chi.URLParam(r, "referenceId")
 	return domain.ReferenceID(id)
 }
