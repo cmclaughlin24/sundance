@@ -6,6 +6,7 @@ import (
 	"slices"
 	"time"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/google/uuid"
 )
 
@@ -18,20 +19,21 @@ const (
 )
 
 var (
-	ErrInvalidVersion      = errors.New("invalid version")
-	ErrVersionLocked       = errors.New("version is locked")
-	ErrDuplicateVersion    = errors.New("duplicate version")
-	ErrPublishedByRequired = errors.New("publishedBy is required")
-	ErrRetiredByRequired   = errors.New("retiredBy is required")
+	ErrInvalidVersion       = errors.New("invalid version")
+	ErrInvalidVersionStatus = errors.New("invalid version status")
+	ErrVersionLocked        = errors.New("version is locked")
+	ErrDuplicateVersion     = errors.New("duplicate version")
+	ErrPublishedByRequired  = errors.New("publishedBy is required")
+	ErrRetiredByRequired    = errors.New("retiredBy is required")
 )
 
 type VersionID string
 
 type Version struct {
 	ID          VersionID
-	FormID      FormID
-	Version     int
-	Status      VersionStatus
+	FormID      FormID        `validate:"required,notblank"`
+	Version     int           `validate:"required,min=1"`
+	Status      VersionStatus `validate:"required"`
 	PublishedBy string
 	PublishedAt time.Time
 	RetiredBy   string
@@ -42,6 +44,10 @@ type Version struct {
 }
 
 func NewVersion(formID FormID, version int, status VersionStatus) (*Version, error) {
+	if !isValidVersionStatus(status) {
+		return nil, ErrInvalidVersionStatus
+	}
+
 	v := &Version{
 		ID:        VersionID(uuid.NewString()),
 		FormID:    formID,
@@ -51,7 +57,9 @@ func NewVersion(formID FormID, version int, status VersionStatus) (*Version, err
 		CreatedAt: Now(),
 	}
 
-	// TODO: Implement domain specific validation.
+	if err := validate.ValidateStruct(v); err != nil {
+		return nil, err
+	}
 
 	return v, nil
 }
@@ -186,3 +194,9 @@ func (v *Version) Retire(retiredBy string) error {
 
 	return nil
 }
+
+var isValidVersionStatus = validate.NewTypeValidator([]VersionStatus{
+	VersionStatusDraft,
+	VersionStatusActive,
+	VersionStatusRetired,
+})

@@ -4,6 +4,7 @@ import "errors"
 
 var (
 	ErrDuplicatePosition = errors.New("duplicate position")
+	ErrInvalidPosition   = errors.New("invalid position; must be greater than or equal to 0")
 )
 
 type withPosition struct {
@@ -16,4 +17,8 @@ func (wp *withPosition) GetPosition() int {
 
 func (wp *withPosition) SetPosition(position int) {
 	wp.position = position
+}
+
+func isValidPosition(position int) bool {
+	return position >= 0
 }

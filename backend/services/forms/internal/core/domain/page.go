@@ -5,6 +5,7 @@ import (
 	"maps"
 	"slices"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/google/uuid"
 )
 
@@ -16,14 +17,18 @@ var (
 
 type Page struct {
 	ID       PageID
-	Key      string
-	Name     string
+	Key      string `validate:"required,notblank"`
+	Name     string `validate:"required,notblank"`
 	sections map[int]*Section
 	withPosition
 	withRules
 }
 
 func NewPage(key, name string, position int) (*Page, error) {
+	if !isValidPosition(position) {
+		return nil, ErrInvalidPosition
+	}
+
 	p := &Page{
 		ID:       PageID(uuid.NewString()),
 		Key:      key,
@@ -34,7 +39,9 @@ func NewPage(key, name string, position int) (*Page, error) {
 		},
 	}
 
-	// TODO: Implement domain specific validation.
+	if err := validate.ValidateStruct(p); err != nil {
+		return nil, err
+	}
 
 	return p, nil
 }

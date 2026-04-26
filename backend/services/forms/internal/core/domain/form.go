@@ -4,11 +4,12 @@ import (
 	"errors"
 	"time"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/google/uuid"
 )
 
 var (
-	ErrInvalidForm           = errors.New("invalid form")
+	ErrInvalidForm          = errors.New("invalid form")
 	ErrFormHasActiveVersion = errors.New("form has at least one active version")
 )
 
@@ -16,8 +17,8 @@ type FormID string
 
 type Form struct {
 	ID          FormID
-	TenantID    string
-	Name        string
+	TenantID    string `validate:"required,notblank"`
+	Name        string `validate:"required,notblank"`
 	Description string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
@@ -32,7 +33,9 @@ func NewForm(tenantID, name, description string) (*Form, error) {
 		CreatedAt:   Now(),
 	}
 
-	// TODO: Implement domain specific validation.
+	if err := validate.ValidateStruct(f); err != nil {
+		return nil, err
+	}
 
 	return f, nil
 }
@@ -57,7 +60,9 @@ func (f *Form) Update(name, description string) error {
 	f.Description = description
 	f.UpdatedAt = Now()
 
-	// TODO: Implement domain specific validation.
+	if err := validate.ValidateStruct(f); err != nil {
+		return err
+	}
 
 	return nil
 }

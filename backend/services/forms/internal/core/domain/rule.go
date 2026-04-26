@@ -25,7 +25,7 @@ var (
 type Rule struct {
 	ID         RuleID
 	Type       RuleType
-	Expression string
+	Expression string `validate:"required,notblank"`
 }
 
 func NewRule(ruleType RuleType, expression string) (*Rule, error) {
@@ -33,11 +33,17 @@ func NewRule(ruleType RuleType, expression string) (*Rule, error) {
 		return nil, ErrInvalidRuleType
 	}
 
-	return &Rule{
+	r := &Rule{
 		ID:         RuleID(uuid.NewString()),
 		Type:       ruleType,
 		Expression: expression,
-	}, nil
+	}
+
+	if err := validate.ValidateStruct(r); err != nil {
+		return nil, err
+	}
+
+	return r, nil
 }
 
 func HydrateRule(id RuleID, ruleType RuleType, expression string) *Rule {

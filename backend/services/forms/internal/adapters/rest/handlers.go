@@ -459,6 +459,7 @@ func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 
 func isBadRequest(err error) bool {
 	return errors.Is(err, domain.ErrVersionLocked) ||
+		errors.Is(err, domain.ErrInvalidVersionStatus) ||
 		errors.Is(err, domain.ErrDuplicateVersion) ||
 		errors.Is(err, domain.ErrDuplicatePosition) ||
 		errors.Is(err, domain.ErrInvalidRuleType) ||

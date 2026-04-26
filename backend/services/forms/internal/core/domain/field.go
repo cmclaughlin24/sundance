@@ -26,8 +26,8 @@ var (
 
 type Field struct {
 	ID         FieldID
-	Key        string
-	Name       string
+	Key        string `validate:"required,notblank"`
+	Name       string `validate:"required,notblank"`
 	Type       FieldType
 	Attributes FieldAttributes
 	withPosition
@@ -35,6 +35,10 @@ type Field struct {
 }
 
 func NewField(key, name string, fieldType FieldType, attributes FieldAttributes, position int) (*Field, error) {
+	if !isValidPosition(position) {
+		return nil, ErrInvalidPosition
+	}
+
 	if !isValidFieldType(fieldType) {
 		return nil, ErrInvalidFieldType
 	}
@@ -43,7 +47,7 @@ func NewField(key, name string, fieldType FieldType, attributes FieldAttributes,
 		return nil, ErrInvalidFieldAttributes
 	}
 
-	return &Field{
+	f := &Field{
 		ID:         FieldID(uuid.NewString()),
 		Key:        key,
 		Name:       name,
@@ -52,7 +56,13 @@ func NewField(key, name string, fieldType FieldType, attributes FieldAttributes,
 		withPosition: withPosition{
 			position: position,
 		},
-	}, nil
+	}
+
+	if err := validate.ValidateStruct(f); err != nil {
+		return nil, err
+	}
+
+	return f, nil
 }
 
 func HydrateField(id FieldID, key, name string, fieldType FieldType, attr FieldAttributes, position int) *Field {
