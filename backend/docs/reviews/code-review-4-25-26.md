@@ -18,6 +18,8 @@
 
 9. ~~Aggregate boundaries unclear~~ (Forms, P3) -- Form and Version are now explicitly modeled as separate aggregates. The `FormsRepository` and `VersionRepository` port interfaces are split (`ports/secondary.go`), with `Repository` struct wiring both. Both persistence adapters (in-memory and MongoDB) implement the split: `InMemoryFormsRepository` and `InMemoryVersionsRepository` are separate structs with independent state, and `mongoDBFormsRepository` and `mongoDBVersionRepository` are separate structs backed by distinct collections. `FormsService` holds separate `formsRepository` and `versionsRepository` fields. A unique compound index on `(form_id, version)` in the MongoDB versions collection prevents duplicate version numbers per form. Cross-aggregate reference is by ID (`Version.FormID`). *(Resolves 4/24 #3.)*
 
+10. ~~No `Delete` operation for forms~~ (Forms, P2) -- `DELETE /api/v1/forms/{formId}` route added (`routes.go`). `deleteForm` handler (`handlers.go`) extracts tenant and form ID, builds a `RemoveFormCommand`, and calls `FormsService.Delete`. The service (`forms_service.go`) validates the command, checks tenant access, checks for active versions via `hasActiveVersion` (returns `ErrFormHasActiveVersion` if any version has `VersionStatusActive`), then delegates to `FormsRepository.Delete`. Both adapters implement `Delete`: in-memory removes from the map, MongoDB delegates to `MongoDBRepository.Remove` which calls `DeleteOne`. A new `ErrFormHasActiveVersion` sentinel error is defined in `domain/form.go`. *(Resolves 4/24 #6.)*
+
 8. ~~Previously unstaged changes now committed~~ -- The following items listed as "unstaged" in the 4/24 review are now committed: Go naming conventions (`APIResponse`, `SendJSONResponse`, etc.), forms `isBadRequest` error-to-HTTP mapping, DTO sort order via `slices.Sorted(maps.Keys(...))`, `Position` encapsulation via `withPosition`, `HydratePage`/`HydrateSection` child map initialization, `HydrateVersion` `pages` map initialization, `GetDataSourceLookupsQuery` CQRS fix, `FindNextVersionNumber` session handling, dead timestamp parameters removed, redundant double-fetch eliminated, `FindVersions` adapter consistency, `newMongoDBFormsRepository` unexported, `cursor.Close` context fix, `Tenant.Update()` nil guard added with `ErrInvalidTenant` sentinel error.
 
 ---
@@ -25,6 +27,8 @@
 ## Will Not Fix
 
 See [4/24 review](code-review-4-24-26.md) for the full Will Not Fix list (9 items).
+
+10. **`Ping` uses `context.Background()` with no timeout** (`pkg/database/mongodb.go:43`) -- The `Ping` call occurs once at startup to verify connectivity. A hung ping will be caught by deployment health checks or process-level timeouts. Adding a context timeout here adds complexity for minimal benefit. *(4/24 #29.)*
 
 ---
 
@@ -46,13 +50,11 @@ See [4/24 review](code-review-4-24-26.md) for the full Will Not Fix list (9 item
 
 2. **Domain validation partially unimplemented** (`form.go:29,42`, `version.go:48`, `page.go`, `section.go`) -- `NewForm`, `NewVersion`, `NewPage`, and `NewSection` constructors still contain `// TODO: Implement domain specific validation`. *(Unresolved from 4/24 #5.)*
 
-3. **No `Delete` operation for forms.** *(Unresolved from 4/24 #6.)*
-
 #### Code Quality
 
-4. **Inconsistent constructor signatures** -- `NewForm`, `NewVersion`, `NewPage`, and `NewSection` return `(*Entity, error)` but never return errors. *(Unresolved from 4/24 #8.)*
+3. **Inconsistent constructor signatures** -- `NewForm`, `NewVersion`, `NewPage`, and `NewSection` return `(*Entity, error)` but never return errors. *(Unresolved from 4/24 #8.)*
 
-5. **`CreateVersionDto` is an empty struct deserialized from request body** (`dto/version.go`, `handlers.go:250-254`) -- `createVersion` calls `ReadValidateJSONPayload(r, &body)` where `body` is `CreateVersionRequest struct{}`. *(Unresolved from 4/24 #10.)*
+4. **`CreateVersionDto` is an empty struct deserialized from request body** (`dto/version.go`, `handlers.go:250-254`) -- `createVersion` calls `ReadValidateJSONPayload(r, &body)` where `body` is `CreateVersionRequest struct{}`. *(Unresolved from 4/24 #10.)*
 
 ---
 
@@ -60,37 +62,37 @@ See [4/24 review](code-review-4-24-26.md) for the full Will Not Fix list (9 item
 
 #### Bugs
 
-6. **MongoDB repository methods are stubs returning `nil, nil`** (`submissions_repository.go:29-37`) -- See new issue #1. Any `FindByID` or `FindByReferenceID` call with the MongoDB driver will panic with nil pointer dereference in the service layer. *(New, P0.)*
+5. **MongoDB repository methods are stubs returning `nil, nil`** (`submissions_repository.go:29-37`) -- See new issue #1. Any `FindByID` or `FindByReferenceID` call with the MongoDB driver will panic with nil pointer dereference in the service layer. *(New, P0.)*
 
 #### Architectural
 
-7. **`Find()` has no tenant filtering** (`submissions_service.go:27-29`) -- Returns all submissions across all tenants. *(Unresolved from 4/24 #12.)*
+6. **`Find()` has no tenant filtering** (`submissions_service.go:27-29`) -- Returns all submissions across all tenants. *(Unresolved from 4/24 #12.)*
 
-8. **Four handler stubs return 200 OK with empty body** (`handlers.go:95-101`) -- `createSubmission`, `getSubmissionAttempts`, `getSubmissionStatus`, and `replaySubmission` are registered but have empty function bodies. *(Unresolved from 4/24 #13.)*
+7. **Four handler stubs return 200 OK with empty body** (`handlers.go:95-101`) -- `createSubmission`, `getSubmissionAttempts`, `getSubmissionStatus`, and `replaySubmission` are registered but have empty function bodies. *(Unresolved from 4/24 #13.)*
 
 #### Missing Functionality
 
-9. **`FindAttempts` and `Replay` service methods are stubs** (`submissions_service.go:69-75`) -- Return `nil, nil` and `nil`. *(Unresolved from 4/24 #14.)*
+8. **`FindAttempts` and `Replay` service methods are stubs** (`submissions_service.go:69-75`) -- Return `nil, nil` and `nil`. *(Unresolved from 4/24 #14.)*
 
-10. **Request DTOs not implemented** -- `dto/request.go` contains only the package declaration. *(Unresolved from 4/24 #15.)*
+9. **Request DTOs not implemented** -- `dto/request.go` contains only the package declaration. *(Unresolved from 4/24 #15.)*
 
-11. **No domain constructors** -- `Submission` and `SubmissionAttempt` are bare structs with no factory functions, no validation, no business methods. *(Unresolved from 4/24 #16.)*
+10. **No domain constructors** -- `Submission` and `SubmissionAttempt` are bare structs with no factory functions, no validation, no business methods. *(Unresolved from 4/24 #16.)*
 
-12. **No write operations in the repository interface** -- `SubmissionsRepository` only defines `Find`, `FindByID`, `FindByReferenceID`. *(Unresolved from 4/24 #17.)*
+11. **No write operations in the repository interface** -- `SubmissionsRepository` only defines `Find`, `FindByID`, `FindByReferenceID`. *(Unresolved from 4/24 #17.)*
 
-13. **`ReplaySubmissionCommand` is an empty struct** (`commands.go`) -- Has no fields. *(Unresolved from 4/24 #18.)*
+12. **`ReplaySubmissionCommand` is an empty struct** (`commands.go`) -- Has no fields. *(Unresolved from 4/24 #18.)*
 
 #### Code Quality
 
-14. **`Payload` typed as `any`** (`submission.go`) -- No type safety. `ErrorDetails` on `SubmissionAttempt` also `any`. *(Unresolved from 4/24 #19.)*
+13. **`Payload` typed as `any`** (`submission.go`) -- No type safety. `ErrorDetails` on `SubmissionAttempt` also `any`. *(Unresolved from 4/24 #19.)*
 
-15. **`SubmissionStatus` has no defined constants** -- `type SubmissionStatus string` declared but no `const` block. *(Unresolved from 4/24 #20.)*
+14. **`SubmissionStatus` has no defined constants** -- `type SubmissionStatus string` declared but no `const` block. *(Unresolved from 4/24 #20.)*
 
-16. **`FindByReferenceID` does a linear scan** in the in-memory repository. *(Unresolved from 4/24 #21.)*
+15. **`FindByReferenceID` does a linear scan** in the in-memory repository. *(Unresolved from 4/24 #21.)*
 
-17. **Context cancel drops response silently** (`handlers.go:39-41`, `74-76`) -- When context is cancelled, `select` on `r.Context().Done()` returns without writing any HTTP response. *(Unresolved from 4/24 #22.)*
+16. **Context cancel drops response silently** (`handlers.go:39-41`, `74-76`) -- When context is cancelled, `select` on `r.Context().Done()` returns without writing any HTTP response. *(Unresolved from 4/24 #22.)*
 
-18. **In-memory submissions repository map keyed by `string` instead of `SubmissionID`** (`submissions_repository.go:14`). *(Unresolved from 4/24 #23.)*
+17. **In-memory submissions repository map keyed by `string` instead of `SubmissionID`** (`submissions_repository.go:14`). *(Unresolved from 4/24 #23.)*
 
 ---
 
@@ -98,21 +100,17 @@ See [4/24 review](code-review-4-24-26.md) for the full Will Not Fix list (9 item
 
 #### Architectural
 
-19. **`Find()` has no pagination or filtering** (`tenants_service.go:25-27`). *(Unresolved from 4/24 #24.)*
+18. **`Find()` has no pagination or filtering** (`tenants_service.go:25-27`). *(Unresolved from 4/24 #24.)*
 
-20. **Tenant removal does not cascade-delete DataSources** (`tenants_service.go:73-84`). *(Unresolved from 4/24 #25.)*
+19. **Tenant removal does not cascade-delete DataSources** (`tenants_service.go:73-84`). *(Unresolved from 4/24 #25.)*
 
 #### Missing Functionality
 
-21. **Domain validation unimplemented** (`tenant.go:17-22`) -- `NewTenant` never validates. *(Unresolved from 4/24 #26.)*
+20. **Domain validation unimplemented** (`tenant.go:17-22`) -- `NewTenant` never validates. *(Unresolved from 4/24 #26.)*
 
-22. **`Lookup` service method is a stub** (`data_sources_service.go`). *(Unresolved from 4/24 #27.)*
+21. **`Lookup` service method is a stub** (`data_sources_service.go`). *(Unresolved from 4/24 #27.)*
 
-23. **`Lookup` value object has no validation** (`lookup.go`). *(Unresolved from 4/24 #28.)*
-
-#### Code Quality
-
-24. **`Ping` uses `context.Background()` with no timeout** (`pkg/database/mongodb.go:43`). *(Unresolved from 4/24 #29.)*
+22. **`Lookup` value object has no validation** (`lookup.go`). *(Unresolved from 4/24 #28.)*
 
 ---
 
@@ -120,19 +118,19 @@ See [4/24 review](code-review-4-24-26.md) for the full Will Not Fix list (9 item
 
 #### Architectural
 
-25. **Zero test files** in all three services and shared packages. *(Unresolved from 4/24 #30.)*
+23. **Zero test files** in all three services and shared packages. *(Unresolved from 4/24 #30.)*
 
-26. **No domain events** for cross-service communication. *(Unresolved from 4/24 #31.)*
+24. **No domain events** for cross-service communication. *(Unresolved from 4/24 #31.)*
 
-27. **No real authentication** -- `X-Tenant-ID` is blindly trusted. *(Unresolved from 4/24 #32.)*
+25. **No real authentication** -- `X-Tenant-ID` is blindly trusted. *(Unresolved from 4/24 #32.)*
 
-28. **No graceful shutdown** (all services). *(Unresolved from 4/24 #33.)*
+26. **No graceful shutdown** (all services). *(Unresolved from 4/24 #33.)*
 
 ---
 
 ### Shared Package
 
-29. **`ErrMissingTenantID` maps to 500** (`middleware.go:15`) -- `TenantMiddleware` calls `httputil.SendErrorResponse(w, ErrMissingTenantID)` when the `X-Tenant-ID` header is absent. `ErrMissingTenantID` doesn't match any case in `SendErrorResponse`, falling through to 500. Should be 400. *(Unresolved from 4/24 #7.)*
+27. **`ErrMissingTenantID` maps to 500** (`middleware.go:15`) -- `TenantMiddleware` calls `httputil.SendErrorResponse(w, ErrMissingTenantID)` when the `X-Tenant-ID` header is absent. `ErrMissingTenantID` doesn't match any case in `SendErrorResponse`, falling through to 500. Should be 400. *(Unresolved from 4/24 #7.)*
 
 ---
 
@@ -140,20 +138,19 @@ See [4/24 review](code-review-4-24-26.md) for the full Will Not Fix list (9 item
 
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
-| **P0** | 6 | MongoDB repository methods are stubs -- nil panic on FindByID/FindByReferenceID | Submissions |
-| **P2** | 7 | `Find()` has no tenant filtering | Submissions |
-| **P2** | 2, 21 | Domain validation unimplemented | Forms, Tenants |
-| **P2** | 11 | No domain constructors | Submissions |
+| **P0** | 5 | MongoDB repository methods are stubs -- nil panic on FindByID/FindByReferenceID | Submissions |
+| **P2** | 6 | `Find()` has no tenant filtering | Submissions |
+| **P2** | 2, 20 | Domain validation unimplemented | Forms, Tenants |
+| **P2** | 10 | No domain constructors | Submissions |
 | **P2** | 1 | Hardcoded `"placeholder"` user ID | Forms |
-| **P2** | 29 | `ErrMissingTenantID` maps to 500 | Shared |
-| **P2** | 20 | Tenant removal doesn't cascade-delete DataSources | Tenants |
-| **P2** | 8 | Empty handler stubs return 200 OK | Submissions |
-| **P3** | 25 | Zero test files | All |
-| **P3** | 26 | No domain events | All |
-| **P3** | 14 | `any`-typed attributes (no type safety) | Submissions |
-| **P3** | 5 | `CreateVersionDto` empty struct deserialized | Forms |
-| **P3** | 28 | No graceful shutdown | All |
-| **P3** | 24 | `Ping` uses `context.Background()` with no timeout | All |
+| **P2** | 27 | `ErrMissingTenantID` maps to 500 | Shared |
+| **P2** | 19 | Tenant removal doesn't cascade-delete DataSources | Tenants |
+| **P2** | 7 | Empty handler stubs return 200 OK | Submissions |
+| **P3** | 23 | Zero test files | All |
+| **P3** | 24 | No domain events | All |
+| **P3** | 13 | `any`-typed attributes (no type safety) | Submissions |
+| **P3** | 4 | `CreateVersionDto` empty struct deserialized | Forms |
+| **P3** | 26 | No graceful shutdown | All |
 
 ---
 
@@ -171,13 +168,14 @@ The primary focus since the last review was committing the large set of previous
 - **Submissions `mongodb.Bootstrap` P0 resolved** -- `Bootstrap` now wires both `Database` and `Submissions` fields. Service startup no longer panics. However, repository methods are stubs returning `nil, nil`, creating a new P0 (nil dereference in the service layer on `FindByID`/`FindByReferenceID`).
 - **Idiomatic clock pattern adopted across all domains** -- All three domain packages (`forms`, `tenants`, `submissions`) now declare `var Now = time.Now` in `domain.go`. All `time.Now()` calls in `form.go`, `version.go`, `tenant.go`, and `data_source.go` replaced with `Now()`, enabling test injection of a mock clock without a `Clock` interface.
 - **Deterministic child ordering via `Get*Slice()` methods** -- New domain methods `GetPagesSlice()`, `GetSectionsSlice()`, and `GetFieldsSlice()` return children sorted by position key. Document converters and DTO converters now use these sorted slices instead of iterating maps directly, eliminating non-deterministic BSON document order and removing duplicated `slices.Sorted(maps.Keys(...))` logic from the DTO layer.
+- **Form delete operation implemented** -- `DELETE /api/v1/forms/{formId}` route, `deleteForm` handler, `FormsService.Delete` with active version guard (`ErrFormHasActiveVersion`), and `FormsRepository.Delete` in both adapters. A generic `MongoDBRepository.Remove` method was added to the shared database package.
 - **Form and Version aggregate boundaries clarified** -- `FormsRepository` and `VersionRepository` are now separate port interfaces (`ports/secondary.go`). Both the in-memory and MongoDB adapters implement the split with independent structs. `FormsService` holds separate `formsRepository` and `versionsRepository` fields. A unique compound index on `(form_id, version)` in the MongoDB versions collection prevents duplicate version numbers per form. `Version` references `Form` by ID only, making the separate-aggregate design explicit.
 
 ### Current State
 
-**35 remaining issues → 29 remaining issues** (resolved 9 from 4/24, added 1 new from 4/25, resolved 1 new from 4/25).
+**35 remaining issues → 27 remaining issues** (resolved 10 from 4/24, added 1 new from 4/25, resolved 1 new from 4/25, moved 1 to Will Not Fix).
 
-**Forms Service** is now the most complete service. Tenant filtering is enforced on all paths. MongoDB persistence is fully implemented with typed documents and BSON mappers. Error-to-HTTP mapping covers 8 domain errors plus shared errors. The version state machine is robust with proper aggregate encapsulation (`withPosition`, private `pages` map, duplicate guards). Remaining gaps: hardcoded placeholder user ID, unimplemented domain validation TODOs, no delete operation, `CreateVersionRequest` empty struct, and inconsistent constructor signatures.
+**Forms Service** is now the most complete service. Tenant filtering is enforced on all paths. MongoDB persistence is fully implemented with typed documents and BSON mappers. Error-to-HTTP mapping covers 8 domain errors plus shared errors. The version state machine is robust with proper aggregate encapsulation (`withPosition`, private `pages` map, duplicate guards). Remaining gaps: hardcoded placeholder user ID, unimplemented domain validation TODOs, `CreateVersionRequest` empty struct, and inconsistent constructor signatures.
 
 **Tenants Service** remains stable with no changes this cycle. MongoDB repositories are fully implemented. `Tenant.Update()` now has a nil guard with `ErrInvalidTenant`. Remaining gaps: no validation in `NewTenant`, cascade-delete on tenant removal, `Lookup` stub.
 
