@@ -12,19 +12,39 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
+var (
+	indexes = []mongo.IndexModel{
+		{
+			Keys: bson.D{
+				{Key: "form_id", Value: 1},
+				{Key: "version", Value: 1},
+			},
+			Options: options.Index().SetUnique(true),
+		},
+	}
+)
+
 type mongoDBVersionRepository struct {
 	base *database.MongoDBRepository[versionDocument]
 }
 
-func newMongoDBVersionRepository(db *mongo.Database, logger *log.Logger) ports.VersionRepository {
-	repository := database.NewMongoDBRepository[versionDocument](
+func newMongoDBVersionRepository(db *mongo.Database, logger *log.Logger) (ports.VersionRepository, error) {
+	base := database.NewMongoDBRepository[versionDocument](
 		db.Collection("versions"),
 		logger,
 	)
+	repository := &mongoDBVersionRepository{base}
 
-	return &mongoDBVersionRepository{
-		base: repository,
+	if err := repository.migrate(context.Background()); err != nil {
+		return nil, err
 	}
+
+	return repository, nil
+}
+
+func (r *mongoDBVersionRepository) migrate(ctx context.Context) error {
+	_, err := r.base.Collection().Indexes().CreateMany(ctx, indexes)
+	return err
 }
 
 func (r *mongoDBVersionRepository) Find(ctx context.Context, formID domain.FormID) ([]*domain.Version, error) {
@@ -110,6 +130,10 @@ func (r *mongoDBVersionRepository) Upsert(ctx context.Context, v *domain.Version
 	})
 
 	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			return nil, domain.ErrDuplicateVersion
+		}
+
 		return nil, err
 	}
 

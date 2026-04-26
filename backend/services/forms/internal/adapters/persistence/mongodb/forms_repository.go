@@ -13,24 +13,16 @@ import (
 )
 
 type mongoDBFormsRepository struct {
-	forms    *database.MongoDBRepository[formDocument]
-	versions *database.MongoDBRepository[versionDocument]
+	base *database.MongoDBRepository[formDocument]
 }
 
-func newMongoDBFormsRepository(db *mongo.Database, logger *log.Logger) ports.FormsRepository {
-	formsRepository := database.NewMongoDBRepository[formDocument](
+func newMongoDBFormsRepository(db *mongo.Database, logger *log.Logger) (ports.FormsRepository, error) {
+	base := database.NewMongoDBRepository[formDocument](
 		db.Collection("forms"),
 		logger,
 	)
-	versionsRepository := database.NewMongoDBRepository[versionDocument](
-		db.Collection("versions"),
-		logger,
-	)
 
-	return &mongoDBFormsRepository{
-		forms:    formsRepository,
-		versions: versionsRepository,
-	}
+	return &mongoDBFormsRepository{base}, nil
 }
 
 func (r *mongoDBFormsRepository) Find(ctx context.Context, f *ports.FormFilters) ([]*domain.Form, error) {
@@ -40,7 +32,7 @@ func (r *mongoDBFormsRepository) Find(ctx context.Context, f *ports.FormFilters)
 		filter["tenant_id"] = f.TenantID
 	}
 
-	documents, err := r.forms.Find(ctx, filter)
+	documents, err := r.base.Find(ctx, filter)
 
 	if err != nil {
 		return nil, err
@@ -55,7 +47,7 @@ func (r *mongoDBFormsRepository) Find(ctx context.Context, f *ports.FormFilters)
 }
 
 func (r *mongoDBFormsRepository) FindByID(ctx context.Context, formID domain.FormID) (*domain.Form, error) {
-	document, err := r.forms.FindOne(ctx, bson.M{"_id": formID})
+	document, err := r.base.FindOne(ctx, bson.M{"_id": formID})
 
 	if err != nil {
 		return nil, err
@@ -72,7 +64,7 @@ func (r *mongoDBFormsRepository) Upsert(ctx context.Context, f *domain.Form) (*d
 
 	var result formDocument
 	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
-		return r.forms.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
+		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
 	})
 
 	if err != nil {
@@ -81,4 +73,3 @@ func (r *mongoDBFormsRepository) Upsert(ctx context.Context, f *domain.Form) (*d
 
 	return fromFormDocument(&result), nil
 }
-

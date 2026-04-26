@@ -18,14 +18,12 @@ type mongoDBTenantsRepository struct {
 }
 
 func newMongoDBTenantsRepository(db *mongo.Database, logger *log.Logger) ports.TenantsRepository {
-	repository := database.NewMongoDBRepository[tenantDocument](
+	base := database.NewMongoDBRepository[tenantDocument](
 		db.Collection("tenants"),
 		logger,
 	)
 
-	return &mongoDBTenantsRepository{
-		base: repository,
-	}
+	return &mongoDBTenantsRepository{base}
 }
 
 func (r *mongoDBTenantsRepository) Find(ctx context.Context) ([]*domain.Tenant, error) {

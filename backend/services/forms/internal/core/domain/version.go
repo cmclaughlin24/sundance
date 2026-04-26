@@ -20,6 +20,7 @@ const (
 var (
 	ErrInvalidVersion      = errors.New("invalid version")
 	ErrVersionLocked       = errors.New("version is locked")
+	ErrDuplicateVersion    = errors.New("duplicate version")
 	ErrPublishedByRequired = errors.New("publishedBy is required")
 	ErrRetiredByRequired   = errors.New("retiredBy is required")
 )

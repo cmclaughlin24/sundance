@@ -15,14 +15,12 @@ type mongoDBSubmissionsRepository struct {
 }
 
 func newMongoDBSubmissionsRepository(db *mongo.Database, logger *log.Logger) ports.SubmissionsRepository {
-	repository := database.NewMongoDBRepository[any](
+	base := database.NewMongoDBRepository[any](
 		db.Collection("submissions"),
 		logger,
 	)
 
-	return &mongoDBSubmissionsRepository{
-		base: repository,
-	}
+	return &mongoDBSubmissionsRepository{base}
 }
 
 func (r *mongoDBSubmissionsRepository) Find(context.Context) ([]*domain.Submission, error) {
