@@ -56,7 +56,7 @@ func NewDataSource(
 		Description: description,
 		Type:        sourceType,
 		Attributes:  attr,
-		CreatedAt:   time.Now(),
+		CreatedAt:   Now(),
 	}, nil
 }
 
@@ -95,7 +95,7 @@ func (ds *DataSource) Update(name, description string, sourceType DataSourceType
 	ds.Description = description
 	ds.Type = sourceType
 	ds.Attributes = attr
-	ds.UpdatedAt = time.Now()
+	ds.UpdatedAt = Now()
 
 	return nil
 }

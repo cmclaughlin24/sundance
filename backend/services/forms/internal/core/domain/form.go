@@ -26,7 +26,7 @@ func NewForm(tenantID, name, description string) (*Form, error) {
 		TenantID:    tenantID,
 		Name:        name,
 		Description: description,
-		CreatedAt:   time.Now(),
+		CreatedAt:   Now(),
 	}
 
 	// TODO: Implement domain specific validation.
@@ -52,7 +52,7 @@ func (f *Form) Update(name, description string) error {
 
 	f.Name = name
 	f.Description = description
-	f.UpdatedAt = time.Now()
+	f.UpdatedAt = Now()
 
 	// TODO: Implement domain specific validation.
 

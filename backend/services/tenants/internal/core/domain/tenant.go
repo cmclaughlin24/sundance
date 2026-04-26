@@ -24,7 +24,7 @@ func NewTenant(name, description string) (*Tenant, error) {
 		ID:          TenantID(uuid.NewString()),
 		Name:        name,
 		Description: description,
-		CreatedAt:   time.Now(),
+		CreatedAt:   Now(),
 	}
 
 	return t, nil
@@ -49,7 +49,7 @@ func (t *Tenant) Update(name, description string) error {
 
 	t.Name = name
 	t.Description = description
-	t.UpdatedAt = time.Now()
+	t.UpdatedAt = Now()
 
 	return nil
 }

@@ -45,7 +45,7 @@ func NewVersion(formID FormID, version int, status VersionStatus) (*Version, err
 		Version:   version,
 		Status:    status,
 		pages:     make(map[int]*Page),
-		CreatedAt: time.Now(),
+		CreatedAt: Now(),
 	}
 
 	// TODO: Implement domain specific validation.
@@ -124,7 +124,7 @@ func (v *Version) UpdatePages(pages ...*Page) error {
 		return err
 	}
 
-	v.UpdatedAt = time.Now()
+	v.UpdatedAt = Now()
 
 	return nil
 }
@@ -142,7 +142,7 @@ func (v *Version) Publish(publishedBy string) error {
 		return ErrPublishedByRequired
 	}
 
-	now := time.Now()
+	now := Now()
 	v.Status = VersionStatusActive
 	v.PublishedBy = publishedBy
 	v.PublishedAt = now
@@ -164,7 +164,7 @@ func (v *Version) Retire(retiredBy string) error {
 		return ErrRetiredByRequired
 	}
 
-	now := time.Now()
+	now := Now()
 	v.Status = VersionStatusRetired
 	v.RetiredBy = retiredBy
 	v.RetiredAt = now
