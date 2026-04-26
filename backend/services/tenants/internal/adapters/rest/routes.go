@@ -24,7 +24,7 @@ func NewRoutes(app *core.Application) http.Handler {
 			tenantsRoutes.Route("/{tenantId}", func(tenantRoutes chi.Router) {
 				tenantRoutes.Get("/", h.getTenant)
 				tenantRoutes.Put("/", h.updateTenant)
-				tenantRoutes.Delete("/", h.removeTenant)
+				tenantRoutes.Delete("/", h.deleteTenant)
 			})
 		})
 
@@ -37,7 +37,7 @@ func NewRoutes(app *core.Application) http.Handler {
 			dataSourcesRoutes.Route("/{dataSourceId}", func(dataSourceRoutes chi.Router) {
 				dataSourceRoutes.Get("/", h.getDataSource)
 				dataSourceRoutes.Put("/", h.updateDataSource)
-				dataSourceRoutes.Delete("/", h.removeDataSource)
+				dataSourceRoutes.Delete("/", h.deleteDataSource)
 				dataSourceRoutes.Get("/look-ups", h.getLookups)
 			})
 		})

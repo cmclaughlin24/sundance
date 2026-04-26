@@ -71,7 +71,7 @@ func (r *inMemoryDataSourceRepository) Upsert(ctx context.Context, ds *domain.Da
 	return ds, nil
 }
 
-func (r *inMemoryDataSourceRepository) Remove(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) error {
+func (r *inMemoryDataSourceRepository) Delete(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

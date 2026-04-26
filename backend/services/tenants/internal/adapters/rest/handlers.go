@@ -145,13 +145,13 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) removeTenant(w http.ResponseWriter, r *http.Request) {
+func (h *handlers) deleteTenant(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantIDPathValue(r)
 	resultChan := make(chan result[any], 1)
 
 	go func() {
 		defer close(resultChan)
-		err := h.app.Services.Tenants.Remove(r.Context(), tenantID)
+		err := h.app.Services.Tenants.Delete(r.Context(), tenantID)
 		resultChan <- result[any]{nil, err}
 	}()
 
@@ -336,7 +336,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) removeDataSource(w http.ResponseWriter, r *http.Request) {
+func (h *handlers) deleteDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := h.getTenantFromContext(r)
 	if err != nil {
 		httputil.SendErrorResponse(w, err)
@@ -349,7 +349,7 @@ func (h *handlers) removeDataSource(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		err := h.app.Services.DataSources.Remove(r.Context(), command)
+		err := h.app.Services.DataSources.Delete(r.Context(), command)
 		resultChan <- result[any]{nil, err}
 	}()
 

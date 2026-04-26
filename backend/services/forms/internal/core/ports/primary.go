@@ -15,6 +15,7 @@ type FormsService interface {
 	FindByID(context.Context, *FindFormsByIDQuery) (*domain.Form, error)
 	Create(context.Context, *CreateFormCommand) (*domain.Form, error)
 	Update(context.Context, *UpdateFormCommand) (*domain.Form, error)
+	Delete(context.Context, *RemoveFormCommand) error
 	FindVersions(context.Context, *FindVersionsQuery) ([]*domain.Version, error)
 	FindVersion(context.Context, *FindVersionByIDQuery) (*domain.Version, error)
 	CreateVersion(context.Context, *CreateVersionCommand) (*domain.Version, error)

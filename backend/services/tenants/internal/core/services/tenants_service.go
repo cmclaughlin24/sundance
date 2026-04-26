@@ -72,7 +72,7 @@ func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenant
 	return tenant, nil
 }
 
-func (s *TenantsService) Remove(ctx context.Context, id domain.TenantID) error {
+func (s *TenantsService) Delete(ctx context.Context, id domain.TenantID) error {
 	exists, err := s.tenantsRepository.Exists(ctx, id)
 
 	if err != nil {
@@ -83,5 +83,5 @@ func (s *TenantsService) Remove(ctx context.Context, id domain.TenantID) error {
 		return common.ErrNotFound
 	}
 
-	return s.tenantsRepository.Remove(ctx, id)
+	return s.tenantsRepository.Delete(ctx, id)
 }

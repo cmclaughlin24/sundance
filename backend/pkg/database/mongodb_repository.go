@@ -94,3 +94,19 @@ func (r *MongoDBRepository[T]) Exists(ctx context.Context, filter bson.M) (bool,
 
 	return count > 0, err
 }
+
+func (r *MongoDBRepository[T]) Remove(ctx context.Context, filter bson.M) error {
+	return mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
+		result, err := r.collection.DeleteOne(sctx, filter)
+
+		if err != nil {
+			return err
+		}
+
+		if result.DeletedCount == 0 {
+			return common.ErrNotFound
+		}
+
+		return nil
+	})
+}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
@@ -83,20 +82,6 @@ func (r *mongoDBDataSourcesRepository) Upsert(ctx context.Context, ds *domain.Da
 	return fromDataSourceDocument(&result)
 }
 
-func (r *mongoDBDataSourcesRepository) Remove(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) error {
-	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
-		result, err := r.base.Collection().DeleteOne(sctx, bson.M{"_id": sourceID, "tenant_id": tenantID})
-
-		if err != nil {
-			return err
-		}
-
-		if result.DeletedCount == 0 {
-			return common.ErrNotFound
-		}
-
-		return nil
-	})
-
-	return err
+func (r *mongoDBDataSourcesRepository) Delete(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) error {
+	return r.base.Remove(ctx, bson.M{"_id": sourceID, "tenant_id": tenantID})
 }

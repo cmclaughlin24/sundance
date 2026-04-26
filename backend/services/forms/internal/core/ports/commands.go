@@ -40,6 +40,18 @@ func NewUpdateFormCommand(tenantID string, id domain.FormID, name, description s
 	}
 }
 
+type RemoveFormCommand struct {
+	ID       domain.FormID `validate:"required"`
+	TenantID string        `validate:"required"`
+}
+
+func NewRemoveFormCommand(tenantID string, id domain.FormID) *RemoveFormCommand {
+	return &RemoveFormCommand{
+		TenantID: tenantID,
+		ID:       id,
+	}
+}
+
 type baseVersionCommand struct {
 	TenantID string        `validate:"required"`
 	FormID   domain.FormID `validate:"required"`

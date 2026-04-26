@@ -171,6 +171,36 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (h *handlers) deleteForm(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := h.getTenantFromContext(r)
+	if err != nil {
+		h.sendErrorResponse(w, err)
+		return
+	}
+
+	formID := h.getFormIDPathValue(r)
+	command := ports.NewRemoveFormCommand(tenantID, formID)
+	resultChan := make(chan result[any], 1)
+
+	go func() {
+		defer close(resultChan)
+		err := h.app.Services.Forms.Delete(r.Context(), command)
+		resultChan <- result[any]{nil, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		w.WriteHeader(http.StatusNoContent)
+	}
+}
+
 func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 	tenantID, err := h.getTenantFromContext(r)
 	if err != nil {

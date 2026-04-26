@@ -65,7 +65,7 @@ func (r *inMemoryTenantRepository) Upsert(ctx context.Context, tenant *domain.Te
 	return tenant, nil
 }
 
-func (r *inMemoryTenantRepository) Remove(ctx context.Context, id domain.TenantID) error {
+func (r *inMemoryTenantRepository) Delete(ctx context.Context, id domain.TenantID) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

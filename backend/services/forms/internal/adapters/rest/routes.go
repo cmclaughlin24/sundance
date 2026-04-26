@@ -25,6 +25,7 @@ func NewRoutes(app *core.Application) http.Handler {
 			formsRoutes.Route("/{formId}", func(formRoutes chi.Router) {
 				formRoutes.Get("/", h.getForm)
 				formRoutes.Put("/", h.updateForm)
+				formRoutes.Delete("/", h.deleteForm)
 
 				formRoutes.Route("/versions", func(versionsRoutes chi.Router) {
 					versionsRoutes.Get("/", h.getVersions)

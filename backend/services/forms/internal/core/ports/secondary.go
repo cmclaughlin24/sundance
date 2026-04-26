@@ -17,6 +17,7 @@ type FormsRepository interface {
 	Find(context.Context, *FormFilters) ([]*domain.Form, error)
 	FindByID(context.Context, domain.FormID) (*domain.Form, error)
 	Upsert(context.Context, *domain.Form) (*domain.Form, error)
+	Delete(context.Context, domain.FormID) error
 }
 
 type VersionRepository interface {

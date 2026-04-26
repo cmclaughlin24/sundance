@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
@@ -74,20 +73,6 @@ func (r *mongoDBTenantsRepository) Upsert(ctx context.Context, t *domain.Tenant)
 	return fromTenantDocument(&result), nil
 }
 
-func (r *mongoDBTenantsRepository) Remove(ctx context.Context, id domain.TenantID) error {
-	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
-		result, err := r.base.Collection().DeleteOne(sctx, bson.M{"_id": id})
-
-		if err != nil {
-			return err
-		}
-
-		if result.DeletedCount == 0 {
-			return common.ErrNotFound
-		}
-
-		return nil
-	})
-
-	return err
+func (r *mongoDBTenantsRepository) Delete(ctx context.Context, id domain.TenantID) error {
+	return r.base.Remove(ctx, bson.M{"_id": id})
 }

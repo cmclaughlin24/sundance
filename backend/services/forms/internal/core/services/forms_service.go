@@ -102,6 +102,28 @@ func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormComm
 	return form, nil
 }
 
+func (s *FormsService) Delete(ctx context.Context, command *ports.RemoveFormCommand) error {
+	if err := validate.ValidateStruct(command); err != nil {
+		return err
+	}
+
+	if err := s.isValidAccess(ctx, command.TenantID, command.ID); err != nil {
+		return err
+	}
+
+	hasActive, err := s.hasActiveVersion(ctx, command.ID)
+
+	if err != nil {
+		return err
+	}
+
+	if hasActive {
+		return domain.ErrFormHasActiveVersion
+	}
+
+	return s.formsRepository.Delete(ctx, command.ID)
+}
+
 func (s *FormsService) FindVersions(ctx context.Context, query *ports.FindVersionsQuery) ([]*domain.Version, error) {
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
@@ -264,4 +286,20 @@ func (s *FormsService) isValidAccess(ctx context.Context, tenantID string, formI
 	}
 
 	return nil
+}
+
+func (s *FormsService) hasActiveVersion(ctx context.Context, id domain.FormID) (bool, error) {
+	versions, err := s.versionsRepository.Find(ctx, id)
+
+	if err != nil {
+		return true, err
+	}
+
+	for _, v := range versions {
+		if v.Status == domain.VersionStatusActive {
+			return true, err
+		}
+	}
+
+	return false, nil
 }

@@ -61,4 +61,15 @@ func (r *InMemoryFormsRepository) Upsert(ctx context.Context, form *domain.Form)
 	return form, nil
 }
 
+func (r *InMemoryFormsRepository) Delete(ctx context.Context, id domain.FormID) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
+	if _, ok := r.forms[string(id)]; !ok {
+		return common.ErrNotFound
+	}
+
+	delete(r.forms, string(id))
+
+	return nil
+}

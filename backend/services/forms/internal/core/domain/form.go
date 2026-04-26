@@ -7,7 +7,10 @@ import (
 	"github.com/google/uuid"
 )
 
-var ErrInvalidForm = errors.New("invalid form")
+var (
+	ErrInvalidForm           = errors.New("invalid form")
+	ErrFormHasActiveVersion = errors.New("form has at least one active version")
+)
 
 type FormID string
 

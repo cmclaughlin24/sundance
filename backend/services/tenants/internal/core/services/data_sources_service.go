@@ -100,7 +100,7 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 	return dataSource, nil
 }
 
-func (s *DataSourcesService) Remove(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
+func (s *DataSourcesService) Delete(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
 	if err := validate.ValidateStruct(command); err != nil {
 		return err
 	}
@@ -119,7 +119,7 @@ func (s *DataSourcesService) Remove(ctx context.Context, command *ports.RemoveDa
 		return common.ErrNotFound
 	}
 
-	return s.dataSourcesRepository.Remove(ctx, command.TenantID, command.ID)
+	return s.dataSourcesRepository.Delete(ctx, command.TenantID, command.ID)
 }
 
 func (s *DataSourcesService) Lookup(ctx context.Context, command *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
