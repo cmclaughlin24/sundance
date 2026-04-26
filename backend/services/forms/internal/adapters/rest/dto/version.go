@@ -1,8 +1,6 @@
 package dto
 
 import (
-	"maps"
-	"slices"
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
@@ -33,12 +31,11 @@ func VersionToResponse(version *domain.Version) *VersionResponseDto {
 		return nil
 	}
 
-	pages := version.GetPages()
-	positions := slices.Sorted(maps.Keys(pages))
+	pages := version.GetPagesSlice()
 	dtos := make([]*PageResponse, 0, len(pages))
 
-	for _, p := range positions {
-		dtos = append(dtos, PageToResponse(pages[p]))
+	for _, p := range pages {
+		dtos = append(dtos, PageToResponse(p))
 	}
 
 	return &VersionResponseDto{

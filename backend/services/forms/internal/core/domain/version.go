@@ -2,6 +2,8 @@ package domain
 
 import (
 	"errors"
+	"maps"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
@@ -82,6 +84,17 @@ func HydrateVersion(
 
 func (v *Version) GetPages() map[int]*Page {
 	return v.pages
+}
+
+func (v *Version) GetPagesSlice() []*Page {
+	positions := slices.Sorted(maps.Keys(v.pages))
+	pages := make([]*Page, 0, len(v.pages))
+
+	for _, position := range positions {
+		pages = append(pages, v.pages[position])
+	}
+
+	return pages
 }
 
 func (v *Version) SetPages(pages ...*Page) error {

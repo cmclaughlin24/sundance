@@ -54,16 +54,17 @@ type versionDocument struct {
 }
 
 func toVersionDocument(v *domain.Version) (*versionDocument, error) {
-	pages := make([]*pageDocument, 0, len(v.GetPages()))
+	pages := v.GetPagesSlice()
+	pageDocs := make([]*pageDocument, 0, len(pages))
 
-	for _, p := range v.GetPages() {
+	for _, p := range pages {
 		doc, err := toPageDocument(p)
 
 		if err != nil {
 			return nil, err
 		}
 
-		pages = append(pages, doc)
+		pageDocs = append(pageDocs, doc)
 	}
 
 	return &versionDocument{
@@ -77,7 +78,7 @@ func toVersionDocument(v *domain.Version) (*versionDocument, error) {
 		RetiredAt:   v.RetiredAt,
 		CreatedAt:   v.CreatedAt,
 		UpdatedAt:   v.UpdatedAt,
-		Pages:       pages,
+		Pages:       pageDocs,
 	}, nil
 }
 
@@ -123,16 +124,17 @@ type pageDocument struct {
 }
 
 func toPageDocument(p *domain.Page) (*pageDocument, error) {
-	sections := make([]*sectionDocument, 0, len(p.GetSections()))
+	sections := p.GetSectionsSlice()
+	sectionDocs := make([]*sectionDocument, 0, len(sections))
 
-	for _, s := range p.GetSections() {
+	for _, s := range sections {
 		doc, err := toSectionDocument(s)
 
 		if err != nil {
 			return nil, err
 		}
 
-		sections = append(sections, doc)
+		sectionDocs = append(sectionDocs, doc)
 	}
 
 	rules := rulesToDocuments(p.GetRules())
@@ -142,7 +144,7 @@ func toPageDocument(p *domain.Page) (*pageDocument, error) {
 		Key:      p.Key,
 		Name:     p.Name,
 		Position: p.GetPosition(),
-		Sections: sections,
+		Sections: sectionDocs,
 		Rules:    rules,
 	}, nil
 }
@@ -188,16 +190,17 @@ type sectionDocument struct {
 }
 
 func toSectionDocument(s *domain.Section) (*sectionDocument, error) {
-	fields := make([]*fieldDocument, 0, len(s.GetFields()))
+	fields := s.GetFieldsSlice()
+	fieldDocs := make([]*fieldDocument, 0, len(fields))
 
-	for _, f := range s.GetFields() {
+	for _, f := range fields {
 		doc, err := toFieldDocument(f)
 
 		if err != nil {
 			return nil, err
 		}
 
-		fields = append(fields, doc)
+		fieldDocs = append(fieldDocs, doc)
 	}
 
 	rules := rulesToDocuments(s.GetRules())
@@ -207,7 +210,7 @@ func toSectionDocument(s *domain.Section) (*sectionDocument, error) {
 		Key:      s.Key,
 		Name:     s.Name,
 		Position: s.GetPosition(),
-		Fields:   fields,
+		Fields:   fieldDocs,
 		Rules:    rules,
 	}, nil
 }

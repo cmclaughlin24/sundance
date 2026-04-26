@@ -2,6 +2,8 @@ package domain
 
 import (
 	"errors"
+	"maps"
+	"slices"
 
 	"github.com/google/uuid"
 )
@@ -51,6 +53,17 @@ func HydratePage(id PageID, key, name string, position int) *Page {
 
 func (p *Page) GetSections() map[int]*Section {
 	return p.sections
+}
+
+func (p *Page) GetSectionsSlice() []*Section {
+	positions := slices.Sorted(maps.Keys(p.sections))
+	sections := make([]*Section, 0, len(p.sections))
+
+	for _, position := range positions {
+		sections = append(sections, p.sections[position])
+	}
+
+	return sections
 }
 
 func (p *Page) SetSections(sections ...*Section) error {

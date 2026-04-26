@@ -1,9 +1,6 @@
 package dto
 
 import (
-	"maps"
-	"slices"
-
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 )
 
@@ -63,12 +60,11 @@ func SectionToResponse(section *domain.Section) *SectionResponse {
 		return nil
 	}
 
-	fields := section.GetFields()
-	positions := slices.Sorted(maps.Keys(fields))
+	fields := section.GetFieldsSlice()
 	dtos := make([]*FieldResponse, 0, len(fields))
 
-	for _, p := range positions {
-		dtos = append(dtos, FieldToResponse(fields[p]))
+	for _, f := range fields {
+		dtos = append(dtos, FieldToResponse(f))
 	}
 
 	rules := RuleToResponse(section.GetRules())

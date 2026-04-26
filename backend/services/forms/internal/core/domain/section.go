@@ -2,6 +2,8 @@ package domain
 
 import (
 	"errors"
+	"maps"
+	"slices"
 
 	"github.com/google/uuid"
 )
@@ -39,9 +41,9 @@ func NewSection(key, name string, position int) (*Section, error) {
 
 func HydrateSection(id SectionID, key, name string, position int) *Section {
 	return &Section{
-		ID:       id,
-		Key:      key,
-		Name:     name,
+		ID:     id,
+		Key:    key,
+		Name:   name,
 		fields: make(map[int]*Field),
 		withPosition: withPosition{
 			position: position,
@@ -51,6 +53,17 @@ func HydrateSection(id SectionID, key, name string, position int) *Section {
 
 func (s *Section) GetFields() map[int]*Field {
 	return s.fields
+}
+
+func (s *Section) GetFieldsSlice() []*Field {
+	positions := slices.Sorted(maps.Keys(s.fields))
+	fields := make([]*Field, 0, len(s.fields))
+
+	for _, p := range positions {
+		fields = append(fields, s.fields[p])
+	}
+
+	return fields
 }
 
 func (s *Section) SetFields(fields ...*Field) error {
