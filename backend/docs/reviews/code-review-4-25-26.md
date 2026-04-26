@@ -20,6 +20,8 @@
 
 10. ~~No `Delete` operation for forms~~ (Forms, P2) -- `DELETE /api/v1/forms/{formId}` route added (`routes.go`). `deleteForm` handler (`handlers.go`) extracts tenant and form ID, builds a `RemoveFormCommand`, and calls `FormsService.Delete`. The service (`forms_service.go`) validates the command, checks tenant access, checks for active versions via `hasActiveVersion` (returns `ErrFormHasActiveVersion` if any version has `VersionStatusActive`), then delegates to `FormsRepository.Delete`. Both adapters implement `Delete`: in-memory removes from the map, MongoDB delegates to `MongoDBRepository.Remove` which calls `DeleteOne`. A new `ErrFormHasActiveVersion` sentinel error is defined in `domain/form.go`. *(Resolves 4/24 #6.)*
 
+11. ~~Domain validation partially unimplemented~~ (Forms, P2) -- All domain constructors (`NewForm`, `NewVersion`, `NewPage`, `NewSection`, `NewField`, `NewRule`) now validate invariants. Exported fields use `validate:"required,notblank"` struct tags via `go-playground/validator` (called through `validate.ValidateStruct`). Enum-typed fields (`VersionStatus`, `FieldType`, `RuleType`) use manual checks with `validate.NewTypeValidator` before struct validation, returning dedicated sentinel errors (`ErrInvalidVersionStatus`, `ErrInvalidFieldType`, `ErrInvalidRuleType`). `Field` additionally validates attribute-type alignment via `isValidFieldAttributes`. Position is validated manually via `isValidPosition` (`position >= 0`) since the `withPosition.position` field is unexported and invisible to the validator. `Rule.Expression` has `validate:"required,notblank"`. `Form.Update` re-validates after mutation. The `// TODO: Implement domain specific validation` comments are removed. *(Resolves 4/24 #5. Also resolves 4/24 #8 -- constructors now return meaningful errors.)*
+
 8. ~~Previously unstaged changes now committed~~ -- The following items listed as "unstaged" in the 4/24 review are now committed: Go naming conventions (`APIResponse`, `SendJSONResponse`, etc.), forms `isBadRequest` error-to-HTTP mapping, DTO sort order via `slices.Sorted(maps.Keys(...))`, `Position` encapsulation via `withPosition`, `HydratePage`/`HydrateSection` child map initialization, `HydrateVersion` `pages` map initialization, `GetDataSourceLookupsQuery` CQRS fix, `FindNextVersionNumber` session handling, dead timestamp parameters removed, redundant double-fetch eliminated, `FindVersions` adapter consistency, `newMongoDBFormsRepository` unexported, `cursor.Close` context fix, `Tenant.Update()` nil guard added with `ErrInvalidTenant` sentinel error.
 
 ---
@@ -46,13 +48,7 @@ See [4/24 review](code-review-4-24-26.md) for the full Will Not Fix list (9 item
 
 1. **`publishVersion` and `retireVersion` use hardcoded `"placeholder"` user ID** (`handlers.go:339`, `370`) -- The publish/retire state transitions record a fake user. Both have `// FIXME` comments. *(Unresolved from 4/24 #1.)*
 
-#### Missing Functionality
-
-2. **Domain validation partially unimplemented** (`form.go:29,42`, `version.go:48`, `page.go`, `section.go`) -- `NewForm`, `NewVersion`, `NewPage`, and `NewSection` constructors still contain `// TODO: Implement domain specific validation`. *(Unresolved from 4/24 #5.)*
-
 #### Code Quality
-
-3. **Inconsistent constructor signatures** -- `NewForm`, `NewVersion`, `NewPage`, and `NewSection` return `(*Entity, error)` but never return errors. *(Unresolved from 4/24 #8.)*
 
 4. **`CreateVersionDto` is an empty struct deserialized from request body** (`dto/version.go`, `handlers.go:250-254`) -- `createVersion` calls `ReadValidateJSONPayload(r, &body)` where `body` is `CreateVersionRequest struct{}`. *(Unresolved from 4/24 #10.)*
 
@@ -140,7 +136,7 @@ See [4/24 review](code-review-4-24-26.md) for the full Will Not Fix list (9 item
 |----------|---|-------|------------|
 | **P0** | 5 | MongoDB repository methods are stubs -- nil panic on FindByID/FindByReferenceID | Submissions |
 | **P2** | 6 | `Find()` has no tenant filtering | Submissions |
-| **P2** | 2, 20 | Domain validation unimplemented | Forms, Tenants |
+| **P2** | 20 | Domain validation unimplemented | Tenants |
 | **P2** | 10 | No domain constructors | Submissions |
 | **P2** | 1 | Hardcoded `"placeholder"` user ID | Forms |
 | **P2** | 27 | `ErrMissingTenantID` maps to 500 | Shared |
@@ -173,9 +169,9 @@ The primary focus since the last review was committing the large set of previous
 
 ### Current State
 
-**35 remaining issues → 27 remaining issues** (resolved 10 from 4/24, added 1 new from 4/25, resolved 1 new from 4/25, moved 1 to Will Not Fix).
+**35 remaining issues → 25 remaining issues** (resolved 12 from 4/24, added 1 new from 4/25, resolved 1 new from 4/25, moved 1 to Will Not Fix).
 
-**Forms Service** is now the most complete service. Tenant filtering is enforced on all paths. MongoDB persistence is fully implemented with typed documents and BSON mappers. Error-to-HTTP mapping covers 8 domain errors plus shared errors. The version state machine is robust with proper aggregate encapsulation (`withPosition`, private `pages` map, duplicate guards). Remaining gaps: hardcoded placeholder user ID, unimplemented domain validation TODOs, `CreateVersionRequest` empty struct, and inconsistent constructor signatures.
+**Forms Service** is now the most complete service. Tenant filtering is enforced on all paths. MongoDB persistence is fully implemented with typed documents and BSON mappers. Error-to-HTTP mapping covers 8 domain errors plus shared errors. The version state machine is robust with proper aggregate encapsulation (`withPosition`, private `pages` map, duplicate guards). Remaining gaps: hardcoded placeholder user ID, `CreateVersionRequest` empty struct.
 
 **Tenants Service** remains stable with no changes this cycle. MongoDB repositories are fully implemented. `Tenant.Update()` now has a nil guard with `ErrInvalidTenant`. Remaining gaps: no validation in `NewTenant`, cascade-delete on tenant removal, `Lookup` stub.
 
