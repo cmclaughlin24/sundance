@@ -12,9 +12,10 @@ import (
 )
 
 type FormsService struct {
-	logger          *log.Logger
-	database        database.Database
-	formsRepository ports.FormsRepository
+	logger             *log.Logger
+	database           database.Database
+	formsRepository    ports.FormsRepository
+	versionsRepository ports.VersionRepository
 }
 
 func NewFormsService(logger *log.Logger, repository *ports.Repository) ports.FormsService {
@@ -110,7 +111,7 @@ func (s *FormsService) FindVersions(ctx context.Context, query *ports.FindVersio
 		return nil, err
 	}
 
-	return s.formsRepository.FindVersions(ctx, query.FormID)
+	return s.versionsRepository.Find(ctx, query.FormID)
 }
 
 func (s *FormsService) FindVersion(ctx context.Context, query *ports.FindVersionByIDQuery) (*domain.Version, error) {
@@ -122,7 +123,7 @@ func (s *FormsService) FindVersion(ctx context.Context, query *ports.FindVersion
 		return nil, err
 	}
 
-	return s.formsRepository.FindVersion(ctx, query.FormID, query.VersionID)
+	return s.versionsRepository.FindByID(ctx, query.FormID, query.VersionID)
 }
 
 func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateVersionCommand) (*domain.Version, error) {
@@ -142,7 +143,7 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 
 	defer s.database.RollbackTx(txCtx)
 
-	versionNum, err := s.formsRepository.FindNextVersionNumber(txCtx, command.FormID)
+	versionNum, err := s.versionsRepository.FindNextVersionNumber(txCtx, command.FormID)
 
 	if err != nil {
 		return nil, err
@@ -154,7 +155,7 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 		return nil, err
 	}
 
-	version, err = s.formsRepository.UpsertVersion(txCtx, version)
+	version, err = s.versionsRepository.Upsert(txCtx, version)
 
 	if err != nil {
 		return nil, err
@@ -176,7 +177,7 @@ func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateV
 		return nil, err
 	}
 
-	version, err := s.formsRepository.FindVersion(ctx, command.FormID, command.VersionID)
+	version, err := s.versionsRepository.FindByID(ctx, command.FormID, command.VersionID)
 
 	if err != nil {
 		return nil, err
@@ -186,7 +187,7 @@ func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateV
 		return nil, err
 	}
 
-	version, err = s.formsRepository.UpsertVersion(ctx, version)
+	version, err = s.versionsRepository.Upsert(ctx, version)
 
 	if err != nil {
 		return nil, err
@@ -204,7 +205,7 @@ func (s *FormsService) PublishVersion(ctx context.Context, command *ports.Publis
 		return nil, err
 	}
 
-	version, err := s.formsRepository.FindVersion(ctx, command.FormID, command.VersionID)
+	version, err := s.versionsRepository.FindByID(ctx, command.FormID, command.VersionID)
 
 	if err != nil {
 		return nil, err
@@ -214,7 +215,7 @@ func (s *FormsService) PublishVersion(ctx context.Context, command *ports.Publis
 		return nil, err
 	}
 
-	version, err = s.formsRepository.UpsertVersion(ctx, version)
+	version, err = s.versionsRepository.Upsert(ctx, version)
 
 	if err != nil {
 		return nil, err
@@ -232,7 +233,7 @@ func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireV
 		return nil, err
 	}
 
-	version, err := s.formsRepository.FindVersion(ctx, command.FormID, command.VersionID)
+	version, err := s.versionsRepository.FindByID(ctx, command.FormID, command.VersionID)
 
 	if err != nil {
 		return nil, err
@@ -242,7 +243,7 @@ func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireV
 		return nil, err
 	}
 
-	version, err = s.formsRepository.UpsertVersion(ctx, version)
+	version, err = s.versionsRepository.Upsert(ctx, version)
 
 	if err != nil {
 		return nil, err
