@@ -11,17 +11,15 @@ import (
 )
 
 type InMemoryFormsRepository struct {
-	mu       sync.RWMutex
-	forms    map[string]*domain.Form
-	versions map[string]map[string]*domain.Version
-	logger   *log.Logger
+	mu     sync.RWMutex
+	forms  map[string]*domain.Form
+	logger *log.Logger
 }
 
-func NewInMemoryFormsRepository(logger *log.Logger) ports.FormsRepository{
+func NewInMemoryFormsRepository(logger *log.Logger) ports.FormsRepository {
 	return &InMemoryFormsRepository{
-		forms:    make(map[string]*domain.Form),
-		versions: make(map[string]map[string]*domain.Version),
-		logger:   logger,
+		forms:  make(map[string]*domain.Form),
+		logger: logger,
 	}
 }
 
@@ -63,76 +61,4 @@ func (r *InMemoryFormsRepository) Upsert(ctx context.Context, form *domain.Form)
 	return form, nil
 }
 
-func (r *InMemoryFormsRepository) FindVersions(ctx context.Context, formID domain.FormID) ([]*domain.Version, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
 
-	formVersions, ok := r.versions[string(formID)]
-
-	if !ok {
-		return make([]*domain.Version, 0), nil
-	}
-
-	versions := make([]*domain.Version, 0, len(formVersions))
-
-	for _, version := range formVersions {
-		versions = append(versions, version)
-	}
-
-	return versions, nil
-}
-
-func (r *InMemoryFormsRepository) FindVersion(ctx context.Context, formID domain.FormID, versionID domain.VersionID) (*domain.Version, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	formVersions, ok := r.versions[string(formID)]
-
-	if !ok {
-		return nil, common.ErrNotFound
-	}
-
-	version, ok := formVersions[string(versionID)]
-
-	if !ok {
-		return nil, common.ErrNotFound
-	}
-
-	return version, nil
-}
-
-func (r *InMemoryFormsRepository) FindNextVersionNumber(ctx context.Context, formID domain.FormID) (int, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	versions, ok := r.versions[string(formID)]
-
-	if !ok {
-		return 1, nil
-	}
-
-	maxVersion := 0
-	for _, version := range versions {
-		if version.Version > maxVersion {
-			maxVersion = version.Version
-		}
-	}
-
-	return maxVersion + 1, nil
-}
-
-func (r *InMemoryFormsRepository) UpsertVersion(ctx context.Context, version *domain.Version) (*domain.Version, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	formVersions, ok := r.versions[string(version.FormID)]
-
-	if !ok {
-		formVersions = make(map[string]*domain.Version)
-		r.versions[string(version.FormID)] = formVersions
-	}
-
-	formVersions[string(version.ID)] = version
-
-	return version, nil
-}

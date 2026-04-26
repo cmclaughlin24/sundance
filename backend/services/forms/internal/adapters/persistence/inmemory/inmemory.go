@@ -11,5 +11,6 @@ func Bootstrap(logger *log.Logger) *ports.Repository {
 	return &ports.Repository{
 		Database: database.NewInMemoryDatabase(),
 		Forms:    NewInMemoryFormsRepository(logger),
+		Versions: NewInMemoryVersionsRepository(logger),
 	}
 }
