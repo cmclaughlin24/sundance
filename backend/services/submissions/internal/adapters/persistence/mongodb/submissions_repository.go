@@ -23,7 +23,7 @@ func newMongoDBSubmissionsRepository(db *mongo.Database, logger *log.Logger) por
 	return &mongoDBSubmissionsRepository{base}
 }
 
-func (r *mongoDBSubmissionsRepository) Find(context.Context) ([]*domain.Submission, error) {
+func (r *mongoDBSubmissionsRepository) Find(ctx context.Context) ([]*domain.Submission, error) {
 	return nil, nil
 }
 

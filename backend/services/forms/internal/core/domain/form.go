@@ -17,8 +17,8 @@ type FormID string
 
 type Form struct {
 	ID          FormID
-	TenantID    string `validate:"required,notblank"`
-	Name        string `validate:"required,notblank"`
+	TenantID    string `validate:"required,nowhitespace"`
+	Name        string `validate:"required,nowhitespace"`
 	Description string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time

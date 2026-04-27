@@ -26,8 +26,8 @@ var (
 
 type Field struct {
 	ID         FieldID
-	Key        string `validate:"required,notblank"`
-	Name       string `validate:"required,notblank"`
+	Key        string `validate:"required,nowhitespace"`
+	Name       string `validate:"required,nowhitespace"`
 	Type       FieldType
 	Attributes FieldAttributes
 	withPosition

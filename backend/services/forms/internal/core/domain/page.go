@@ -17,8 +17,8 @@ var (
 
 type Page struct {
 	ID       PageID
-	Key      string `validate:"required,notblank"`
-	Name     string `validate:"required,notblank"`
+	Key      string `validate:"required,nowhitespace"`
+	Name     string `validate:"required,nowhitespace"`
 	sections map[int]*Section
 	withPosition
 	withRules

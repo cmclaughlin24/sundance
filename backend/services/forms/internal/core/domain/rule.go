@@ -25,7 +25,7 @@ var (
 type Rule struct {
 	ID         RuleID
 	Type       RuleType
-	Expression string `validate:"required,notblank"`
+	Expression string `validate:"required,nowhitespace"`
 }
 
 func NewRule(ruleType RuleType, expression string) (*Rule, error) {

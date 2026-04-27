@@ -3,11 +3,17 @@ package validate
 import (
 	"errors"
 	"slices"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 )
 
-var v *validator.Validate = validator.New(validator.WithRequiredStructEnabled())
+var v *validator.Validate
+
+func init() {
+	v = validator.New(validator.WithRequiredStructEnabled())
+	v.RegisterValidation("nowhitespace", noWhitespace)
+}
 
 func IsValidationErr(err error) bool {
 	return errors.As(err, &validator.ValidationErrors{})
@@ -23,4 +29,9 @@ func NewTypeValidator[T comparable](types []T) func(T) bool {
 	return func(t T) bool {
 		return slices.Contains(cpy, t)
 	}
+}
+
+func noWhitespace(fl validator.FieldLevel) bool {
+	val := fl.Field().String()
+	return strings.TrimSpace(val) != ""
 }
