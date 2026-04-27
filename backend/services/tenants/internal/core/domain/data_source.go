@@ -25,8 +25,8 @@ var (
 
 type DataSource struct {
 	ID          DataSourceID
-	TenantID    TenantID
-	Name        string
+	TenantID    TenantID `validate:"required,notblank"`
+	Name        string   `validate:"required,notblank"`
 	Description string
 	Type        DataSourceType
 	Attributes  DataSourceAttributes
@@ -49,7 +49,7 @@ func NewDataSource(
 		return nil, ErrInvalidSourceTypeAttributes
 	}
 
-	return &DataSource{
+	ds := &DataSource{
 		ID:          DataSourceID(uuid.NewString()),
 		TenantID:    tenantID,
 		Name:        name,
@@ -57,7 +57,13 @@ func NewDataSource(
 		Type:        sourceType,
 		Attributes:  attr,
 		CreatedAt:   Now(),
-	}, nil
+	}
+
+	if err := validate.ValidateStruct(ds); err != nil {
+		return nil, err
+	}
+
+	return ds, nil
 }
 
 func HydrateDataSource(

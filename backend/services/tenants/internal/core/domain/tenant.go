@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/google/uuid"
 )
 
@@ -13,7 +14,7 @@ type TenantID string
 
 type Tenant struct {
 	ID          TenantID
-	Name        string
+	Name        string `validate:"required,notblank"`
 	Description string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
@@ -25,6 +26,10 @@ func NewTenant(name, description string) (*Tenant, error) {
 		Name:        name,
 		Description: description,
 		CreatedAt:   Now(),
+	}
+
+	if err := validate.ValidateStruct(t); err != nil {
+		return nil, err
 	}
 
 	return t, nil
