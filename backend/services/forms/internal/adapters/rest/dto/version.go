@@ -12,7 +12,7 @@ type UpdateVersionRequest struct {
 	Pages []PageRequest `json:"pages"`
 }
 
-type VersionResponseDto struct {
+type VersionResponse struct {
 	ID            domain.VersionID     `json:"id"`
 	FormID        domain.FormID        `json:"formId"`
 	Version       int                  `json:"version"`
@@ -26,7 +26,7 @@ type VersionResponseDto struct {
 	Pages         []*PageResponse      `json:"pages"`
 }
 
-func VersionToResponse(version *domain.Version) *VersionResponseDto {
+func VersionToResponse(version *domain.Version) *VersionResponse {
 	if version == nil {
 		return nil
 	}
@@ -38,7 +38,7 @@ func VersionToResponse(version *domain.Version) *VersionResponseDto {
 		dtos = append(dtos, PageToResponse(p))
 	}
 
-	return &VersionResponseDto{
+	return &VersionResponse{
 		ID:            version.ID,
 		FormID:        version.FormID,
 		Version:       version.Version,

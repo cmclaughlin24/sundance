@@ -56,5 +56,9 @@ func (t *Tenant) Update(name, description string) error {
 	t.Description = description
 	t.UpdatedAt = Now()
 
+	if err := validate.ValidateStruct(t); err != nil {
+		return err
+	}
+
 	return nil
 }

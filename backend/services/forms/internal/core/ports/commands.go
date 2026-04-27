@@ -61,11 +61,11 @@ type CreateVersionCommand struct {
 	baseVersionCommand
 }
 
-func NewCreateVersionCommand(tenantID string, formId domain.FormID) *CreateVersionCommand {
+func NewCreateVersionCommand(tenantID string, formID domain.FormID) *CreateVersionCommand {
 	return &CreateVersionCommand{
 		baseVersionCommand{
 			TenantID: tenantID,
-			FormID:   formId,
+			FormID:   formID,
 		},
 	}
 }

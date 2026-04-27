@@ -227,7 +227,7 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]*dto.VersionResponseDto, 0, len(res.data))
+		dtos := make([]*dto.VersionResponse, 0, len(res.data))
 		for _, v := range res.data {
 			dtos = append(dtos, dto.VersionToResponse(v))
 		}
@@ -300,7 +300,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[*dto.VersionResponseDto]{
+		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[*dto.VersionResponse]{
 			Message: "Successfully created!",
 			Data:    dto.VersionToResponse(res.data),
 		})
@@ -347,7 +347,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[*dto.VersionResponseDto]{
+		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[*dto.VersionResponse]{
 			Message: "Successfully updated!",
 			Data:    dto.VersionToResponse(res.data),
 		})
@@ -459,13 +459,19 @@ func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 
 func isBadRequest(err error) bool {
 	return errors.Is(err, domain.ErrVersionLocked) ||
+		errors.Is(err, domain.ErrInvalidVersion) ||
 		errors.Is(err, domain.ErrInvalidVersionStatus) ||
 		errors.Is(err, domain.ErrDuplicateVersion) ||
+		errors.Is(err, domain.ErrInvalidPosition) ||
 		errors.Is(err, domain.ErrDuplicatePosition) ||
 		errors.Is(err, domain.ErrInvalidRuleType) ||
 		errors.Is(err, domain.ErrDuplicateRuleType) ||
 		errors.Is(err, domain.ErrPublishedByRequired) ||
 		errors.Is(err, domain.ErrRetiredByRequired) ||
 		errors.Is(err, domain.ErrInvalidFieldType) ||
-		errors.Is(err, domain.ErrInvalidFieldAttributes)
+		errors.Is(err, domain.ErrInvalidFieldAttributes) ||
+		errors.Is(err, domain.ErrInvalidForm) ||
+		errors.Is(err, domain.ErrFormHasActiveVersion) ||
+		errors.Is(err, domain.ErrInvalidPage) ||
+		errors.Is(err, domain.ErrInvalidSection)
 }

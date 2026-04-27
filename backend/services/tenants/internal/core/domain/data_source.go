@@ -103,6 +103,10 @@ func (ds *DataSource) Update(name, description string, sourceType DataSourceType
 	ds.Attributes = attr
 	ds.UpdatedAt = Now()
 
+	if err := validate.ValidateStruct(ds); err != nil {
+		return err
+	}
+
 	return nil
 }
 

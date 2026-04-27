@@ -20,9 +20,10 @@ type FormsService struct {
 
 func NewFormsService(logger *log.Logger, repository *ports.Repository) ports.FormsService {
 	return &FormsService{
-		logger:          logger,
-		database:        repository.Database,
-		formsRepository: repository.Forms,
+		logger:             logger,
+		database:           repository.Database,
+		formsRepository:    repository.Forms,
+		versionsRepository: repository.Versions,
 	}
 }
 
