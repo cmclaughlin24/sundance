@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
@@ -50,10 +54,33 @@ func main() {
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
+	serverErrChan := make(chan error, 1)
 
-	app.Logger.Printf("application listening on :%d", settings.Port)
+	go func() {
+		app.Logger.Printf("application listening on :%d", settings.Port)
 
-	if err := server.ListenAndServe(); err != nil {
-		app.Logger.Fatal(err)
+		if err := server.ListenAndServe(); err != nil {
+			serverErrChan <- err
+		}
+	}()
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+
+	select {
+	case err := <-serverErrChan:
+		app.Logger.Printf("server error: %v\n", err)
+	case sig := <-signalChan:
+		app.Logger.Printf("application received shutdown signal: %v\n", sig)
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		app.Logger.Printf("application shutdown failed: %v\n", err)
+		return
+	}
+
+	app.Logger.Println("application shutdown successful")
 }
