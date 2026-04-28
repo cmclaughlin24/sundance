@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/strategy"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/stratreg"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 )
 
@@ -15,7 +15,7 @@ var (
 
 type attributeParser func([]byte) (domain.FieldAttributes, error)
 
-var attributeParsers = strategy.NewStrategies[domain.FieldType, attributeParser]().
+var attributeParsers = stratreg.New[domain.FieldType, attributeParser]().
 	Set(domain.FieldTypeText, func(data []byte) (domain.FieldAttributes, error) {
 		return parseAttributes[domain.TextFieldAttributes](data)
 	}).

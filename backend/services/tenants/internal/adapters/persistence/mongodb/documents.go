@@ -3,7 +3,7 @@ package mongodb
 import (
 	"time"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/strategy"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/stratreg"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
@@ -88,7 +88,7 @@ func fromDataSourceDocument(ds *dataSourceDocument) (*domain.DataSource, error) 
 
 type attributeParser func(bson.Raw) (domain.DataSourceAttributes, error)
 
-var attributeParserStrategies = strategy.NewStrategies[domain.DataSourceType, attributeParser]().
+var attributeParserStrategies = stratreg.New[domain.DataSourceType, attributeParser]().
 	Set(domain.DataSourceTypeStatic, func(raw bson.Raw) (domain.DataSourceAttributes, error) {
 		return parseDataSourceAttributes[domain.StaticDataSourceAttributes](raw)
 	}).

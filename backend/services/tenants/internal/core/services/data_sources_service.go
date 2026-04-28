@@ -5,22 +5,31 @@ import (
 	"log"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/stratreg"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
 
+type LookupStrategy interface {
+	Lookup(context.Context, *domain.DataSource) ([]*domain.Lookup, error)
+}
+
+type LookupStrategyRegistry = stratreg.StrategyRegistry[domain.DataSourceType, LookupStrategy]
+
 type DataSourcesService struct {
 	logger                *log.Logger
 	tenantsRepository     ports.TenantsRepository
 	dataSourcesRepository ports.DataSourcesRepository
+	lookupStrategies      LookupStrategyRegistry
 }
 
-func NewDataSourcesService(logger *log.Logger, repository *ports.Repository) ports.DataSourcesService {
+func NewDataSourcesService(logger *log.Logger, repository *ports.Repository, registry LookupStrategyRegistry) ports.DataSourcesService {
 	return &DataSourcesService{
 		logger:                logger,
 		dataSourcesRepository: repository.DataSources,
 		tenantsRepository:     repository.Tenants,
+		lookupStrategies:      registry,
 	}
 }
 
@@ -127,15 +136,19 @@ func (s *DataSourcesService) Lookup(ctx context.Context, command *ports.GetDataS
 		return nil, err
 	}
 
-	_, err := s.dataSourcesRepository.FindByID(ctx, command.TenantID, command.ID)
+	ds, err := s.dataSourcesRepository.FindByID(ctx, command.TenantID, command.ID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO: Implement data source lookup strategy pattern based on the type of data source.
+	strategy, err := s.lookupStrategies.Get(ds.Type)
 
-	return nil, nil
+	if err != nil {
+		return nil, err
+	}
+
+	return strategy.Lookup(ctx, ds)
 }
 
 func (s *DataSourcesService) tenantExists(ctx context.Context, tenantID domain.TenantID) error {

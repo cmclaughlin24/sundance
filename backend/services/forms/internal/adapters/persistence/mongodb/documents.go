@@ -3,7 +3,7 @@ package mongodb
 import (
 	"time"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/strategy"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/stratreg"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
@@ -341,7 +341,7 @@ func fromRuleDocument(r *ruleDocument) *domain.Rule {
 
 type attributeParser func(bson.Raw) (domain.FieldAttributes, error)
 
-var attributeParserStrategies = strategy.NewStrategies[domain.FieldType, attributeParser]().
+var attributeParserStrategies = stratreg.New[domain.FieldType, attributeParser]().
 	Set(domain.FieldTypeText, func(raw bson.Raw) (domain.FieldAttributes, error) {
 		return parseFieldAttributes[domain.TextFieldAttributes](raw)
 	}).
