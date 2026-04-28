@@ -12,6 +12,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/persistence"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/rest"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/services"
 )
 
 type settings struct {
@@ -36,7 +37,8 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	app := core.NewApplication(logger, r)
+	s := services.Bootstrap(logger, r)
+	app := core.NewApplication(logger, r, s)
 
 	defer app.Close()
 	mux := rest.NewRoutes(app)

@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
-	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/services"
 )
 
 type Application struct {
@@ -13,12 +12,10 @@ type Application struct {
 	repository *ports.Repository
 }
 
-func NewApplication(logger *log.Logger, repository *ports.Repository) *Application {
-	s := services.Bootstrap(logger, repository)
-
+func NewApplication(logger *log.Logger, repository *ports.Repository, services *ports.Services) *Application {
 	return &Application{
 		Logger:     logger,
-		Services:   s,
+		Services:   services,
 		repository: repository,
 	}
 }
