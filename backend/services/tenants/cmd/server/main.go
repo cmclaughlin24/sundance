@@ -36,11 +36,7 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	app, err := core.NewApplication(logger, r)
-
-	if err != nil {
-		logger.Fatal(err)
-	}
+	app := core.NewApplication(logger, r)
 
 	defer app.Close()
 	mux := rest.NewRoutes(app)

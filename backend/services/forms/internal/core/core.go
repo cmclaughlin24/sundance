@@ -13,14 +13,14 @@ type Application struct {
 	repository *ports.Repository
 }
 
-func NewApplication(logger *log.Logger, repository *ports.Repository) (*Application, error) {
+func NewApplication(logger *log.Logger, repository *ports.Repository) (*Application) {
 	s := services.Bootstrap(logger, repository)
 
 	return &Application{
 		Logger:     logger,
 		Services:   s,
 		repository: repository,
-	}, nil
+	}
 }
 
 func (app *Application) Close() {
