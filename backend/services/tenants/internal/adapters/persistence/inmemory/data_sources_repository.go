@@ -80,6 +80,21 @@ func (r *inMemoryDataSourceRepository) Delete(ctx context.Context, tenantID doma
 	return nil
 }
 
+func (r *inMemoryDataSourceRepository) DeleteAll(ctx context.Context, tenantID domain.TenantID) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	prefix := string(tenantID) + "/"
+
+	for key := range r.dataSources {
+		if len(key) > len(prefix) && key[:len(prefix)] == prefix {
+			delete(r.dataSources, key)
+		}
+	}
+
+	return nil
+}
+
 func getDataSourceKey(tenantID domain.TenantID, id domain.DataSourceID) string {
 	return string(tenantID) + "/" + string(id)
 }

@@ -10,20 +10,20 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
 
-type inMemoryTenantRepository struct {
+type inMemoryTenantsRepository struct {
 	mu      sync.RWMutex
 	tenants map[string]*domain.Tenant
 	logger  *log.Logger
 }
 
-func newInMemoryTenantRepository(logger *log.Logger) ports.TenantsRepository {
-	return &inMemoryTenantRepository{
+func newInMemoryTenantsRepository(logger *log.Logger) ports.TenantsRepository {
+	return &inMemoryTenantsRepository{
 		tenants: make(map[string]*domain.Tenant),
 		logger:  logger,
 	}
 }
 
-func (r *inMemoryTenantRepository) Find(ctx context.Context) ([]*domain.Tenant, error) {
+func (r *inMemoryTenantsRepository) Find(ctx context.Context) ([]*domain.Tenant, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -36,7 +36,7 @@ func (r *inMemoryTenantRepository) Find(ctx context.Context) ([]*domain.Tenant, 
 	return tenants, nil
 }
 
-func (r *inMemoryTenantRepository) FindByID(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
+func (r *inMemoryTenantsRepository) FindByID(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -49,14 +49,14 @@ func (r *inMemoryTenantRepository) FindByID(ctx context.Context, id domain.Tenan
 	return tenant, nil
 }
 
-func (r *inMemoryTenantRepository) Exists(ctx context.Context, id domain.TenantID) (bool, error) {
+func (r *inMemoryTenantsRepository) Exists(ctx context.Context, id domain.TenantID) (bool, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	_, exists := r.tenants[string(id)]
 	return exists, nil
 }
 
-func (r *inMemoryTenantRepository) Upsert(ctx context.Context, tenant *domain.Tenant) (*domain.Tenant, error) {
+func (r *inMemoryTenantsRepository) Upsert(ctx context.Context, tenant *domain.Tenant) (*domain.Tenant, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -65,7 +65,7 @@ func (r *inMemoryTenantRepository) Upsert(ctx context.Context, tenant *domain.Te
 	return tenant, nil
 }
 
-func (r *inMemoryTenantRepository) Delete(ctx context.Context, id domain.TenantID) error {
+func (r *inMemoryTenantsRepository) Delete(ctx context.Context, id domain.TenantID) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

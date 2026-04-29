@@ -16,7 +16,7 @@ func Bootstrap(client *mongo.Client, logger *log.Logger) (*ports.Repository, err
 		return nil, err
 	}
 
-	versions, err := newMongoDBVersionRepository(db, logger)
+	versions, err := newMongoDBVersionsRepository(db, logger)
 	if err != nil {
 		return nil, err
 	}

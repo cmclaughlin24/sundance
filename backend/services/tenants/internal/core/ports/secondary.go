@@ -29,6 +29,7 @@ type DataSourcesRepository interface {
 	Exists(context.Context, domain.TenantID, domain.DataSourceID) (bool, error)
 	Upsert(context.Context, *domain.DataSource) (*domain.DataSource, error)
 	Delete(context.Context, domain.TenantID, domain.DataSourceID) error
+	DeleteAll(context.Context, domain.TenantID) error
 }
 
 type HTTPClient interface {

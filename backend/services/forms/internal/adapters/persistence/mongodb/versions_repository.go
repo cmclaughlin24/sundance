@@ -24,16 +24,16 @@ var (
 	}
 )
 
-type mongoDBVersionRepository struct {
+type mongoDBVersionsRepository struct {
 	base *database.MongoDBRepository[versionDocument]
 }
 
-func newMongoDBVersionRepository(db *mongo.Database, logger *log.Logger) (ports.VersionRepository, error) {
+func newMongoDBVersionsRepository(db *mongo.Database, logger *log.Logger) (ports.VersionRepository, error) {
 	base := database.NewMongoDBRepository[versionDocument](
 		db.Collection("versions"),
 		logger,
 	)
-	repository := &mongoDBVersionRepository{base}
+	repository := &mongoDBVersionsRepository{base}
 
 	if err := repository.migrate(context.Background()); err != nil {
 		return nil, err
@@ -42,12 +42,12 @@ func newMongoDBVersionRepository(db *mongo.Database, logger *log.Logger) (ports.
 	return repository, nil
 }
 
-func (r *mongoDBVersionRepository) migrate(ctx context.Context) error {
+func (r *mongoDBVersionsRepository) migrate(ctx context.Context) error {
 	_, err := r.base.Collection().Indexes().CreateMany(ctx, indexes)
 	return err
 }
 
-func (r *mongoDBVersionRepository) Find(ctx context.Context, formID domain.FormID) ([]*domain.Version, error) {
+func (r *mongoDBVersionsRepository) Find(ctx context.Context, formID domain.FormID) ([]*domain.Version, error) {
 	documents, err := r.base.Find(ctx, bson.M{"form_id": formID})
 
 	if err != nil {
@@ -68,7 +68,7 @@ func (r *mongoDBVersionRepository) Find(ctx context.Context, formID domain.FormI
 	return versions, nil
 }
 
-func (r *mongoDBVersionRepository) FindByID(ctx context.Context, formID domain.FormID, versionID domain.VersionID) (*domain.Version, error) {
+func (r *mongoDBVersionsRepository) FindByID(ctx context.Context, formID domain.FormID, versionID domain.VersionID) (*domain.Version, error) {
 	document, err := r.base.FindOne(ctx, bson.M{"form_id": formID, "_id": versionID})
 
 	if err != nil {
@@ -78,7 +78,7 @@ func (r *mongoDBVersionRepository) FindByID(ctx context.Context, formID domain.F
 	return fromVersionDocument(&document)
 }
 
-func (r *mongoDBVersionRepository) FindNextVersionNumber(ctx context.Context, formID domain.FormID) (int, error) {
+func (r *mongoDBVersionsRepository) FindNextVersionNumber(ctx context.Context, formID domain.FormID) (int, error) {
 	filter := bson.M{"form_id": formID}
 	opts := options.Find().SetSort(bson.M{"version": -1}).SetLimit(1).SetProjection(bson.M{"version": 1})
 
@@ -113,7 +113,7 @@ func (r *mongoDBVersionRepository) FindNextVersionNumber(ctx context.Context, fo
 	return lv, nil
 }
 
-func (r *mongoDBVersionRepository) Upsert(ctx context.Context, v *domain.Version) (*domain.Version, error) {
+func (r *mongoDBVersionsRepository) Upsert(ctx context.Context, v *domain.Version) (*domain.Version, error) {
 	doc, err := toVersionDocument(v)
 
 	if err != nil {

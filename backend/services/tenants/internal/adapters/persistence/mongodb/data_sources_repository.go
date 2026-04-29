@@ -85,3 +85,17 @@ func (r *mongoDBDataSourcesRepository) Upsert(ctx context.Context, ds *domain.Da
 func (r *mongoDBDataSourcesRepository) Delete(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) error {
 	return r.base.Remove(ctx, bson.M{"_id": sourceID, "tenant_id": tenantID})
 }
+
+func (r *mongoDBDataSourcesRepository) DeleteAll(ctx context.Context, tenantID domain.TenantID) error {
+	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
+		_, err := r.base.Collection().DeleteMany(sctx, bson.M{"tenant_id": tenantID})
+
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+
+	return err
+}

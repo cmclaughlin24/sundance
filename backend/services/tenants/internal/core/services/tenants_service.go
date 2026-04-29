@@ -6,19 +6,24 @@ import (
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
+	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
 
 type TenantsService struct {
-	logger            *log.Logger
-	tenantsRepository ports.TenantsRepository
+	logger                *log.Logger
+	database              database.Database
+	tenantsRepository     ports.TenantsRepository
+	dataSourcesRepository ports.DataSourcesRepository
 }
 
 func NewTenantsService(logger *log.Logger, repository *ports.Repository) ports.TenantsService {
 	return &TenantsService{
-		logger:            logger,
-		tenantsRepository: repository.Tenants,
+		logger:                logger,
+		database:              repository.Database,
+		tenantsRepository:     repository.Tenants,
+		dataSourcesRepository: repository.DataSources,
 	}
 }
 
@@ -73,7 +78,14 @@ func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenant
 }
 
 func (s *TenantsService) Delete(ctx context.Context, id domain.TenantID) error {
-	exists, err := s.tenantsRepository.Exists(ctx, id)
+	txCtx, err := s.database.BeginTx(ctx)
+
+	if err != nil {
+		return err
+	}
+
+	defer s.database.RollbackTx(txCtx)
+	exists, err := s.tenantsRepository.Exists(txCtx, id)
 
 	if err != nil {
 		return err
@@ -83,5 +95,17 @@ func (s *TenantsService) Delete(ctx context.Context, id domain.TenantID) error {
 		return common.ErrNotFound
 	}
 
-	return s.tenantsRepository.Delete(ctx, id)
+	if err := s.tenantsRepository.Delete(txCtx, id); err != nil {
+		return err
+	}
+
+	if err := s.dataSourcesRepository.DeleteAll(txCtx, id); err != nil {
+		return err
+	}
+
+	if err := s.database.CommitTx(txCtx); err != nil {
+		return err
+	}
+
+	return nil
 }
