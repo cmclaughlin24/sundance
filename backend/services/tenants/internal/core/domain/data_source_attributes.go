@@ -18,15 +18,9 @@ type ScheduledDataSourceAttributes struct {
 	Data []*Lookup
 }
 
-type QueryDataSourceType string
-
-const (
-	QueryDataSourceTypeREST QueryDataSourceType = "rest"
-	QueryDataSourceTypeGRPC QueryDataSourceType = "grpc"
-)
-
-type QueryDataSourceAttributes struct {
+type WebhookDataSourceAttributes struct {
 	baseDataSourceAttributes
-	Type     QueryDataSourceType
-	Resource string
+	URL     string
+	Method  string
+	Headers map[string]string
 }

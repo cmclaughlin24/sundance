@@ -107,3 +107,13 @@ func SendErrorResponse(w http.ResponseWriter, err error) error {
 		})
 	}
 }
+
+func DecodeJSONResponse[T any](resp *http.Response, data T) error {
+	defer resp.Body.Close()
+
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return nil
+}

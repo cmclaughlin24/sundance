@@ -41,7 +41,7 @@ type baseDataSourceCommand struct {
 	TenantID    domain.TenantID             `validate:"required"`
 	Name        string                      `validate:"required,max=75"`
 	Description string                      `validate:"required,max=250"`
-	Type        domain.DataSourceType       `validate:"oneof=static scheduled query"`
+	Type        domain.DataSourceType       `validate:"oneof=static scheduled webhook"`
 	Attributes  domain.DataSourceAttributes `validate:"required"`
 }
 

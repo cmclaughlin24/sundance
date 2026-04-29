@@ -5,31 +5,24 @@ import (
 	"log"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/stratreg"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
 
-type LookupStrategy interface {
-	Lookup(context.Context, *domain.DataSource) ([]*domain.Lookup, error)
-}
-
-type LookupStrategyRegistry = stratreg.StrategyRegistry[domain.DataSourceType, LookupStrategy]
-
 type DataSourcesService struct {
 	logger                *log.Logger
 	tenantsRepository     ports.TenantsRepository
 	dataSourcesRepository ports.DataSourcesRepository
-	lookupStrategies      LookupStrategyRegistry
+	lookupStrategies      ports.LookupStrategyRegistry
 }
 
-func NewDataSourcesService(logger *log.Logger, repository *ports.Repository, registry LookupStrategyRegistry) ports.DataSourcesService {
+func NewDataSourcesService(logger *log.Logger, repository *ports.Repository, strategies *ports.Strategies) ports.DataSourcesService {
 	return &DataSourcesService{
 		logger:                logger,
 		dataSourcesRepository: repository.DataSources,
 		tenantsRepository:     repository.Tenants,
-		lookupStrategies:      registry,
+		lookupStrategies:      strategies.Lookups,
 	}
 }
 

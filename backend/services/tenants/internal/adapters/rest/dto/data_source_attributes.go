@@ -22,8 +22,8 @@ var attributeParserStrategies = stratreg.New[domain.DataSourceType, attributePar
 	Set(domain.DataSourceTypeScheduled, func(data []byte) (domain.DataSourceAttributes, error) {
 		return parseAttributes[domain.ScheduledDataSourceAttributes](data)
 	}).
-	Set(domain.DataSourceTypeQuery, func(data []byte) (domain.DataSourceAttributes, error) {
-		return parseAttributes[domain.QueryDataSourceAttributes](data)
+	Set(domain.DataSourceTypeWebhook, func(data []byte) (domain.DataSourceAttributes, error) {
+		return parseAttributes[domain.WebhookDataSourceAttributes](data)
 	})
 
 func parseAttributes[T domain.DataSourceAttributes](data []byte) (domain.DataSourceAttributes, error) {
@@ -64,18 +64,14 @@ type scheduledDataSourceAttributesResponse struct {
 	Data []*LookupResponse `json:"data"`
 }
 
-type queryDataSourceAttributesResponse struct {
-	Type     domain.QueryDataSourceType `json:"type"`
-	Resource string                     `json:"resource"`
+type webhookDataSourceAttributesResponse struct {
+	URL     string            `json:"url"`
+	Method  string            `json:"method"`
+	Headers map[string]string `json:"headers,omitempty"`
 }
 
 func dataSourceAttributesToResponse(attr domain.DataSourceAttributes) any {
 	switch t := attr.(type) {
-	case domain.QueryDataSourceAttributes:
-		return queryDataSourceAttributesResponse{
-			Type:     t.Type,
-			Resource: t.Resource,
-		}
 	case domain.ScheduledDataSourceAttributes:
 		data := LookupsToResponse(t.Data)
 
@@ -87,6 +83,12 @@ func dataSourceAttributesToResponse(attr domain.DataSourceAttributes) any {
 
 		return staticDataSourceAttributesResponse{
 			Data: data,
+		}
+	case domain.WebhookDataSourceAttributes:
+		return webhookDataSourceAttributesResponse{
+			URL:     t.URL,
+			Method:  t.Method,
+			Headers: t.Headers,
 		}
 	default:
 		return attr

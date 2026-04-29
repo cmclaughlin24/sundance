@@ -15,7 +15,7 @@ type DataSourceType string
 const (
 	DataSourceTypeStatic    DataSourceType = "static"
 	DataSourceTypeScheduled DataSourceType = "scheduled"
-	DataSourceTypeQuery     DataSourceType = "query"
+	DataSourceTypeWebhook   DataSourceType = "webhook"
 )
 
 var (
@@ -113,7 +113,7 @@ func (ds *DataSource) Update(name, description string, sourceType DataSourceType
 var isValidSourceType = validate.NewTypeValidator([]DataSourceType{
 	DataSourceTypeStatic,
 	DataSourceTypeScheduled,
-	DataSourceTypeQuery,
+	DataSourceTypeWebhook,
 })
 
 func isValidAttributeType(sourceType DataSourceType, attributes DataSourceAttributes) bool {
@@ -122,8 +122,8 @@ func isValidAttributeType(sourceType DataSourceType, attributes DataSourceAttrib
 		return sourceType == DataSourceTypeStatic
 	case ScheduledDataSourceAttributes:
 		return sourceType == DataSourceTypeScheduled
-	case QueryDataSourceAttributes:
-		return sourceType == DataSourceTypeQuery
+	case WebhookDataSourceAttributes:
+		return sourceType == DataSourceTypeWebhook
 	default:
 		return false
 	}

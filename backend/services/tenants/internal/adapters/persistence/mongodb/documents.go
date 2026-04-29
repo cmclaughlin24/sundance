@@ -95,8 +95,8 @@ var attributeParserStrategies = stratreg.New[domain.DataSourceType, attributePar
 	Set(domain.DataSourceTypeScheduled, func(raw bson.Raw) (domain.DataSourceAttributes, error) {
 		return parseDataSourceAttributes[domain.ScheduledDataSourceAttributes](raw)
 	}).
-	Set(domain.DataSourceTypeQuery, func(raw bson.Raw) (domain.DataSourceAttributes, error) {
-		return parseDataSourceAttributes[domain.QueryDataSourceAttributes](raw)
+	Set(domain.DataSourceTypeWebhook, func(raw bson.Raw) (domain.DataSourceAttributes, error) {
+		return parseDataSourceAttributes[domain.WebhookDataSourceAttributes](raw)
 	})
 
 func unmarshalDataSourceAttributes(sourceType domain.DataSourceType, raw bson.Raw) (domain.DataSourceAttributes, error) {

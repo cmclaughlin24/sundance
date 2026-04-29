@@ -16,6 +16,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/services"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/strategies"
 )
 
 type settings struct {
@@ -40,7 +41,8 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	s := services.Bootstrap(logger, r)
+	st := strategies.Bootstrap(logger, r, &http.Client{Timeout: 10 * time.Second})
+	s := services.Bootstrap(logger, r, st)
 	app := core.NewApplication(logger, r, s)
 
 	defer app.Close()

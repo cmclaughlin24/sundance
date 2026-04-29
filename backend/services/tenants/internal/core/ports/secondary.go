@@ -2,7 +2,9 @@ package ports
 
 import (
 	"context"
+	"net/http"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/stratreg"
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 )
@@ -28,3 +30,17 @@ type DataSourcesRepository interface {
 	Upsert(context.Context, *domain.DataSource) (*domain.DataSource, error)
 	Delete(context.Context, domain.TenantID, domain.DataSourceID) error
 }
+
+type HTTPClient interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
+type Strategies struct {
+	Lookups LookupStrategyRegistry
+}
+
+type LookupStrategy interface {
+	Lookup(context.Context, *domain.DataSource) ([]*domain.Lookup, error)
+}
+
+type LookupStrategyRegistry = stratreg.StrategyRegistry[domain.DataSourceType, LookupStrategy]
