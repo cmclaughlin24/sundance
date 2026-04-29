@@ -178,6 +178,10 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 		return nil, err
 	}
 
+	if err := version.SetPages(command.Pages...); err != nil {
+		return nil, err
+	}
+
 	version, err = s.versionsRepository.Upsert(txCtx, version)
 
 	if err != nil {

@@ -277,13 +277,19 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 	formID := h.getFormIDPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
-	var body dto.CreateVersionRequest
+	var body dto.UpsertVersionRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
 
-	command := ports.NewCreateVersionCommand(tenantID, formID)
+	pages, err := dto.RequestToPages(body)
+	if err != nil {
+		h.sendErrorResponse(w, err)
+		return
+	}
+
+	command := ports.NewCreateVersionCommand(tenantID, formID, pages)
 
 	go func() {
 		defer close(resultChan)
@@ -318,7 +324,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 	versionID := h.getVersionIDPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
 
-	var body dto.UpdateVersionRequest
+	var body dto.UpsertVersionRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
