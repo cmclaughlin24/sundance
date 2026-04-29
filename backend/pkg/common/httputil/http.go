@@ -108,8 +108,14 @@ func SendErrorResponse(w http.ResponseWriter, err error) error {
 	}
 }
 
+// Reads the JSON response from the http.Response and decodes it into the provided data structure of type T or
+// returns an error if the response status code indicates a failure or if the JSON decoding fails.
 func DecodeJSONResponse[T any](resp *http.Response, data T) error {
 	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		return fmt.Errorf("unexpected status code %d", resp.StatusCode)
+	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return fmt.Errorf("failed to decode response: %w", err)

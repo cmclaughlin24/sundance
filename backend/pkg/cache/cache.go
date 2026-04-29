@@ -32,7 +32,7 @@ func Bootstrap(settings CacheSettings) (CacheManager, error) {
 
 	switch settings.Type {
 	case CacheTypeInMemory:
-		fn = boostrapInMemory
+		fn = bootstrapInMemory
 	}
 
 	if fn == nil {
@@ -42,6 +42,6 @@ func Bootstrap(settings CacheSettings) (CacheManager, error) {
 	return fn(settings)
 }
 
-func boostrapInMemory(_ CacheSettings) (CacheManager, error) {
+func bootstrapInMemory(_ CacheSettings) (CacheManager, error) {
 	return NewInMemoryCacheManager(), nil
 }

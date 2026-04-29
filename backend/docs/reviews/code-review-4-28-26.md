@@ -6,9 +6,17 @@
 
 2. ~~`Lookup` service method is a stub~~ (Tenants, P3) -- `DataSourcesService.Lookup` (`data_sources_service.go:125-139`) now resolves a `LookupStrategy` from the strategy registry by data source type and delegates to `strategy.Lookup(ctx, ds)`. Three strategy implementations exist: `StaticLookupStrategy`, `ScheduledLookupStrategy`, and `WebhookLookupStrategy`. *(Resolves 4/26 #18.)*
 
-3. ~~No domain constructors~~ (Submissions, P2) -- `NewSubmission` (`submission.go:33-50`) now generates IDs, sets `CreatedAt`, initializes `Attempts`, and validates via `validate.ValidateStruct`. `HydrateSubmission` (`submission.go:52-73`) provides a persistence reconstitution path. *(Partially resolves 4/26 #8 -- `SubmissionAttempt` still lacks a constructor; see #10 below.)*
+3. ~~No domain constructors~~ (Submissions, P2) -- `NewSubmission` (`submission.go:33-50`) now generates IDs, sets `CreatedAt`, initializes `Attempts`, and validates via `validate.ValidateStruct`. `HydrateSubmission` (`submission.go:52-73`) provides a persistence reconstitution path. *(Partially resolves 4/26 #8 -- `SubmissionAttempt` still lacks a constructor; see #11 below.)*
 
 4. ~~Bootstrapping inconsistencies~~ (All) -- `NewApplication` across all services now accepts pre-built `*ports.Repository` and `*ports.Services` rather than constructing them internally. Bootstrap functions in `services/` and `persistence/` packages are the sole composition points. *(Not previously tracked; cleanup resolved same day.)*
+
+5. ~~`InMemoryCacheManager` is not thread-safe~~ (Shared, P2) -- `InMemoryCacheManager` (`inmemory_cache_manager.go`) now uses a `sync.RWMutex`. `Get` acquires `RLock`, `Set` and `Del` acquire `Lock`. *(Introduced and resolved same day.)*
+
+6. ~~`InMemoryCacheManager.Set` swallows marshal errors~~ (Shared, P2) -- `Set` (`inmemory_cache_manager.go:38`) now returns the `json.Marshal` error instead of `nil`. *(Introduced and resolved same day.)*
+
+7. ~~`DecodeJSONResponse` does not check HTTP status code~~ (Shared, P2) -- `DecodeJSONResponse` (`httputil/http.go`) now returns an error for any status code >= 300 before attempting to decode the body. *(Introduced and resolved same day.)*
+
+8. ~~`boostrapInMemory` typo~~ (Shared, P3) -- Renamed to `bootstrapInMemory` (`cache.go:42`). *(Introduced and resolved same day.)*
 
 ---
 
@@ -92,25 +100,17 @@ See [4/25 review](code-review-4-25-26.md) and [4/24 review](code-review-4-24-26.
 
 20. **`ErrMissingTenantID` maps to 500** (`middleware.go:15`) -- `TenantMiddleware` calls `httputil.SendErrorResponse(w, ErrMissingTenantID)` when the `X-Tenant-ID` header is absent. `ErrMissingTenantID` doesn't match any case in `SendErrorResponse`, falling through to 500. Should be 400. *(Unresolved from 4/26 #24.)*
 
-21. **`InMemoryCacheManager` is not thread-safe** (`inmemory_cache_manager.go`) -- The `cache` map is accessed without a `sync.RWMutex`. Concurrent `Get`/`Set`/`Del` calls will cause a data race. *(New.)*
-
-22. **`InMemoryCacheManager.Set` swallows marshal errors** (`inmemory_cache_manager.go:34`) -- When `json.Marshal(data)` fails, the method returns `nil` instead of the error. Callers will believe the write succeeded. *(New.)*
-
-23. **`DecodeJSONResponse` does not check HTTP status code** (`httputil/http.go`) -- `DecodeJSONResponse` decodes the body regardless of status. A 4xx/5xx response will either decode into an unexpected shape or silently produce a zero-value result. The `WebhookLookupStrategy` calls this on the external HTTP response without status validation. *(New.)*
-
-24. **`boostrapInMemory` typo** (`cache.go:39`) -- Function name should be `bootstrapInMemory`. *(New.)*
-
 ---
 
 ### Cross-Service
 
 #### Architectural
 
-25. **Zero test files** in all three services and shared packages. *(Unresolved from 4/26 #20.)*
+21. **Zero test files** in all three services and shared packages. *(Unresolved from 4/26 #20.)*
 
-26. **No domain events** for cross-service communication. *(Unresolved from 4/26 #21.)*
+22. **No domain events** for cross-service communication. *(Unresolved from 4/26 #21.)*
 
-27. **No real authentication** -- `X-Tenant-ID` is blindly trusted. *(Unresolved from 4/26 #22.)*
+23. **No real authentication** -- `X-Tenant-ID` is blindly trusted. *(Unresolved from 4/26 #22.)*
 
 ---
 
@@ -125,18 +125,14 @@ See [4/25 review](code-review-4-25-26.md) and [4/24 review](code-review-4-24-26.
 | **P2** | 6 | Empty handler stubs return 200 OK | Submissions |
 | **P2** | 18 | Tenant removal doesn't cascade-delete DataSources | Tenants |
 | **P2** | 20 | `ErrMissingTenantID` maps to 500 | Shared |
-| **P2** | 21 | `InMemoryCacheManager` not thread-safe | Shared |
-| **P2** | 22 | `InMemoryCacheManager.Set` swallows marshal errors | Shared |
-| **P2** | 23 | `DecodeJSONResponse` no status check | Shared |
-| **P3** | 25 | Zero test files | All |
-| **P3** | 26 | No domain events | All |
+| **P3** | 21 | Zero test files | All |
+| **P3** | 22 | No domain events | All |
 | **P3** | 11 | `SubmissionAttempt` has no constructor | Submissions |
 | **P3** | 12 | `any`-typed attributes (no type safety) | Submissions |
 | **P3** | 13 | `SubmissionStatus` no constants | Submissions |
 | **P3** | 19 | `Lookup` value object no validation | Tenants |
 | **P3** | 2 | `CreateVersionRequest` empty struct deserialized | Forms |
-| **P3** | 24 | `boostrapInMemory` typo | Shared |
-| **P3** | 27 | No real authentication | All |
+| **P3** | 23 | No real authentication | All |
 
 ---
 
@@ -148,13 +144,14 @@ The focus since the last review was infrastructure maturity and implementing the
 
 - **Graceful shutdown implemented** -- All three services now handle `SIGTERM`/`os.Interrupt` with a 15-second shutdown timeout via `http.Server.Shutdown`. The pattern is consistent across services: goroutine for `ListenAndServe`, `select` on server error vs signal channel, then graceful shutdown with context deadline. This closes a long-standing P3 issue tracked since 4/25.
 - **Lookup strategies fully implemented** -- Three concrete `LookupStrategy` implementations now exist: `StaticLookupStrategy` returns data directly from attributes, `ScheduledLookupStrategy` returns pre-loaded data (with a TODO for lazy loading), and `WebhookLookupStrategy` makes an outbound HTTP call and decodes the JSON response into `[]*Lookup`. The strategy registry (`stratreg.StrategyRegistry`) dispatches by `DataSourceType`. The `DataSourcesService.Lookup` method is no longer a stub.
-- **Cache package introduced** -- `pkg/cache` adds a `CacheManager` interface with `Get`/`Set`/`Del` and an in-memory implementation. Currently unused by any service but establishes the caching infrastructure. Has thread-safety and error-handling issues (see #21, #22).
+- **Cache package introduced** -- `pkg/cache` adds a `CacheManager` interface with `Get`/`Set`/`Del` and an in-memory implementation. Currently unused by any service but establishes the caching infrastructure. Thread-safety (`sync.RWMutex`) and error handling (marshal error propagation) are correctly implemented.
 - **Submissions domain model matured** -- `NewSubmission` factory function added with UUID generation, timestamp, and struct validation. `HydrateSubmission` provides the persistence reconstitution path. However, the constructor has a bug: it never assigns `Status` or `Payload` to the struct (see #4).
 - **Bootstrapping refactored** -- `NewApplication` across all services simplified to accept pre-built dependencies. `strategies.Bootstrap` wires lookup strategies with an `HTTPClient` interface for testability. The `strategy` package was renamed to `stratreg` to avoid collision with the `strategies` domain package.
+- **Shared package hardened** -- `DecodeJSONResponse` now validates HTTP status codes (>= 300 returns error) before decoding, protecting the `WebhookLookupStrategy` from silently consuming error responses. `InMemoryCacheManager` now guards map access with `sync.RWMutex` and correctly propagates `json.Marshal` errors. The `boostrapInMemory` typo was fixed.
 
 ### Current State
 
-**24 remaining issues (4/26) -> 27 remaining issues** (resolved 4 from prior reviews; introduced 5 new issues including 1 P1 bug).
+**24 remaining issues (4/26) -> 23 remaining issues** (resolved 8 total: 4 from prior reviews, 4 introduced-and-resolved same day; introduced 1 new P1 bug).
 
 **Forms Service** remains stable. No changes since 4/26. Remaining gaps: hardcoded placeholder user ID (P2), `CreateVersionRequest` empty struct (P3).
 
@@ -168,12 +165,12 @@ The focus since the last review was infrastructure maturity and implementing the
 
 **DDD** -- The `DataSourceAttributes` sealed interface hierarchy continues to be one of the strongest DDD patterns in the codebase. The strategy pattern for lookups aligns well with DDD's domain service concept. `Lookup` value object still lacks validation, which weakens the invariant guarantees.
 
-**Idiomatic Go** -- The `getDataSourceAttributes[T]` generic helper in `strategies.go` is clean and avoids repetitive type switches. The `StrategyRegistry` generic type is well-designed with a fluent builder API (`New().Set().Set()`). The `boostrapInMemory` typo in `cache.go` should be fixed. The `InMemoryCacheManager` violates Go concurrency best practices by accessing a map without synchronization.
+**Idiomatic Go** -- The `getDataSourceAttributes[T]` generic helper in `strategies.go` is clean and avoids repetitive type switches. The `StrategyRegistry` generic type is well-designed with a fluent builder API (`New().Set().Set()`). The `InMemoryCacheManager` now follows Go concurrency best practices with proper `sync.RWMutex` usage.
 
 ### Highest-Impact Improvements
 
 1. **Fix `NewSubmission` to assign `Status` and `Payload`** (P1 -- constructor produces incomplete domain objects)
 2. **Implement submissions MongoDB repository methods** (P0 -- stub methods cause nil panic in service layer)
-3. **Add `sync.RWMutex` to `InMemoryCacheManager`** (P2 -- data race on concurrent access)
-4. **Fix `InMemoryCacheManager.Set` to return marshal errors** (P2 -- silent data loss)
-5. **Add HTTP status check in `DecodeJSONResponse`** (P2 -- webhook strategy will silently produce empty results on error responses)
+3. **Fix `ErrMissingTenantID` mapping** in `SendErrorResponse` (P2 -- missing tenant header produces 500)
+4. **Add tenant filtering to submissions `Find()`** (P2 -- data isolation)
+5. **Add test coverage** starting with `pkg/database` and domain layers (P3 -- long-term reliability)
