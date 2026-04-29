@@ -7,23 +7,23 @@ import (
 )
 
 type submissionDocument struct {
-	ID          string                       `json:"_id"`
-	TenantID    string                       `json:"tenant_id"`
-	FormID      string                       `json:"form_id"`
-	VersionID   string                       `json:"version_id"`
-	ReferenceID string                       `json:"reference_id"`
-	Status      string                       `json:"status"`
-	Payload     bson.Raw                     `json:"payload"`
-	CreatedAt   time.Time                    `json:"created_at"`
-	UpdatedAt   time.Time                    `json:"updated_at"`
-	Attempts    []*submissionAttemptDocument `json:"attempts"`
+	ID          string                       `bson:"_id"`
+	TenantID    string                       `bson:"tenant_id"`
+	FormID      string                       `bson:"form_id"`
+	VersionID   string                       `bson:"version_id"`
+	ReferenceID string                       `bson:"reference_id"`
+	Status      string                       `bson:"status"`
+	Payload     bson.Raw                     `bson:"payload"`
+	CreatedAt   time.Time                    `bson:"created_at"`
+	UpdatedAt   time.Time                    `bson:"updated_at"`
+	Attempts    []*submissionAttemptDocument `bson:"attempts"`
 }
 
 type submissionAttemptDocument struct {
-	ID            string    `json:"_id"`
-	IdempotencyID string    `json:"idempotency_id"`
-	Attempt       int       `json:"attempt"`
-	Result        string    `json:"result"`
-	ErrorDetails  bson.Raw  `json:"error_details"`
-	CreatedAt     time.Time `json:"created_at"`
+	ID            string    `bson:"_id"`
+	IdempotencyID string    `bson:"idempotency_id"`
+	Attempt       int       `bson:"attempt"`
+	Result        string    `bson:"result"`
+	ErrorDetails  bson.Raw  `bson:"error_details"`
+	CreatedAt     time.Time `bson:"created_at"`
 }
