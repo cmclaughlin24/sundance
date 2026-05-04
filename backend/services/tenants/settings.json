@@ -4,9 +4,7 @@
     "driver": "mongodb",
     "options": {
       "host": "mongo",
-      "port": 27017,
-      "username": "root",
-      "password": "password"
+      "port": 27017
     }
   }
 }

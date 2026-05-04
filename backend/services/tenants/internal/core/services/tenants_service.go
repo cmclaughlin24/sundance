@@ -41,17 +41,11 @@ func (s *TenantsService) Create(ctx context.Context, command *ports.CreateTenant
 	}
 
 	t, err := domain.NewTenant(command.Name, command.Description)
-
 	if err != nil {
 		return nil, err
 	}
 
-	tenant, err := s.tenantsRepository.Upsert(ctx, t)
-	if err != nil {
-		return nil, err
-	}
-
-	return tenant, nil
+	return s.tenantsRepository.Upsert(ctx, t)
 }
 
 func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenantCommand) (*domain.Tenant, error) {
@@ -68,12 +62,7 @@ func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenant
 		return nil, err
 	}
 
-	tenant, err = s.tenantsRepository.Upsert(ctx, tenant)
-	if err != nil {
-		return nil, err
-	}
-
-	return tenant, nil
+	return s.tenantsRepository.Upsert(ctx, tenant)
 }
 
 func (s *TenantsService) Delete(ctx context.Context, id domain.TenantID) error {

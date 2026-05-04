@@ -43,7 +43,6 @@ func (s *FormsService) FindByID(ctx context.Context, query *ports.FindFormsByIDQ
 	}
 
 	form, err := s.formsRepository.FindByID(ctx, query.FormID)
-
 	if err != nil {
 		return nil, err
 	}
@@ -61,13 +60,11 @@ func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormComm
 	}
 
 	form, err := domain.NewForm(command.TenantID, command.Name, command.Description)
-
 	if err != nil {
 		return nil, err
 	}
 
 	form, err = s.formsRepository.Upsert(ctx, form)
-
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +78,6 @@ func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormComm
 	}
 
 	form, err := s.formsRepository.FindByID(ctx, command.ID)
-
 	if err != nil {
 		return nil, err
 	}
@@ -94,13 +90,7 @@ func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormComm
 		return nil, err
 	}
 
-	form, err = s.formsRepository.Upsert(ctx, form)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return form, nil
+	return s.formsRepository.Upsert(ctx, form)
 }
 
 func (s *FormsService) Delete(ctx context.Context, command *ports.RemoveFormCommand) error {
@@ -113,12 +103,9 @@ func (s *FormsService) Delete(ctx context.Context, command *ports.RemoveFormComm
 	}
 
 	hasActive, err := s.hasActiveVersion(ctx, command.ID)
-
 	if err != nil {
 		return err
-	}
-
-	if hasActive {
+	} else if hasActive {
 		return domain.ErrFormHasActiveVersion
 	}
 
@@ -159,7 +146,6 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 	}
 
 	txCtx, err := s.database.BeginTx(ctx)
-
 	if err != nil {
 		return nil, err
 	}
@@ -167,13 +153,11 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 	defer s.database.RollbackTx(txCtx)
 
 	versionNum, err := s.versionsRepository.FindNextVersionNumber(txCtx, command.FormID)
-
 	if err != nil {
 		return nil, err
 	}
 
 	version, err := domain.NewVersion(command.FormID, versionNum, domain.VersionStatusDraft)
-
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +167,6 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 	}
 
 	version, err = s.versionsRepository.Upsert(txCtx, version)
-
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +188,6 @@ func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateV
 	}
 
 	version, err := s.versionsRepository.FindByID(ctx, command.FormID, command.VersionID)
-
 	if err != nil {
 		return nil, err
 	}
@@ -214,13 +196,7 @@ func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateV
 		return nil, err
 	}
 
-	version, err = s.versionsRepository.Upsert(ctx, version)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return version, nil
+	return s.versionsRepository.Upsert(ctx, version)
 }
 
 func (s *FormsService) PublishVersion(ctx context.Context, command *ports.PublishVersionCommand) (*domain.Version, error) {
@@ -233,7 +209,6 @@ func (s *FormsService) PublishVersion(ctx context.Context, command *ports.Publis
 	}
 
 	version, err := s.versionsRepository.FindByID(ctx, command.FormID, command.VersionID)
-
 	if err != nil {
 		return nil, err
 	}
@@ -242,13 +217,7 @@ func (s *FormsService) PublishVersion(ctx context.Context, command *ports.Publis
 		return nil, err
 	}
 
-	version, err = s.versionsRepository.Upsert(ctx, version)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return version, nil
+	return s.versionsRepository.Upsert(ctx, version)
 }
 
 func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireVersionCommand) (*domain.Version, error) {
@@ -261,7 +230,6 @@ func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireV
 	}
 
 	version, err := s.versionsRepository.FindByID(ctx, command.FormID, command.VersionID)
-
 	if err != nil {
 		return nil, err
 	}
@@ -270,13 +238,7 @@ func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireV
 		return nil, err
 	}
 
-	version, err = s.versionsRepository.Upsert(ctx, version)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return version, nil
+	return s.versionsRepository.Upsert(ctx, version)
 }
 
 func (s *FormsService) isValidAccess(ctx context.Context, tenantID string, formID domain.FormID) error {

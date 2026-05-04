@@ -1,7 +1,10 @@
 {
   "port": 80,
   "persistence": {
-    "driver": "in-memory",
-    "options": {}
+    "driver": "mongodb",
+    "options": {
+      "host": "mongo",
+      "port": 27017
+    }
   }
 }

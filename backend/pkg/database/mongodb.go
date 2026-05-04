@@ -22,14 +22,7 @@ func ConnectMongoDB(opts ...func(*MongoDBOpts)) (*mongo.Client, error) {
 		opt(&o)
 	}
 
-	uri := fmt.Sprintf(
-		"mongodb://%s:%s@%s:%d",
-		o.Username,
-		o.Password,
-		o.Host,
-		o.Port,
-	)
-
+	uri := createMongoURI(o)
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	clientOpts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverAPI)
 	client, err := mongo.Connect(clientOpts)
@@ -67,4 +60,16 @@ func MongoDBWithPassword(password string) func(*MongoDBOpts) {
 	return func(o *MongoDBOpts) {
 		o.Password = password
 	}
+}
+
+func createMongoURI(opts MongoDBOpts) string {
+	uri := "mongodb://"
+
+	if opts.Username != "" && opts.Password != "" {
+		uri += fmt.Sprintf("%s:%s@", opts.Username, opts.Password)
+	}
+
+	uri += fmt.Sprintf("%s:%d", opts.Host, opts.Port)
+
+	return uri
 }

@@ -67,13 +67,7 @@ func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDa
 		return nil, err
 	}
 
-	dataSource, err := s.dataSourcesRepository.Upsert(ctx, ds)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return dataSource, nil
+	return s.dataSourcesRepository.Upsert(ctx, ds)
 }
 
 func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
@@ -94,12 +88,7 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 		return nil, err
 	}
 
-	dataSource, err := s.dataSourcesRepository.Upsert(ctx, ds)
-	if err != nil {
-		return nil, err
-	}
-
-	return dataSource, nil
+	return s.dataSourcesRepository.Upsert(ctx, ds)
 }
 
 func (s *DataSourcesService) Delete(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
@@ -112,7 +101,6 @@ func (s *DataSourcesService) Delete(ctx context.Context, command *ports.RemoveDa
 	}
 
 	exists, err := s.dataSourcesRepository.Exists(ctx, command.TenantID, command.ID)
-
 	if err != nil {
 		return err
 	}
@@ -130,13 +118,11 @@ func (s *DataSourcesService) Lookup(ctx context.Context, command *ports.GetDataS
 	}
 
 	ds, err := s.dataSourcesRepository.FindByID(ctx, command.TenantID, command.ID)
-
 	if err != nil {
 		return nil, err
 	}
 
 	strategy, err := s.lookupStrategies.Get(ds.Type)
-
 	if err != nil {
 		return nil, err
 	}

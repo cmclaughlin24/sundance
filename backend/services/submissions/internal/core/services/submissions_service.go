@@ -50,7 +50,6 @@ func (s *SubmissionsService) FindByReferenceID(ctx context.Context, query *ports
 	}
 
 	submission, err := s.repository.FindByReferenceID(ctx, query.ID)
-
 	if err != nil {
 		return nil, err
 	}
@@ -72,12 +71,7 @@ func (s *SubmissionsService) Create(ctx context.Context, command ports.CreateSub
 		return nil, err
 	}
 
-	submission, err = s.repository.Upsert(ctx, submission)
-	if err != nil {
-		return nil, err
-	}
-
-	return submission, nil
+	return s.repository.Upsert(ctx, submission)
 }
 
 func (s *SubmissionsService) Replay(context.Context, ports.ReplaySubmissionCommand) error {
