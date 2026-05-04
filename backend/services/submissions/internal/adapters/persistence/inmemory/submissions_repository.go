@@ -61,3 +61,7 @@ func (r *InMemorySubmissionsRepository) FindByReferenceID(ctx context.Context, r
 
 	return nil, common.ErrNotFound
 }
+
+func (r *InMemorySubmissionsRepository) Upsert(ctx context.Context, s *domain.Submission) (*domain.Submission, error) {
+	return nil, nil
+}

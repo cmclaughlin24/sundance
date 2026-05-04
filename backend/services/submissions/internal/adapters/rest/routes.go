@@ -24,7 +24,6 @@ func NewRoutes(app *core.Application) http.Handler {
 
 			submissionsRoutes.Route("/{referenceId}", func(submissionRoutes chi.Router) {
 				submissionRoutes.Get("/", h.getSubmissionByReferenceID)
-				submissionRoutes.Get("/attempts", h.getSubmissionAttempts)
 				submissionRoutes.Get("/status", h.getSubmissionStatus)
 				submissionRoutes.Post("/replay", h.replaySubmission)
 			})

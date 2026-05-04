@@ -86,8 +86,6 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 
 func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {}
 
-func (h *handlers) getSubmissionAttempts(w http.ResponseWriter, r *http.Request) {}
-
 func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {}
 
 func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request) {}

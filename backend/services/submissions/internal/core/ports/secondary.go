@@ -16,4 +16,5 @@ type SubmissionsRepository interface {
 	Find(context.Context) ([]*domain.Submission, error)
 	FindByID(context.Context, domain.SubmissionID) (*domain.Submission, error)
 	FindByReferenceID(context.Context, domain.ReferenceID) (*domain.Submission, error)
+	Upsert(context.Context, *domain.Submission) (*domain.Submission, error)
 }

@@ -62,10 +62,6 @@ func (s *SubmissionsService) FindByReferenceID(ctx context.Context, query *ports
 	return submission, nil
 }
 
-func (s *SubmissionsService) FindAttempts(context.Context) ([]*domain.SubmissionAttempt, error) {
-	return nil, nil
-}
-
 func (s *SubmissionsService) Replay(context.Context, ports.ReplaySubmissionCommand) error {
 	return nil
 }

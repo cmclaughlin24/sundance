@@ -38,6 +38,8 @@ func NewSubmission(
 		FormID:      formID,
 		VersionID:   versionID,
 		ReferenceID: ReferenceID(uuid.NewString()), // TODO: Investigate a more order number style implementation.
+		Status:      "",                            // TODO: Implement submission state machine.
+		Payload:     payload,
 		CreatedAt:   Now(),
 		Attempts:    make([]*SubmissionAttempt, 0),
 	}
