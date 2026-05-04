@@ -16,7 +16,7 @@ func NewMiddleware(header string) func(http.Handler) http.Handler {
 				return
 			}
 
-			ctx := WithTenant(r.Context(), id)
+			ctx := SetTenantContext(r.Context(), id)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

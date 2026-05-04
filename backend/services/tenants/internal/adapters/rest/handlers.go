@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/tenants"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
@@ -168,14 +167,8 @@ func (h *handlers) deleteTenant(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
-	tenantID, err := h.getTenantFromContext(r)
-	if err != nil {
-		httputil.SendErrorResponse(w, err)
-		return
-	}
-
-	query := ports.NewListDataSourceQuery(tenantID)
+func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request, tenantID string) {
+	query := ports.NewListDataSourceQuery(domain.TenantID(tenantID))
 	resultChan := make(chan result[[]*domain.DataSource], 1)
 
 	go func() {
@@ -202,16 +195,10 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
-	tenantID, err := h.getTenantFromContext(r)
-	if err != nil {
-		httputil.SendErrorResponse(w, err)
-		return
-	}
-
+func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request, tenantID string) {
 	sourceID := chi.URLParam(r, "dataSourceId")
 	resultChan := make(chan result[*domain.DataSource], 1)
-	query := ports.NewFindDataSourceByID(tenantID, domain.DataSourceID(sourceID))
+	query := ports.NewFindDataSourceByID(domain.TenantID(tenantID), domain.DataSourceID(sourceID))
 
 	go func() {
 		defer close(resultChan)
@@ -232,13 +219,7 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
-	tenantID, err := h.getTenantFromContext(r)
-	if err != nil {
-		httputil.SendErrorResponse(w, err)
-		return
-	}
-
+func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request, tenantID string) {
 	resultChan := make(chan result[*domain.DataSource], 1)
 
 	var body dto.DataSourceRequest
@@ -254,7 +235,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 
 	command := ports.NewCreateDataSourceCommand(
-		tenantID,
+		domain.TenantID(tenantID),
 		body.Name,
 		body.Description,
 		body.Type,
@@ -283,13 +264,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
-	tenantID, err := h.getTenantFromContext(r)
-	if err != nil {
-		httputil.SendErrorResponse(w, err)
-		return
-	}
-
+func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request, tenantID string) {
 	sourceID := chi.URLParam(r, "dataSourceId")
 	resultChan := make(chan result[*domain.DataSource], 1)
 
@@ -306,7 +281,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 
 	command := ports.NewUpdateDataSourceCommand(
-		tenantID,
+		domain.TenantID(tenantID),
 		domain.DataSourceID(sourceID),
 		body.Name,
 		body.Description,
@@ -336,16 +311,10 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) deleteDataSource(w http.ResponseWriter, r *http.Request) {
-	tenantID, err := h.getTenantFromContext(r)
-	if err != nil {
-		httputil.SendErrorResponse(w, err)
-		return
-	}
-
+func (h *handlers) deleteDataSource(w http.ResponseWriter, r *http.Request, tenantID string) {
 	sourceID := chi.URLParam(r, "dataSourceId")
 	resultChan := make(chan result[any], 1)
-	command := ports.NewRemoveDataSourceCommand(tenantID, domain.DataSourceID(sourceID))
+	command := ports.NewRemoveDataSourceCommand(domain.TenantID(tenantID), domain.DataSourceID(sourceID))
 
 	go func() {
 		defer close(resultChan)
@@ -366,16 +335,10 @@ func (h *handlers) deleteDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) getLookups(w http.ResponseWriter, r *http.Request) {
-	tenantID, err := h.getTenantFromContext(r)
-	if err != nil {
-		httputil.SendErrorResponse(w, err)
-		return
-	}
-
+func (h *handlers) getLookups(w http.ResponseWriter, r *http.Request, tenantID string) {
 	sourceID := chi.URLParam(r, "dataSourceId")
 	resultChan := make(chan result[[]*domain.Lookup], 1)
-	command := ports.NewGetDataSourceLookupsQuery(tenantID, domain.DataSourceID(sourceID))
+	command := ports.NewGetDataSourceLookupsQuery(domain.TenantID(tenantID), domain.DataSourceID(sourceID))
 
 	go func() {
 		defer close(resultChan)
@@ -395,16 +358,6 @@ func (h *handlers) getLookups(w http.ResponseWriter, r *http.Request) {
 		dtos := dto.LookupsToResponse(res.data)
 		httputil.SendJSONResponse(w, http.StatusOK, dtos)
 	}
-}
-
-func (h *handlers) getTenantFromContext(r *http.Request) (domain.TenantID, error) {
-	tenantID, err := tenants.TenantFromContext(r.Context())
-
-	if err != nil {
-		return "", err
-	}
-
-	return domain.TenantID(tenantID), nil
 }
 
 func (h *handlers) getTenantIDPathValue(r *http.Request) domain.TenantID {

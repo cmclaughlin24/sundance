@@ -31,14 +31,14 @@ func NewRoutes(app *core.Application) http.Handler {
 		routes.Route("/data-sources", func(dataSourcesRoutes chi.Router) {
 			dataSourcesRoutes.Use(tenants.NewMiddleware("X-Tenant-ID"))
 
-			dataSourcesRoutes.Get("/", h.getDataSources)
-			dataSourcesRoutes.Post("/", h.createDataSource)
+			dataSourcesRoutes.Get("/", tenants.WithTenant(h.getDataSources))
+			dataSourcesRoutes.Post("/", tenants.WithTenant(h.createDataSource))
 
 			dataSourcesRoutes.Route("/{dataSourceId}", func(dataSourceRoutes chi.Router) {
-				dataSourceRoutes.Get("/", h.getDataSource)
-				dataSourceRoutes.Put("/", h.updateDataSource)
-				dataSourceRoutes.Delete("/", h.deleteDataSource)
-				dataSourceRoutes.Get("/look-ups", h.getLookups)
+				dataSourceRoutes.Get("/", tenants.WithTenant(h.getDataSource))
+				dataSourceRoutes.Put("/", tenants.WithTenant(h.updateDataSource))
+				dataSourceRoutes.Delete("/", tenants.WithTenant(h.deleteDataSource))
+				dataSourceRoutes.Get("/look-ups", tenants.WithTenant(h.getLookups))
 			})
 		})
 	})

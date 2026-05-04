@@ -23,23 +23,23 @@ func NewRoutes(app *core.Application) http.Handler {
 
 	mux.Route("/api/v1", func(routes chi.Router) {
 		routes.Route("/forms", func(formsRoutes chi.Router) {
-			formsRoutes.Get("/", h.getForms)
-			formsRoutes.Post("/", h.createForm)
+			formsRoutes.Get("/", tenants.WithTenant(h.getForms))
+			formsRoutes.Post("/", tenants.WithTenant(h.createForm))
 
 			formsRoutes.Route("/{formId}", func(formRoutes chi.Router) {
-				formRoutes.Get("/", h.getForm)
-				formRoutes.Put("/", h.updateForm)
-				formRoutes.Delete("/", h.deleteForm)
+				formRoutes.Get("/", tenants.WithTenant(h.getForm))
+				formRoutes.Put("/", tenants.WithTenant(h.updateForm))
+				formRoutes.Delete("/", tenants.WithTenant(h.deleteForm))
 
 				formRoutes.Route("/versions", func(versionsRoutes chi.Router) {
-					versionsRoutes.Get("/", h.getVersions)
-					versionsRoutes.Post("/", h.createVersion)
+					versionsRoutes.Get("/", tenants.WithTenant(h.getVersions))
+					versionsRoutes.Post("/", tenants.WithTenant(h.createVersion))
 
 					versionsRoutes.Route("/{versionId}", func(versionRoutes chi.Router) {
-						versionRoutes.Get("/", h.getVersion)
-						versionRoutes.Put("/", h.updateVersion)
-						versionRoutes.Post("/publish", h.publishVersion)
-						versionRoutes.Post("/retire", h.retireVersion)
+						versionRoutes.Get("/", tenants.WithTenant(h.getVersion))
+						versionRoutes.Put("/", tenants.WithTenant(h.updateVersion))
+						versionRoutes.Post("/publish", tenants.WithTenant(h.publishVersion))
+						versionRoutes.Post("/retire", tenants.WithTenant(h.retireVersion))
 					})
 				})
 			})
