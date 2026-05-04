@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/tenants"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
@@ -27,7 +26,7 @@ func newHandlers(app *core.Application) *handlers {
 	}
 }
 
-func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
+func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request, tenantID string) {
 	resultChan := make(chan result[[]*domain.Submission], 1)
 
 	go func() {
@@ -54,13 +53,7 @@ func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Request) {
-	tenantID, err := h.getTenantFromContext(r)
-	if err != nil {
-		h.sendErrorResponse(w, err)
-		return
-	}
-
+func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Request, tenantID string) {
 	referenceID := h.getReferenceIDPathValue(r)
 	resultChan := make(chan result[*domain.Submission], 1)
 	query := ports.NewFindByIDQuery(tenantID, referenceID)
@@ -84,27 +77,12 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 	}
 }
 
-func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
-	_, err := h.getTenantFromContext(r)
-	if err != nil {
-		h.sendErrorResponse(w, err)
-		return
-	}
+func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request, tenantID string) {
 }
 
-func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {}
+func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request, tenantID string) {}
 
-func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request) {}
-
-func (h *handlers) getTenantFromContext(r *http.Request) (string, error) {
-	tenantID, err := tenants.TenantFromContext(r.Context())
-
-	if err != nil {
-		return "", err
-	}
-
-	return tenantID, nil
-}
+func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request, tenantID string) {}
 
 func (h *handlers) getReferenceIDPathValue(r *http.Request) domain.ReferenceID {
 	id := chi.URLParam(r, "referenceId")
