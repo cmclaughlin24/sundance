@@ -6,7 +6,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
 )
 
-func TenantMiddleware(header string) func(http.Handler) http.Handler {
+func NewMiddleware(header string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			id := r.Header.Get(header)

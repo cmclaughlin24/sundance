@@ -29,7 +29,7 @@ func NewRoutes(app *core.Application) http.Handler {
 		})
 
 		routes.Route("/data-sources", func(dataSourcesRoutes chi.Router) {
-			dataSourcesRoutes.Use(tenants.TenantMiddleware("X-Tenant-ID"))
+			dataSourcesRoutes.Use(tenants.NewMiddleware("X-Tenant-ID"))
 
 			dataSourcesRoutes.Get("/", tenants.WithTenant(h.getDataSources))
 			dataSourcesRoutes.Post("/", tenants.WithTenant(h.createDataSource))
