@@ -11,7 +11,7 @@ const tenantIDKey contextKey = "tenantID"
 
 var ErrMissingTenantID = errors.New("X-Tenant-ID header is required")
 
-func SetTenantContext(ctx context.Context, tenantID string) context.Context {
+func WithTenant(ctx context.Context, tenantID string) context.Context {
 	return context.WithValue(ctx, tenantIDKey, tenantID)
 }
 
