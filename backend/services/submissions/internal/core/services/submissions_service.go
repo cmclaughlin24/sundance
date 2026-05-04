@@ -11,19 +11,19 @@ import (
 )
 
 type SubmissionsService struct {
-	logger                *log.Logger
-	submissionsRepository ports.SubmissionsRepository
+	logger     *log.Logger
+	repository ports.SubmissionsRepository
 }
 
 func NewSubmissionsService(logger *log.Logger, repository *ports.Repository) ports.SubmissionsService {
 	return &SubmissionsService{
-		logger:                logger,
-		submissionsRepository: repository.Submissions,
+		logger:     logger,
+		repository: repository.Submissions,
 	}
 }
 
 func (s *SubmissionsService) Find(ctx context.Context) ([]*domain.Submission, error) {
-	return s.submissionsRepository.Find(ctx)
+	return s.repository.Find(ctx)
 }
 
 func (s *SubmissionsService) FindByID(ctx context.Context, query *ports.FindByIDQuery[domain.SubmissionID]) (*domain.Submission, error) {
@@ -31,7 +31,7 @@ func (s *SubmissionsService) FindByID(ctx context.Context, query *ports.FindByID
 		return nil, err
 	}
 
-	submission, err := s.submissionsRepository.FindByID(ctx, query.ID)
+	submission, err := s.repository.FindByID(ctx, query.ID)
 
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (s *SubmissionsService) FindByReferenceID(ctx context.Context, query *ports
 		return nil, err
 	}
 
-	submission, err := s.submissionsRepository.FindByReferenceID(ctx, query.ID)
+	submission, err := s.repository.FindByReferenceID(ctx, query.ID)
 
 	if err != nil {
 		return nil, err
@@ -57,6 +57,24 @@ func (s *SubmissionsService) FindByReferenceID(ctx context.Context, query *ports
 
 	if submission.TenantID != query.TenantID {
 		return nil, common.ErrUnauthorized
+	}
+
+	return submission, nil
+}
+
+func (s *SubmissionsService) Create(ctx context.Context, command ports.CreateSubmissionCommand) (*domain.Submission, error) {
+	if err := validate.ValidateStruct(command); err != nil {
+		return nil, err
+	}
+
+	submission, err := domain.NewSubmission(command.TenantID, command.FormID, command.VersionID, command.Payload)
+	if err != nil {
+		return nil, err
+	}
+
+	submission, err = s.repository.Upsert(ctx, submission)
+	if err != nil {
+		return nil, err
 	}
 
 	return submission, nil

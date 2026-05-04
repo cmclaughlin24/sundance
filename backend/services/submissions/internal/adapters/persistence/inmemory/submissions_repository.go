@@ -62,6 +62,11 @@ func (r *InMemorySubmissionsRepository) FindByReferenceID(ctx context.Context, r
 	return nil, common.ErrNotFound
 }
 
-func (r *InMemorySubmissionsRepository) Upsert(ctx context.Context, s *domain.Submission) (*domain.Submission, error) {
-	return nil, nil
+func (r *InMemorySubmissionsRepository) Upsert(ctx context.Context, submission *domain.Submission) (*domain.Submission, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.submissions[string(submission.ID)] = submission
+
+	return submission, nil
 }

@@ -84,7 +84,13 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 	}
 }
 
-func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {}
+func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
+	_, err := h.getTenantFromContext(r)
+	if err != nil {
+		h.sendErrorResponse(w, err)
+		return
+	}
+}
 
 func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {}
 

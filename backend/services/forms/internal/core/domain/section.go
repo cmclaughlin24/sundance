@@ -96,7 +96,7 @@ func (s *Section) SetFields(fields ...*Field) error {
 	return nil
 }
 
-func (s *Section) UpdateFields(fields ...*Field) error {
+func (s *Section) ReplaceFields(fields ...*Field) error {
 	if s == nil {
 		return ErrInvalidSection
 	}

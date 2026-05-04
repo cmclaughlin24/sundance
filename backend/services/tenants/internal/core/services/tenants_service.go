@@ -47,7 +47,6 @@ func (s *TenantsService) Create(ctx context.Context, command *ports.CreateTenant
 	}
 
 	tenant, err := s.tenantsRepository.Upsert(ctx, t)
-
 	if err != nil {
 		return nil, err
 	}

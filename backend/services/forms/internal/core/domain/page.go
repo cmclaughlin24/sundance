@@ -96,7 +96,7 @@ func (p *Page) SetSections(sections ...*Section) error {
 	return nil
 }
 
-func (p *Page) UpdateSections(section ...*Section) error {
+func (p *Page) ReplaceSections(section ...*Section) error {
 	if p == nil {
 		return ErrInvalidPage
 	}

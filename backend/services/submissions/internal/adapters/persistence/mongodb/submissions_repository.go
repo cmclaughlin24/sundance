@@ -9,6 +9,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type mongoDBSubmissionsRepository struct {
@@ -59,6 +60,25 @@ func (r *mongoDBSubmissionsRepository) FindByReferenceID(ctx context.Context, id
 	return fromSubmissionDocument(&document), nil
 }
 
-func (r *mongoDBSubmissionsRepository) Upsert(context.Context, *domain.Submission) (*domain.Submission, error) {
-	return nil, nil
+func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Submission) (*domain.Submission, error) {
+	doc, err := toSubmissionDocument(s)
+
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.M{"_id": doc.ID}
+	update := bson.M{"$set": doc}
+	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
+
+	var result submissionDocument
+	err = mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
+		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return fromSubmissionDocument(&result), nil
 }

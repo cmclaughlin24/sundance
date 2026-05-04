@@ -129,7 +129,7 @@ func (v *Version) SetPages(pages ...*Page) error {
 	return nil
 }
 
-func (v *Version) UpdatePages(pages ...*Page) error {
+func (v *Version) ReplacePages(pages ...*Page) error {
 	if v == nil {
 		return ErrInvalidVersion
 	}

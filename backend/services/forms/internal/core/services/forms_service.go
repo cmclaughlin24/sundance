@@ -210,7 +210,7 @@ func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateV
 		return nil, err
 	}
 
-	if err := version.UpdatePages(command.Pages...); err != nil {
+	if err := version.ReplacePages(command.Pages...); err != nil {
 		return nil, err
 	}
 
