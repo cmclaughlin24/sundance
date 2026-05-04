@@ -15,7 +15,7 @@ func NewRoutes(app *core.Application) http.Handler {
 
 	mux.Use(middleware.RequestID)
 	mux.Use(middleware.Logger)
-	mux.Use(tenants.NewMiddleware("X-Tenant-ID"))
+	mux.Use(tenants.TenantMiddleware("X-Tenant-ID"))
 
 	mux.Route("/api/v1", func(routes chi.Router) {
 		routes.Route("/submissions", func(submissionsRoutes chi.Router) {

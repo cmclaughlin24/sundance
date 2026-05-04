@@ -3,8 +3,6 @@ package rest
 import (
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/auth"
-	"github.com/cmclaughlin24/sundance/backend/pkg/auth/authenticators"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/tenants"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
 	"github.com/go-chi/chi/v5"
@@ -14,12 +12,10 @@ import (
 func NewRoutes(app *core.Application) http.Handler {
 	h := newHandlers(app)
 	mux := chi.NewRouter()
-	placeholderAuthenticator := authenticators.NewPlaceholderAuthenticator("placholder") // TODO: Remove for a proper authentication implementation.
 
 	mux.Use(middleware.RequestID)
 	mux.Use(middleware.Logger)
-	mux.Use(tenants.NewMiddleware("X-Tenant-ID"))
-	mux.Use(auth.NewMiddleware(placeholderAuthenticator))
+	mux.Use(tenants.TenantMiddleware("X-Tenant-ID"))
 
 	mux.Route("/api/v1", func(routes chi.Router) {
 		routes.Route("/forms", func(formsRoutes chi.Router) {
