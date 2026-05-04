@@ -22,11 +22,15 @@ func NewSubmissionsService(logger *log.Logger, repository *ports.Repository) por
 	}
 }
 
-func (s *SubmissionsService) Find(ctx context.Context) ([]*domain.Submission, error) {
+func (s *SubmissionsService) Find(ctx context.Context, query *ports.FindSubmissionsQuery) ([]*domain.Submission, error) {
+	if err := validate.ValidateStruct(query); err != nil {
+		return nil, err
+	}
+
 	return s.repository.Find(ctx)
 }
 
-func (s *SubmissionsService) FindByID(ctx context.Context, query *ports.FindByIDQuery[domain.SubmissionID]) (*domain.Submission, error) {
+func (s *SubmissionsService) FindByID(ctx context.Context, query *ports.FindSubmissionByIDQuery[domain.SubmissionID]) (*domain.Submission, error) {
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}
@@ -44,7 +48,7 @@ func (s *SubmissionsService) FindByID(ctx context.Context, query *ports.FindByID
 	return submission, nil
 }
 
-func (s *SubmissionsService) FindByReferenceID(ctx context.Context, query *ports.FindByIDQuery[domain.ReferenceID]) (*domain.Submission, error) {
+func (s *SubmissionsService) FindByReferenceID(ctx context.Context, query *ports.FindSubmissionByIDQuery[domain.ReferenceID]) (*domain.Submission, error) {
 	if err := validate.ValidateStruct(query); err != nil {
 		return nil, err
 	}

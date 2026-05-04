@@ -1,12 +1,22 @@
 package ports
 
-type FindByIDQuery[T any] struct {
+type FindSubmissionsQuery struct {
+	TenantID string `validate:"required"`
+}
+
+func NewFindSubmissionsQuery(tenantID string) *FindSubmissionsQuery {
+	return &FindSubmissionsQuery{
+		TenantID: tenantID,
+	}
+}
+
+type FindSubmissionByIDQuery[T any] struct {
 	TenantID string `validate:"required"`
 	ID       T      `validate:"required"`
 }
 
-func NewFindByIDQuery[T any](tenantID string, id T) *FindByIDQuery[T] {
-	query := &FindByIDQuery[T]{
+func NewFindSubmissionByIDQuery[T any](tenantID string, id T) *FindSubmissionByIDQuery[T] {
+	query := &FindSubmissionByIDQuery[T]{
 		TenantID: tenantID,
 		ID:       id,
 	}

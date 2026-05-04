@@ -28,11 +28,18 @@ func newHandlers(app *core.Application) *handlers {
 }
 
 func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
+	tenantID, err := h.getTenantFromContext(r)
+	if err != nil {
+		h.sendErrorResponse(w, err)
+		return
+	}
+
+	query := ports.NewFindSubmissionsQuery(tenantID)
 	resultChan := make(chan result[[]*domain.Submission], 1)
 
 	go func() {
 		defer close(resultChan)
-		submissions, err := h.app.Services.Submissions.Find(r.Context())
+		submissions, err := h.app.Services.Submissions.Find(r.Context(), query)
 		resultChan <- result[[]*domain.Submission]{submissions, err}
 	}()
 
@@ -62,8 +69,8 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 	}
 
 	referenceID := h.getReferenceIDPathValue(r)
+	query := ports.NewFindSubmissionByIDQuery(tenantID, referenceID)
 	resultChan := make(chan result[*domain.Submission], 1)
-	query := ports.NewFindByIDQuery(tenantID, referenceID)
 
 	go func() {
 		defer close(resultChan)
