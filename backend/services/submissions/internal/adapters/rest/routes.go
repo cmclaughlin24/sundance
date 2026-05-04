@@ -19,13 +19,13 @@ func NewRoutes(app *core.Application) http.Handler {
 
 	mux.Route("/api/v1", func(routes chi.Router) {
 		routes.Route("/submissions", func(submissionsRoutes chi.Router) {
-			submissionsRoutes.Get("/", tenants.WithTenant(h.getSubmissions))
-			submissionsRoutes.Post("/", tenants.WithTenant(h.createSubmission))
+			submissionsRoutes.Get("/", h.getSubmissions)
+			submissionsRoutes.Post("/", h.createSubmission)
 
 			submissionsRoutes.Route("/{referenceId}", func(submissionRoutes chi.Router) {
-				submissionRoutes.Get("/", tenants.WithTenant(h.getSubmissionByReferenceID))
-				submissionRoutes.Get("/status", tenants.WithTenant(h.getSubmissionStatus))
-				submissionRoutes.Post("/replay", tenants.WithTenant(h.replaySubmission))
+				submissionRoutes.Get("/", h.getSubmissionByReferenceID)
+				submissionRoutes.Get("/status", h.getSubmissionStatus)
+				submissionRoutes.Post("/replay", h.replaySubmission)
 			})
 		})
 	})
