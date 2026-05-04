@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/auth"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/tenants"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/rest/dto"
@@ -369,9 +370,9 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
+	claims := auth.GetClaimsFromContext(r.Context())
 	resultChan := make(chan result[*domain.Version], 1)
-	// FIXME: Remove temporary placeholder for user ID.
-	command := ports.NewPublishVersionCommand(tenantID, formID, versionID, "placeholder")
+	command := ports.NewPublishVersionCommand(tenantID, formID, versionID, claims.GetSubject())
 
 	go func() {
 		defer close(resultChan)
@@ -405,8 +406,8 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)
-	// FIXME: Remove temporary placeholder for user ID.
-	command := ports.NewRetireVersionCommand(tenantID, formID, versionID, "placeholder")
+	claims := auth.GetClaimsFromContext(r.Context())
+	command := ports.NewRetireVersionCommand(tenantID, formID, versionID, claims.GetSubject())
 
 	go func() {
 		defer close(resultChan)

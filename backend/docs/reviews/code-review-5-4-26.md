@@ -10,6 +10,8 @@
 
 4. ~~`UpdatePages`/`UpdateSections`/`UpdateFields` naming~~ (Forms, P3) -- Renamed to `ReplacePages` (`version.go:132`), `ReplaceSections` (`page.go:99`), and `ReplaceFields` (`section.go:99`). These methods clear and replace all children, so "Replace" is more semantically accurate than "Update" which implies a merge/patch. `FormsService.UpdateVersion` call site updated. *(Not previously tracked; naming improvement.)*
 
+5. ~~`publishVersion` and `retireVersion` use hardcoded `"placeholder"` user ID~~ (Forms, P2) -- Both handlers now extract the authenticated user via `auth.GetClaimsFromContext(r.Context()).GetSubject()`. A new `backend/pkg/auth` package provides the infrastructure: `Claims` interface (with `GetSubject()`), `Authenticator` function type, `NewMiddleware` that iterates authenticators and returns 401 if none succeed, and `SetClaimsContext`/`GetClaimsFromContext` context helpers. The forms service adds `auth.NewMiddleware(placeholderAuthenticator)` to its Chi middleware stack. The `PlaceholderAuthenticator` is temporary (marked with a TODO) and always returns a hardcoded subject -- real authentication is still outstanding (see #19). FIXME comments removed. *(Resolves 4/28 #1.)*
+
 ---
 
 ## Will Not Fix
@@ -28,9 +30,7 @@ See [4/25 review](code-review-4-25-26.md) and [4/24 review](code-review-4-24-26.
 
 ### Forms Service
 
-#### Bugs
-
-1. **`publishVersion` and `retireVersion` use hardcoded `"placeholder"` user ID** (`handlers.go:373`, `408`) -- The publish/retire state transitions record a fake user. Both have `// FIXME` comments. *(Unresolved from 4/28 #1.)*
+No remaining issues specific to the forms service. Cross-service issues (#17, #18, #19) still apply.
 
 ---
 
@@ -98,7 +98,7 @@ See [4/25 review](code-review-4-25-26.md) and [4/24 review](code-review-4-24-26.
 
 18. **No domain events** for cross-service communication. *(Unresolved from 4/28 #21.)*
 
-19. **No real authentication** -- `X-Tenant-ID` is blindly trusted. *(Unresolved from 4/28 #22.)*
+19. **No real authentication** -- Auth middleware infrastructure now exists (`auth.NewMiddleware` with pluggable `Authenticator` functions), but forms uses a `PlaceholderAuthenticator` that always returns a hardcoded subject, and submissions/tenants services have no auth middleware at all. `X-Tenant-ID` remains blindly trusted. *(Partially addressed from 4/28 #22 -- infrastructure in place, real implementation outstanding.)*
 
 ---
 
@@ -107,7 +107,6 @@ See [4/25 review](code-review-4-25-26.md) and [4/24 review](code-review-4-24-26.
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
 | **P1** | 2 | `NewSubmission` never sets `Status` or `Payload` (now exploitable) | Submissions |
-| **P2** | 1 | Hardcoded `"placeholder"` user ID | Forms |
 | **P2** | 3 | `CreateSubmissionCommand` no validation tags | Submissions |
 | **P2** | 4 | `Find()` has no tenant filtering | Submissions |
 | **P2** | 5 | `createSubmission` handler incomplete | Submissions |
@@ -119,7 +118,7 @@ See [4/25 review](code-review-4-25-26.md) and [4/24 review](code-review-4-24-26.
 | **P3** | 12 | `any`-typed attributes (no type safety) | Submissions |
 | **P3** | 13 | `SubmissionStatus` no constants | Submissions |
 | **P3** | 15 | `Lookup` value object no validation | Tenants |
-| **P3** | 19 | No real authentication | All |
+| **P3** | 19 | No real authentication (infra exists, placeholder impl) | All |
 
 ---
 
@@ -127,7 +126,7 @@ See [4/25 review](code-review-4-25-26.md) and [4/24 review](code-review-4-24-26.
 
 ### Progress Since 4/28
 
-One committed change (`62b64588 submissions | basic mongodb repository`) plus significant unstaged work across submissions and forms:
+One committed change (`62b64588 submissions | basic mongodb repository`) plus significant unstaged work across submissions, forms, and shared packages:
 
 - **Submissions MongoDB repository fully implemented** -- `Find`, `FindByID`, and `FindByReferenceID` are real implementations backed by the generic `MongoDBRepository[submissionDocument]` base. `Upsert` is now functional using `FindOneAndUpdate` with `$set`, `SetUpsert(true)`, and `SetReturnDocument(After)` wrapped in a MongoDB session. Bidirectional BSON mapping (`toSubmissionDocument`/`fromSubmissionDocument`, `toSubmissionAttemptDocument`/`fromSubmissionAttemptDocument`) handles domain-to-document conversion. `Payload` and `ErrorDetails` are marshaled via `bson.Marshal`. This closes the P0 issue tracked since 4/25.
 
@@ -137,13 +136,19 @@ One committed change (`62b64588 submissions | basic mongodb repository`) plus si
 
 - **Forms domain method rename** -- `UpdatePages`, `UpdateSections`, and `UpdateFields` renamed to `ReplacePages`, `ReplaceSections`, and `ReplaceFields`. The prior names implied a merge/patch semantic; the new names accurately reflect that these methods clear and replace all children. `FormsService.UpdateVersion` call site updated.
 
+- **Auth middleware package (`backend/pkg/auth/`)** -- New shared package provides pluggable authentication infrastructure: `Claims` interface (`GetSubject()`), `Authenticator` function type (`func(*http.Request) (Claims, error)`), `NewMiddleware` that iterates authenticators and returns 401 JSON response if none succeed, and `SetClaimsContext`/`GetClaimsFromContext` context helpers. A `PlaceholderAuthenticator` in `authenticators/` sub-package always returns a hardcoded subject (temporary). Forms service integrates the auth middleware and replaces the hardcoded `"placeholder"` user ID in `publishVersion`/`retireVersion` with `claims.GetSubject()`.
+
+- **`TenantMiddleware` renamed to `tenants.NewMiddleware`** -- All three services updated to use the new name. Follows Go convention for middleware constructor naming.
+
+- **Cache module path fix** -- `backend/pkg/cache/go.mod` corrected from `github.com/cmclaughlin24/sundance/cache` to `github.com/cmclaughlin24/sundance/backend/pkg/cache`.
+
 - **Service field naming cleanup** -- `SubmissionsService.submissionsRepository` renamed to `repository`, consistent with the single-repository pattern used by the forms service.
 
 ### Current State
 
-**22 remaining issues (4/28) -> 19 remaining issues** (resolved 3: P0 MongoDB stubs, P2 Upsert stubs, P3 CreateSubmissionCommand empty; moved 3 to Will Not Fix; introduced 2 new issues: missing validation tags P2, `sendErrorResponse` no mapping P2).
+**22 remaining issues (4/28) -> 18 remaining issues** (resolved 4: P0 MongoDB stubs, P2 Upsert stubs, P2 placeholder user ID, P3 CreateSubmissionCommand empty; moved 3 to Will Not Fix; introduced 2 new issues: missing validation tags P2, `sendErrorResponse` no mapping P2).
 
-**Forms Service** remains the strongest service. The `Replace*` rename improves semantic clarity. Rich domain model with version state machine, position-keyed sorted collections, complete error-to-HTTP mapping, and transactional version creation. Only remaining issue: hardcoded placeholder user ID (P2).
+**Forms Service** remains the strongest service and now has zero service-specific issues. The `Replace*` rename improves semantic clarity. The auth middleware integration eliminates the last remaining forms-specific bug (placeholder user ID). Rich domain model with version state machine, position-keyed sorted collections, complete error-to-HTTP mapping, and transactional version creation. Only cross-service issues (tests, domain events, real auth) remain.
 
 **Tenants Service** is stable with complete CRUD, cascade-delete, and lookup strategies. Minor formatting cleanup in `TenantsService.Create`. Remaining gaps: `Lookup` value object validation (P3), `Find()` pagination (P3).
 
@@ -155,7 +160,7 @@ One committed change (`62b64588 submissions | basic mongodb repository`) plus si
 
 **DDD** -- The submissions write path now exists but the domain constructor is broken: `NewSubmission` produces an aggregate missing `Status` and `Payload`, violating the invariant that a newly-created aggregate should be in a valid state. This is now a live bug since `Create` -> `Upsert` will persist the incomplete object. The forms `Replace*` rename is a positive DDD signal -- method names now accurately describe aggregate behavior. Tenants `DataSourceAttributes` sealed interface and strategy pattern remain strong.
 
-**Idiomatic Go** -- The `toSubmissionDocument` functions using `bson.Marshal` for untyped fields is a pragmatic approach but brittle -- if `Payload` contains a non-BSON-serializable type, it will fail at runtime with no compile-time safety. The service field rename from `submissionsRepository` to `repository` is cleaner when the service only depends on one repository. The `Replace*` naming follows Go's preference for precise verb choices.
+**Idiomatic Go** -- The `toSubmissionDocument` functions using `bson.Marshal` for untyped fields is a pragmatic approach but brittle -- if `Payload` contains a non-BSON-serializable type, it will fail at runtime with no compile-time safety. The service field rename from `submissionsRepository` to `repository` is cleaner when the service only depends on one repository. The `Replace*` naming follows Go's preference for precise verb choices. The `tenants.NewMiddleware` and `auth.NewMiddleware` naming follows idiomatic Go constructor conventions. The `Authenticator` type as a function type (rather than interface) is appropriate for single-method contracts.
 
 ### Highest-Impact Improvements
 
@@ -165,4 +170,5 @@ One committed change (`62b64588 submissions | basic mongodb repository`) plus si
 4. **Fix `ErrMissingTenantID` mapping** in `SendErrorResponse` (P2 -- missing tenant header produces 500)
 5. **Add `sendErrorResponse` domain error cases** in submissions handlers (P2 -- all errors currently map to 500)
 6. **Add tenant filtering to submissions `Find()`** (P2 -- data isolation)
-7. **Add test coverage** starting with domain constructors and the `Create` flow (P3 -- long-term reliability)
+7. **Add auth middleware to submissions and tenants services** (P3 -- currently only forms has it)
+8. **Add test coverage** starting with domain constructors and the `Create` flow (P3 -- long-term reliability)
