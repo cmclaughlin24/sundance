@@ -100,14 +100,13 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resultChan := make(chan result[*domain.Form], 1)
-
 	var body dto.UpsertFormRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
 
+	resultChan := make(chan result[*domain.Form], 1)
 	command := ports.NewCreateFormCommand(tenantID, body.Name, body.Description)
 
 	go func() {
@@ -140,7 +139,6 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 	}
 
 	formID := h.getFormIDPathValue(r)
-	resultChan := make(chan result[*domain.Form], 1)
 
 	var body dto.UpsertFormRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -148,6 +146,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resultChan := make(chan result[*domain.Form], 1)
 	command := ports.NewUpdateFormCommand(tenantID, formID, body.Name, body.Description)
 
 	go func() {
@@ -276,7 +275,6 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	formID := h.getFormIDPathValue(r)
-	resultChan := make(chan result[*domain.Version], 1)
 
 	var body dto.UpsertVersionRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -290,6 +288,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resultChan := make(chan result[*domain.Version], 1)
 	command := ports.NewCreateVersionCommand(tenantID, formID, pages)
 
 	go func() {
@@ -323,7 +322,6 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
-	resultChan := make(chan result[*domain.Version], 1)
 
 	var body dto.UpsertVersionRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -337,6 +335,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resultChan := make(chan result[*domain.Version], 1)
 	command := ports.NewUpdateVersionCommand(tenantID, versionID, formID, pages)
 
 	go func() {

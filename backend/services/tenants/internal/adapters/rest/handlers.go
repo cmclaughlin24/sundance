@@ -79,14 +79,13 @@ func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
-	resultChan := make(chan result[*domain.Tenant], 1)
-
 	var body dto.TenantRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
 
+	resultChan := make(chan result[*domain.Tenant], 1)
 	command := ports.NewCreateTenantCommand(body.Name, body.Description)
 
 	go func() {
@@ -104,16 +103,15 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[dto.TenantResponse]{
+		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[*dto.TenantResponse]{
 			Message: "Successfully created!",
-			Data:    *dto.TenantToResponse(res.data),
+			Data:    dto.TenantToResponse(res.data),
 		})
 	}
 }
 
 func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantIDPathValue(r)
-	resultChan := make(chan result[*domain.Tenant], 1)
 
 	var body dto.TenantRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -121,6 +119,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resultChan := make(chan result[*domain.Tenant], 1)
 	command := ports.NewUpdateTenantCommand(tenantID, body.Name, body.Description)
 
 	go func() {
@@ -138,9 +137,9 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[dto.TenantResponse]{
+		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[*dto.TenantResponse]{
 			Message: "Successfully updated!",
-			Data:    *dto.TenantToResponse(res.data),
+			Data:    dto.TenantToResponse(res.data),
 		})
 	}
 }
@@ -239,8 +238,6 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resultChan := make(chan result[*domain.DataSource], 1)
-
 	var body dto.DataSourceRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
@@ -253,6 +250,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resultChan := make(chan result[*domain.DataSource], 1)
 	command := ports.NewCreateDataSourceCommand(
 		tenantID,
 		body.Name,
@@ -276,9 +274,9 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[dto.DataSourceResponse]{
+		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[*dto.DataSourceResponse]{
 			Message: "Successfully created!",
-			Data:    *dto.DataSourceToResponse(res.data),
+			Data:    dto.DataSourceToResponse(res.data),
 		})
 	}
 }
@@ -291,7 +289,6 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 
 	sourceID := chi.URLParam(r, "dataSourceId")
-	resultChan := make(chan result[*domain.DataSource], 1)
 
 	var body dto.DataSourceRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -305,6 +302,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resultChan := make(chan result[*domain.DataSource], 1)
 	command := ports.NewUpdateDataSourceCommand(
 		tenantID,
 		domain.DataSourceID(sourceID),
@@ -329,9 +327,9 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[dto.DataSourceResponse]{
+		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[*dto.DataSourceResponse]{
 			Message: "Successfully updated!",
-			Data:    *dto.DataSourceToResponse(res.data),
+			Data:    dto.DataSourceToResponse(res.data),
 		})
 	}
 }

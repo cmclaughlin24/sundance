@@ -92,10 +92,45 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 }
 
 func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
-	_, err := h.getTenantFromContext(r)
+	tenantID, err := h.getTenantFromContext(r)
 	if err != nil {
 		h.sendErrorResponse(w, err)
 		return
+	}
+
+	var body dto.SubmissionRequest
+	if err := httputil.ReadJSONPayload(r, &body); err != nil {
+		h.sendErrorResponse(w, err)
+		return
+	}
+
+	resultChan := make(chan result[*domain.Submission])
+	command := ports.NewCreateSubmissionCommand(
+		tenantID,
+		body.FormID,
+		body.VersionID,
+		body.Payload,
+	)
+
+	go func() {
+		defer close(resultChan)
+		submission, err := h.app.Services.Submissions.Create(r.Context(), command)
+		resultChan <- result[*domain.Submission]{data: submission, err: err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[*dto.SubmissionResponse]{
+			Message: "Successfully created!",
+			Data:    dto.SubmissionToResponse(res.data),
+		})
 	}
 }
 

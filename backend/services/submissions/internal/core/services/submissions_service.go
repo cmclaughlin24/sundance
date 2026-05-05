@@ -67,7 +67,7 @@ func (s *SubmissionsService) FindByReferenceID(ctx context.Context, query *ports
 	return submission, nil
 }
 
-func (s *SubmissionsService) Create(ctx context.Context, command ports.CreateSubmissionCommand) (*domain.Submission, error) {
+func (s *SubmissionsService) Create(ctx context.Context, command *ports.CreateSubmissionCommand) (*domain.Submission, error) {
 	if err := validate.ValidateStruct(command); err != nil {
 		return nil, err
 	}
