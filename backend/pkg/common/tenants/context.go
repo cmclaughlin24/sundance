@@ -3,6 +3,8 @@ package tenants
 import (
 	"context"
 	"errors"
+	"log/slog"
+	"os"
 )
 
 type contextKey string
@@ -15,12 +17,13 @@ func SetTenantContext(ctx context.Context, tenantID string) context.Context {
 	return context.WithValue(ctx, tenantIDKey, tenantID)
 }
 
-func TenantFromContext(ctx context.Context) (string, error) {
+func TenantFromContext(ctx context.Context) string {
 	tenantID, ok := ctx.Value(tenantIDKey).(string)
 
 	if !ok || tenantID == "" {
-		return "", ErrMissingTenantID
+		slog.ErrorContext(ctx, "failed to get tenant from context; tenant not found or of wrong type")
+		os.Exit(1)
 	}
 
-	return tenantID, nil
+	return tenantID
 }
