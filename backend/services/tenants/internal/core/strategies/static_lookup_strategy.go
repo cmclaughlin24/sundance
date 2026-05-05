@@ -2,17 +2,17 @@ package strategies
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
 
 type StaticLookupStrategy struct {
-	logger *log.Logger
+	logger *slog.Logger
 }
 
-func NewStaticLookupStrategy(logger *log.Logger) ports.LookupStrategy {
+func NewStaticLookupStrategy(logger *slog.Logger) ports.LookupStrategy {
 	return &StaticLookupStrategy{
 		logger: logger,
 	}

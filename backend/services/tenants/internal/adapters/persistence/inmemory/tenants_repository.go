@@ -2,7 +2,7 @@ package inmemory
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"sync"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
@@ -13,10 +13,10 @@ import (
 type inMemoryTenantsRepository struct {
 	mu      sync.RWMutex
 	tenants map[string]*domain.Tenant
-	logger  *log.Logger
+	logger  *slog.Logger
 }
 
-func newInMemoryTenantsRepository(logger *log.Logger) ports.TenantsRepository {
+func newInMemoryTenantsRepository(logger *slog.Logger) ports.TenantsRepository {
 	return &inMemoryTenantsRepository{
 		tenants: make(map[string]*domain.Tenant),
 		logger:  logger,

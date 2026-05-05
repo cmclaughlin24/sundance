@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
@@ -12,13 +12,13 @@ import (
 )
 
 type TenantsService struct {
-	logger                *log.Logger
+	logger                *slog.Logger
 	database              database.Database
 	tenantsRepository     ports.TenantsRepository
 	dataSourcesRepository ports.DataSourcesRepository
 }
 
-func NewTenantsService(logger *log.Logger, repository *ports.Repository) ports.TenantsService {
+func NewTenantsService(logger *slog.Logger, repository *ports.Repository) ports.TenantsService {
 	return &TenantsService{
 		logger:                logger,
 		database:              repository.Database,

@@ -15,5 +15,10 @@ func SetClaimsContext(ctx context.Context, claims Claims) context.Context {
 }
 
 func GetClaimsFromContext(ctx context.Context) Claims {
-	return ctx.Value(ClaimsKey).(Claims)
+	claims, ok := ctx.Value(ClaimsKey).(Claims)
+
+	if !ok {
+	}
+
+	return claims
 }

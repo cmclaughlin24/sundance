@@ -2,7 +2,7 @@ package strategies
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/stratreg"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
@@ -13,7 +13,7 @@ var (
 	ErrDataSourceStrategyMismatch = errors.New("data source type and attributes mismatch; strategy cannot process")
 )
 
-func Bootstrap(logger *log.Logger, _ *ports.Repository, client ports.HTTPClient) *ports.Strategies {
+func Bootstrap(logger *slog.Logger, _ *ports.Repository, client ports.HTTPClient) *ports.Strategies {
 	lookupStrategies := stratreg.New[domain.DataSourceType, ports.LookupStrategy]().
 		Set(domain.DataSourceTypeStatic, NewStaticLookupStrategy(logger)).
 		Set(domain.DataSourceTypeScheduled, NewScheduledLookupStrategy(logger)).

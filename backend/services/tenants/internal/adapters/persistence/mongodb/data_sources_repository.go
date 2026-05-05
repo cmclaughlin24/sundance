@@ -2,7 +2,7 @@ package mongodb
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
@@ -16,7 +16,7 @@ type mongoDBDataSourcesRepository struct {
 	base *database.MongoDBRepository[dataSourceDocument]
 }
 
-func newMongoDBDataSourcesRepository(db *mongo.Database, logger *log.Logger) ports.DataSourcesRepository {
+func newMongoDBDataSourcesRepository(db *mongo.Database, logger *slog.Logger) ports.DataSourcesRepository {
 	base := database.NewMongoDBRepository[dataSourceDocument](
 		db.Collection("data_sources"),
 		logger,

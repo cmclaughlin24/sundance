@@ -2,17 +2,17 @@ package strategies
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
 
 type ScheduledLookupStrategy struct {
-	logger *log.Logger
+	logger *slog.Logger
 }
 
-func NewScheduledLookupStrategy(logger *log.Logger) ports.LookupStrategy {
+func NewScheduledLookupStrategy(logger *slog.Logger) ports.LookupStrategy {
 	return &ScheduledLookupStrategy{
 		logger: logger,
 	}

@@ -2,7 +2,7 @@ package mongodb
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
@@ -16,7 +16,7 @@ type mongoDBTenantsRepository struct {
 	base *database.MongoDBRepository[tenantDocument]
 }
 
-func newMongoDBTenantsRepository(db *mongo.Database, logger *log.Logger) ports.TenantsRepository {
+func newMongoDBTenantsRepository(db *mongo.Database, logger *slog.Logger) ports.TenantsRepository {
 	base := database.NewMongoDBRepository[tenantDocument](
 		db.Collection("tenants"),
 		logger,

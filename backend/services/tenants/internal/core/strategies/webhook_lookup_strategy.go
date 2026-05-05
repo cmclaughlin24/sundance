@@ -2,7 +2,7 @@ package strategies
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
@@ -11,11 +11,11 @@ import (
 )
 
 type WebhookLookupStrategy struct {
-	logger *log.Logger
+	logger *slog.Logger
 	client ports.HTTPClient
 }
 
-func NewWebhookLookupStrategy(logger *log.Logger, client ports.HTTPClient) ports.LookupStrategy {
+func NewWebhookLookupStrategy(logger *slog.Logger, client ports.HTTPClient) ports.LookupStrategy {
 	return &WebhookLookupStrategy{
 		logger: logger,
 		client: client,

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -14,10 +14,10 @@ import (
 
 type MongoDBRepository[T any] struct {
 	collection *mongo.Collection
-	logger     *log.Logger
+	logger     *slog.Logger
 }
 
-func NewMongoDBRepository[T any](collection *mongo.Collection, logger *log.Logger) *MongoDBRepository[T] {
+func NewMongoDBRepository[T any](collection *mongo.Collection, logger *slog.Logger) *MongoDBRepository[T] {
 	return &MongoDBRepository[T]{
 		collection: collection,
 		logger:     logger,
@@ -28,7 +28,7 @@ func (r *MongoDBRepository[T]) Collection() *mongo.Collection {
 	return r.collection
 }
 
-func (r *MongoDBRepository[T]) Logger() *log.Logger {
+func (r *MongoDBRepository[T]) Logger() *slog.Logger {
 	return r.logger
 }
 
