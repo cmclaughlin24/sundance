@@ -20,5 +20,12 @@ func NewCreateSubmissionCommand(tenantID, formID, versionID string, payload any)
 
 type ReplaySubmissionCommand struct {
 	TenantID    string
-	ReferenceID domain.SubmissionID
+	ID domain.SubmissionID
+}
+
+func NewReplaySubmissionCommand(tenantID string, id domain.SubmissionID) *ReplaySubmissionCommand {
+	return &ReplaySubmissionCommand{
+		TenantID: tenantID,
+		ID: id,
+	}
 }

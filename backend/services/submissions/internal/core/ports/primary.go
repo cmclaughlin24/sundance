@@ -15,5 +15,5 @@ type SubmissionsService interface {
 	FindByID(context.Context, *FindSubmissionByIDQuery[domain.SubmissionID]) (*domain.Submission, error)
 	FindByReferenceID(context.Context, *FindSubmissionByIDQuery[domain.ReferenceID]) (*domain.Submission, error)
 	Create(context.Context, *CreateSubmissionCommand) (*domain.Submission, error)
-	Replay(context.Context, ReplaySubmissionCommand) error
+	Replay(context.Context, *ReplaySubmissionCommand) error
 }

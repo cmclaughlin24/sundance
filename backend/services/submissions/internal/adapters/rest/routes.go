@@ -22,10 +22,13 @@ func NewRoutes(app *core.Application) http.Handler {
 			submissionsRoutes.Get("/", h.getSubmissions)
 			submissionsRoutes.Post("/", h.createSubmission)
 
-			submissionsRoutes.Route("/{referenceId}", func(submissionRoutes chi.Router) {
+			submissionsRoutes.Route("/{submissionId}", func(submissionRoutes chi.Router) {
+				submissionRoutes.Post("/replay", h.replaySubmission)
+			})
+
+			submissionsRoutes.Route("/by-reference/{referenceId}", func(submissionRoutes chi.Router) {
 				submissionRoutes.Get("/", h.getSubmissionByReferenceID)
 				submissionRoutes.Get("/status", h.getSubmissionStatus)
-				submissionRoutes.Post("/replay", h.replaySubmission)
 			})
 		})
 	})
