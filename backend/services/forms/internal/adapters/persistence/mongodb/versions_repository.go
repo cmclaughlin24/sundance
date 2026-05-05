@@ -2,7 +2,7 @@ package mongodb
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
@@ -28,7 +28,7 @@ type mongoDBVersionsRepository struct {
 	base *database.MongoDBRepository[versionDocument]
 }
 
-func newMongoDBVersionsRepository(db *mongo.Database, logger *log.Logger) (ports.VersionRepository, error) {
+func newMongoDBVersionsRepository(db *mongo.Database, logger *slog.Logger) (ports.VersionRepository, error) {
 	base := database.NewMongoDBRepository[versionDocument](
 		db.Collection("versions"),
 		logger,

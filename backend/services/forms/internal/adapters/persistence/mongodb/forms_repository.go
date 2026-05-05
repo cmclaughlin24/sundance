@@ -2,7 +2,7 @@ package mongodb
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
@@ -16,7 +16,7 @@ type mongoDBFormsRepository struct {
 	base *database.MongoDBRepository[formDocument]
 }
 
-func newMongoDBFormsRepository(db *mongo.Database, logger *log.Logger) (ports.FormsRepository, error) {
+func newMongoDBFormsRepository(db *mongo.Database, logger *slog.Logger) (ports.FormsRepository, error) {
 	base := database.NewMongoDBRepository[formDocument](
 		db.Collection("forms"),
 		logger,

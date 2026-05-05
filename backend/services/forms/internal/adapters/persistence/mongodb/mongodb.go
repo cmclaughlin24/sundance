@@ -1,14 +1,14 @@
 package mongodb
 
 import (
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-func Bootstrap(client *mongo.Client, logger *log.Logger) (*ports.Repository, error) {
+func Bootstrap(client *mongo.Client, logger *slog.Logger) (*ports.Repository, error) {
 	db := client.Database("forms")
 
 	forms, err := newMongoDBFormsRepository(db, logger)

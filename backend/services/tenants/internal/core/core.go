@@ -24,7 +24,7 @@ func NewApplication(logger *slog.Logger, repository *ports.Repository, services 
 
 func (app *Application) Close() {
 	if err := app.repository.Database.Close(); err != nil {
-		app.Logger.Error("an error occurred while closing the database connection: %s", err.Error())
+		app.Logger.Error("an error occurred while closing the database connection", "error", err.Error())
 		os.Exit(1)
 	}
 }
