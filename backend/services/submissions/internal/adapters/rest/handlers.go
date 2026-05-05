@@ -99,7 +99,7 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var body dto.SubmissionRequest
-	if err := httputil.ReadJSONPayload(r, &body); err != nil {
+	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
