@@ -16,17 +16,17 @@ func TestNewRoutes(t *testing.T) {
 		route  string
 		method string
 	}{
-		{"/api/v1/forms/", "GET"},
-		{"/api/v1/forms/", "POST"},
-		{"/api/v1/forms/{formId}/", "GET"},
-		{"/api/v1/forms/{formId}/", "PUT"},
-		{"/api/v1/forms/{formId}/", "DELETE"},
-		{"/api/v1/forms/{formId}/versions/", "GET"},
-		{"/api/v1/forms/{formId}/versions/", "POST"},
-		{"/api/v1/forms/{formId}/versions/{versionId}/", "GET"},
-		{"/api/v1/forms/{formId}/versions/{versionId}/", "PUT"},
-		{"/api/v1/forms/{formId}/versions/{versionId}/publish", "POST"},
-		{"/api/v1/forms/{formId}/versions/{versionId}/retire", "POST"},
+		{"/api/v1/forms/", http.MethodGet},
+		{"/api/v1/forms/", http.MethodPost},
+		{"/api/v1/forms/{formId}/", http.MethodGet},
+		{"/api/v1/forms/{formId}/", http.MethodPut},
+		{"/api/v1/forms/{formId}/", http.MethodDelete},
+		{"/api/v1/forms/{formId}/versions/", http.MethodGet},
+		{"/api/v1/forms/{formId}/versions/", http.MethodPost},
+		{"/api/v1/forms/{formId}/versions/{versionId}/", http.MethodGet},
+		{"/api/v1/forms/{formId}/versions/{versionId}/", http.MethodPut},
+		{"/api/v1/forms/{formId}/versions/{versionId}/publish", http.MethodPost},
+		{"/api/v1/forms/{formId}/versions/{versionId}/retire", http.MethodPost},
 	}
 	mux := rest.NewRoutes(&core.Application{})
 

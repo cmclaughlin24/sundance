@@ -16,17 +16,17 @@ func TestNewRoutes(t *testing.T) {
 		route  string
 		method string
 	}{
-		{"/api/v1/tenants/", "GET"},
-		{"/api/v1/tenants/", "POST"},
-		{"/api/v1/tenants/{tenantId}/", "GET"},
-		{"/api/v1/tenants/{tenantId}/", "PUT"},
-		{"/api/v1/tenants/{tenantId}/", "DELETE"},
-		{"/api/v1/data-sources/", "GET"},
-		{"/api/v1/data-sources/", "POST"},
-		{"/api/v1/data-sources/{dataSourceId}/", "GET"},
-		{"/api/v1/data-sources/{dataSourceId}/", "PUT"},
-		{"/api/v1/data-sources/{dataSourceId}/", "DELETE"},
-		{"/api/v1/data-sources/{dataSourceId}/look-ups", "GET"},
+		{"/api/v1/tenants/", http.MethodGet},
+		{"/api/v1/tenants/", http.MethodPost},
+		{"/api/v1/tenants/{tenantId}/", http.MethodGet},
+		{"/api/v1/tenants/{tenantId}/", http.MethodPut},
+		{"/api/v1/tenants/{tenantId}/", http.MethodDelete},
+		{"/api/v1/data-sources/", http.MethodGet},
+		{"/api/v1/data-sources/", http.MethodPost},
+		{"/api/v1/data-sources/{dataSourceId}/", http.MethodGet},
+		{"/api/v1/data-sources/{dataSourceId}/", http.MethodPut},
+		{"/api/v1/data-sources/{dataSourceId}/", http.MethodDelete},
+		{"/api/v1/data-sources/{dataSourceId}/look-ups", http.MethodGet},
 	}
 	mux := rest.NewRoutes(&core.Application{})
 

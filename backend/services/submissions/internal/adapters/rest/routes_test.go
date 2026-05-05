@@ -16,11 +16,11 @@ func TestNewRoutes(t *testing.T) {
 		route  string
 		method string
 	}{
-		{"/api/v1/submissions/", "GET"},
-		{"/api/v1/submissions/", "POST"},
-		{"/api/v1/submissions/{submissionId}/replay", "POST"},
-		{"/api/v1/submissions/by-reference/{referenceId}/", "GET"},
-		{"/api/v1/submissions/by-reference/{referenceId}/status", "GET"},
+		{"/api/v1/submissions/", http.MethodGet},
+		{"/api/v1/submissions/", http.MethodPost},
+		{"/api/v1/submissions/{submissionId}/replay", http.MethodPost},
+		{"/api/v1/submissions/by-reference/{referenceId}/", http.MethodGet},
+		{"/api/v1/submissions/by-reference/{referenceId}/status", http.MethodGet},
 	}
 	mux := rest.NewRoutes(&core.Application{})
 
