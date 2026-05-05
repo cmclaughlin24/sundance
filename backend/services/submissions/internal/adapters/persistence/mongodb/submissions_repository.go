@@ -25,8 +25,8 @@ func newMongoDBSubmissionsRepository(db *mongo.Database, logger *log.Logger) por
 	return &mongoDBSubmissionsRepository{base}
 }
 
-func (r *mongoDBSubmissionsRepository) Find(ctx context.Context) ([]*domain.Submission, error) {
-	documents, err := r.base.Find(ctx, bson.M{})
+func (r *mongoDBSubmissionsRepository) Find(ctx context.Context, filter *ports.FindSubmissionsFilter) ([]*domain.Submission, error) {
+	documents, err := r.base.Find(ctx, bson.M{"tenant_id": filter.TenantID})
 
 	if err != nil {
 		return nil, err

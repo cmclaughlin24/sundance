@@ -23,3 +23,7 @@ func NewFindSubmissionByIDQuery[T any](tenantID string, id T) *FindSubmissionByI
 
 	return query
 }
+
+type FindSubmissionsFilter struct {
+	TenantID string 
+}

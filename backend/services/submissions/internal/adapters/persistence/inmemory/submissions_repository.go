@@ -23,13 +23,16 @@ func NewInMemorySubmissionsRepository(logger *log.Logger) ports.SubmissionsRepos
 	}
 }
 
-func (r *InMemorySubmissionsRepository) Find(ctx context.Context) ([]*domain.Submission, error) {
+func (r *InMemorySubmissionsRepository) Find(ctx context.Context, filter *ports.FindSubmissionsFilter) ([]*domain.Submission, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	submissions := make([]*domain.Submission, 0, len(r.submissions))
 
 	for _, submission := range r.submissions {
+		if filter != nil && filter.TenantID != "" && submission.TenantID != filter.TenantID {
+			continue
+		}
 		submissions = append(submissions, submission)
 	}
 

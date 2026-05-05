@@ -27,7 +27,9 @@ func (s *SubmissionsService) Find(ctx context.Context, query *ports.FindSubmissi
 		return nil, err
 	}
 
-	return s.repository.Find(ctx)
+	return s.repository.Find(ctx, &ports.FindSubmissionsFilter{
+		TenantID: query.TenantID,
+	})
 }
 
 func (s *SubmissionsService) FindByID(ctx context.Context, query *ports.FindSubmissionByIDQuery[domain.SubmissionID]) (*domain.Submission, error) {
