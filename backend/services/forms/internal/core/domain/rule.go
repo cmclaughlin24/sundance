@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
-	"github.com/google/uuid"
 )
 
 type RuleID string
@@ -34,7 +33,7 @@ func NewRule(ruleType RuleType, expression string) (*Rule, error) {
 	}
 
 	r := &Rule{
-		ID:         RuleID(uuid.NewString()),
+		ID:         RuleID(NewID()),
 		Type:       ruleType,
 		Expression: expression,
 	}

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
-	"github.com/google/uuid"
 )
 
 type VersionStatus string
@@ -49,7 +48,7 @@ func NewVersion(formID FormID, version int, status VersionStatus) (*Version, err
 	}
 
 	v := &Version{
-		ID:        VersionID(uuid.NewString()),
+		ID:        VersionID(NewID()),
 		FormID:    formID,
 		Version:   version,
 		Status:    status,

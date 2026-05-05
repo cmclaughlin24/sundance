@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
-	"github.com/google/uuid"
 )
 
 type DataSourceID string
@@ -50,7 +49,7 @@ func NewDataSource(
 	}
 
 	ds := &DataSource{
-		ID:          DataSourceID(uuid.NewString()),
+		ID:          DataSourceID(NewID()),
 		TenantID:    tenantID,
 		Name:        name,
 		Description: description,

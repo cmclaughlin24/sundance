@@ -6,7 +6,6 @@ import (
 	"slices"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
-	"github.com/google/uuid"
 )
 
 type PageID string
@@ -30,7 +29,7 @@ func NewPage(key, name string, position int) (*Page, error) {
 	}
 
 	p := &Page{
-		ID:       PageID(uuid.NewString()),
+		ID:       PageID(NewID()),
 		Key:      key,
 		Name:     name,
 		sections: make(map[int]*Section),

@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
-	"github.com/google/uuid"
 )
 
 type FieldID string
@@ -48,7 +47,7 @@ func NewField(key, name string, fieldType FieldType, attributes FieldAttributes,
 	}
 
 	f := &Field{
-		ID:         FieldID(uuid.NewString()),
+		ID:         FieldID(NewID()),
 		Key:        key,
 		Name:       name,
 		Type:       fieldType,

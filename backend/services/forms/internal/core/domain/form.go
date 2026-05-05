@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
-	"github.com/google/uuid"
 )
 
 var (
@@ -26,7 +25,7 @@ type Form struct {
 
 func NewForm(tenantID, name, description string) (*Form, error) {
 	f := &Form{
-		ID:          FormID(uuid.NewString()),
+		ID:          FormID(NewID()),
 		TenantID:    tenantID,
 		Name:        name,
 		Description: description,

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
-	"github.com/google/uuid"
 )
 
 var ErrInvalidTenant = errors.New("invalid tenant")
@@ -22,7 +21,7 @@ type Tenant struct {
 
 func NewTenant(name, description string) (*Tenant, error) {
 	t := &Tenant{
-		ID:          TenantID(uuid.NewString()),
+		ID:          TenantID(NewID()),
 		Name:        name,
 		Description: description,
 		CreatedAt:   Now(),

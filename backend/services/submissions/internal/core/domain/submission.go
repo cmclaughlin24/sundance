@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
-	"github.com/google/uuid"
 )
 
 type SubmissionID string
@@ -12,6 +11,12 @@ type SubmissionID string
 type ReferenceID string
 
 type SubmissionStatus string
+
+const (
+	SubmissionStatusPending  SubmissionStatus = "pending"
+	SubmissionStatusAccepted SubmissionStatus = "accepted"
+	SubmissionStatusRejected SubmissionStatus = "rejected"
+)
 
 type Submission struct {
 	ID          SubmissionID
@@ -33,12 +38,12 @@ func NewSubmission(
 	payload any,
 ) (*Submission, error) {
 	s := &Submission{
-		ID:          SubmissionID(uuid.NewString()),
+		ID:          SubmissionID(NewID()),
 		TenantID:    tenantID,
 		FormID:      formID,
 		VersionID:   versionID,
-		ReferenceID: ReferenceID(uuid.NewString()), // TODO: Investigate a more order number style implementation.
-		Status:      "",                            // TODO: Implement submission state machine.
+		ReferenceID: ReferenceID(NewID()), // TODO: Investigate a more order number style implementation.
+		Status:      SubmissionStatusPending,
 		Payload:     payload,
 		CreatedAt:   Now(),
 		Attempts:    make([]*SubmissionAttempt, 0),

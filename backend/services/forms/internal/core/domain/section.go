@@ -6,7 +6,6 @@ import (
 	"slices"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
-	"github.com/google/uuid"
 )
 
 type SectionID string
@@ -30,7 +29,7 @@ func NewSection(key, name string, position int) (*Section, error) {
 	}
 
 	s := &Section{
-		ID:     SectionID(uuid.NewString()),
+		ID:     SectionID(NewID()),
 		Key:    key,
 		Name:   name,
 		fields: make(map[int]*Field),
