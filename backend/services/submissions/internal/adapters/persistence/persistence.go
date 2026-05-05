@@ -3,7 +3,7 @@ package persistence
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/persistence/inmemory"
@@ -18,7 +18,7 @@ const (
 	PersistenceDriverMongodb  PersistenceDriver = "mongodb"
 )
 
-type bootstrapFn func(PersistenceOptions, *log.Logger) (*ports.Repository, error)
+type bootstrapFn func(PersistenceOptions, *slog.Logger) (*ports.Repository, error)
 
 type PersistenceOptions any
 
@@ -27,7 +27,7 @@ type PersistenceSettings struct {
 	Options PersistenceOptions `json:"options"`
 }
 
-func Bootstrap(settings PersistenceSettings, logger *log.Logger) (*ports.Repository, error) {
+func Bootstrap(settings PersistenceSettings, logger *slog.Logger) (*ports.Repository, error) {
 	var fn bootstrapFn
 
 	switch settings.Driver {
@@ -44,11 +44,11 @@ func Bootstrap(settings PersistenceSettings, logger *log.Logger) (*ports.Reposit
 	return fn(settings.Options, logger)
 }
 
-func bootstrapInMemory(_ PersistenceOptions, logger *log.Logger) (*ports.Repository, error) {
+func bootstrapInMemory(_ PersistenceOptions, logger *slog.Logger) (*ports.Repository, error) {
 	return inmemory.Bootstrap(logger), nil
 }
 
-func bootstrapMongoDB(o PersistenceOptions, logger *log.Logger) (*ports.Repository, error) {
+func bootstrapMongoDB(o PersistenceOptions, logger *slog.Logger) (*ports.Repository, error) {
 	options, err := parseOptions[database.MongoDBOpts](o)
 
 	if err != nil {

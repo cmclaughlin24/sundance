@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
@@ -11,11 +11,11 @@ import (
 )
 
 type SubmissionsService struct {
-	logger     *log.Logger
+	logger     *slog.Logger
 	repository ports.SubmissionsRepository
 }
 
-func NewSubmissionsService(logger *log.Logger, repository *ports.Repository) ports.SubmissionsService {
+func NewSubmissionsService(logger *slog.Logger, repository *ports.Repository) ports.SubmissionsService {
 	return &SubmissionsService{
 		logger:     logger,
 		repository: repository.Submissions,
@@ -38,7 +38,6 @@ func (s *SubmissionsService) FindByID(ctx context.Context, query *ports.FindSubm
 	}
 
 	submission, err := s.repository.FindByID(ctx, query.ID)
-
 	if err != nil {
 		return nil, err
 	}
@@ -80,6 +79,15 @@ func (s *SubmissionsService) Create(ctx context.Context, command *ports.CreateSu
 	return s.repository.Upsert(ctx, submission)
 }
 
-func (s *SubmissionsService) Replay(context.Context, ports.ReplaySubmissionCommand) error {
+func (s *SubmissionsService) Replay(ctx context.Context, command *ports.ReplaySubmissionCommand) error {
+	if err := validate.ValidateStruct(command); err != nil {
+		return err
+	}
+
+	_, err := s.repository.FindByID(ctx, command.ID)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

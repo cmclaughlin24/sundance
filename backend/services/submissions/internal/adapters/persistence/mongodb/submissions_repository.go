@@ -2,7 +2,7 @@ package mongodb
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
@@ -16,7 +16,7 @@ type mongoDBSubmissionsRepository struct {
 	base *database.MongoDBRepository[submissionDocument]
 }
 
-func newMongoDBSubmissionsRepository(db *mongo.Database, logger *log.Logger) ports.SubmissionsRepository {
+func newMongoDBSubmissionsRepository(db *mongo.Database, logger *slog.Logger) ports.SubmissionsRepository {
 	base := database.NewMongoDBRepository[submissionDocument](
 		db.Collection("submissions"),
 		logger,

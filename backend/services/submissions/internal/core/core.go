@@ -1,18 +1,18 @@
 package core
 
 import (
-	"log"
+	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
 )
 
 type Application struct {
-	Logger     *log.Logger
+	Logger     *slog.Logger
 	Services   *ports.Services
 	repository *ports.Repository
 }
 
-func NewApplication(logger *log.Logger, repository *ports.Repository, services *ports.Services) *Application {
+func NewApplication(logger *slog.Logger, repository *ports.Repository, services *ports.Services) *Application {
 	return &Application{
 		Logger:     logger,
 		Services:   services,
@@ -22,6 +22,6 @@ func NewApplication(logger *log.Logger, repository *ports.Repository, services *
 
 func (app *Application) Close() {
 	if err := app.repository.Database.Close(); err != nil {
-		app.Logger.Fatalf("an error occurred while closing the database connection: %s", err.Error())
+		app.Logger.Error("an error occurred while closing the database connection", "error", err.Error())
 	}
 }

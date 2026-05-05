@@ -4,7 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -33,11 +33,12 @@ func main() {
 		panic(err)
 	}
 
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	r, err := persistence.Bootstrap(settings.Persistence, logger)
 
 	if err != nil {
-		logger.Fatal(err)
+		logger.Error(err.Error())
+		os.Exit(1)
 	}
 
 	s := services.Bootstrap(logger, r)
@@ -56,7 +57,7 @@ func main() {
 	serverErrChan := make(chan error, 1)
 
 	go func() {
-		app.Logger.Printf("application listening on :%d", settings.Port)
+		app.Logger.Info(fmt.Sprintf("application listening on :%d", settings.Port))
 
 		if err := server.ListenAndServe(); err != nil {
 			serverErrChan <- err
@@ -68,18 +69,18 @@ func main() {
 
 	select {
 	case err := <-serverErrChan:
-		app.Logger.Printf("server error: %v\n", err)
+		app.Logger.Error(fmt.Sprintf("server error: %v", err))
 	case sig := <-signalChan:
-		app.Logger.Printf("application received shutdown signal: %v\n", sig)
+		app.Logger.Info(fmt.Sprintf("application received shutdown signal: %v", sig))
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		app.Logger.Printf("application shutdown failed: %v\n", err)
+		app.Logger.Info(fmt.Sprintf("application shutdown failed: %v", err))
 		return
 	}
 
-	app.Logger.Println("application shutdown successful")
+	app.Logger.Info("application shutdown successful")
 }
