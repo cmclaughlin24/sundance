@@ -7,6 +7,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/httplog/v3"
 )
 
 func NewRoutes(app *core.Application) http.Handler {
@@ -14,7 +15,9 @@ func NewRoutes(app *core.Application) http.Handler {
 	mux := chi.NewRouter()
 
 	mux.Use(middleware.RequestID)
-	mux.Use(middleware.Logger)
+	mux.Use(httplog.RequestLogger(app.Logger, &httplog.Options{
+		Schema: httplog.SchemaOTEL,
+	}))
 	mux.Use(tenants.NewMiddleware("X-Tenant-ID"))
 
 	mux.Route("/api/v1", func(routes chi.Router) {

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/logger"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/persistence"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/rest"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
@@ -33,16 +34,17 @@ func main() {
 		panic(err)
 	}
 
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	r, err := persistence.Bootstrap(settings.Persistence, logger)
+	handler := slog.NewJSONHandler(os.Stdout, nil)
+	l := slog.New(&logger.RequestContextHandler{Handler: handler})
+	r, err := persistence.Bootstrap(settings.Persistence, l)
 
 	if err != nil {
-		logger.Error(err.Error())
+		l.Error(err.Error())
 		os.Exit(1)
 	}
 
-	s := services.Bootstrap(logger, r)
-	app := core.NewApplication(logger, r, s)
+	s := services.Bootstrap(l, r)
+	app := core.NewApplication(l, r, s)
 
 	defer app.Close()
 	mux := rest.NewRoutes(app)
