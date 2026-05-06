@@ -300,12 +300,52 @@ func Test_handlers_deleteTenant(t *testing.T) {
 		statusCode int
 		id         string
 	}{
-		// TODO: Add test cases.
+		{
+			"should yield NOT CONTENT if the request is successful",
+			func(ctx context.Context, id domain.TenantID) error {
+				return nil
+			},
+			http.StatusNoContent,
+			"1",
+		},
+		{
+			"should yield NOT FOUND if the resource is not found",
+			func(ctx context.Context, id domain.TenantID) error {
+				return common.ErrNotFound
+			},
+			http.StatusNotFound,
+			"1",
+		},
+		{
+			"should yield INTERNAL SERVER ERROR if the request fails",
+			func(ctx context.Context, id domain.TenantID) error {
+				return errors.New("internal error")
+			},
+			http.StatusInternalServerError,
+			"1",
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// h := newTestHandlers(tt.app)
+			s := &ports.Services{Tenants: &mockTenantsService{deleteFn: tt.fn}}
+			h := newTestHandlers(s)
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("tenantId", tt.id)
+			req, _ := http.NewRequest(http.MethodGet, "/api/v1/tenants/"+tt.id, nil)
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+			rr := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.deleteTenant)
+
+			// Act.
+			handler.ServeHTTP(rr, req)
+
+			// Assert.
+			resp := rr.Result()
+
+			if resp.StatusCode != tt.statusCode {
+				t.Errorf("expected status code %d but got %d", tt.statusCode, resp.StatusCode)
+			}
 		})
 	}
 }
@@ -614,6 +654,183 @@ func Test_handlers_updateDataSource(t *testing.T) {
 
 			if tt.statusCode < 200 || tt.statusCode >= 300 {
 				return
+			}
+		})
+	}
+}
+
+func Test_handlers_deleteDataSource(t *testing.T) {
+	tests := []struct {
+		name       string
+		fn         func(context.Context, *ports.RemoveDataSourceCommand) error
+		statusCode int
+		id         string
+	}{
+		{
+			"should yield NO CONTENT if the request is successful",
+			func(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
+				return nil
+			},
+			http.StatusNoContent,
+			"ds-1",
+		},
+		{
+			"should yield NOT FOUND if the resource is not found",
+			func(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
+				return common.ErrNotFound
+			},
+			http.StatusNotFound,
+			"ds-1",
+		},
+		{
+			"should yield INTERNAL SERVER ERROR if the request fails",
+			func(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
+				return errors.New("internal error")
+			},
+			http.StatusInternalServerError,
+			"ds-1",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange.
+			s := &ports.Services{DataSources: &mockDataSourcesService{deleteFn: tt.fn}}
+			h := newTestHandlers(s)
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("dataSourceId", tt.id)
+			req, _ := http.NewRequest(http.MethodDelete, "/api/v1/data-sources/"+tt.id, nil)
+			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
+			rr := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.deleteDataSource)
+
+			// Act.
+			handler.ServeHTTP(rr, req)
+
+			// Assert.
+			resp := rr.Result()
+
+			if resp.StatusCode != tt.statusCode {
+				t.Errorf("expected status code %d but got %d", tt.statusCode, resp.StatusCode)
+			}
+		})
+	}
+}
+
+func Test_handlers_getLookups(t *testing.T) {
+	tests := []struct {
+		name       string
+		fn         func(context.Context, *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error)
+		statusCode int
+		id         string
+		len        int
+	}{
+		{
+			"should yield OK if the request is successful with results",
+			func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
+				return []*domain.Lookup{
+					{Value: "blue", Label: "Blue Heeler"},
+					{Value: "red", Label: "Red Heeler"},
+				}, nil
+			},
+			http.StatusOK,
+			"ds-1",
+			2,
+		},
+		{
+			"should yield OK if the request is successful with empty results",
+			func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
+				return []*domain.Lookup{}, nil
+			},
+			http.StatusOK,
+			"ds-1",
+			0,
+		},
+		{
+			"should yield INTERNAL SERVER ERROR if the request fails",
+			func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
+				return nil, errors.New("internal error")
+			},
+			http.StatusInternalServerError,
+			"ds-1",
+			0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange.
+			s := &ports.Services{DataSources: &mockDataSourcesService{lookupFn: tt.fn}}
+			h := newTestHandlers(s)
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("dataSourceId", tt.id)
+			req, _ := http.NewRequest(http.MethodGet, "/api/v1/data-sources/"+tt.id+"/look-ups", nil)
+			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
+			rr := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.getLookups)
+
+			// Act.
+			handler.ServeHTTP(rr, req)
+
+			// Assert.
+			resp := rr.Result()
+
+			if resp.StatusCode != tt.statusCode {
+				t.Errorf("expected status code %d but got %d", tt.statusCode, resp.StatusCode)
+			}
+
+			if tt.statusCode < 200 || tt.statusCode >= 300 {
+				return
+			}
+
+			var body []map[string]any
+			if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+				t.Fatalf("failed to decode response body: %v", err)
+			}
+
+			if len(body) != tt.len {
+				t.Errorf("expected %d lookups but got %d", tt.len, len(body))
+			}
+		})
+	}
+}
+
+func Test_isBadRequest(t *testing.T) {
+	tests := []struct {
+		name string
+		err  error
+		want bool
+	}{
+		{
+			"should yield true when err is ErrDataSourceAttrParse",
+			dto.ErrDataSourceAttrParse,
+			true,
+		},
+		{
+			"should yield true when err is ErrInvalidSourceType",
+			domain.ErrInvalidSourceType,
+			true,
+		},
+		{
+			"should yield true when err is ErrInvalidSourceTypeAttributes",
+			domain.ErrInvalidSourceTypeAttributes,
+			true,
+		},
+		{
+			"should yield false otherwise",
+			errors.New("unknown error"),
+			false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := isBadRequest(tt.err)
+
+			if got != tt.want {
+				t.Errorf("expected %v but got %v", tt.want, got)
 			}
 		})
 	}
