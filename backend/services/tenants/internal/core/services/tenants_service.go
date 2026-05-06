@@ -43,6 +43,7 @@ func (s *TenantsService) FindByID(ctx context.Context, id domain.TenantID) (*dom
 
 	t, err := s.tenantsRepository.FindByID(ctx, id)
 	if err != nil {
+		s.logFindByIDError(ctx, err, id)
 		return nil, err
 	}
 
@@ -84,6 +85,7 @@ func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenant
 
 	tenant, err := s.tenantsRepository.FindByID(ctx, command.ID)
 	if err != nil {
+		s.logFindByIDError(ctx, err, command.ID)
 		return nil, err
 	}
 
@@ -94,13 +96,21 @@ func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenant
 
 	s.logger.InfoContext(ctx, "tenant updated", "tenant_id", tenant.ID)
 
-	return s.tenantsRepository.Upsert(ctx, tenant)
+	tenant, err = s.tenantsRepository.Upsert(ctx, tenant)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to persist tenant", "error", err)
+		return nil, err
+	}
+
+	return tenant, nil
 }
 
 func (s *TenantsService) Delete(ctx context.Context, id domain.TenantID) error {
-	txCtx, err := s.database.BeginTx(ctx)
+	s.logger.DebugContext(ctx, "deleting tenant", "tenant_id", id)
 
+	txCtx, err := s.database.BeginTx(ctx)
 	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to begin transaction", "tenant_id", id, "error", err)
 		return err
 	}
 
@@ -108,24 +118,39 @@ func (s *TenantsService) Delete(ctx context.Context, id domain.TenantID) error {
 	exists, err := s.tenantsRepository.Exists(txCtx, id)
 
 	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to check tenant existence", "tenant_id", id, "error", err)
 		return err
 	}
 
 	if !exists {
+		s.logger.WarnContext(ctx, "tenant not found", "tenant_id", id)
 		return common.ErrNotFound
 	}
 
 	if err := s.tenantsRepository.Delete(txCtx, id); err != nil {
+		s.logger.ErrorContext(ctx, "failed to delete tenant", "tenant_id", id, "error", err)
 		return err
 	}
 
 	if err := s.dataSourcesRepository.DeleteAll(txCtx, id); err != nil {
+		s.logger.ErrorContext(ctx, "failed to delete tenant data sources", "tenant_id", id, "error", err)
 		return err
 	}
 
 	if err := s.database.CommitTx(txCtx); err != nil {
+		s.logger.ErrorContext(ctx, "failed to commit delete transaction", "tenant_id", id, "error", err)
 		return err
 	}
 
+	s.logger.InfoContext(ctx, "tenant deleted", "tenant_id", id)
+
 	return nil
+}
+
+func (s *TenantsService) logFindByIDError(ctx context.Context, err error, id domain.TenantID) {
+	if err == common.ErrNotFound {
+		s.logger.WarnContext(ctx, "tenant not found", "tenant_id", id)
+	} else {
+		s.logger.ErrorContext(ctx, "failed to retrieve tenant", "tenant_id", id, "error", err)
+	}
 }
