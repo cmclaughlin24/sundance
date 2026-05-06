@@ -42,6 +42,7 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -72,6 +73,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -86,6 +88,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 	var body dto.UpsertFormRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
+		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -102,6 +105,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -119,6 +123,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 	var body dto.UpsertFormRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
+		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -136,6 +141,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -164,6 +170,7 @@ func (h *handlers) deleteForm(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -189,6 +196,7 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -220,6 +228,7 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -237,6 +246,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 
 	var body dto.UpsertVersionRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
+		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -258,6 +268,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -279,6 +290,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 
 	var body dto.UpsertVersionRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
+		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -300,6 +312,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -330,6 +343,7 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -360,6 +374,7 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {

@@ -41,6 +41,7 @@ func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -71,6 +72,7 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -85,6 +87,7 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 	var body dto.SubmissionRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
+		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -106,6 +109,7 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -134,6 +138,7 @@ func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -166,6 +171,7 @@ func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
