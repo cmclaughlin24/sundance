@@ -3,10 +3,10 @@ package dto
 import "github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 
 type FieldRequest struct {
-	Key        string        `json:"key"`
-	Name       string        `json:"name"`
-	Type       string        `json:"type"`
-	Position   int           `json:"position"`
+	Key        string        `json:"key" validate:"required,max=25"`
+	Name       string        `json:"name" validate:"required,max=250"`
+	Type       string        `json:"type" validate:"required"`
+	Position   int           `json:"position" validate:"gte=0,lte=50"`
 	Attributes any           `json:"attributes"`
 	Rules      []RuleRequest `json:"rules"`
 }

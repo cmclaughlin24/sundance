@@ -3,8 +3,8 @@ package dto
 import "github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 
 type RuleRequest struct {
-	Type       string `json:"type"`
-	Expression string `json:"expression"`
+	Type       string `json:"type" validate:"required"`
+	Expression string `json:"expression" validate:"required"`
 }
 
 type RuleResponse struct {

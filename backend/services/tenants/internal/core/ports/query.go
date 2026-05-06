@@ -16,8 +16,8 @@ func NewListDataSourceQuery(tenantID domain.TenantID) *ListDataSourceQuery {
 	}
 }
 
-func (c *ListDataSourceQuery) Validate() error {
-	return validate.ValidateStruct(c)
+func (q *ListDataSourceQuery) Validate() error {
+	return validate.ValidateStruct(q)
 }
 
 type FindDataSourceByIDQuery struct {
@@ -32,8 +32,8 @@ func NewFindDataSourceByID(tenantID domain.TenantID, sourceID domain.DataSourceI
 	}
 }
 
-func (c *FindDataSourceByIDQuery) Validate() error {
-	return validate.ValidateStruct(c)
+func (q *FindDataSourceByIDQuery) Validate() error {
+	return validate.ValidateStruct(q)
 }
 
 type GetDataSourceLookupsQuery struct {
@@ -48,6 +48,6 @@ func NewGetDataSourceLookupsQuery(tenantID domain.TenantID, sourceID domain.Data
 	}
 }
 
-func (c *GetDataSourceLookupsQuery) Validate() error {
-	return validate.ValidateStruct(c)
+func (q *GetDataSourceLookupsQuery) Validate() error {
+	return validate.ValidateStruct(q)
 }

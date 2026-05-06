@@ -7,8 +7,8 @@ import (
 )
 
 type UpsertFormRequest struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string `json:"name" validate:"required,max=75"`
+	Description string `json:"description" validate:"max=500"`
 }
 
 type FormResponse struct {

@@ -30,7 +30,7 @@ type VersionID string
 
 type Version struct {
 	ID          VersionID
-	FormID      FormID        `validate:"required,nowhitespace"`
+	FormID      FormID        `validate:"required"`
 	Version     int           `validate:"required,min=1"`
 	Status      VersionStatus `validate:"required"`
 	PublishedBy string

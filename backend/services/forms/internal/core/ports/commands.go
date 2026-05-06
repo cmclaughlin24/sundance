@@ -1,6 +1,7 @@
 package ports
 
 import (
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 )
 
@@ -24,6 +25,10 @@ func NewCreateFormCommand(tenantID, name, description string) *CreateFormCommand
 	}
 }
 
+func (c *CreateFormCommand) Validate() error {
+	return validate.ValidateStruct(c)
+}
+
 type UpdateFormCommand struct {
 	baseFormCommand
 	ID domain.FormID `validate:"required"`
@@ -40,6 +45,10 @@ func NewUpdateFormCommand(tenantID string, id domain.FormID, name, description s
 	}
 }
 
+func (c *UpdateFormCommand) Validate() error {
+	return validate.ValidateStruct(c)
+}
+
 type RemoveFormCommand struct {
 	ID       domain.FormID `validate:"required"`
 	TenantID string        `validate:"required"`
@@ -50,6 +59,10 @@ func NewRemoveFormCommand(tenantID string, id domain.FormID) *RemoveFormCommand 
 		TenantID: tenantID,
 		ID:       id,
 	}
+}
+
+func (c *RemoveFormCommand) Validate() error {
+	return validate.ValidateStruct(c)
 }
 
 type baseVersionCommand struct {
@@ -72,6 +85,10 @@ func NewCreateVersionCommand(tenantID string, formID domain.FormID, pages []*dom
 	}
 }
 
+func (c *CreateVersionCommand) Validate() error {
+	return validate.ValidateStruct(c)
+}
+
 type UpdateVersionCommand struct {
 	baseVersionCommand
 	VersionID domain.VersionID `validate:"required"`
@@ -87,6 +104,10 @@ func NewUpdateVersionCommand(tenantID string, id domain.VersionID, formID domain
 		VersionID: id,
 		Pages:     pages,
 	}
+}
+
+func (c *UpdateVersionCommand) Validate() error {
+	return validate.ValidateStruct(c)
 }
 
 type PublishVersionCommand struct {
@@ -106,6 +127,10 @@ func NewPublishVersionCommand(tenantID string, formID domain.FormID, versionID d
 	}
 }
 
+func (c *PublishVersionCommand) Validate() error {
+	return validate.ValidateStruct(c)
+}
+
 type RetireVersionCommand struct {
 	baseVersionCommand
 	VersionID domain.VersionID `validate:"required"`
@@ -121,4 +146,8 @@ func NewRetireVersionCommand(tenantID string, formID domain.FormID, versionID do
 		VersionID: versionID,
 		UserID:    userID,
 	}
+}
+
+func (c *RetireVersionCommand) Validate() error {
+	return validate.ValidateStruct(c)
 }

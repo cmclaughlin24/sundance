@@ -1,6 +1,7 @@
 package ports
 
 import (
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 )
 
@@ -15,6 +16,10 @@ func NewFindFormsQuery(tenantID string) *FindFormsQuery {
 	}
 }
 
+func (q *FindFormsQuery) Validate() error {
+	return validate.ValidateStruct(q)
+}
+
 type FindFormsByIDQuery struct {
 	TenantID string        `validate:"required"`
 	FormID   domain.FormID `validate:"required"`
@@ -25,6 +30,10 @@ func NewFindFormsByIDQuery(tenantID string, formID domain.FormID) *FindFormsByID
 		TenantID: tenantID,
 		FormID:   formID,
 	}
+}
+
+func (q *FindFormsByIDQuery) Validate() error {
+	return validate.ValidateStruct(q)
 }
 
 type FindVersionsQuery struct {
@@ -40,6 +49,10 @@ func NewFindVersionsQuery(tenantID string, formID domain.FormID) *FindVersionsQu
 	}
 }
 
+func (q *FindVersionsQuery) Validate() error {
+	return validate.ValidateStruct(q)
+}
+
 type FindVersionByIDQuery struct {
 	FindFormsByIDQuery
 	VersionID domain.VersionID `validate:"required"`
@@ -53,6 +66,10 @@ func NewFindVersionByIDQuery(tenantID string, formID domain.FormID, versionID do
 		},
 		VersionID: versionID,
 	}
+}
+
+func (q *FindVersionByIDQuery) Validate() error {
+	return validate.ValidateStruct(q)
 }
 
 type FormFilters struct {

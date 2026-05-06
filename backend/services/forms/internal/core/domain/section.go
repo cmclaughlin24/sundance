@@ -17,7 +17,7 @@ var (
 type Section struct {
 	ID     SectionID
 	Key    string `validate:"required,nowhitespace"`
-	Name   string `validate:"required,nowhitespace"`
+	Name   string `validate:"required"`
 	fields map[int]*Field
 	withPosition
 	withRules

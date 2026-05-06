@@ -5,9 +5,9 @@ import (
 )
 
 type SectionRequest struct {
-	Key      string         `json:"key"`
-	Name     string         `json:"name"`
-	Position int            `json:"position"`
+	Key      string         `json:"key" validate:"required,max=25"`
+	Name     string         `json:"name" validate:"required,max=75"`
+	Position int            `json:"position" validate:"gte=0,lte=10"`
 	Fields   []FieldRequest `json:"fields"`
 	Rules    []RuleRequest  `json:"rules"`
 }

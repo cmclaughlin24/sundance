@@ -5,7 +5,6 @@ import (
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
@@ -28,7 +27,7 @@ func NewFormsService(logger *slog.Logger, repository *ports.Repository) ports.Fo
 }
 
 func (s *FormsService) Find(ctx context.Context, query *ports.FindFormsQuery) ([]*domain.Form, error) {
-	if err := validate.ValidateStruct(query); err != nil {
+	if err := query.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -38,7 +37,7 @@ func (s *FormsService) Find(ctx context.Context, query *ports.FindFormsQuery) ([
 }
 
 func (s *FormsService) FindByID(ctx context.Context, query *ports.FindFormsByIDQuery) (*domain.Form, error) {
-	if err := validate.ValidateStruct(query); err != nil {
+	if err := query.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -55,7 +54,7 @@ func (s *FormsService) FindByID(ctx context.Context, query *ports.FindFormsByIDQ
 }
 
 func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormCommand) (*domain.Form, error) {
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -73,7 +72,7 @@ func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormComm
 }
 
 func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormCommand) (*domain.Form, error) {
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -94,7 +93,7 @@ func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormComm
 }
 
 func (s *FormsService) Delete(ctx context.Context, command *ports.RemoveFormCommand) error {
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		return err
 	}
 
@@ -113,7 +112,7 @@ func (s *FormsService) Delete(ctx context.Context, command *ports.RemoveFormComm
 }
 
 func (s *FormsService) FindVersions(ctx context.Context, query *ports.FindVersionsQuery) ([]*domain.Version, error) {
-	if err := validate.ValidateStruct(query); err != nil {
+	if err := query.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -125,7 +124,7 @@ func (s *FormsService) FindVersions(ctx context.Context, query *ports.FindVersio
 }
 
 func (s *FormsService) FindVersion(ctx context.Context, query *ports.FindVersionByIDQuery) (*domain.Version, error) {
-	if err := validate.ValidateStruct(query); err != nil {
+	if err := query.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -137,7 +136,7 @@ func (s *FormsService) FindVersion(ctx context.Context, query *ports.FindVersion
 }
 
 func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateVersionCommand) (*domain.Version, error) {
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -179,7 +178,7 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 }
 
 func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateVersionCommand) (*domain.Version, error) {
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -200,7 +199,7 @@ func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateV
 }
 
 func (s *FormsService) PublishVersion(ctx context.Context, command *ports.PublishVersionCommand) (*domain.Version, error) {
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -221,7 +220,7 @@ func (s *FormsService) PublishVersion(ctx context.Context, command *ports.Publis
 }
 
 func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireVersionCommand) (*domain.Version, error) {
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		return nil, err
 	}
 
