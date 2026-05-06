@@ -39,6 +39,7 @@ func (h *handlers) getTenants(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -67,6 +68,7 @@ func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -81,6 +83,7 @@ func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 	var body dto.TenantRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
+		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -96,6 +99,7 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -115,6 +119,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 
 	var body dto.TenantRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
+		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -130,6 +135,7 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -156,6 +162,7 @@ func (h *handlers) deleteTenant(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -180,6 +187,7 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -210,6 +218,7 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -226,6 +235,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 
 	var body dto.DataSourceRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
+		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -253,6 +263,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -270,6 +281,7 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 	var body dto.DataSourceRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
+		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
 		h.sendErrorResponse(w, err)
 		return
 	}
@@ -300,6 +312,7 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -328,6 +341,7 @@ func (h *handlers) deleteDataSource(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
@@ -353,6 +367,7 @@ func (h *handlers) getLookups(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
 		return
 	case res := <-resultChan:
 		if res.err != nil {
