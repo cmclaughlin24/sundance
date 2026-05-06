@@ -33,6 +33,8 @@ func (r *MongoDBRepository[T]) Logger() *slog.Logger {
 }
 
 func (r *MongoDBRepository[T]) Find(ctx context.Context, filter bson.M) ([]T, error) {
+	r.logger.DebugContext(ctx, "mongodb find", "collection", r.collection.Name())
+
 	var documents []T
 
 	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
@@ -52,6 +54,7 @@ func (r *MongoDBRepository[T]) Find(ctx context.Context, filter bson.M) ([]T, er
 	})
 
 	if err != nil {
+		r.logger.ErrorContext(ctx, "mongodb find failed", "collection", r.collection.Name(), "error", err)
 		return nil, err
 	}
 
@@ -59,6 +62,8 @@ func (r *MongoDBRepository[T]) Find(ctx context.Context, filter bson.M) ([]T, er
 }
 
 func (r *MongoDBRepository[T]) FindOne(ctx context.Context, filter bson.M) (T, error) {
+	r.logger.DebugContext(ctx, "mongodb find one", "collection", r.collection.Name())
+
 	var result T
 
 	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
@@ -70,6 +75,7 @@ func (r *MongoDBRepository[T]) FindOne(ctx context.Context, filter bson.M) (T, e
 			return result, common.ErrNotFound
 		}
 
+		r.logger.ErrorContext(ctx, "mongodb find one failed", "collection", r.collection.Name(), "error", err)
 		return result, err
 	}
 
@@ -77,6 +83,8 @@ func (r *MongoDBRepository[T]) FindOne(ctx context.Context, filter bson.M) (T, e
 }
 
 func (r *MongoDBRepository[T]) Exists(ctx context.Context, filter bson.M) (bool, error) {
+	r.logger.DebugContext(ctx, "mongodb exists", "collection", r.collection.Name())
+
 	opts := options.Count().SetLimit(1)
 	var count int64
 
@@ -84,7 +92,6 @@ func (r *MongoDBRepository[T]) Exists(ctx context.Context, filter bson.M) (bool,
 		c, err := r.collection.CountDocuments(sctx, filter, opts)
 
 		if err != nil {
-
 			return err
 		}
 
@@ -92,11 +99,18 @@ func (r *MongoDBRepository[T]) Exists(ctx context.Context, filter bson.M) (bool,
 		return nil
 	})
 
-	return count > 0, err
+	if err != nil {
+		r.logger.ErrorContext(ctx, "mongodb exists failed", "collection", r.collection.Name(), "error", err)
+		return false, err
+	}
+
+	return count > 0, nil
 }
 
-func (r *MongoDBRepository[T]) Remove(ctx context.Context, filter bson.M) error {
-	return mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
+func (r *MongoDBRepository[T]) Delete(ctx context.Context, filter bson.M) error {
+	r.logger.DebugContext(ctx, "mongodb delete", "collection", r.collection.Name())
+
+	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
 		result, err := r.collection.DeleteOne(sctx, filter)
 
 		if err != nil {
@@ -109,4 +123,10 @@ func (r *MongoDBRepository[T]) Remove(ctx context.Context, filter bson.M) error 
 
 		return nil
 	})
+
+	if err != common.ErrNotFound {
+		r.logger.ErrorContext(ctx, "mongodb deleted failed", "collection", r.collection.Name(), "error", err)
+	}
+
+	return err
 }

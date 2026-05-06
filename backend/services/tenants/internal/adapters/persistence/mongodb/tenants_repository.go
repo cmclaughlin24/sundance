@@ -56,6 +56,8 @@ func (r *mongoDBTenantsRepository) Exists(ctx context.Context, id domain.TenantI
 }
 
 func (r *mongoDBTenantsRepository) Upsert(ctx context.Context, t *domain.Tenant) (*domain.Tenant, error) {
+	r.base.Logger().DebugContext(ctx, "upsert tenant", "tenant_id", t.ID)
+
 	doc := toTenantDocument(t)
 	filter := bson.M{"_id": doc.ID}
 	update := bson.M{"$set": doc}
@@ -67,6 +69,7 @@ func (r *mongoDBTenantsRepository) Upsert(ctx context.Context, t *domain.Tenant)
 	})
 
 	if err != nil {
+		r.base.Logger().ErrorContext(ctx, "mongo upsert failed", "error", err)
 		return nil, err
 	}
 
@@ -74,5 +77,5 @@ func (r *mongoDBTenantsRepository) Upsert(ctx context.Context, t *domain.Tenant)
 }
 
 func (r *mongoDBTenantsRepository) Delete(ctx context.Context, id domain.TenantID) error {
-	return r.base.Remove(ctx, bson.M{"_id": id})
+	return r.base.Delete(ctx, bson.M{"_id": id})
 }

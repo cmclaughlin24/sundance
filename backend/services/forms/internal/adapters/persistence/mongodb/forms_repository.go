@@ -75,5 +75,5 @@ func (r *mongoDBFormsRepository) Upsert(ctx context.Context, f *domain.Form) (*d
 }
 
 func (r *mongoDBFormsRepository) Delete(ctx context.Context, id domain.FormID) error {
-	return r.base.Remove(ctx, bson.M{"_id": id})
+	return r.base.Delete(ctx, bson.M{"_id": id})
 }
