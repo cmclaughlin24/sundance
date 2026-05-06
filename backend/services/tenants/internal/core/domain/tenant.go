@@ -13,7 +13,7 @@ type TenantID string
 
 type Tenant struct {
 	ID          TenantID
-	Name        string `validate:"required,nowhitespace"`
+	Name        string `validate:"required"`
 	Description string
 	CreatedAt   time.Time
 	UpdatedAt   time.Time

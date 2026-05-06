@@ -7,8 +7,8 @@ import (
 )
 
 type DataSourceRequest struct {
-	Name        string                `json:"name" validate:"required"`
-	Description string                `json:"description" validate:"required"`
+	Name        string                `json:"name" validate:"required,max=75"`
+	Description string                `json:"description" validate:"max=500"`
 	Type        domain.DataSourceType `json:"type" validate:"required"`
 	Attributes  any                   `json:"attributes" validate:"required"`
 }

@@ -5,7 +5,6 @@ import (
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
@@ -36,7 +35,7 @@ func (s *TenantsService) FindByID(ctx context.Context, id domain.TenantID) (*dom
 }
 
 func (s *TenantsService) Create(ctx context.Context, command *ports.CreateTenantCommand) (*domain.Tenant, error) {
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -49,7 +48,7 @@ func (s *TenantsService) Create(ctx context.Context, command *ports.CreateTenant
 }
 
 func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenantCommand) (*domain.Tenant, error) {
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		return nil, err
 	}
 

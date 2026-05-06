@@ -7,8 +7,8 @@ import (
 )
 
 type TenantRequest struct {
-	Name        string `json:"name" validate:"required"`
-	Description string `json:"description" validate:"required"`
+	Name        string `json:"name" validate:"required,max=75"`
+	Description string `json:"description" validate:"max=500"`
 }
 
 type TenantResponse struct {

@@ -1,12 +1,13 @@
 package ports
 
 import (
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 )
 
 type baseTenantCommand struct {
-	Name        string `validate:"required,max=75"`
-	Description string `validate:"required,max=250"`
+	Name        string `validate:"required"`
+	Description string
 }
 
 type CreateTenantCommand struct {
@@ -20,6 +21,10 @@ func NewCreateTenantCommand(name, description string) *CreateTenantCommand {
 			Description: description,
 		},
 	}
+}
+
+func (c *CreateTenantCommand) Validate() error {
+	return validate.ValidateStruct(c)
 }
 
 type UpdateTenantCommand struct {
@@ -37,11 +42,15 @@ func NewUpdateTenantCommand(id domain.TenantID, name, description string) *Updat
 	}
 }
 
+func (c *UpdateTenantCommand) Validate() error {
+	return validate.ValidateStruct(c)
+}
+
 type baseDataSourceCommand struct {
-	TenantID    domain.TenantID             `validate:"required"`
-	Name        string                      `validate:"required,max=75"`
-	Description string                      `validate:"required,max=250"`
-	Type        domain.DataSourceType       `validate:"oneof=static scheduled webhook"`
+	TenantID    domain.TenantID `validate:"required"`
+	Name        string          `validate:"required"`
+	Description string
+	Type        domain.DataSourceType       `validate:"required"`
 	Attributes  domain.DataSourceAttributes `validate:"required"`
 }
 
@@ -65,6 +74,10 @@ func NewCreateDataSourceCommand(
 			Attributes:  attr,
 		},
 	}
+}
+
+func (c *CreateDataSourceCommand) Validate() error {
+	return validate.ValidateStruct(c)
 }
 
 type UpdateDataSourceCommand struct {
@@ -92,6 +105,10 @@ func NewUpdateDataSourceCommand(
 	}
 }
 
+func (c *UpdateDataSourceCommand) Validate() error {
+	return validate.ValidateStruct(c)
+}
+
 type RemoveDataSourceCommand struct {
 	ID       domain.DataSourceID `validate:"required"`
 	TenantID domain.TenantID     `validate:"required"`
@@ -102,4 +119,8 @@ func NewRemoveDataSourceCommand(tenantID domain.TenantID, sourceID domain.DataSo
 		TenantID: tenantID,
 		ID:       sourceID,
 	}
+}
+
+func (c *RemoveDataSourceCommand) Validate() error {
+	return validate.ValidateStruct(c)
 }

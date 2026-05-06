@@ -24,8 +24,8 @@ var (
 
 type DataSource struct {
 	ID          DataSourceID
-	TenantID    TenantID `validate:"required,nowhitespace"`
-	Name        string   `validate:"required,nowhitespace"`
+	TenantID    TenantID `validate:"required"`
+	Name        string   `validate:"required"`
 	Description string
 	Type        DataSourceType
 	Attributes  DataSourceAttributes

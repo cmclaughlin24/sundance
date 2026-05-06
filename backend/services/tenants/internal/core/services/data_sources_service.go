@@ -5,7 +5,6 @@ import (
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
@@ -27,7 +26,7 @@ func NewDataSourcesService(logger *slog.Logger, repository *ports.Repository, st
 }
 
 func (s *DataSourcesService) Find(ctx context.Context, query *ports.ListDataSourceQuery) ([]*domain.DataSource, error) {
-	if err := validate.ValidateStruct(query); err != nil {
+	if err := query.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -35,7 +34,7 @@ func (s *DataSourcesService) Find(ctx context.Context, query *ports.ListDataSour
 }
 
 func (s *DataSourcesService) FindByID(ctx context.Context, query *ports.FindDataSourceByIDQuery) (*domain.DataSource, error) {
-	if err := validate.ValidateStruct(query); err != nil {
+	if err := query.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -47,7 +46,7 @@ func (s *DataSourcesService) FindByID(ctx context.Context, query *ports.FindData
 }
 
 func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -71,7 +70,7 @@ func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDa
 }
 
 func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -92,7 +91,7 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 }
 
 func (s *DataSourcesService) Delete(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		return err
 	}
 
@@ -113,7 +112,7 @@ func (s *DataSourcesService) Delete(ctx context.Context, command *ports.RemoveDa
 }
 
 func (s *DataSourcesService) Lookup(ctx context.Context, command *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		return nil, err
 	}
 
