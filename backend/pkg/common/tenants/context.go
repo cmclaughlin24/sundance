@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"os"
 )
 
 type contextKey string
@@ -21,8 +20,9 @@ func TenantFromContext(ctx context.Context) string {
 	tenantID, ok := ctx.Value(tenantIDKey).(string)
 
 	if !ok || tenantID == "" {
-		slog.ErrorContext(ctx, "failed to get tenant from context; tenant not found or of wrong type")
-		os.Exit(1)
+		err := errors.New("failed to get tenant from context; tenant not found or of wrong type")
+		slog.ErrorContext(ctx, "error", err)
+		panic(err)
 	}
 
 	return tenantID

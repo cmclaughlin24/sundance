@@ -8,8 +8,8 @@ type PageRequest struct {
 	Key      string           `json:"key" validate:"required,max=25"`
 	Name     string           `json:"name" validate:"required,max=75"`
 	Position int              `json:"position" validate:"gte=0,lte=10"`
-	Sections []SectionRequest `json:"sections"`
-	Rules    []RuleRequest    `json:"rules"`
+	Sections []SectionRequest `json:"sections" validate:"dive"`
+	Rules    []RuleRequest    `json:"rules" validate:"dive"`
 }
 
 type PageResponse struct {

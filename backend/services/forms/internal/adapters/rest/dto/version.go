@@ -7,7 +7,7 @@ import (
 )
 
 type UpsertVersionRequest struct {
-	Pages []PageRequest `json:"pages"`
+	Pages []PageRequest `json:"pages" validate:"dive"`
 }
 
 type VersionResponse struct {
