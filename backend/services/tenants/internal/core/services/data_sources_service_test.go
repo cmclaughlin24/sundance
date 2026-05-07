@@ -414,3 +414,18 @@ func TestDataSourcesService_Delete(t *testing.T) {
 	}
 }
 
+func TestDataSourcesService_Lookup(t *testing.T) {
+	tests := []struct {
+		name    string
+		query   *ports.GetDataSourceLookupsQuery
+		want    []*domain.Lookup
+		wantErr error
+	}{
+		// TODO: Add test cases.
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+		})
+	}
+}
