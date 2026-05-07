@@ -93,7 +93,19 @@ func (s *SubmissionsService) Create(ctx context.Context, command *ports.CreateSu
 		return nil, err
 	}
 
-	submission, err := domain.NewSubmission(command.TenantID, command.FormID, command.VersionID, command.Payload)
+	submission, err := s.repository.FindByIdempotencyID(ctx, command.IdempotencyID)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to check submission existencce", "tenant_id", command.TenantID, "submission_idempotency_id", command.IdempotencyID, "error", err)
+		return nil, err
+	}
+
+	submission, err = domain.NewSubmission(
+		command.TenantID,
+		command.FormID,
+		command.VersionID,
+		command.IdempotencyID,
+		command.Payload,
+	)
 	if err != nil {
 		s.logger.WarnContext(ctx, "submission creation failed; domain invariant violation", "tenant_id", command.TenantID, "error", err)
 		return nil, err

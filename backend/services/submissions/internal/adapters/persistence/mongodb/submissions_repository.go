@@ -60,6 +60,16 @@ func (r *mongoDBSubmissionsRepository) FindByReferenceID(ctx context.Context, id
 	return fromSubmissionDocument(&document), nil
 }
 
+func (r *mongoDBSubmissionsRepository) FindByIdempotencyID(ctx context.Context, id domain.IdempotencyID) (*domain.Submission, error) {
+	document, err := r.base.FindOne(ctx, bson.M{"idempotency_id": id})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return fromSubmissionDocument(&document), nil
+}
+
 func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Submission) (*domain.Submission, error) {
 	r.base.Logger().DebugContext(ctx, "upsert submission", "submission_id", s.ID)
 

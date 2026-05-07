@@ -8,16 +8,17 @@ import (
 )
 
 type submissionDocument struct {
-	ID          string                       `bson:"_id"`
-	TenantID    string                       `bson:"tenant_id"`
-	FormID      string                       `bson:"form_id"`
-	VersionID   string                       `bson:"version_id"`
-	ReferenceID string                       `bson:"reference_id"`
-	Status      string                       `bson:"status"`
-	Payload     bson.Raw                     `bson:"payload"`
-	CreatedAt   time.Time                    `bson:"created_at"`
-	UpdatedAt   time.Time                    `bson:"updated_at"`
-	Attempts    []*submissionAttemptDocument `bson:"attempts"`
+	ID            string                       `bson:"_id"`
+	TenantID      string                       `bson:"tenant_id"`
+	FormID        string                       `bson:"form_id"`
+	VersionID     string                       `bson:"version_id"`
+	ReferenceID   string                       `bson:"reference_id"`
+	IdempotencyID string                       `bson:"idempotency_id"`
+	Status        string                       `bson:"status"`
+	Payload       bson.Raw                     `bson:"payload"`
+	CreatedAt     time.Time                    `bson:"created_at"`
+	UpdatedAt     time.Time                    `bson:"updated_at"`
+	Attempts      []*submissionAttemptDocument `bson:"attempts"`
 }
 
 func toSubmissionDocument(s *domain.Submission) (*submissionDocument, error) {
@@ -39,16 +40,17 @@ func toSubmissionDocument(s *domain.Submission) (*submissionDocument, error) {
 	}
 
 	return &submissionDocument{
-		ID:          string(s.ID),
-		TenantID:    s.TenantID,
-		FormID:      s.FormID,
-		VersionID:   s.VersionID,
-		ReferenceID: string(s.ReferenceID),
-		Status:      string(s.Status),
-		Payload:     payload,
-		CreatedAt:   s.CreatedAt,
-		UpdatedAt:   s.UpdatedAt,
-		Attempts:    attempts,
+		ID:            string(s.ID),
+		TenantID:      s.TenantID,
+		FormID:        s.FormID,
+		VersionID:     s.VersionID,
+		ReferenceID:   string(s.ReferenceID),
+		IdempotencyID: string(s.IdempotencyID),
+		Status:        string(s.Status),
+		Payload:       payload,
+		CreatedAt:     s.CreatedAt,
+		UpdatedAt:     s.UpdatedAt,
+		Attempts:      attempts,
 	}, nil
 }
 
@@ -64,6 +66,7 @@ func fromSubmissionDocument(s *submissionDocument) *domain.Submission {
 		s.FormID,
 		s.VersionID,
 		domain.ReferenceID(s.ReferenceID),
+		domain.IdempotencyID(s.IdempotencyID),
 		domain.SubmissionStatus(s.Status),
 		s.Payload,
 		s.CreatedAt,
@@ -89,19 +92,17 @@ func toSubmissionAttemptDocument(att *domain.SubmissionAttempt) (*submissionAtte
 	}
 
 	return &submissionAttemptDocument{
-		ID:            string(att.ID),
-		IdempotencyID: string(att.IdempotencyID),
-		Attempt:       att.Attempt,
-		Result:        att.Result,
-		ErrorDetails:  details,
-		CreatedAt:     att.CreatedAt,
+		ID:           string(att.ID),
+		Attempt:      att.Attempt,
+		Result:       att.Result,
+		ErrorDetails: details,
+		CreatedAt:    att.CreatedAt,
 	}, nil
 }
 
 func fromSubmissionAttemptDocument(att *submissionAttemptDocument) *domain.SubmissionAttempt {
 	return domain.HydrateSubmissionAttempt(
 		domain.SubmissionAttemptID(att.ID),
-		domain.IdempotencyID(att.IdempotencyID),
 		att.Attempt,
 		att.Result,
 		att.ErrorDetails,

@@ -97,6 +97,7 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 		tenantID,
 		body.FormID,
 		body.VersionID,
+		domain.IdempotencyID(""),
 		body.Payload,
 	)
 	resultChan := make(chan result[*domain.Submission])
@@ -117,8 +118,8 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[*dto.SubmissionResponse]{
-			Message: "Successfully created!",
+		httputil.SendJSONResponse(w, http.StatusAccepted, httputil.APIResponse[*dto.SubmissionResponse]{
+			Message: "Accepted!",
 			Data:    dto.SubmissionToResponse(res.data),
 		})
 	}

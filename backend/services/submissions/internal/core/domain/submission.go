@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"errors"
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
@@ -10,6 +11,8 @@ type SubmissionID string
 
 type ReferenceID string
 
+type IdempotencyID string
+
 type SubmissionStatus string
 
 const (
@@ -18,35 +21,42 @@ const (
 	SubmissionStatusRejected SubmissionStatus = "rejected"
 )
 
+var (
+	ErrDuplicateSubmission = errors.New("duplicate submissions")
+)
+
 type Submission struct {
-	ID          SubmissionID
-	TenantID    string
-	FormID      string
-	VersionID   string
-	ReferenceID ReferenceID
-	Status      SubmissionStatus
-	Payload     any
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	Attempts    []*SubmissionAttempt
+	ID            SubmissionID
+	TenantID      string
+	FormID        string
+	VersionID     string
+	ReferenceID   ReferenceID
+	IdempotencyID IdempotencyID
+	Status        SubmissionStatus
+	Payload       any
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	Attempts      []*SubmissionAttempt
 }
 
 func NewSubmission(
 	tenantID string,
 	formID string,
 	versionID string,
+	idempotencyID IdempotencyID,
 	payload any,
 ) (*Submission, error) {
 	s := &Submission{
-		ID:          SubmissionID(NewID()),
-		TenantID:    tenantID,
-		FormID:      formID,
-		VersionID:   versionID,
-		ReferenceID: ReferenceID(NewID()), // TODO: Investigate a more order number style implementation.
-		Status:      SubmissionStatusPending,
-		Payload:     payload,
-		CreatedAt:   Now(),
-		Attempts:    make([]*SubmissionAttempt, 0),
+		ID:            SubmissionID(NewID()),
+		TenantID:      tenantID,
+		FormID:        formID,
+		VersionID:     versionID,
+		ReferenceID:   ReferenceID(NewID()), // TODO: Investigate a more order number style implementation.
+		IdempotencyID: idempotencyID,
+		Status:        SubmissionStatusPending,
+		Payload:       payload,
+		CreatedAt:     Now(),
+		Attempts:      make([]*SubmissionAttempt, 0),
 	}
 
 	if err := validate.ValidateStruct(s); err != nil {
@@ -62,6 +72,7 @@ func HydrateSubmission(
 	formID string,
 	versionID string,
 	referenceID ReferenceID,
+	idempotencyID IdempotencyID,
 	status SubmissionStatus,
 	payload any,
 	createdAt time.Time,
@@ -69,15 +80,16 @@ func HydrateSubmission(
 	attempts []*SubmissionAttempt,
 ) *Submission {
 	return &Submission{
-		ID:          id,
-		TenantID:    tenantID,
-		FormID:      formID,
-		VersionID:   versionID,
-		ReferenceID: referenceID,
-		Status:      status,
-		Payload:     payload,
-		CreatedAt:   createdAt,
-		UpdatedAt:   updatedAt,
-		Attempts:    attempts,
+		ID:            id,
+		TenantID:      tenantID,
+		FormID:        formID,
+		VersionID:     versionID,
+		ReferenceID:   referenceID,
+		IdempotencyID: idempotencyID,
+		Status:        status,
+		Payload:       payload,
+		CreatedAt:     createdAt,
+		UpdatedAt:     updatedAt,
+		Attempts:      attempts,
 	}
 }

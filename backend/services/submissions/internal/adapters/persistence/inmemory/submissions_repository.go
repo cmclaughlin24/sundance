@@ -65,6 +65,19 @@ func (r *InMemorySubmissionsRepository) FindByReferenceID(ctx context.Context, r
 	return nil, common.ErrNotFound
 }
 
+func (r *InMemorySubmissionsRepository) FindByIdempotencyID(ctx context.Context, idempotencyID domain.IdempotencyID) (*domain.Submission, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for _, submission := range r.submissions {
+		if submission.IdempotencyID == idempotencyID {
+			return submission, nil
+		}
+	}
+
+	return nil, common.ErrNotFound
+}
+
 func (r *InMemorySubmissionsRepository) Upsert(ctx context.Context, submission *domain.Submission) (*domain.Submission, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
