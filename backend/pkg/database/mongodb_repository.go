@@ -124,8 +124,8 @@ func (r *MongoDBRepository[T]) Delete(ctx context.Context, filter bson.M) error 
 		return nil
 	})
 
-	if err != common.ErrNotFound {
-		r.logger.ErrorContext(ctx, "mongodb deleted failed", "collection", r.collection.Name(), "error", err)
+	if err != nil && err != common.ErrNotFound {
+		r.logger.ErrorContext(ctx, "mongodb delete failed", "collection", r.collection.Name(), "error", err)
 	}
 
 	return err
