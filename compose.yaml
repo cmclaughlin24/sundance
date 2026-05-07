@@ -1,4 +1,10 @@
 services:
+  dozzle:
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 4200:8080
   mongo:
     image: mongo:latest
     restart: always

@@ -61,9 +61,12 @@ func (r *mongoDBSubmissionsRepository) FindByReferenceID(ctx context.Context, id
 }
 
 func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Submission) (*domain.Submission, error) {
+	r.base.Logger().DebugContext(ctx, "upsert submission", "submission_id", s.ID)
+
 	doc, err := toSubmissionDocument(s)
 
 	if err != nil {
+		r.base.Logger().ErrorContext(ctx, "failed to convert submission to document", "submission_id", s.ID, "error", err)
 		return nil, err
 	}
 
@@ -77,6 +80,7 @@ func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Sub
 	})
 
 	if err != nil {
+		r.base.Logger().ErrorContext(ctx, "mongo upsert failed", "submission_id", s.ID, "error", err)
 		return nil, err
 	}
 
