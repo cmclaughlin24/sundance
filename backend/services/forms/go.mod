@@ -1,6 +1,6 @@
 module github.com/cmclaughlin24/sundance/backend/services/forms
 
-go 1.25.3
+go 1.26.2
 
 require (
 	github.com/go-chi/chi/v5 v5.2.5
@@ -9,6 +9,8 @@ require (
 )
 
 require (
+	github.com/cmclaughlin24/sundance/backend/pkg/auth v0.0.0-20260507225715-4d6e09a514d9 // indirect
+	github.com/cmclaughlin24/sundance/backend/pkg/common v0.0.0-20260506104851-ea4bb9d619d4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect

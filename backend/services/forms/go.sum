@@ -1,5 +1,9 @@
+github.com/cmclaughlin24/sundance/backend/pkg/auth v0.0.0-20260507225715-4d6e09a514d9 h1:re4GzLhG6kvdlopwRuORKKwFAiqy/eBSIYk1Q5JlHjc=
+github.com/cmclaughlin24/sundance/backend/pkg/auth v0.0.0-20260507225715-4d6e09a514d9/go.mod h1:Eu1mqbYEMyT3hEmxkVz/5cjw4zZcBk6pGtiNB/khhns=
 github.com/cmclaughlin24/sundance/backend/pkg/common v0.0.0-20260423162049-af7305d9dfc2 h1:NL2RdJrJb2Ei5UAulPsaiCFSZbNF5LudF8epXw7ZXWI=
 github.com/cmclaughlin24/sundance/backend/pkg/common v0.0.0-20260423162049-af7305d9dfc2/go.mod h1:SzEqKCsLx4z+VorrYy4BB+W2p147MMglWFw98qCaRM0=
+github.com/cmclaughlin24/sundance/backend/pkg/common v0.0.0-20260506104851-ea4bb9d619d4 h1:p93MmncvInD+p6IFeFxJPKDf8JKgfq4mtEhFMttTD5U=
+github.com/cmclaughlin24/sundance/backend/pkg/common v0.0.0-20260506104851-ea4bb9d619d4/go.mod h1:SzEqKCsLx4z+VorrYy4BB+W2p147MMglWFw98qCaRM0=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gabriel-vasile/mimetype v1.4.13 h1:46nXokslUBsAJE/wMsp5gtO500a4F3Nkz9Ufpk2AcUM=
