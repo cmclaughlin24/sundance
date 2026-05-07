@@ -18,6 +18,26 @@
 
 8. ~~Tenants DTOs lack validation struct tags~~ (Tenants, P3) -- `TenantRequest` and `DataSourceRequest` have `validate` tags. *(Not previously tracked.)*
 
+9. ~~Forms handlers lack structured logging~~ (Forms, P3) -- All forms handlers now log `WarnContext` on context cancellation and invalid request bodies, matching the tenants pattern. *(Not previously tracked.)*
+
+10. ~~Forms service lacks structured logging~~ (Forms, P2) -- `FormsService` now has comprehensive structured logging: `DebugContext` at method entry, `WarnContext` on validation/domain failures and unauthorized access, `ErrorContext` on persistence/transaction failures, `InfoContext` on successful mutations (create, update, delete, publish, retire). Helper methods `logFindFormByIDError` and `logFindVersionByIDError` differentiate not-found (Warn) from unexpected errors (Error). Direct-return patterns (e.g., `return s.formsRepository.Upsert(...)`) replaced with explicit error handling for observability. *(Not previously tracked.)*
+
+11. ~~Tenants data sources service lacks structured logging~~ (Tenants, P3) -- `DataSourcesService` now has full logging coverage with the same convention (Debug/Warn/Error/Info). Helper method `logFindByIDError` differentiates not-found from unexpected errors. The `Lookup` method parameter renamed from `command` to `query` (correct CQRS naming). Direct-return patterns replaced with explicit error handling. *(Not previously tracked.)*
+
+12. ~~Submissions handlers lack structured logging~~ (Submissions, P3) -- All submissions handlers now log context cancellation and invalid request body warnings. *(Not previously tracked.)*
+
+13. ~~MongoDB repository base lacks observability~~ (Shared, P3) -- `MongoDBRepository` now logs `DebugContext` at entry and `ErrorContext` on failure for `Find`, `FindOne`, `Exists`, and `Delete`. *(Not previously tracked.)*
+
+14. ~~`MongoDBRepository.Remove` naming inconsistent~~ (Shared, P3) -- Renamed to `Delete` to match domain language used at the port layer. All call sites updated (`forms_repository.go`, `tenants_repository.go`, `data_sources_repository.go`). *(Not previously tracked.)*
+
+15. ~~`MongoDBRepository.Exists` returns error incorrectly~~ (Shared, P2) -- Previously returned `count > 0, err` even when `err != nil`, meaning callers could receive `false, <error>` and potentially ignore the error by only checking the boolean. Now properly checks `if err != nil` and returns `false, err` early before evaluating count. *(New bug found and fixed same cycle.)*
+
+16. ~~Tenants service `Update` and `Delete` lack logging on persist/transaction errors~~ (Tenants, P3) -- `TenantsService.Update` now explicitly handles `Upsert` error with logging instead of direct-returning. `TenantsService.Delete` logs at every failure point (begin tx, exists check, delete, deleteAll, commit). `logFindByIDError` helper added. *(Not previously tracked.)*
+
+17. ~~Lookup strategies lack error logging~~ (Tenants, P3) -- `StaticLookupStrategy`, `ScheduledLookupStrategy`, and `WebhookLookupStrategy` now log `ErrorContext` on attribute type mismatch. `WebhookLookupStrategy` additionally logs `DebugContext` before the outbound request, `ErrorContext` on HTTP failure and response decode failure, and `DebugContext` with result count on success. *(Not previously tracked.)*
+
+18. ~~Tenants/Forms MongoDB repositories lack logging on custom operations~~ (All, P3) -- `Upsert` methods in forms and tenants MongoDB repositories now log `DebugContext` at entry and `ErrorContext` on failure. `FindNextVersionNumber` and `DeleteAll` also instrumented. *(Not previously tracked.)*
+
 ---
 
 ## Will Not Fix
@@ -107,33 +127,39 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 ### Progress Since 5/4
 
-Eight commits since the last review plus unstaged changes, focused on validation hardening, structured logging, and test coverage:
+Thirteen commits since the last review plus unstaged changes, focused on validation hardening, comprehensive structured logging, test coverage, and infrastructure fixes:
 
 - **Validation finalized across forms and tenants** -- All commands, queries, and DTOs now have proper `validate` struct tags. Service methods consistently call `Validate()` at entry. The forms service added four query types (`FindFormsQuery`, `FindFormsByIDQuery`, `FindVersionsQuery`, `FindVersionByIDQuery`) with embedded composition for shared fields. Forms DTOs use `validate:"dive"` on nested slice fields (`Pages`, `Sections`, `Fields`, `Rules`) to recursively validate children. `FieldRequest.Attributes` is `validate:"required"`. The tenants service commands now validate all required fields. This closes a class of issues where `validate.ValidateStruct` was being called but had nothing to validate.
 
 - **Test coverage introduced** -- Route walking tests verify all three services register expected routes. The tenants service has comprehensive handler unit tests (9 test functions, table-driven, covering success/error/not-found paths). Mock pattern uses function fields on struct types implementing port interfaces -- simple, explicit, no external mock library needed. Tests verify HTTP status codes and response body structure.
 
-- **Structured JSON logging with request context** -- All services now use `slog.NewJSONHandler` wrapped with a custom `RequestContextHandler` that injects Chi's `request_id` into every log record. Tenants handlers log warnings on context cancellation and invalid request bodies. The `core.Application` struct exposes `Logger` for handler-level logging.
+- **Comprehensive structured logging at all layers** -- Logging now covers handlers, services, strategies, and repositories across all three services. The convention is consistent: `DebugContext` at method entry with relevant IDs, `WarnContext` on client-attributable failures (validation, not-found, unauthorized, domain invariant violations), `ErrorContext` on infrastructure failures (persistence, transaction, HTTP), and `InfoContext` on successful state mutations. Helper methods (e.g., `logFindFormByIDError`, `logFindByIDError`) differentiate not-found from unexpected errors to avoid alert fatigue. Direct-return patterns (e.g., `return s.repository.Upsert(...)`) replaced with explicit error handling throughout for full observability.
+
+- **Structured JSON logging with request context** -- All services now use `slog.NewJSONHandler` wrapped with a custom `RequestContextHandler` that injects Chi's `request_id` into every log record. The `core.Application` struct exposes `Logger` for handler-level logging.
 
 - **Fail-fast changed from `os.Exit(1)` to `panic`** -- `GetClaimsFromContext` and `TenantFromContext` now panic instead of calling `os.Exit(1)` on misconfiguration. This preserves fail-fast semantics while enabling testability (panics are recoverable) and not bypassing deferred cleanup (e.g., database connection close, graceful shutdown).
 
+- **`MongoDBRepository` hardened** -- `Remove` renamed to `Delete` for consistency with port-layer naming. `Exists` bug fixed: previously returned `count > 0, err` even on error (callers could misinterpret `false` as "not found" when it actually meant "query failed"). Now returns `false, err` early on failure. All base repository methods instrumented with debug/error logging.
+
+- **Lookup strategies instrumented** -- `WebhookLookupStrategy` logs the outbound request (method, URL) at debug level, errors on HTTP/decode failure, and result count on success. All three strategies log attribute type mismatches at error level.
+
 ### Current State
 
-**10 remaining issues (5/4) -> 12 remaining issues** (resolved 4 from prior review + 4 newly tracked improvements; introduced 2 new issues; carried forward 6 unchanged).
+**10 remaining issues (5/4) -> 12 remaining issues** (resolved 14 from prior review + newly tracked improvements; introduced 2 new issues; carried forward 6 unchanged).
 
-**Forms Service** is fully mature. Validation complete at all layers: DTO tags with `validate:"dive"` on nested slices (`Pages`, `Sections`, `Fields`, `Rules`), `validate:"required"` on `FieldRequest.Attributes`, command `Validate()` methods, query `Validate()` methods, and domain constructor validation. No remaining issues.
+**Forms Service** is fully mature. Validation complete at all layers. Comprehensive structured logging from handler through service to repository. No remaining issues.
 
-**Tenants Service** is the best-tested service with comprehensive handler unit tests. Validation finalized. Structured logging in handlers. Remaining gaps are feature-level: pagination (P3) and `Lookup` validation (P3).
+**Tenants Service** is the best-tested and best-instrumented service: comprehensive handler unit tests, full structured logging at handler/service/strategy/repository layers, and validation finalized. Remaining gaps are feature-level: pagination (P3) and `Lookup` validation (P3).
 
-**Submissions Service** remains the weakest. It has functional persistence and a working create flow, but lacks validation at both the DTO and command layers (P2). The `sendErrorResponse` has no domain error mapping (P2). `Replay` is effectively a no-op (P3). No handler or service tests beyond route walking.
+**Submissions Service** remains the weakest. It has functional persistence, a working create flow, and handler-level logging, but lacks validation at both the DTO and command layers (P2). The `sendErrorResponse` has no domain error mapping (P2). `Replay` is effectively a no-op (P3). No service-layer structured logging. No handler or service tests beyond route walking.
 
-**Hexagonal Architecture** -- The test structure correctly tests at the adapter boundary: handler tests mock the service port interface, not the repository. This validates that the port boundary is well-defined and testable. The `core.Application` exposing `Logger` to handlers is acceptable since logging is infrastructure, not domain.
+**Hexagonal Architecture** -- The test structure correctly tests at the adapter boundary: handler tests mock the service port interface, not the repository. This validates that the port boundary is well-defined and testable. The `core.Application` exposing `Logger` to handlers is acceptable since logging is infrastructure, not domain. The `MongoDBRepository.Delete` rename aligns the shared infrastructure with port-layer naming conventions.
 
-**CQRS-Lite** -- Forms now has complete query/command separation with dedicated query types, constructors, and validation. Tenants follows the same pattern. Submissions queries use a generic `FindSubmissionByIDQuery[T]` which is clever but slightly unusual -- the type parameter enables reuse for both `SubmissionID` and `ReferenceID` lookups without duplicating the struct.
+**CQRS-Lite** -- Forms now has complete query/command separation with dedicated query types, constructors, and validation. Tenants follows the same pattern. The `Lookup` method's parameter rename from `command` to `query` corrects CQRS naming (it's a read operation). Submissions queries use a generic `FindSubmissionByIDQuery[T]` which is clever but slightly unusual -- the type parameter enables reuse for both `SubmissionID` and `ReferenceID` lookups without duplicating the struct.
 
 **DDD** -- Domain validation is now enforced at construction time across all aggregates (forms, tenants, data sources). The `validate` tags on domain struct fields (`form.go`, `tenant.go`, `data_source.go`, `version.go`, `page.go`, `section.go`, `field.go`) ensure invariants are checked via `validate.ValidateStruct` in constructors. Submissions domain is the exception -- `NewSubmission` validates the struct but `CreateSubmissionCommand` does not validate its inputs before reaching the domain.
 
-**Idiomatic Go** -- The test pattern (table-driven, `httptest.NewRecorder`, function-field mocks) is idiomatic and avoids external dependencies. The `panic` for impossible-state failures aligns with Go conventions (cf. `regexp.MustCompile`). `slog` usage with custom handlers follows Go 1.21+ best practices. The `validate` tag approach is the standard pattern with `go-playground/validator`.
+**Idiomatic Go** -- The test pattern (table-driven, `httptest.NewRecorder`, function-field mocks) is idiomatic and avoids external dependencies. The `panic` for impossible-state failures aligns with Go conventions (cf. `regexp.MustCompile`). Structured logging follows the established `slog` convention: context-aware, level-appropriate, with structured key-value attributes. The consistent `logFind*Error` helper pattern avoids repetition while keeping log semantics correct. The `validate` tag approach is the standard pattern with `go-playground/validator`.
 
 ### Highest-Impact Improvements
 
