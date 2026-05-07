@@ -79,6 +79,8 @@ func (r *mongoDBVersionsRepository) FindByID(ctx context.Context, formID domain.
 }
 
 func (r *mongoDBVersionsRepository) FindNextVersionNumber(ctx context.Context, formID domain.FormID) (int, error) {
+	r.base.Logger().DebugContext(ctx, "finding next version number", "form_id", formID)
+
 	filter := bson.M{"form_id": formID}
 	opts := options.Find().SetSort(bson.M{"version": -1}).SetLimit(1).SetProjection(bson.M{"version": 1})
 
@@ -107,6 +109,7 @@ func (r *mongoDBVersionsRepository) FindNextVersionNumber(ctx context.Context, f
 	})
 
 	if err != nil {
+		r.base.Logger().ErrorContext(ctx, "failed to find next version number", "form_id", formID, "error", err)
 		return 0, err
 	}
 
@@ -114,9 +117,12 @@ func (r *mongoDBVersionsRepository) FindNextVersionNumber(ctx context.Context, f
 }
 
 func (r *mongoDBVersionsRepository) Upsert(ctx context.Context, v *domain.Version) (*domain.Version, error) {
+	r.base.Logger().DebugContext(ctx, "upsert version", "version_id", v.ID, "form_id", v.FormID)
+
 	doc, err := toVersionDocument(v)
 
 	if err != nil {
+		r.base.Logger().ErrorContext(ctx, "failed to convert version to document", "version_id", v.ID, "form_id", v.FormID, "error", err)
 		return nil, err
 	}
 
@@ -134,6 +140,7 @@ func (r *mongoDBVersionsRepository) Upsert(ctx context.Context, v *domain.Versio
 			return nil, domain.ErrDuplicateVersion
 		}
 
+		r.base.Logger().ErrorContext(ctx, "mongo upsert failed", "version_id", v.ID, "form_id", v.FormID, "error", err)
 		return nil, err
 	}
 

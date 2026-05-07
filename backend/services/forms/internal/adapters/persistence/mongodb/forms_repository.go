@@ -57,6 +57,8 @@ func (r *mongoDBFormsRepository) FindByID(ctx context.Context, formID domain.For
 }
 
 func (r *mongoDBFormsRepository) Upsert(ctx context.Context, f *domain.Form) (*domain.Form, error) {
+	r.base.Logger().DebugContext(ctx, "upsert form", "form_id", f.ID)
+
 	doc := toFormDocument(f)
 	filter := bson.M{"_id": doc.ID}
 	update := bson.M{"$set": doc}
@@ -68,6 +70,7 @@ func (r *mongoDBFormsRepository) Upsert(ctx context.Context, f *domain.Form) (*d
 	})
 
 	if err != nil {
+		r.base.Logger().ErrorContext(ctx, "mongo upsert failed", "form_id", f.ID, "error", err)
 		return nil, err
 	}
 
