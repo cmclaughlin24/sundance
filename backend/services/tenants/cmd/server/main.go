@@ -23,6 +23,7 @@ import (
 type settings struct {
 	Port        int                             `json:"port"`
 	Persistence persistence.PersistenceSettings `json:"persistence"`
+	LogLevel    string                          `json:"log_level"`
 }
 
 func main() {
@@ -35,13 +36,15 @@ func main() {
 		panic(err)
 	}
 
-	handler := slog.NewJSONHandler(os.Stdout, nil)
+	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: logger.LogLevelToLevel(settings.LogLevel),
+	})
 	l := slog.New(&logger.RequestContextHandler{Handler: handler})
 	r, err := persistence.Bootstrap(settings.Persistence, l)
 
 	if err != nil {
 		l.Error(err.Error())
-		os.Exit(1)
+		panic(err)
 	}
 
 	st := strategies.Bootstrap(l, r, &http.Client{Timeout: 10 * time.Second})

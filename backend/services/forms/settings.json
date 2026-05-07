@@ -6,5 +6,6 @@
       "host": "mongo",
       "port": 27017
     }
-  }
+  },
+  "log_level": "debug"
 }
