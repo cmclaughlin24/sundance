@@ -25,8 +25,11 @@ func NewWebhookLookupStrategy(logger *slog.Logger, client ports.HTTPClient) port
 func (s *WebhookLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSource) ([]*domain.Lookup, error) {
 	attr, err := getDataSourceAttributes[domain.WebhookDataSourceAttributes](ds.Attributes)
 	if err != nil {
+		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "data_source_id", ds.ID, "data_source_type", ds.Type, "error", err)
 		return nil, err
 	}
+
+	s.logger.DebugContext(ctx, "webhook lookup request", "data_source_id", ds.ID, "method", attr.Method, "url", attr.URL)
 
 	req, err := http.NewRequestWithContext(ctx, attr.Method, attr.URL, nil)
 	if err != nil {
@@ -39,6 +42,7 @@ func (s *WebhookLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSourc
 
 	resp, err := s.client.Do(req)
 	if err != nil {
+		s.logger.ErrorContext(ctx, "webhook lookup request failed", "data_source_id", ds.ID, "url", attr.URL, "error", err)
 		return nil, err
 	}
 
@@ -48,6 +52,7 @@ func (s *WebhookLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSourc
 	}
 
 	if err := httputil.DecodeJSONResponse(resp, &items); err != nil {
+		s.logger.ErrorContext(ctx, "webhook lookup request response decode failed", "data_source_id", ds.ID, "error", err)
 		return nil, err
 	}
 
@@ -55,6 +60,8 @@ func (s *WebhookLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSourc
 	for _, item := range items {
 		lookups = append(lookups, domain.NewLookup(item.Value, item.Label))
 	}
+
+	s.logger.DebugContext(ctx, "webhook lookup resolved", "data_source_id", ds.ID, "count", len(lookups))
 
 	return lookups, nil
 }

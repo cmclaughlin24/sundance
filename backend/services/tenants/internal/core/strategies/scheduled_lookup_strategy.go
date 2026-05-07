@@ -18,9 +18,10 @@ func NewScheduledLookupStrategy(logger *slog.Logger) ports.LookupStrategy {
 	}
 }
 
-func (s *ScheduledLookupStrategy) Lookup(_ context.Context, ds *domain.DataSource) ([]*domain.Lookup, error) {
+func (s *ScheduledLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSource) ([]*domain.Lookup, error) {
 	attr, err := getDataSourceAttributes[domain.ScheduledDataSourceAttributes](ds.Attributes)
 	if err != nil {
+		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "data_source_id", ds.ID, "data_source_type", ds.Type, "error", err)
 		return nil, err
 	}
 

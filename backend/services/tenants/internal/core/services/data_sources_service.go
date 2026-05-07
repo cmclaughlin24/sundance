@@ -166,29 +166,29 @@ func (s *DataSourcesService) Delete(ctx context.Context, command *ports.RemoveDa
 	return nil
 }
 
-func (s *DataSourcesService) Lookup(ctx context.Context, command *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
-	s.logger.DebugContext(ctx, "looking up data source", "tenant_id", command.TenantID, "data_source_id", command.ID)
+func (s *DataSourcesService) Lookup(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
+	s.logger.DebugContext(ctx, "looking up data source", "tenant_id", query.TenantID, "data_source_id", query.ID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "data source lookup failed; invalid query", "tenant_id", command.TenantID, "data_source_id", command.ID, "error", err)
+	if err := query.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "data source lookup failed; invalid query", "tenant_id", query.TenantID, "data_source_id", query.ID, "error", err)
 		return nil, err
 	}
 
-	ds, err := s.dataSourcesRepository.FindByID(ctx, command.TenantID, command.ID)
+	ds, err := s.dataSourcesRepository.FindByID(ctx, query.TenantID, query.ID)
 	if err != nil {
-		s.logFindByIDError(ctx, err, command.TenantID, command.ID)
+		s.logFindByIDError(ctx, err, query.TenantID, query.ID)
 		return nil, err
 	}
 
 	strategy, err := s.lookupStrategies.Get(ds.Type)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to get lookup strategy", "tenant_id", command.TenantID, "data_source_id", command.ID, "type", ds.Type, "error", err)
+		s.logger.ErrorContext(ctx, "failed to get lookup strategy", "tenant_id", query.TenantID, "data_source_id", query.ID, "type", ds.Type, "error", err)
 		return nil, err
 	}
 
 	lookups, err := strategy.Lookup(ctx, ds)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to execute lookup", "tenant_id", command.TenantID, "data_source_id", command.ID, "type", ds.Type, "error", err)
+		s.logger.ErrorContext(ctx, "failed to execute lookup", "tenant_id", query.TenantID, "data_source_id", query.ID, "type", ds.Type, "error", err)
 		return nil, err
 	}
 
