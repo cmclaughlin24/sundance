@@ -99,6 +99,11 @@ func (s *SubmissionsService) Create(ctx context.Context, command *ports.CreateSu
 		return nil, err
 	}
 
+	if submission != nil {
+		s.logger.InfoContext(ctx, "submission exists", "tenant_id", command.TenantID, "submission_id", submission.ID, "submission_idempotency_id", command.IdempotencyID)
+		return submission, nil
+	}
+
 	submission, err = domain.NewSubmission(
 		command.TenantID,
 		command.FormID,

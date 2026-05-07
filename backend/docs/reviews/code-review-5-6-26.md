@@ -38,6 +38,16 @@
 
 18. ~~Tenants/Forms MongoDB repositories lack logging on custom operations~~ (All, P3) -- `Upsert` methods in forms and tenants MongoDB repositories now log `DebugContext` at entry and `ErrorContext` on failure. `FindNextVersionNumber` and `DeleteAll` also instrumented. *(Not previously tracked.)*
 
+19. ~~Submissions service lacks structured logging~~ (Submissions, P3) -- `SubmissionsService` now has comprehensive logging matching the forms/tenants convention: `DebugContext` at method entry, `WarnContext` on validation/unauthorized/domain failures, `ErrorContext` on persistence failures, `InfoContext` on successful creation. Helper methods `logFindByIDError` and `logFindByReferenceIDError` differentiate not-found from unexpected errors. Direct-return patterns replaced with explicit error handling. *(Resolves the gap noted in 5/6 Current State.)*
+
+20. ~~`SubmissionAttempt` has no constructor or factory function~~ (Submissions, P3) -- `NewSubmissionAttempt(attempt, result, errorDetails)` added with `NewID()` for ID generation and `Now()` for timestamp. `IdempotencyID` moved from `SubmissionAttempt` to `Submission` (where it semantically belongs as the deduplication key for the entire submission, not individual attempts). *(Resolves #5.)*
+
+21. ~~Configurable log level not supported~~ (All, P3) -- All three `settings.json` files now include `"log_level"`. `main.go` files pass `logger.LogLevelToLevel(settings.LogLevel)` to `slog.HandlerOptions{Level: ...}`. The `logger` package gained `LogLevel` type with constants (`debug`, `error`, `info`, `warn`) and `LogLevelToLevel` mapping function with `info` as default fallback. *(Not previously tracked.)*
+
+22. ~~`RequestContextHandler` file poorly named and logger package incomplete~~ (Shared, P3) -- File renamed from `request_context_handler.go` to `logger.go`. Package now contains both the request context handler and the log level configuration utilities. *(Resolves #9 concern -- the `Enabled` method delegates correctly via struct embedding; renaming makes the package's scope clearer.)*
+
+23. ~~Submissions MongoDB repository `Upsert` lacks logging~~ (Submissions, P3) -- Now has `DebugContext` at entry and `ErrorContext` on document conversion and upsert failures, matching the pattern in forms and tenants repositories. *(Not previously tracked.)*
+
 ---
 
 ## Will Not Fix
@@ -52,19 +62,17 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 #### Bugs
 
-1. **`CreateSubmissionCommand` has no validation tags** (`commands.go`) -- `SubmissionsService.Create` calls `validate.ValidateStruct(command)` but none of the fields (`TenantID`, `FormID`, `VersionID`, `Payload`) have `validate` struct tags. Validation is a no-op; empty commands will pass through to `NewSubmission`. *(Unresolved from 5/4 #1.)*
+1. **`CreateSubmissionCommand` has no validation tags** (`commands.go`) -- `SubmissionsService.Create` calls `validate.ValidateStruct(command)` but none of the fields (`TenantID`, `FormID`, `VersionID`, `IdempotencyID`, `Payload`) have `validate` struct tags. Validation is a no-op; empty commands will pass through to `NewSubmission`. *(Unresolved from 5/4 #1.)*
 
-2. **`SubmissionRequest` DTO has no validation tags** (`dto/request.go`) -- `FormID`, `VersionID`, and `Payload` have only `json` tags. `ReadValidateJSONPayload` will not reject empty submissions at the adapter boundary. *(New.)*
+2. **`SubmissionRequest` DTO has no validation tags** (`dto/request.go`) -- `FormID`, `VersionID`, and `Payload` have only `json` tags. `ReadValidateJSONPayload` will not reject empty submissions at the adapter boundary. *(Unresolved from prior review.)*
 
 #### Architectural
 
-3. **`Replay` service method only validates and checks existence** (`submissions_service.go:79-88`) -- Validates the command and calls `repository.FindByID` to verify the submission exists, then returns nil without performing any replay logic. The handler returns 201 ("Successfully replayed") despite no replay occurring. *(Unresolved from 5/4 #2.)*
+3. **`sendErrorResponse` has no domain error mapping** (`handlers.go`) -- Switch statement contains only a `default` case. All errors (including `common.ErrNotFound`, validation errors) fall through to `httputil.SendErrorResponse` which may not map them correctly. Unlike forms and tenants handlers, there's no `isBadRequest` helper. *(Unresolved from 5/4 #4.)*
 
-4. **`sendErrorResponse` has no domain error mapping** (`handlers.go`) -- Switch statement contains only a `default` case. All errors (including `common.ErrNotFound`, validation errors) fall through to `httputil.SendErrorResponse` which may not map them correctly. Unlike forms and tenants handlers, there's no `isBadRequest` helper. *(Unresolved from 5/4 #4.)*
+4. **`createSubmission` handler hardcodes `IdempotencyID("")`** (`handlers.go`) -- The idempotency infrastructure exists at the domain level (`IdempotencyID` on `Submission`, `FindByIdempotencyID` on the repository port, `ErrDuplicateSubmission` error) but the handler passes an empty string. The idempotency key should come from a request header (e.g., `Idempotency-Key`) or a DTO field. Without this, the deduplication logic is never triggered. *(New.)*
 
-#### Missing Functionality
-
-5. **`SubmissionAttempt` has no constructor or factory function** -- Only `HydrateSubmissionAttempt` exists for reconstitution; no `NewSubmissionAttempt` for creation. Needed for replay implementation. *(Unresolved from 5/4 #3.)*
+5. **`Replay` service method only validates and checks existence** (`submissions_service.go`) -- Validates the command and calls `repository.FindByID` to verify the submission exists, then returns nil without performing any replay logic. The handler returns 201 ("Successfully replayed") despite no replay occurring. *(Unresolved from 5/4 #2.)*
 
 #### Code Quality
 
@@ -84,23 +92,15 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 ---
 
-### Shared Package
-
-#### Code Quality
-
-9. **`RequestContextHandler` does not implement `Enabled` method** (`logger/request_context_handler.go`) -- The custom `slog.Handler` wraps the inner handler but does not override `Enabled(context.Context, slog.Level) bool`. While `slog.Handler` interface only requires `Handle`, `WithAttrs`, `WithGroup`, and `Enabled`, the embedded `slog.Handler` will delegate `Enabled` correctly. However, the `Handle` method will be called even when the level is disabled because the type assertion in `slog.Logger` dispatches to the wrapper's `Handle` directly. Minor performance concern at high log volumes. *(New.)*
-
----
-
 ### Cross-Service
 
 #### Architectural
 
-10. **Test coverage limited to tenants REST adapter** -- Forms and submissions services have only route walking tests. No service layer, domain layer, or repository tests exist anywhere. *(Partially resolved from 5/4 #8.)*
+9. **Test coverage limited to tenants REST adapter** -- Forms and submissions services have only route walking tests. No service layer, domain layer, or repository tests exist anywhere. *(Partially resolved from 5/4 #8.)*
 
-11. **No domain events** for cross-service communication. *(Unresolved from 5/4 #9.)*
+10. **No domain events** for cross-service communication. *(Unresolved from 5/4 #9.)*
 
-12. **No real authentication** -- `PlaceholderAuthenticator` always returns a fixed subject (`"placeholder"`). Only the forms service wires auth middleware. Submissions and tenants services have no authentication. *(Unresolved from 5/4 #10.)*
+11. **No real authentication** -- `PlaceholderAuthenticator` always returns a fixed subject (`"placeholder"`). Only the forms service wires auth middleware. Submissions and tenants services have no authentication. *(Unresolved from 5/4 #10.)*
 
 ---
 
@@ -110,16 +110,15 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 |----------|---|-------|------------|
 | **P2** | 1 | `CreateSubmissionCommand` no validation tags | Submissions |
 | **P2** | 2 | `SubmissionRequest` DTO no validation tags | Submissions |
-| **P2** | 4 | `sendErrorResponse` no domain error mapping | Submissions |
-| **P3** | 3 | `Replay` validates but doesn't replay | Submissions |
-| **P3** | 5 | `SubmissionAttempt` has no constructor | Submissions |
+| **P2** | 3 | `sendErrorResponse` no domain error mapping | Submissions |
+| **P2** | 4 | `createSubmission` handler hardcodes empty `IdempotencyID` | Submissions |
+| **P3** | 5 | `Replay` validates but doesn't replay | Submissions |
 | **P3** | 6 | `any`-typed attributes (no type safety) | Submissions |
 | **P3** | 7 | `Find()` no pagination | Tenants |
 | **P3** | 8 | `Lookup` value object no validation | Tenants |
-| **P3** | 9 | `RequestContextHandler` Enabled method | Shared |
-| **P3** | 10 | Test coverage limited to tenants REST | All |
-| **P3** | 11 | No domain events | All |
-| **P3** | 12 | No real authentication (placeholder only) | All |
+| **P3** | 9 | Test coverage limited to tenants REST | All |
+| **P3** | 10 | No domain events | All |
+| **P3** | 11 | No real authentication (placeholder only) | All |
 
 ---
 
@@ -127,7 +126,7 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 ### Progress Since 5/4
 
-Thirteen commits since the last review plus unstaged changes, focused on validation hardening, comprehensive structured logging, test coverage, and infrastructure fixes:
+Eighteen commits since the last review, focused on validation hardening, comprehensive structured logging across all layers, test coverage, idempotency infrastructure, and infrastructure fixes:
 
 - **Validation finalized across forms and tenants** -- All commands, queries, and DTOs now have proper `validate` struct tags. Service methods consistently call `Validate()` at entry. The forms service added four query types (`FindFormsQuery`, `FindFormsByIDQuery`, `FindVersionsQuery`, `FindVersionByIDQuery`) with embedded composition for shared fields. Forms DTOs use `validate:"dive"` on nested slice fields (`Pages`, `Sections`, `Fields`, `Rules`) to recursively validate children. `FieldRequest.Attributes` is `validate:"required"`. The tenants service commands now validate all required fields. This closes a class of issues where `validate.ValidateStruct` was being called but had nothing to validate.
 
@@ -143,28 +142,40 @@ Thirteen commits since the last review plus unstaged changes, focused on validat
 
 - **Lookup strategies instrumented** -- `WebhookLookupStrategy` logs the outbound request (method, URL) at debug level, errors on HTTP/decode failure, and result count on success. All three strategies log attribute type mismatches at error level.
 
+- **Idempotency infrastructure introduced** (Submissions) -- `IdempotencyID` type added to the domain and moved from `SubmissionAttempt` to `Submission` (the correct aggregate boundary for deduplication). `FindByIdempotencyID` added to the `SubmissionsRepository` port with both in-memory (linear scan) and MongoDB (`bson.M{"idempotency_id": id}`) implementations. `ErrDuplicateSubmission` sentinel error defined. `CreateSubmissionCommand` carries the idempotency key through to `NewSubmission`. However, the handler currently passes an empty `IdempotencyID("")`, so the infrastructure is wired but not activated from the API layer.
+
+- **`NewSubmissionAttempt` constructor added** -- Factory function generates a UUIDv7 ID, sets timestamp, and accepts `attempt`, `result`, and `errorDetails`. This completes the submissions domain model constructors.
+
+- **Configurable log levels** -- All three services read `log_level` from `settings.json` and pass it to `slog.HandlerOptions{Level: logger.LogLevelToLevel(...)}`. The `logger` package gained a `LogLevel` type with constants and a `LogLevelToLevel` mapping function (defaults to `info`). Development settings use `"debug"`.
+
+- **Handler response semantics corrected** -- `createSubmission` now returns 202 Accepted (instead of 201 Created), which is semantically correct for an asynchronous submission processing pipeline.
+
+- **`os.Exit(1)` eliminated from bootstrap** -- All three `main.go` files now `panic(err)` on persistence bootstrap failure, consistent with the fail-fast pattern used in `GetClaimsFromContext`/`TenantFromContext`.
+
+- **Dozzle log viewer added** to `compose.yaml` for container log monitoring during development.
+
 ### Current State
 
-**10 remaining issues (5/4) -> 12 remaining issues** (resolved 14 from prior review + newly tracked improvements; introduced 2 new issues; carried forward 6 unchanged).
+**10 remaining issues (5/4) -> 11 remaining issues** (resolved 16 from prior review + newly tracked improvements; introduced 1 new issue; carried forward 6 unchanged).
 
 **Forms Service** is fully mature. Validation complete at all layers. Comprehensive structured logging from handler through service to repository. No remaining issues.
 
 **Tenants Service** is the best-tested and best-instrumented service: comprehensive handler unit tests, full structured logging at handler/service/strategy/repository layers, and validation finalized. Remaining gaps are feature-level: pagination (P3) and `Lookup` validation (P3).
 
-**Submissions Service** remains the weakest. It has functional persistence, a working create flow, and handler-level logging, but lacks validation at both the DTO and command layers (P2). The `sendErrorResponse` has no domain error mapping (P2). `Replay` is effectively a no-op (P3). No service-layer structured logging. No handler or service tests beyond route walking.
+**Submissions Service** has matured significantly this cycle. Full structured logging at handler, service, and repository layers. `NewSubmissionAttempt` constructor added, completing the domain model. Idempotency infrastructure wired end-to-end (domain type, repository port, MongoDB/in-memory implementations, service check). Handler returns 202 Accepted. However: validation is still missing at DTO and command layers (P2), `sendErrorResponse` has no domain error mapping (P2), the idempotency key is never populated from the request (P2), and `Replay` is a no-op (P3). No handler or service tests beyond route walking.
 
 **Hexagonal Architecture** -- The test structure correctly tests at the adapter boundary: handler tests mock the service port interface, not the repository. This validates that the port boundary is well-defined and testable. The `core.Application` exposing `Logger` to handlers is acceptable since logging is infrastructure, not domain. The `MongoDBRepository.Delete` rename aligns the shared infrastructure with port-layer naming conventions.
 
-**CQRS-Lite** -- Forms now has complete query/command separation with dedicated query types, constructors, and validation. Tenants follows the same pattern. The `Lookup` method's parameter rename from `command` to `query` corrects CQRS naming (it's a read operation). Submissions queries use a generic `FindSubmissionByIDQuery[T]` which is clever but slightly unusual -- the type parameter enables reuse for both `SubmissionID` and `ReferenceID` lookups without duplicating the struct.
+**CQRS-Lite** -- Forms now has complete query/command separation with dedicated query types, constructors, and validation. Tenants follows the same pattern. The `Lookup` method's parameter rename from `command` to `query` corrects CQRS naming (it's a read operation). Submissions queries use a generic `FindSubmissionByIDQuery[T]` which is clever but slightly unusual -- the type parameter enables reuse for both `SubmissionID` and `ReferenceID` lookups without duplicating the struct. The 202 Accepted response for `createSubmission` correctly signals command acceptance rather than synchronous completion.
 
-**DDD** -- Domain validation is now enforced at construction time across all aggregates (forms, tenants, data sources). The `validate` tags on domain struct fields (`form.go`, `tenant.go`, `data_source.go`, `version.go`, `page.go`, `section.go`, `field.go`) ensure invariants are checked via `validate.ValidateStruct` in constructors. Submissions domain is the exception -- `NewSubmission` validates the struct but `CreateSubmissionCommand` does not validate its inputs before reaching the domain.
+**DDD** -- Domain validation is now enforced at construction time across all aggregates (forms, tenants, data sources). The `validate` tags on domain struct fields ensure invariants are checked via `validate.ValidateStruct` in constructors. Submissions domain is the exception -- `NewSubmission` validates the struct but `CreateSubmissionCommand` does not validate its inputs before reaching the domain. The `IdempotencyID` placement on `Submission` (not `SubmissionAttempt`) correctly models the aggregate-level deduplication concern. `NewSubmissionAttempt` completes the domain model constructors. `ErrDuplicateSubmission` is a proper domain error for the idempotency invariant.
 
-**Idiomatic Go** -- The test pattern (table-driven, `httptest.NewRecorder`, function-field mocks) is idiomatic and avoids external dependencies. The `panic` for impossible-state failures aligns with Go conventions (cf. `regexp.MustCompile`). Structured logging follows the established `slog` convention: context-aware, level-appropriate, with structured key-value attributes. The consistent `logFind*Error` helper pattern avoids repetition while keeping log semantics correct. The `validate` tag approach is the standard pattern with `go-playground/validator`.
+**Idiomatic Go** -- The test pattern (table-driven, `httptest.NewRecorder`, function-field mocks) is idiomatic and avoids external dependencies. The `panic` for impossible-state failures aligns with Go conventions (cf. `regexp.MustCompile`). Structured logging follows the established `slog` convention: context-aware, level-appropriate, with structured key-value attributes. The consistent `logFind*Error` helper pattern avoids repetition while keeping log semantics correct. The `validate` tag approach is the standard pattern with `go-playground/validator`. The `LogLevelToLevel` helper with a default fallback follows the "sensible defaults" principle.
 
 ### Highest-Impact Improvements
 
 1. **Add validation tags to `CreateSubmissionCommand` and `SubmissionRequest`** (P2 -- entire submissions write path accepts empty input)
-2. **Add `sendErrorResponse` domain error cases** in submissions handlers (P2 -- `ErrNotFound` and validation errors map to 500)
-3. **Add handler unit tests for forms and submissions** (P3 -- tenants pattern is established; replicate)
-4. **Implement actual `Replay` logic** (P3 -- handler returns success but nothing happens)
-5. **Add `NewSubmissionAttempt` constructor** (P3 -- needed for replay implementation)
+2. **Wire `IdempotencyID` from request header to handler** (P2 -- infrastructure exists but is never activated)
+3. **Add `sendErrorResponse` domain error cases** in submissions handlers (P2 -- `ErrNotFound` and validation errors map to 500)
+4. **Add handler unit tests for forms and submissions** (P3 -- tenants pattern is established; replicate)
+5. **Implement actual `Replay` logic** (P3 -- handler returns success but nothing happens)
