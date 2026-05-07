@@ -12,6 +12,17 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
+var (
+	indexes = []mongo.IndexModel{
+		{
+			Keys: bson.D{
+				{Key: "idempotency_id", Value: 1},
+			},
+			Options: options.Index().SetUnique(true),
+		},
+	}
+)
+
 type mongoDBSubmissionsRepository struct {
 	base *database.MongoDBRepository[submissionDocument]
 }
@@ -90,6 +101,10 @@ func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Sub
 	})
 
 	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			return nil, domain.ErrDuplicateSubmission
+		}
+
 		r.base.Logger().ErrorContext(ctx, "mongo upsert failed", "submission_id", s.ID, "error", err)
 		return nil, err
 	}
