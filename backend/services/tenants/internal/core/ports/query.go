@@ -25,7 +25,7 @@ type FindDataSourceByIDQuery struct {
 	ID       domain.DataSourceID `validate:"required"`
 }
 
-func NewFindDataSourceByID(tenantID domain.TenantID, sourceID domain.DataSourceID) *FindDataSourceByIDQuery {
+func NewFindDataSourceByIDQuery(tenantID domain.TenantID, sourceID domain.DataSourceID) *FindDataSourceByIDQuery {
 	return &FindDataSourceByIDQuery{
 		TenantID: tenantID,
 		ID:       sourceID,

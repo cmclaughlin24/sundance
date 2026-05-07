@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,8 +20,11 @@ import (
 )
 
 func newTestHandlers(services *ports.Services) *handlers {
+	var buf bytes.Buffer
+
 	app := &core.Application{
 		Services: services,
+		Logger:   slog.New(slog.NewTextHandler(&buf, nil)),
 	}
 
 	return newHandlers(app)
@@ -31,7 +35,7 @@ func Test_handlers_getTenants(t *testing.T) {
 		name       string
 		fn         func(context.Context) ([]*domain.Tenant, error)
 		statusCode int
-		len        int
+		count        int
 	}{
 		{
 			"should yield OK if the request is successful with results",
@@ -89,8 +93,8 @@ func Test_handlers_getTenants(t *testing.T) {
 				t.Fatalf("failed to decode response body: %v", err)
 			}
 
-			if len(body) != tt.len {
-				t.Errorf("expected %d tenants but got %d", tt.len, len(body))
+			if len(body) != tt.count {
+				t.Errorf("expected %d tenants but got %d", tt.count, len(body))
 			}
 		})
 	}
@@ -355,7 +359,7 @@ func Test_handlers_getDataSources(t *testing.T) {
 		name       string
 		fn         func(context.Context, *ports.ListDataSourceQuery) ([]*domain.DataSource, error)
 		statusCode int
-		len        int
+		count        int
 	}{
 		{
 			"should yield OK if the request is successful with results",
@@ -416,8 +420,8 @@ func Test_handlers_getDataSources(t *testing.T) {
 				t.Fatalf("failed to decode response body: %v", err)
 			}
 
-			if len(body) != tt.len {
-				t.Errorf("expected %d data sources but got %d", tt.len, len(body))
+			if len(body) != tt.count {
+				t.Errorf("expected %d data sources but got %d", tt.count, len(body))
 			}
 		})
 	}

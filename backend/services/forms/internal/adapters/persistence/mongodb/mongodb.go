@@ -22,7 +22,7 @@ func Bootstrap(client *mongo.Client, logger *slog.Logger) (*ports.Repository, er
 	}
 
 	return &ports.Repository{
-		Database: database.NewMongoDBDatabase(client, db),
+		Database: database.NewMongoDBDatabase(client, db, logger),
 		Forms:    forms,
 		Versions: versions,
 	}, nil

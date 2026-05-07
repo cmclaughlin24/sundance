@@ -208,7 +208,7 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
 	sourceID := chi.URLParam(r, "dataSourceId")
 	resultChan := make(chan result[*domain.DataSource], 1)
-	query := ports.NewFindDataSourceByID(tenantID, domain.DataSourceID(sourceID))
+	query := ports.NewFindDataSourceByIDQuery(tenantID, domain.DataSourceID(sourceID))
 
 	go func() {
 		defer close(resultChan)
