@@ -97,7 +97,7 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 		tenantID,
 		body.FormID,
 		body.VersionID,
-		domain.IdempotencyID(""),
+		domain.IdempotencyID("placeholder"),
 		body.Payload,
 	)
 	resultChan := make(chan result[*domain.Submission])
