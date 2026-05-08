@@ -7,7 +7,7 @@ import (
 
 type contextKey string
 
-const workerIDKey contextKey = "tenantID"
+const workerIDKey contextKey = "workerID"
 
 func SetWorkerContext(ctx context.Context, tenantID string) context.Context {
 	return context.WithValue(ctx, workerIDKey, tenantID)

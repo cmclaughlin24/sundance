@@ -73,8 +73,10 @@ func main() {
 		}
 	}()
 
+	dswCtx, dswCancel := context.WithCancel(context.Background())
+	defer dswCancel()
 	dsw := workers.NewDataSourcesBackgroundWorker(app)
-	go dsw.Start(context.Background())
+	go dsw.Start(dswCtx)
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
@@ -86,10 +88,10 @@ func main() {
 		app.Logger.Error(fmt.Sprintf("application received shutdown signal: %v\n", sig))
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer shutdownCancel()
 
-	if err := server.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(shutdownCtx); err != nil {
 		app.Logger.Info(fmt.Sprintf("application shutdown failed: %v\n", err))
 		return
 	}
