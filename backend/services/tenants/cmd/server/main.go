@@ -13,8 +13,10 @@ import (
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/logger"
+	"github.com/cmclaughlin24/sundance/backend/pkg/worker"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/persistence"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/workers"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/services"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/strategies"
@@ -39,7 +41,7 @@ func main() {
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: logger.LogLevelToLevel(settings.LogLevel),
 	})
-	l := slog.New(&logger.RequestContextHandler{Handler: handler})
+	l := slog.New(&worker.WorkerContextHandler{Handler: &logger.RequestContextHandler{Handler: handler}})
 	r, err := persistence.Bootstrap(settings.Persistence, l)
 
 	if err != nil {
@@ -70,6 +72,9 @@ func main() {
 			serverErrChan <- err
 		}
 	}()
+
+	dsw := workers.NewDataSourcesBackgroundWorker(app)
+	go dsw.Start(context.Background())
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
