@@ -27,13 +27,13 @@ var (
 
 type Submission struct {
 	ID            SubmissionID
-	TenantID      string
-	FormID        string
-	VersionID     string
+	TenantID      string `validate:"required"`
+	FormID        string `validate:"required"`
+	VersionID     string `validate:"required"`
 	ReferenceID   ReferenceID
-	IdempotencyID IdempotencyID
+	IdempotencyID IdempotencyID `validate:"required"`
 	Status        SubmissionStatus
-	Payload       any
+	Payload       any `validate:"required"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	Attempts      []*SubmissionAttempt

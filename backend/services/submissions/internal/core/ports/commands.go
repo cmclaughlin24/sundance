@@ -3,11 +3,11 @@ package ports
 import "github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
 
 type CreateSubmissionCommand struct {
-	TenantID      string
-	FormID        string
-	VersionID     string
-	IdempotencyID domain.IdempotencyID
-	Payload       any
+	TenantID      string               `validate:"required"`
+	FormID        string               `validate:"required"`
+	VersionID     string               `validate:"required"`
+	IdempotencyID domain.IdempotencyID `validate:"required"`
+	Payload       any                  `validate:"required"`
 }
 
 func NewCreateSubmissionCommand(
