@@ -23,7 +23,7 @@ func NewRoutes(app *core.Application) http.Handler {
 	mux.Route("/api/v1", func(routes chi.Router) {
 		routes.Route("/submissions", func(submissionsRoutes chi.Router) {
 			submissionsRoutes.Get("/", h.getSubmissions)
-			submissionsRoutes.With(httputil.IdempotencyMiddlware).Post("/", h.createSubmission)
+			submissionsRoutes.With(httputil.IdempotencyMiddleware).Post("/", h.createSubmission)
 
 			submissionsRoutes.Route("/{submissionId}", func(submissionRoutes chi.Router) {
 				submissionRoutes.Post("/replay", h.replaySubmission)

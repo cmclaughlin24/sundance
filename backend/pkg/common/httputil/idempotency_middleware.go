@@ -29,7 +29,7 @@ func IdempotencyFromContext(ctx context.Context) string {
 	return idempotencyID
 }
 
-func IdempotencyMiddlware(next http.Handler) http.Handler {
+func IdempotencyMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		id := r.Header.Get("Idempotency-Key")
 

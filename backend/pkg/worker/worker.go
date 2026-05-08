@@ -44,7 +44,7 @@ func (w *Worker[J]) Start(ctx context.Context) {
 
 			select {
 			case job := <-w.JobChannel:
-				job.Process(ctx)
+				job.Process(wctx)
 			case <-wctx.Done():
 				return
 			}
