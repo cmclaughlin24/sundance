@@ -3,7 +3,7 @@ package rest
 import (
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/tenants"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -18,12 +18,12 @@ func NewRoutes(app *core.Application) http.Handler {
 	mux.Use(httplog.RequestLogger(app.Logger, &httplog.Options{
 		Schema: httplog.SchemaOTEL,
 	}))
-	mux.Use(tenants.NewMiddleware("X-Tenant-ID"))
+	mux.Use(httputil.NewTenantMiddleware("X-Tenant-ID"))
 
 	mux.Route("/api/v1", func(routes chi.Router) {
 		routes.Route("/submissions", func(submissionsRoutes chi.Router) {
 			submissionsRoutes.Get("/", h.getSubmissions)
-			submissionsRoutes.Post("/", h.createSubmission)
+			submissionsRoutes.With(httputil.IdempotencyMiddlware).Post("/", h.createSubmission)
 
 			submissionsRoutes.Route("/{submissionId}", func(submissionRoutes chi.Router) {
 				submissionRoutes.Post("/replay", h.replaySubmission)

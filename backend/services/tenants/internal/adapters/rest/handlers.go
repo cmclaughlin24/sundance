@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/tenants"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
@@ -381,7 +380,7 @@ func (h *handlers) getLookups(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getTenantFromContext(r *http.Request) domain.TenantID {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	return domain.TenantID(tenantID)
 }
 

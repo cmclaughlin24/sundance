@@ -6,7 +6,6 @@ import (
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/auth"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/tenants"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
@@ -30,7 +29,7 @@ func newHandlers(app *core.Application) *handlers {
 }
 
 func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	query := ports.NewFindFormsQuery(tenantID)
 	resultChan := make(chan result[[]*domain.Form], 1)
 
@@ -60,7 +59,7 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	query := ports.NewFindFormsByIDQuery(tenantID, formID)
 	resultChan := make(chan result[*domain.Form], 1)
@@ -93,7 +92,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	resultChan := make(chan result[*domain.Form], 1)
 	command := ports.NewCreateFormCommand(tenantID, body.Name, body.Description)
 
@@ -128,7 +127,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	resultChan := make(chan result[*domain.Form], 1)
 	command := ports.NewUpdateFormCommand(tenantID, formID, body.Name, body.Description)
@@ -157,7 +156,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) deleteForm(w http.ResponseWriter, r *http.Request) {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	command := ports.NewRemoveFormCommand(tenantID, formID)
 	resultChan := make(chan result[any], 1)
@@ -183,7 +182,7 @@ func (h *handlers) deleteForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	query := ports.NewFindVersionsQuery(tenantID, formID)
 	resultChan := make(chan result[[]*domain.Version], 1)
@@ -214,7 +213,7 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
 	query := ports.NewFindVersionByIDQuery(tenantID, formID, versionID)
@@ -241,7 +240,7 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 
 	var body dto.UpsertVersionRequest
@@ -284,7 +283,7 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
 
@@ -328,7 +327,7 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
 	claims := auth.GetClaimsFromContext(r.Context())
@@ -359,7 +358,7 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
 	resultChan := make(chan result[*domain.Version], 1)

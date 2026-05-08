@@ -10,6 +10,8 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
 )
 
+type contextKey string
+
 var (
 	ErrDecodeJSON = errors.New("failed to parse json request")
 )

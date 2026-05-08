@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/tenants"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
@@ -29,7 +28,7 @@ func newHandlers(app *core.Application) *handlers {
 }
 
 func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	query := ports.NewFindSubmissionsQuery(tenantID)
 	resultChan := make(chan result[[]*domain.Submission], 1)
 
@@ -59,7 +58,7 @@ func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Request) {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	referenceID := h.getReferenceIDPathValue(r)
 	query := ports.NewFindSubmissionByIDQuery(tenantID, referenceID)
 	resultChan := make(chan result[*domain.Submission], 1)
@@ -92,12 +91,13 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
+	idempotencyID := httputil.IdempotencyFromContext(r.Context())
 	command := ports.NewCreateSubmissionCommand(
 		tenantID,
 		body.FormID,
 		body.VersionID,
-		domain.IdempotencyID("placeholder"),
+		domain.IdempotencyID(idempotencyID),
 		body.Payload,
 	)
 	resultChan := make(chan result[*domain.Submission])
@@ -126,7 +126,7 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	referenceID := h.getReferenceIDPathValue(r)
 	query := ports.NewFindSubmissionByIDQuery(tenantID, referenceID)
 	resultChan := make(chan result[*domain.Submission], 1)
@@ -156,7 +156,7 @@ func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request) {
-	tenantID := tenants.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	id := chi.URLParam(r, "submissionId")
 	command := ports.NewReplaySubmissionCommand(
 		tenantID,
