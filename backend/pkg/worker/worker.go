@@ -3,14 +3,20 @@ package worker
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/google/uuid"
 )
 
+// Creates a new random UUID and returns it as a string.
+func NewID() string {
+	return uuid.NewString()
+}
+
 type WorkerID string
 
 type Job interface {
-	Process(context.Context)
+	Process(context.Context) error
 }
 
 type Worker[J Job] struct {
@@ -18,14 +24,37 @@ type Worker[J Job] struct {
 	JobChannel chan J
 	WorkerPool chan chan J
 	logger     *slog.Logger
+	timeout    time.Duration
 }
 
-func NewWorker[J Job](pool chan chan J, logger *slog.Logger) Worker[J] {
-	return Worker[J]{
-		ID:         WorkerID(uuid.NewString()),
+func NewWorker[J Job](opts ...func(*Worker[J])) Worker[J] {
+	w := Worker[J]{
+		ID:         WorkerID(NewID()),
 		JobChannel: make(chan J, 1),
-		WorkerPool: pool,
-		logger:     logger,
+	}
+
+	for _, opt := range opts {
+		opt(&w)
+	}
+
+	return w
+}
+
+func WorkerWithPool[J Job](pool chan chan J) func(*Worker[J]) {
+	return func(w *Worker[J]) {
+		w.WorkerPool = pool
+	}
+}
+
+func WorkerWithLogger[J Job](logger *slog.Logger) func(*Worker[J]) {
+	return func(w *Worker[J]) {
+		w.logger = logger
+	}
+}
+
+func WorkerWithTimeout[J Job](timeout time.Duration) func(*Worker[J]) {
+	return func(w *Worker[J]) {
+		w.timeout = timeout
 	}
 }
 
@@ -33,8 +62,13 @@ func (w *Worker[J]) Start(ctx context.Context) {
 	wctx := SetWorkerContext(ctx, string(w.ID))
 
 	go func() {
+
 		for {
-			w.logger.DebugContext(wctx, "looking for work")
+			defer func() {
+				if r := recover(); r != nil {
+					w.logger.ErrorContext(wctx, "recovering from panic", "error", r)
+				}
+			}()
 
 			select {
 			case w.WorkerPool <- w.JobChannel:
@@ -44,10 +78,24 @@ func (w *Worker[J]) Start(ctx context.Context) {
 
 			select {
 			case job := <-w.JobChannel:
-				job.Process(wctx)
+				jctx, cancel := w.setJobTimeout(wctx)
+
+				if err := job.Process(jctx); err != nil {
+					w.logger.ErrorContext(jctx, "failed to process job", "error", err)
+				}
+
+				cancel()
 			case <-wctx.Done():
 				return
 			}
 		}
 	}()
+}
+
+func (w *Worker[J]) setJobTimeout(ctx context.Context) (context.Context, context.CancelFunc) {
+	if w.timeout == 0 {
+		return ctx, func() {}
+	}
+
+	return context.WithTimeout(ctx, w.timeout)
 }
