@@ -18,6 +18,12 @@
 
 8. ~~Worker lacks error handling, timeout, and panic resilience~~ (pkg/worker, P2) -- `Job.Process` now returns `error`; workers log job failures via `ErrorContext`. Per-job timeout support added via `SetTimeout` on the builder, applied with `context.WithTimeout`. `Worker` refactored to functional options pattern (`WorkerWithPool`, `WorkerWithLogger`, `WorkerWithTimeout`). Panic recovery moved inside the `for` loop so a panicking job does not kill the worker goroutine — the worker logs the panic and continues processing. *(Found and fixed same cycle.)*
 
+9. ~~`BackgroundWorker.Start` has no error logging on `workFn` failure~~ (pkg/worker, P2) -- `workFn` errors are now logged via `wp.logger.WarnContext(ctx, "failed to fetch jobs", "error", err)` before continuing. Job dispatch count logged at debug level. Worker start logged at info level with pool size and interval. *(Resolves 5/8 #1.)*
+
+10. ~~`dataSourceJob.Process` is a no-op~~ (Tenants, P3) -- The job now delegates to `DataSourceJobsService.Process` via the port interface. `newDataSourceJob` factory injects the service dependency. The `WorkFn` calls `app.Services.DataSourceJobs.Find(ctx)` to produce jobs. A new `DataSourceJobsService` service implements the `DataSourceJobsService` port with structured logging and command validation. *(Resolves 5/8 #4.)*
+
+11. ~~Bootstrap functions use positional parameters~~ (All, P3) -- All three services (`forms`, `submissions`, `tenants`) and `strategies` refactored to use functional options for `NewApplication`, `services.Bootstrap`, and `strategies.Bootstrap`. More idiomatic Go and enables optional/extensible configuration. *(Not previously tracked.)*
+
 ---
 
 ## Will Not Fix
@@ -30,25 +36,17 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 ## Remaining Issues
 
-### pkg/worker
-
-#### Bugs
-
-1. **`BackgroundWorker.Start` has no error logging or backoff on `workFn` failure** (`background_worker.go`) -- When `workFn` returns an error, the worker silently `continue`s. No logging, no backoff. If the work function fails persistently (e.g., database down), the worker spins on the ticker interval without any visibility. *(P2.)*
-
----
-
 ### Tenants Service
 
 #### Architectural
 
-2. **`Find()` has no pagination or filtering** (`tenants_service.go`). *(Carried from 5/7, P3.)*
+1. **`Find()` has no pagination or filtering** (`tenants_service.go`). *(Carried from 5/7, P3.)*
+
+2. **`DataSourceJobsService.Find` has no filtering** (`data_source_jobs_service.go`) -- Returns all data sources regardless of type or scheduling state. The worker will re-process all data sources every tick rather than only those due for refresh. *(P3 -- design consideration, acceptable if in-progress.)*
 
 #### Missing Functionality
 
 3. **`Lookup` value object has no validation** (`lookup.go`) -- `NewLookup` accepts any strings without checking for blank `Value` or `Label`. *(Carried from 5/7, P3.)*
-
-4. **`dataSourceJob.Process` is a no-op** (`workers/data_sources_worker.go:17-18`) -- The job's `Process` method has an empty body. The `WorkFn` also returns `nil, nil`. The background worker infrastructure is wired but performs no work. *(P3 -- stub, acceptable if in-progress.)*
 
 ---
 
@@ -56,13 +54,13 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 #### Architectural
 
-5. **`sendErrorResponse` has no domain error mapping** (`handlers.go`) -- Switch statement contains only a `default` case. `common.ErrNotFound` maps to 500 instead of 404; `common.ErrUnauthorized` maps to 500 instead of 403; validation errors map to 500 instead of 400. *(Carried from 5/7, P2.)*
+4. **`sendErrorResponse` has no domain error mapping** (`handlers.go`) -- Switch statement contains only a `default` case. `common.ErrNotFound` maps to 500 instead of 404; `common.ErrUnauthorized` maps to 500 instead of 403; validation errors map to 500 instead of 400. *(Carried from 5/7, P2.)*
 
-6. **`Replay` service method is a stub** (`submissions_service.go`) -- Validates and fetches but performs no replay. Handler returns 201 "Successfully replayed" misleadingly. *(Carried from 5/7, P3.)*
+5. **`Replay` service method is a stub** (`submissions_service.go`) -- Validates and fetches but performs no replay. Handler returns 201 "Successfully replayed" misleadingly. *(Carried from 5/7, P3.)*
 
 #### Code Quality
 
-7. **`Payload` typed as `any`** (`submission.go`) -- No type safety across DTO, command, domain, and persistence layers. *(Carried from 5/7, P3.)*
+6. **`Payload` typed as `any`** (`submission.go`) -- No type safety across DTO, command, domain, and persistence layers. *(Carried from 5/7, P3.)*
 
 ---
 
@@ -70,11 +68,11 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 #### Architectural
 
-8. **Test coverage gaps** -- Submissions has no handler or service tests. Forms has no service tests. No domain-layer or repository-layer tests exist anywhere. *(Carried from 5/7, P3.)*
+7. **Test coverage gaps** -- Submissions has no handler or service tests. Forms has no service tests. No domain-layer or repository-layer tests exist anywhere. *(Carried from 5/7, P3.)*
 
-9. **No domain events** for cross-service communication. *(Carried from 5/7, P3.)*
+8. **No domain events** for cross-service communication. *(Carried from 5/7, P3.)*
 
-10. **No real authentication** -- Placeholder only. *(Carried from 5/7, P3.)*
+9. **No real authentication** -- Placeholder only. *(Carried from 5/7, P3.)*
 
 ---
 
