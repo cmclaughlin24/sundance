@@ -18,9 +18,9 @@
 
 8. ~~Worker lacks error handling, timeout, and panic resilience~~ (pkg/worker, P2) -- `Job.Process` now returns `error`; workers log job failures via `ErrorContext`. Per-job timeout support added via `SetTimeout` on the builder, applied with `context.WithTimeout`. `Worker` refactored to functional options pattern (`WorkerWithPool`, `WorkerWithLogger`, `WorkerWithTimeout`). Panic recovery moved inside the `for` loop so a panicking job does not kill the worker goroutine — the worker logs the panic and continues processing. *(Found and fixed same cycle.)*
 
-9. ~~`BackgroundWorker.Start` has no error logging on `workFn` failure~~ (pkg/worker, P2) -- `workFn` errors are now logged via `wp.logger.WarnContext(ctx, "failed to fetch jobs", "error", err)` before continuing. Job dispatch count logged at debug level. Worker start logged at info level with pool size and interval. *(Resolves 5/8 #1.)*
+9. ~~`BackgroundWorker.Start` has no error logging on `workFn` failure~~ (pkg/worker, P2) -- `workFn` errors now logged via `wp.logger.WarnContext(ctx, "failed to fetch jobs", "error", err)` before continuing. Job dispatch count logged at debug level. Worker start logged at info level with pool size and interval. *(Resolves 5/8 #1.)*
 
-10. ~~`dataSourceJob.Process` is a no-op~~ (Tenants, P3) -- The job now delegates to `DataSourceJobsService.Process` via the port interface. `newDataSourceJob` factory injects the service dependency. The `WorkFn` calls `app.Services.DataSourceJobs.Find(ctx)` to produce jobs. A new `DataSourceJobsService` service implements the `DataSourceJobsService` port with structured logging and command validation. *(Resolves 5/8 #4.)*
+10. ~~`dataSourceJob.Process` is a no-op~~ (Tenants, P3) -- The job now delegates to `DataSourceJobsService.Process` via the port interface. `newDataSourceJob` factory injects the service dependency. The `WorkFn` calls `app.Services.DataSourceJobs.Find(ctx)` to produce jobs. A new `DataSourcesJobService` implementation provides structured logging and command validation. *(Resolves 5/8 #4.)*
 
 11. ~~Bootstrap functions use positional parameters~~ (All, P3) -- All three services (`forms`, `submissions`, `tenants`) and `strategies` refactored to use functional options for `NewApplication`, `services.Bootstrap`, and `strategies.Bootstrap`. More idiomatic Go and enables optional/extensible configuration. *(Not previously tracked.)*
 
@@ -80,16 +80,15 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
-| **P2** | 1 | No error logging/backoff on `workFn` failure | pkg/worker |
-| **P2** | 5 | `sendErrorResponse` no domain error mapping | Submissions |
-| **P3** | 2 | `Find()` no pagination | Tenants |
+| **P2** | 4 | `sendErrorResponse` no domain error mapping | Submissions |
+| **P3** | 1 | `Find()` no pagination | Tenants |
+| **P3** | 2 | `DataSourceJobsService.Find` no filtering | Tenants |
 | **P3** | 3 | `Lookup` no validation | Tenants |
-| **P3** | 4 | `dataSourceJob.Process` is a no-op | Tenants |
-| **P3** | 6 | `Replay` is a stub | Submissions |
-| **P3** | 7 | `Payload` typed as `any` | Submissions |
-| **P3** | 8 | Test coverage gaps | All |
-| **P3** | 9 | No domain events | All |
-| **P3** | 10 | No real authentication | All |
+| **P3** | 5 | `Replay` is a stub | Submissions |
+| **P3** | 6 | `Payload` typed as `any` | Submissions |
+| **P3** | 7 | Test coverage gaps | All |
+| **P3** | 8 | No domain events | All |
+| **P3** | 9 | No real authentication | All |
 
 ---
 
@@ -97,7 +96,7 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 ### Progress Since 5/7
 
-Two commits since the last review, focused on idempotency support and background worker infrastructure:
+Multiple commits and working changes since the last review, focused on idempotency support, background worker infrastructure, functional options refactoring, and data source job processing:
 
 - **Idempotency middleware introduced** -- New `IdempotencyMiddleware` in `pkg/common/httputil` extracts the `Idempotency-Key` header, rejects requests missing it, and stores the value in context. Applied per-route to `POST /submissions` via Chi's `With()`. The handler retrieves the key via `IdempotencyFromContext` and passes it through the command to the domain. This completes the idempotency story end-to-end: request header → middleware → handler → command → domain → repository (with unique index enforcement). The P1 blocking bug from 5/7 (empty idempotency key failing validation) is fully resolved.
 
@@ -110,28 +109,30 @@ Two commits since the last review, focused on idempotency support and background
   - `WorkerContextHandler` -- `slog.Handler` wrapper that injects `worker_id` into log records
   - `Job` interface with a single `Process(context.Context)` method
 
-- **Data sources background worker wired** (Tenants) -- `workers/data_sources_worker.go` defines a `dataSourceJob` implementing `Job` and constructs a `BackgroundWorker` via the builder (15s interval, 5 workers). Started in `main.go` as a goroutine. Currently a stub (no-op `Process`, nil `WorkFn`).
+- **Data sources background worker fully wired** (Tenants) -- `workers/data_sources_worker.go` defines a `dataSourceJob` implementing `Job` that delegates to `DataSourceJobsService.Process` through the port boundary. The `WorkFn` calls `DataSourceJobsService.Find` to produce jobs. A new `DataSourceJobsService` interface added to `ports/primary.go` with `Find` and `Process` methods. `DataSourcesJobService` implementation in the services layer provides structured logging and command validation. `ProcessDataSourceJobCommand` added to `ports/commands.go` with `validate:"required"` on the `DataSource` field.
+
+- **Functional options refactoring** -- All three services refactored: `core.NewApplication`, `services.Bootstrap`, and `strategies.Bootstrap` now use functional options (`WithLogger`, `WithRepository`, `WithServices`, `WithStrategies`, `WithHTTPClient`). Replaces positional parameter constructors with the idiomatic Go options pattern, enabling extensible configuration without breaking changes.
 
 ### Current State
 
-**9 remaining issues (5/7) -> 10 remaining issues** (resolved 8; introduced 9 new issues primarily in `pkg/worker`; 7 fixed same-cycle; carried forward 8 unchanged).
+**9 remaining issues (5/7) -> 9 remaining issues** (resolved 11; introduced 10 new issues primarily in `pkg/worker`; 9 fixed same-cycle; carried forward 7 unchanged; 1 new design note added).
 
 **Forms Service** remains fully mature. No remaining issues.
 
-**Tenants Service** has a new adapter layer (`adapters/workers/`) introducing background processing capability. The worker infrastructure is wired with proper graceful shutdown support via `context.WithCancel`, but the job implementation is a stub. The graceful shutdown gap identified in this cycle has been resolved.
+**Tenants Service** has a new adapter layer (`adapters/workers/`) introducing background processing capability. The worker infrastructure is fully wired: graceful shutdown via `context.WithCancel`, job dispatch through a `DataSourceJobsService` port, and proper command validation. A new `DataSourceJobsService` interface and implementation provide the service-layer boundary for background job processing. The `Find` and `Process` methods are stubs but correctly structured for incremental implementation.
 
 **Submissions Service** idempotency is now fully functional end-to-end. The `Idempotency-Key` header is required for submission creation, extracted by middleware, passed through the service layer, and enforced at the database level via a unique index. Remaining issues are `sendErrorResponse` mapping (P2), `Replay` stub (P3), and `Payload` typing (P3).
 
-**pkg/worker** has been substantially hardened this cycle. The builder now validates required fields and provides sensible defaults. Workers handle job errors, support per-job timeouts, use functional options, and recover from panics without dying. The sole remaining concern is that `BackgroundWorker.Start` silently swallows `workFn` errors (P2).
+**pkg/worker** has been substantially hardened this cycle and has **no remaining issues**. The builder validates required fields and provides sensible defaults. Workers handle job errors, support per-job timeouts, use functional options, and recover from panics without dying. `BackgroundWorker.Start` logs `workFn` errors at warn level and job dispatch counts at debug level.
 
 **Hexagonal Architecture** -- The new `adapters/workers/` directory in tenants follows the hexagonal pattern correctly: it's an adapter (driving adapter, triggered by time rather than HTTP) that depends inward on `core`. The `dataSourceJob` struct holds a `*domain.DataSource`, keeping the domain model at the center. The `pkg/worker` package is pure infrastructure with no domain knowledge, analogous to `pkg/database`.
 
-**DDD** -- The `Job` interface (`Process(context.Context)`) is minimal and domain-agnostic. The tenant-specific `dataSourceJob` adapter wraps the domain entity and will presumably orchestrate domain service calls once implemented. This correctly separates the scheduling concern (infrastructure) from the business logic (domain/service).
+**DDD** -- The `Job` interface (`Process(context.Context) error`) is minimal and domain-agnostic. The tenant-specific `dataSourceJob` adapter wraps the domain entity and delegates to `DataSourceJobsService.Process` through the port boundary. The new `ProcessDataSourceJobCommand` carries the domain entity with validation. This correctly separates the scheduling concern (infrastructure) from the business logic (domain/service). The `DataSourceJobsService` port is a clean driving port for the worker adapter, mirroring how `TenantsService` and `DataSourcesService` serve the REST adapter.
 
-**Idiomatic Go** -- The worker pool pattern using channels is a well-established Go concurrency pattern. The `Job` interface with a single method follows Go's preference for small interfaces. The builder pattern is less common in Go (functional options are more idiomatic for configuration) but acceptable for complex construction. The `contextKey` type-safety pattern (unexported type prevents key collisions) is correctly applied in both `httputil` and `worker` packages.
+**Idiomatic Go** -- The worker pool pattern using channels is a well-established Go concurrency pattern. The `Job` interface with a single method follows Go's preference for small interfaces. The bootstrap functions and `NewApplication` now use functional options (`WithLogger`, `WithRepository`, `WithServices`, `WithStrategies`) — the most idiomatic Go pattern for optional/extensible configuration. The `contextKey` type-safety pattern (unexported type prevents key collisions) is correctly applied in both `httputil` and `worker` packages.
 
 ### Highest-Impact Improvements
 
-1. **Add error logging in `BackgroundWorker.Start`** (P2 -- silent `workFn` failures are invisible)
-2. **Add `sendErrorResponse` domain error cases** in submissions handlers (P2 -- error semantics incorrect)
-3. **Implement `dataSourceJob.Process` and wire real work** (P3 -- stub infrastructure)
+1. **Add `sendErrorResponse` domain error cases** in submissions handlers (P2 -- error semantics incorrect)
+2. **Implement `DataSourceJobsService.Find` with scheduling-aware filtering** (P3 -- currently returns nil)
+3. **Implement `DataSourceJobsService.Process` with actual data source refresh logic** (P3 -- currently a stub)
