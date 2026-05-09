@@ -124,3 +124,15 @@ func NewRemoveDataSourceCommand(tenantID domain.TenantID, sourceID domain.DataSo
 func (c *RemoveDataSourceCommand) Validate() error {
 	return validate.ValidateStruct(c)
 }
+
+type ProcessDataSourceJobCommand struct {
+	DataSource *domain.DataSource `validate:"required"`
+}
+
+func NewProcessDataSourceJobCommand(ds *domain.DataSource) *ProcessDataSourceJobCommand {
+	return &ProcessDataSourceJobCommand{ds}
+}
+
+func (c *ProcessDataSourceJobCommand) Validate() error {
+	return validate.ValidateStruct(c)
+}

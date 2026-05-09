@@ -12,11 +12,40 @@ type Application struct {
 	repository *ports.Repository
 }
 
-func NewApplication(logger *slog.Logger, repository *ports.Repository, services *ports.Services) *Application {
+type applicationOptions struct {
+	logger     *slog.Logger
+	repository *ports.Repository
+	services   *ports.Services
+}
+
+func NewApplication(opts ...func(*applicationOptions)) *Application {
+	var ao applicationOptions
+	for _, opt := range opts {
+		opt(&ao)
+	}
+
 	return &Application{
-		Logger:     logger,
-		Services:   services,
-		repository: repository,
+		Logger:     ao.logger,
+		Services:   ao.services,
+		repository: ao.repository,
+	}
+}
+
+func WithLogger(logger *slog.Logger) func(*applicationOptions) {
+	return func(ao *applicationOptions) {
+		ao.logger = logger
+	}
+}
+
+func WithRepository(repository *ports.Repository) func(*applicationOptions) {
+	return func(ao *applicationOptions) {
+		ao.repository = repository
+	}
+}
+
+func WithServices(services *ports.Services) func(*applicationOptions) {
+	return func(ao *applicationOptions) {
+		ao.services = services
 	}
 }
 

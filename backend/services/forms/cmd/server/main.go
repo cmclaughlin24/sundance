@@ -46,8 +46,8 @@ func main() {
 		panic(err)
 	}
 
-	s := services.Bootstrap(l, r)
-	app := core.NewApplication(l, r, s)
+	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r))
+	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s))
 
 	defer app.Close()
 	mux := rest.NewRoutes(app)

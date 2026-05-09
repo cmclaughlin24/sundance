@@ -49,9 +49,9 @@ func main() {
 		panic(err)
 	}
 
-	st := strategies.Bootstrap(l, r, &http.Client{Timeout: 10 * time.Second})
-	s := services.Bootstrap(l, r, st)
-	app := core.NewApplication(l, r, s)
+	st := strategies.Bootstrap(strategies.WithLogger(l), strategies.WithHTTPClient(&http.Client{Timeout: 10 * time.Second}))
+	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithStrategies(st))
+	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s))
 
 	defer app.Close()
 	mux := rest.NewRoutes(app)

@@ -13,14 +13,43 @@ var (
 	ErrDataSourceStrategyMismatch = errors.New("data source type and attributes mismatch; strategy cannot process")
 )
 
-func Bootstrap(logger *slog.Logger, _ *ports.Repository, client ports.HTTPClient) *ports.Strategies {
+type strategyOptions struct {
+	logger     *slog.Logger
+	repository *ports.Repository
+	client     ports.HTTPClient
+}
+
+func Bootstrap(opts ...func(*strategyOptions)) *ports.Strategies {
+	var so strategyOptions
+	for _, opt := range opts {
+		opt(&so)
+	}
+
 	lookupStrategies := stratreg.New[domain.DataSourceType, ports.LookupStrategy]().
-		Set(domain.DataSourceTypeStatic, NewStaticLookupStrategy(logger)).
-		Set(domain.DataSourceTypeScheduled, NewScheduledLookupStrategy(logger)).
-		Set(domain.DataSourceTypeWebhook, NewWebhookLookupStrategy(logger, client))
+		Set(domain.DataSourceTypeStatic, NewStaticLookupStrategy(so.logger)).
+		Set(domain.DataSourceTypeScheduled, NewScheduledLookupStrategy(so.logger)).
+		Set(domain.DataSourceTypeWebhook, NewWebhookLookupStrategy(so.logger, so.client))
 
 	return &ports.Strategies{
 		Lookups: lookupStrategies,
+	}
+}
+
+func WithLogger(logger *slog.Logger) func(*strategyOptions) {
+	return func(so *strategyOptions) {
+		so.logger = logger
+	}
+}
+
+func WithRepository(repository *ports.Repository) func(*strategyOptions) {
+	return func(so *strategyOptions) {
+		so.repository = repository
+	}
+}
+
+func WithHTTPClient(client ports.HTTPClient) func(*strategyOptions) {
+	return func(so *strategyOptions) {
+		so.client = client
 	}
 }
 

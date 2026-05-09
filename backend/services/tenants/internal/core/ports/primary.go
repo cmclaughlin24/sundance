@@ -7,8 +7,9 @@ import (
 )
 
 type Services struct {
-	Tenants     TenantsService
-	DataSources DataSourcesService
+	Tenants        TenantsService
+	DataSources    DataSourcesService
+	DataSourceJobs DataSourceJobsService
 }
 
 type TenantsService interface {
@@ -26,4 +27,9 @@ type DataSourcesService interface {
 	Update(context.Context, *UpdateDataSourceCommand) (*domain.DataSource, error)
 	Delete(context.Context, *RemoveDataSourceCommand) error
 	Lookup(context.Context, *GetDataSourceLookupsQuery) ([]*domain.Lookup, error)
+}
+
+type DataSourceJobsService interface {
+	Find(context.Context) ([]*domain.DataSource, error)
+	Process(context.Context, *ProcessDataSourceJobCommand) error
 }
