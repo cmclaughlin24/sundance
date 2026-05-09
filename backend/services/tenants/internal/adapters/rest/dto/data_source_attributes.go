@@ -61,7 +61,10 @@ type staticDataSourceAttributesResponse struct {
 }
 
 type scheduledDataSourceAttributesResponse struct {
-	Data []*LookupResponse `json:"data"`
+	Data    []*LookupResponse `json:"data"`
+	URL     string            `json:"url"`
+	Method  string            `json:"method"`
+	Headers map[string]string `json:"headers,omitempty"`
 }
 
 type webhookDataSourceAttributesResponse struct {
@@ -77,6 +80,9 @@ func dataSourceAttributesToResponse(attr domain.DataSourceAttributes) any {
 
 		return scheduledDataSourceAttributesResponse{
 			Data: data,
+			URL:     t.URL,
+			Method:  t.Method,
+			Headers: t.Headers,
 		}
 	case domain.StaticDataSourceAttributes:
 		data := LookupsToResponse(t.Data)

@@ -72,6 +72,3 @@ func (q *FindVersionByIDQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 
-type FormFilters struct {
-	TenantID string
-}

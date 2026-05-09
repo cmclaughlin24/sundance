@@ -1,5 +1,7 @@
 package domain
 
+import "time"
+
 type DataSourceAttributes interface {
 	isDataSourceAttributes()
 }
@@ -15,7 +17,11 @@ type StaticDataSourceAttributes struct {
 
 type ScheduledDataSourceAttributes struct {
 	baseDataSourceAttributes
-	Data []*Lookup
+	Data           []*Lookup
+	URL            string
+	Method         string
+	Headers        map[string]string
+	ExpirationDate time.Time
 }
 
 type WebhookDataSourceAttributes struct {

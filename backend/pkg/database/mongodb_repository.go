@@ -32,13 +32,13 @@ func (r *MongoDBRepository[T]) Logger() *slog.Logger {
 	return r.logger
 }
 
-func (r *MongoDBRepository[T]) Find(ctx context.Context, filter bson.M) ([]T, error) {
+func (r *MongoDBRepository[T]) Find(ctx context.Context, filter bson.M, opts ...options.Lister[options.FindOptions]) ([]T, error) {
 	r.logger.DebugContext(ctx, "mongodb find", "collection", r.collection.Name())
 
 	var documents []T
 
 	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
-		cursor, err := r.collection.Find(sctx, filter)
+		cursor, err := r.collection.Find(sctx, filter, opts...)
 
 		if err != nil {
 			return err

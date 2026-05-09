@@ -33,7 +33,6 @@ func (r *mongoDBDataSourcesRepository) Find(ctx context.Context, tenantID domain
 	}
 
 	dataSources := make([]*domain.DataSource, 0, len(documents))
-
 	for _, document := range documents {
 		ds, err := fromDataSourceDocument(&document)
 
@@ -55,6 +54,40 @@ func (r *mongoDBDataSourcesRepository) FindByID(ctx context.Context, tenantID do
 	}
 
 	return fromDataSourceDocument(&result)
+}
+
+func (r *mongoDBDataSourcesRepository) FindJobs(ctx context.Context, filters *ports.FindDataSourceJobsFilter) ([]*domain.DataSource, error) {
+	opts := options.Find()
+
+	if filters.Limit > 0 {
+		opts.SetLimit(int64(filters.Limit))
+	}
+
+	documents, err := r.base.Find(ctx, bson.M{
+		"type": domain.DataSourceTypeScheduled,
+		"$or": []bson.M{
+			{"attributes.expirationDate": bson.M{"$exists": false}},
+			{"attributes.expirationDate": bson.M{"$type": "null"}},
+			{"attributes.expirationDate": bson.M{"$lte": Now()}},
+		},
+	}, opts)
+
+	if err != nil {
+		return nil, err
+	}
+
+	dataSources := make([]*domain.DataSource, 0, len(documents))
+	for _, document := range documents {
+		ds, err := fromDataSourceDocument(&document)
+
+		if err != nil {
+			return nil, err
+		}
+
+		dataSources = append(dataSources, ds)
+	}
+
+	return dataSources, nil
 }
 
 func (r *mongoDBDataSourcesRepository) Exists(ctx context.Context, tenantID domain.TenantID, sourceID domain.DataSourceID) (bool, error) {

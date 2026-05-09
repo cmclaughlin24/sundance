@@ -53,6 +53,18 @@ func (r *inMemoryDataSourceRepository) FindByID(ctx context.Context, tenantID do
 	return ds, nil
 }
 
+func (r *inMemoryDataSourceRepository) FindJobs(ctx context.Context, filters *ports.FindDataSourceJobsFilter) ([]*domain.DataSource, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	result := make([]*domain.DataSource, 0)
+	for _, ds := range r.dataSources {
+		result = append(result, ds)
+	}
+
+	return result, nil
+}
+
 func (r *inMemoryDataSourceRepository) Exists(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) (bool, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

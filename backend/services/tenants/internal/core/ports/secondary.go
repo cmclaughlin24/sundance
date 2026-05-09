@@ -26,6 +26,7 @@ type TenantsRepository interface {
 type DataSourcesRepository interface {
 	Find(context.Context, domain.TenantID) ([]*domain.DataSource, error)
 	FindByID(context.Context, domain.TenantID, domain.DataSourceID) (*domain.DataSource, error)
+	FindJobs(context.Context, *FindDataSourceJobsFilter) ([]*domain.DataSource, error)
 	Exists(context.Context, domain.TenantID, domain.DataSourceID) (bool, error)
 	Upsert(context.Context, *domain.DataSource) (*domain.DataSource, error)
 	Delete(context.Context, domain.TenantID, domain.DataSourceID) error
