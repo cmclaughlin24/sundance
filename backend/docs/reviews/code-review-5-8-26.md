@@ -14,6 +14,10 @@
 
 6. ~~`context.go` uses wrong key name~~ (pkg/worker, P3) -- `workerIDKey` string value changed from `"tenantID"` to `"workerID"`. *(Found and fixed same cycle.)*
 
+7. ~~`BackgroundWorkerBuilder.Build()` has no validation~~ (pkg/worker, P2) -- `Build()` now returns `(*BackgroundWorker[J], error)`. Validates: nil `logger` returns `ErrLoggerIsRequired`, nil `workFn` returns `ErrWorkFnIsRequired`. Zero `interval` defaults to 1 minute, zero `size` defaults to 5. Eliminates panic/deadlock risk from misconfiguration. Builder consolidated from separate file into `background_worker.go`. *(Resolves 5/8 #1.)*
+
+8. ~~Worker lacks error handling, timeout, and panic resilience~~ (pkg/worker, P2) -- `Job.Process` now returns `error`; workers log job failures via `ErrorContext`. Per-job timeout support added via `SetTimeout` on the builder, applied with `context.WithTimeout`. `Worker` refactored to functional options pattern (`WorkerWithPool`, `WorkerWithLogger`, `WorkerWithTimeout`). Panic recovery moved inside the `for` loop so a panicking job does not kill the worker goroutine — the worker logs the panic and continues processing. *(Found and fixed same cycle.)*
+
 ---
 
 ## Will Not Fix
@@ -30,9 +34,7 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 #### Bugs
 
-1. **`BackgroundWorkerBuilder.Build()` has no validation** (`background_worker_builder.go`) -- Zero-value `interval`, nil `logger`, zero `size`, or nil `workFn` will cause panics or deadlocks at runtime (`time.NewTicker(0)` panics, nil logger panics, `make(chan chan J)` with `range 0` creates zero workers causing `<-pool` to block forever). *(P2.)*
-
-2. **`BackgroundWorker.Start` has no error logging or backoff on `workFn` failure** (`background_worker.go:33-35`) -- When `workFn` returns an error, the worker silently `continue`s. No logging, no backoff. If the work function fails persistently (e.g., database down), the worker spins on the ticker interval without any visibility. *(P2.)*
+1. **`BackgroundWorker.Start` has no error logging or backoff on `workFn` failure** (`background_worker.go`) -- When `workFn` returns an error, the worker silently `continue`s. No logging, no backoff. If the work function fails persistently (e.g., database down), the worker spins on the ticker interval without any visibility. *(P2.)*
 
 ---
 
@@ -40,13 +42,13 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 #### Architectural
 
-3. **`Find()` has no pagination or filtering** (`tenants_service.go`). *(Carried from 5/7, P3.)*
+2. **`Find()` has no pagination or filtering** (`tenants_service.go`). *(Carried from 5/7, P3.)*
 
 #### Missing Functionality
 
-4. **`Lookup` value object has no validation** (`lookup.go`) -- `NewLookup` accepts any strings without checking for blank `Value` or `Label`. *(Carried from 5/7, P3.)*
+3. **`Lookup` value object has no validation** (`lookup.go`) -- `NewLookup` accepts any strings without checking for blank `Value` or `Label`. *(Carried from 5/7, P3.)*
 
-5. **`dataSourceJob.Process` is a no-op** (`workers/data_sources_worker.go:17-18`) -- The job's `Process` method has an empty body. The `WorkFn` also returns `nil, nil`. The background worker infrastructure is wired but performs no work. *(P3 -- stub, acceptable if in-progress.)*
+4. **`dataSourceJob.Process` is a no-op** (`workers/data_sources_worker.go:17-18`) -- The job's `Process` method has an empty body. The `WorkFn` also returns `nil, nil`. The background worker infrastructure is wired but performs no work. *(P3 -- stub, acceptable if in-progress.)*
 
 ---
 
@@ -54,13 +56,13 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 #### Architectural
 
-6. **`sendErrorResponse` has no domain error mapping** (`handlers.go`) -- Switch statement contains only a `default` case. `common.ErrNotFound` maps to 500 instead of 404; `common.ErrUnauthorized` maps to 500 instead of 403; validation errors map to 500 instead of 400. *(Carried from 5/7, P2.)*
+5. **`sendErrorResponse` has no domain error mapping** (`handlers.go`) -- Switch statement contains only a `default` case. `common.ErrNotFound` maps to 500 instead of 404; `common.ErrUnauthorized` maps to 500 instead of 403; validation errors map to 500 instead of 400. *(Carried from 5/7, P2.)*
 
-7. **`Replay` service method is a stub** (`submissions_service.go`) -- Validates and fetches but performs no replay. Handler returns 201 "Successfully replayed" misleadingly. *(Carried from 5/7, P3.)*
+6. **`Replay` service method is a stub** (`submissions_service.go`) -- Validates and fetches but performs no replay. Handler returns 201 "Successfully replayed" misleadingly. *(Carried from 5/7, P3.)*
 
 #### Code Quality
 
-8. **`Payload` typed as `any`** (`submission.go`) -- No type safety across DTO, command, domain, and persistence layers. *(Carried from 5/7, P3.)*
+7. **`Payload` typed as `any`** (`submission.go`) -- No type safety across DTO, command, domain, and persistence layers. *(Carried from 5/7, P3.)*
 
 ---
 
@@ -68,11 +70,11 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 #### Architectural
 
-9. **Test coverage gaps** -- Submissions has no handler or service tests. Forms has no service tests. No domain-layer or repository-layer tests exist anywhere. *(Carried from 5/7, P3.)*
+8. **Test coverage gaps** -- Submissions has no handler or service tests. Forms has no service tests. No domain-layer or repository-layer tests exist anywhere. *(Carried from 5/7, P3.)*
 
-10. **No domain events** for cross-service communication. *(Carried from 5/7, P3.)*
+9. **No domain events** for cross-service communication. *(Carried from 5/7, P3.)*
 
-11. **No real authentication** -- Placeholder only. *(Carried from 5/7, P3.)*
+10. **No real authentication** -- Placeholder only. *(Carried from 5/7, P3.)*
 
 ---
 
@@ -80,17 +82,16 @@ See [5/4 review](code-review-5-4-26.md) for the full Will Not Fix list (items #2
 
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
-| **P2** | 1 | Builder has no validation (panics/deadlocks) | pkg/worker |
-| **P2** | 2 | No error logging/backoff on `workFn` failure | pkg/worker |
-| **P2** | 6 | `sendErrorResponse` no domain error mapping | Submissions |
-| **P3** | 3 | `Find()` no pagination | Tenants |
-| **P3** | 4 | `Lookup` no validation | Tenants |
-| **P3** | 5 | `dataSourceJob.Process` is a no-op | Tenants |
-| **P3** | 7 | `Replay` is a stub | Submissions |
-| **P3** | 8 | `Payload` typed as `any` | Submissions |
-| **P3** | 9 | Test coverage gaps | All |
-| **P3** | 10 | No domain events | All |
-| **P3** | 11 | No real authentication | All |
+| **P2** | 1 | No error logging/backoff on `workFn` failure | pkg/worker |
+| **P2** | 5 | `sendErrorResponse` no domain error mapping | Submissions |
+| **P3** | 2 | `Find()` no pagination | Tenants |
+| **P3** | 3 | `Lookup` no validation | Tenants |
+| **P3** | 4 | `dataSourceJob.Process` is a no-op | Tenants |
+| **P3** | 6 | `Replay` is a stub | Submissions |
+| **P3** | 7 | `Payload` typed as `any` | Submissions |
+| **P3** | 8 | Test coverage gaps | All |
+| **P3** | 9 | No domain events | All |
+| **P3** | 10 | No real authentication | All |
 
 ---
 
@@ -115,7 +116,7 @@ Two commits since the last review, focused on idempotency support and background
 
 ### Current State
 
-**9 remaining issues (5/7) -> 11 remaining issues** (resolved 6; introduced 7 new issues primarily in `pkg/worker`; carried forward 8 unchanged).
+**9 remaining issues (5/7) -> 10 remaining issues** (resolved 8; introduced 9 new issues primarily in `pkg/worker`; 7 fixed same-cycle; carried forward 8 unchanged).
 
 **Forms Service** remains fully mature. No remaining issues.
 
@@ -123,7 +124,7 @@ Two commits since the last review, focused on idempotency support and background
 
 **Submissions Service** idempotency is now fully functional end-to-end. The `Idempotency-Key` header is required for submission creation, extracted by middleware, passed through the service layer, and enforced at the database level via a unique index. Remaining issues are `sendErrorResponse` mapping (P2), `Replay` stub (P3), and `Payload` typing (P3).
 
-**pkg/worker** is the newest shared package and carries the most new issues. The builder accepts invalid configurations that will panic/deadlock, and the orchestrator silently swallows work function errors. The architecture itself (worker pool pattern with channel-based dispatch) is sound but needs hardening before production use.
+**pkg/worker** has been substantially hardened this cycle. The builder now validates required fields and provides sensible defaults. Workers handle job errors, support per-job timeouts, use functional options, and recover from panics without dying. The sole remaining concern is that `BackgroundWorker.Start` silently swallows `workFn` errors (P2).
 
 **Hexagonal Architecture** -- The new `adapters/workers/` directory in tenants follows the hexagonal pattern correctly: it's an adapter (driving adapter, triggered by time rather than HTTP) that depends inward on `core`. The `dataSourceJob` struct holds a `*domain.DataSource`, keeping the domain model at the center. The `pkg/worker` package is pure infrastructure with no domain knowledge, analogous to `pkg/database`.
 
@@ -133,7 +134,6 @@ Two commits since the last review, focused on idempotency support and background
 
 ### Highest-Impact Improvements
 
-1. **Add builder validation in `Build()`** (P2 -- prevents panics/deadlocks from zero-value fields)
-2. **Add error logging in `BackgroundWorker.Start`** (P2 -- silent failures are invisible)
-3. **Add `sendErrorResponse` domain error cases** in submissions handlers (P2 -- error semantics incorrect)
-4. **Implement `dataSourceJob.Process` and wire real work** (P3 -- stub infrastructure)
+1. **Add error logging in `BackgroundWorker.Start`** (P2 -- silent `workFn` failures are invisible)
+2. **Add `sendErrorResponse` domain error cases** in submissions handlers (P2 -- error semantics incorrect)
+3. **Implement `dataSourceJob.Process` and wire real work** (P3 -- stub infrastructure)
