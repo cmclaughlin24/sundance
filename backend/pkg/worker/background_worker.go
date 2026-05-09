@@ -86,6 +86,8 @@ type BackgroundWorker[J Job] struct {
 }
 
 func (wp *BackgroundWorker[J]) Start(ctx context.Context) {
+	wp.logger.InfoContext(ctx, "background worker started", "pool_size", wp.size, "interval", wp.interval)
+
 	ticker := time.NewTicker(wp.interval)
 	pool := make(chan chan J)
 
@@ -99,19 +101,24 @@ func (wp *BackgroundWorker[J]) Start(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
+			wp.logger.DebugContext(ctx, "background worker stopping")
 			return
 		case <-ticker.C:
 			jobs, err := wp.workFn(ctx)
 
 			if err != nil {
+				wp.logger.WarnContext(ctx, "failed to fetch jobs", "error", err)
 				continue
 			}
+
+			wp.logger.DebugContext(ctx, "dispatching jobs", "count", len(jobs))
 
 			for _, j := range jobs {
 				select {
 				case w := <-pool:
 					w <- j
 				case <-ctx.Done():
+					wp.logger.DebugContext(ctx, "background worker stopping")
 					return
 				}
 			}

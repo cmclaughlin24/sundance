@@ -60,6 +60,7 @@ func WorkerWithTimeout[J Job](timeout time.Duration) func(*Worker[J]) {
 
 func (w *Worker[J]) Start(ctx context.Context) {
 	wctx := SetWorkerContext(ctx, string(w.ID))
+	w.logger.DebugContext(wctx, "worker started")
 
 	go func() {
 
@@ -73,11 +74,13 @@ func (w *Worker[J]) Start(ctx context.Context) {
 			select {
 			case w.WorkerPool <- w.JobChannel:
 			case <-wctx.Done():
+				w.logger.DebugContext(wctx, "worker stopping")
 				return
 			}
 
 			select {
 			case job := <-w.JobChannel:
+				w.logger.DebugContext(wctx, "processing job")
 				jctx, cancel := w.setJobTimeout(wctx)
 
 				if err := job.Process(jctx); err != nil {
@@ -86,6 +89,7 @@ func (w *Worker[J]) Start(ctx context.Context) {
 
 				cancel()
 			case <-wctx.Done():
+				w.logger.DebugContext(wctx, "worker stopping")
 				return
 			}
 		}
