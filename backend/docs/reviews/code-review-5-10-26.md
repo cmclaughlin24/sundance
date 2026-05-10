@@ -36,37 +36,35 @@ See [5/8 review](code-review-5-8-26.md) for the full Will Not Fix list.
 
 6. **`NewDataSourcesBackgroundWorker` panics on bootstrap error** (`data_sources_worker.go:35`) -- While `BackgroundWorker` validates `logger` and `workFn`, a panic in an adapter bootstrap function is non-recoverable. Other adapters (persistence) return errors to `main.go`. This should follow the same pattern for consistency and graceful error reporting. *(P3 -- error handling consistency.)*
 
+#### Missing Functionality
+
+7. **`Find()` has no pagination or filtering** (`tenants_service.go`) -- *(Carried from 5/8 #1, P3.)*
+
+8. **`Lookup` value object has no validation** (`lookup.go`) -- *(Carried from 5/8 #3, P3.)*
+
 ### pkg/worker
 
 #### Architectural
 
-7. **`Elector` interface has no distributed implementation** (`elector.go`) -- `InMemoryElector` always returns `true`, meaning multiple replicas will all process jobs concurrently. The interface is well-designed for future extension (MongoDB/Redis-based election), but there is no protection against duplicate job processing in a multi-replica deployment today. *(P3 -- noted as in-progress/planned.)*
+9. **`Elector` interface has no distributed implementation** (`elector.go`) -- `InMemoryElector` always returns `true`, meaning multiple replicas will all process jobs concurrently. The interface is well-designed for future extension (MongoDB/Redis-based election), but there is no protection against duplicate job processing in a multi-replica deployment today. *(P3 -- noted as in-progress/planned.)*
 
-8. **`BackgroundWorker.Start` releases leadership on shutdown but not on `workFn` errors** (`background_worker.go:98`) -- If `workFn` consistently fails, the worker holds leadership indefinitely without doing useful work. Other replicas cannot take over. Consider releasing leadership after N consecutive failures. *(P3 -- resilience.)*
+10. **`BackgroundWorker.Start` releases leadership on shutdown but not on `workFn` errors** (`background_worker.go:98`) -- If `workFn` consistently fails, the worker holds leadership indefinitely without doing useful work. Other replicas cannot take over. Consider releasing leadership after N consecutive failures. *(P3 -- resilience.)*
 
-9. **Worker pool dispatch blocks indefinitely if all workers are busy** (`background_worker.go:131-135`) -- The `w := <-pool` receive will block until a worker becomes available. If all workers are processing long-running jobs, the ticker tick is effectively "lost" but the goroutine is stuck waiting. This is acceptable for the current use case (small pool, fast jobs) but could benefit from a `select` with a timeout or skip for observability. *(P3 -- future concern.)*
+11. **Worker pool dispatch blocks indefinitely if all workers are busy** (`background_worker.go:131-135`) -- The `w := <-pool` receive will block until a worker becomes available. If all workers are processing long-running jobs, the ticker tick is effectively "lost" but the goroutine is stuck waiting. This is acceptable for the current use case (small pool, fast jobs) but could benefit from a `select` with a timeout or skip for observability. *(P3 -- future concern.)*
 
 ### Submissions Service
 
 #### Architectural
 
-10. **`sendErrorResponse` wrapper adds no value** (`handlers.go:194-198`) -- The switch statement has only a `default` case delegating to `httputil.SendErrorResponse`. This indirection is unnecessary. Either add service-specific error cases (justifying the wrapper) or call `httputil.SendErrorResponse` directly. *(P3 -- dead code.)*
+12. **`sendErrorResponse` wrapper adds no value** (`handlers.go:194-198`) -- The switch statement has only a `default` case delegating to `httputil.SendErrorResponse`. This indirection is unnecessary. Either add service-specific error cases (justifying the wrapper) or call `httputil.SendErrorResponse` directly. *(P3 -- dead code.)*
 
 #### Missing Functionality
 
-11. **`Replay` service method is a stub** (`submissions_service.go`) -- *(Carried from 5/8 #5, P3.)*
+13. **`Replay` service method is a stub** (`submissions_service.go`) -- *(Carried from 5/8 #5, P3.)*
 
 #### Code Quality
 
-12. **`Payload` typed as `any`** (`submission.go`) -- *(Carried from 5/8 #6, P3.)*
-
-### Tenants Service
-
-#### Missing Functionality
-
-13. **`Find()` has no pagination or filtering** (`tenants_service.go`) -- *(Carried from 5/8 #1, P3.)*
-
-14. **`Lookup` value object has no validation** (`lookup.go`) -- *(Carried from 5/8 #3, P3.)*
+14. **`Payload` typed as `any`** (`submission.go`) -- *(Carried from 5/8 #6, P3.)*
 
 ### Cross-Service
 
@@ -90,14 +88,14 @@ See [5/8 review](code-review-5-8-26.md) for the full Will Not Fix list.
 | **P3** | 2 | Missing error context in type assertion | Tenants |
 | **P3** | 5 | Duplicated fetch logic (strategy vs job service) | Tenants |
 | **P3** | 6 | Panic on bootstrap error | Tenants |
-| **P3** | 7 | No distributed elector implementation | pkg/worker |
-| **P3** | 8 | Leadership held despite failures | pkg/worker |
-| **P3** | 9 | Pool dispatch blocks indefinitely | pkg/worker |
-| **P3** | 10 | `sendErrorResponse` wrapper is no-op | Submissions |
-| **P3** | 11 | `Replay` is a stub | Submissions |
-| **P3** | 12 | `Payload` typed as `any` | Submissions |
-| **P3** | 13 | `Find()` no pagination | Tenants |
-| **P3** | 14 | `Lookup` no validation | Tenants |
+| **P3** | 7 | `Find()` no pagination | Tenants |
+| **P3** | 8 | `Lookup` no validation | Tenants |
+| **P3** | 9 | No distributed elector implementation | pkg/worker |
+| **P3** | 10 | Leadership held despite failures | pkg/worker |
+| **P3** | 11 | Pool dispatch blocks indefinitely | pkg/worker |
+| **P3** | 12 | `sendErrorResponse` wrapper is no-op | Submissions |
+| **P3** | 13 | `Replay` is a stub | Submissions |
+| **P3** | 14 | `Payload` typed as `any` | Submissions |
 | **P3** | 15 | Test coverage gaps | All |
 | **P3** | 16 | No domain events | All |
 | **P3** | 17 | No real authentication | All |
