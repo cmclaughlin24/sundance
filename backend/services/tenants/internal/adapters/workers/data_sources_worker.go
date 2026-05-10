@@ -28,18 +28,18 @@ func (j *dataSourceJob) Process(ctx context.Context) error {
 }
 
 func NewDataSourcesBackgroundWorker(app *core.Application) *worker.BackgroundWorker[*dataSourceJob] {
-	w, err := worker.NewBackgroundWorkerBuilder[*dataSourceJob]().
-		SetInterval(time.Minute * 1).
-		SetLogger(app.Logger).
-		SetSize(5).
-		SetWorkFn(newDataSourceWorkFn(app)).
-		Build()
+	bw, err := worker.NewBackgroundWorker[*dataSourceJob](
+		worker.WithInterval[*dataSourceJob](1*time.Minute),
+		worker.WithLogger[*dataSourceJob](app.Logger),
+		worker.WithSize[*dataSourceJob](5),
+		worker.WithWorkFn[*dataSourceJob](newDataSourceWorkFn(app)),
+	)
 
 	if err != nil {
 		panic(fmt.Errorf("failed to bootstrap DataSourcesBackgroundWorker; %w", err))
 	}
 
-	return w
+	return bw
 }
 
 func newDataSourceWorkFn(app *core.Application) worker.WorkFn[*dataSourceJob] {

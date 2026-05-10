@@ -1,16 +1,11 @@
 package strategies
 
 import (
-	"errors"
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/stratreg"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
-)
-
-var (
-	ErrDataSourceStrategyMismatch = errors.New("data source type and attributes mismatch; strategy cannot process")
 )
 
 type strategyOptions struct {
@@ -50,14 +45,5 @@ func WithRepository(repository *ports.Repository) func(*strategyOptions) {
 func WithClients(clients *ports.Clients) func(*strategyOptions) {
 	return func(so *strategyOptions) {
 		so.clients = clients
-	}
-}
-
-func getDataSourceAttributes[T domain.DataSourceAttributes](attr domain.DataSourceAttributes) (T, error) {
-	switch t := attr.(type) {
-	case T:
-		return t, nil
-	default:
-		return *new(T), ErrDataSourceStrategyMismatch
 	}
 }

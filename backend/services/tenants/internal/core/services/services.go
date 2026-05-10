@@ -10,6 +10,7 @@ type serviceOptions struct {
 	logger     *slog.Logger
 	repository *ports.Repository
 	strategies *ports.Strategies
+	clients    *ports.Clients
 }
 
 func Bootstrap(opts ...func(*serviceOptions)) *ports.Services {
@@ -21,7 +22,13 @@ func Bootstrap(opts ...func(*serviceOptions)) *ports.Services {
 	return &ports.Services{
 		Tenants:        NewTenantsService(so.logger, so.repository),
 		DataSources:    NewDataSourcesService(so.logger, so.repository, so.strategies),
-		DataSourceJobs: NewDataSourcesJobService(so.logger, so.repository),
+		DataSourceJobs: NewDataSourcesJobService(so.logger, so.repository, so.clients),
+	}
+}
+
+func WithClients(clients *ports.Clients) func(*serviceOptions) {
+	return func(so *serviceOptions) {
+		so.clients = clients
 	}
 }
 

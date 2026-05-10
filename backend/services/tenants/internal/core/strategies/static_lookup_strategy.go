@@ -19,7 +19,7 @@ func NewStaticLookupStrategy(logger *slog.Logger) ports.LookupStrategy {
 }
 
 func (s *StaticLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSource) ([]*domain.Lookup, error) {
-	attr, err := getDataSourceAttributes[domain.StaticDataSourceAttributes](ds.Attributes)
+	attr, err := domain.GetDataSourceAttributes[domain.StaticDataSourceAttributes](ds.Attributes)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "data_source_id", ds.ID, "data_source_type", ds.Type, "error", err)
 		return nil, err

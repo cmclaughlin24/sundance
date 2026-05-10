@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
@@ -11,12 +12,14 @@ import (
 type DataSourcesJobService struct {
 	logger     *slog.Logger
 	repository ports.DataSourcesRepository
+	client     ports.LookupClient
 }
 
-func NewDataSourcesJobService(logger *slog.Logger, repository *ports.Repository) ports.DataSourceJobsService {
+func NewDataSourcesJobService(logger *slog.Logger, repository *ports.Repository, clients *ports.Clients) ports.DataSourceJobsService {
 	return &DataSourcesJobService{
 		logger:     logger,
 		repository: repository.DataSources,
+		client:     clients.Lookups,
 	}
 }
 
@@ -40,6 +43,25 @@ func (s *DataSourcesJobService) Process(ctx context.Context, command *ports.Proc
 
 	ds := command.DataSource
 	s.logger.DebugContext(ctx, "processing data source", "data_source_id", ds.ID)
+
+	attr, err := domain.GetDataSourceAttributes[domain.ScheduledDataSourceAttributes](ds.Attributes)
+	if err != nil {
+		return err
+	}
+
+	lookups, err := s.client.FetchLookups(ctx, attr.Method, attr.URL, attr.Headers)
+	if err != nil {
+		return err
+	}
+
+	// FIXME: Refactor into a domain update method.
+	attr.Data = lookups
+	attr.ExpirationDate = attr.ExpirationDate.Add(time.Duration(attr.IntervalHours * float64(time.Hour)))
+	ds.Attributes = attr
+
+	if _, err := s.repository.Upsert(ctx, ds); err != nil {
+		return err
+	}
 
 	return nil
 }

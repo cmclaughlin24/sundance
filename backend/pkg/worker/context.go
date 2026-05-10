@@ -9,8 +9,8 @@ type contextKey string
 
 const workerIDKey contextKey = "workerID"
 
-func SetWorkerContext(ctx context.Context, tenantID string) context.Context {
-	return context.WithValue(ctx, workerIDKey, tenantID)
+func SetWorkerContext(ctx context.Context, workerID string) context.Context {
+	return context.WithValue(ctx, workerIDKey, workerID)
 }
 
 func WorkerFromContext(ctx context.Context) string {

@@ -52,7 +52,7 @@ func main() {
 
 	c := clients.Bootstrap(clients.WithLogger(l), clients.WithHTTPClient(&http.Client{Timeout: 10 * time.Second}))
 	st := strategies.Bootstrap(strategies.WithLogger(l), strategies.WithClients(c))
-	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithStrategies(st))
+	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithStrategies(st), services.WithClients(c))
 	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s))
 
 	defer app.Close()

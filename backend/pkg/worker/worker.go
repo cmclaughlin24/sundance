@@ -65,11 +65,6 @@ func (w *Worker[J]) Start(ctx context.Context) {
 	go func() {
 
 		for {
-			defer func() {
-				if r := recover(); r != nil {
-					w.logger.ErrorContext(wctx, "recovering from panic", "error", r)
-				}
-			}()
 
 			select {
 			case w.WorkerPool <- w.JobChannel:
@@ -80,10 +75,9 @@ func (w *Worker[J]) Start(ctx context.Context) {
 
 			select {
 			case job := <-w.JobChannel:
-				w.logger.DebugContext(wctx, "processing job")
 				jctx, cancel := w.setJobTimeout(wctx)
 
-				if err := job.Process(jctx); err != nil {
+				if err := w.process(jctx, job); err != nil {
 					w.logger.ErrorContext(jctx, "failed to process job", "error", err)
 				}
 
@@ -94,6 +88,16 @@ func (w *Worker[J]) Start(ctx context.Context) {
 			}
 		}
 	}()
+}
+
+func (w *Worker[J]) process(ctx context.Context, job J) error {
+	defer func() {
+		if r := recover(); r != nil {
+			w.logger.ErrorContext(ctx, "recovering from panic", "error", r)
+		}
+	}()
+
+	return job.Process(ctx)
 }
 
 func (w *Worker[J]) setJobTimeout(ctx context.Context) (context.Context, context.CancelFunc) {

@@ -27,6 +27,12 @@ services:
       ME_CONFIG_MONGODB_URL: mongodb://mongo:27017
     depends_on:
       - mongo
+  redis:
+    image: redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis:/data
   forms:
     build:
       context: ./backend
@@ -46,6 +52,7 @@ services:
         - action: rebuild
           path: ./backend/services/forms/go.mod
     depends_on:
+      - dozzle
       - mongo
   submissions:
     build:
@@ -65,6 +72,9 @@ services:
             - ./backend/services/tenants
         - action: rebuild
           path: ./backend/services/submissions/go.mod
+    depends_on:
+      - dozzle
+      - mongo
   tenants:
     build:
       context: ./backend
@@ -84,6 +94,8 @@ services:
         - action: rebuild
           path: ./backend/services/tenants/go.mod
     depends_on:
+      - dozzle
       - mongo
 volumes:
   mongodb:
+  redis:

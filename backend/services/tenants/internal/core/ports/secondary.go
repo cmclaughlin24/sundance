@@ -37,7 +37,7 @@ type Clients struct {
 }
 
 type LookupClient interface {
-	FetchLookups(context.Context, string, string, map[string]string) ([]*domain.Lookup, error)
+	FetchLookups(ctx context.Context, method, url string, headers map[string]string) ([]*domain.Lookup, error)
 }
 
 type Strategies struct {
