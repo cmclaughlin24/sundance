@@ -2,7 +2,6 @@ package ports
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/stratreg"
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
@@ -33,8 +32,12 @@ type DataSourcesRepository interface {
 	DeleteAll(context.Context, domain.TenantID) error
 }
 
-type HTTPClient interface {
-	Do(*http.Request) (*http.Response, error)
+type Clients struct {
+	Lookups LookupClient
+}
+
+type LookupClient interface {
+	FetchLookups(context.Context, string, string, map[string]string) ([]*domain.Lookup, error)
 }
 
 type Strategies struct {

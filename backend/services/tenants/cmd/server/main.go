@@ -14,6 +14,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/logger"
 	"github.com/cmclaughlin24/sundance/backend/pkg/worker"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/clients"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/persistence"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/workers"
@@ -49,7 +50,8 @@ func main() {
 		panic(err)
 	}
 
-	st := strategies.Bootstrap(strategies.WithLogger(l), strategies.WithHTTPClient(&http.Client{Timeout: 10 * time.Second}))
+	c := clients.Bootstrap(clients.WithLogger(l), clients.WithHTTPClient(&http.Client{Timeout: 10 * time.Second}))
+	st := strategies.Bootstrap(strategies.WithLogger(l), strategies.WithClients(c))
 	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithStrategies(st))
 	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s))
 

@@ -16,7 +16,7 @@ var (
 type strategyOptions struct {
 	logger     *slog.Logger
 	repository *ports.Repository
-	client     ports.HTTPClient
+	clients    *ports.Clients
 }
 
 func Bootstrap(opts ...func(*strategyOptions)) *ports.Strategies {
@@ -28,7 +28,7 @@ func Bootstrap(opts ...func(*strategyOptions)) *ports.Strategies {
 	lookupStrategies := stratreg.New[domain.DataSourceType, ports.LookupStrategy]().
 		Set(domain.DataSourceTypeStatic, NewStaticLookupStrategy(so.logger)).
 		Set(domain.DataSourceTypeScheduled, NewScheduledLookupStrategy(so.logger)).
-		Set(domain.DataSourceTypeWebhook, NewWebhookLookupStrategy(so.logger, so.client))
+		Set(domain.DataSourceTypeWebhook, NewWebhookLookupStrategy(so.logger, so.clients))
 
 	return &ports.Strategies{
 		Lookups: lookupStrategies,
@@ -47,9 +47,9 @@ func WithRepository(repository *ports.Repository) func(*strategyOptions) {
 	}
 }
 
-func WithHTTPClient(client ports.HTTPClient) func(*strategyOptions) {
+func WithClients(clients *ports.Clients) func(*strategyOptions) {
 	return func(so *strategyOptions) {
-		so.client = client
+		so.clients = clients
 	}
 }
 
