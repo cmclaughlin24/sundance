@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"log/slog"
-	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
@@ -55,9 +54,7 @@ func (s *DataSourcesJobService) Process(ctx context.Context, command *ports.Proc
 		return err
 	}
 
-	// FIXME: Refactor into a domain update method.
-	attr.Data = lookups
-	attr.ExpirationDate = time.Now().Add(time.Duration(attr.IntervalHours * float64(time.Hour)))
+	attr.RefreshData(lookups)
 	ds.Attributes = attr
 
 	if _, err := s.repository.Upsert(ctx, ds); err != nil {

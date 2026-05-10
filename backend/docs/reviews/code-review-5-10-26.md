@@ -14,6 +14,8 @@
 
 6. ~~`NewDataSourcesBackgroundWorker` panics on bootstrap error~~ (Tenants, P3) -- `NewDataSourcesBackgroundWorker` now returns `(*BackgroundWorker, error)`. The adapter no longer panics; `main.go` handles the error at the composition root, consistent with the persistence bootstrap pattern. *(Found and fixed same cycle.)*
 
+7. ~~`DataSourcesJobService.Process` mutates domain entity in-place without domain method~~ (Tenants, P2) -- New `RefreshData` domain method on `ScheduledDataSourceAttributes` encapsulates the data and expiration update using `domain.Now()`. The service now calls `attr.RefreshData(lookups)`. `FIXME` comment removed. *(Found and fixed same cycle.)*
+
 ---
 
 ## Will Not Fix
@@ -30,49 +32,47 @@ See [5/8 review](code-review-5-8-26.md) for the full Will Not Fix list.
 
 #### Bugs
 
-1. **`DataSourcesJobService.Process` mutates domain entity in-place without domain method** (`data_source_jobs_service.go:53-56`) -- The service directly modifies `attr.Data`, `attr.ExpirationDate`, and `ds.Attributes` rather than using a domain method (e.g., `ds.RefreshLookups(lookups, nextExpiration)`). This bypasses any future domain invariants and violates DDD's encapsulation principle. The `FIXME` comment acknowledges this. *(P2 -- domain model integrity.)*
-
-2. **`InMemoryDataSourceRepository.FindJobs` does not filter** (`inmemory/data_sources_repository.go:64-72`) -- Returns all data sources regardless of type or expiration, diverging from the MongoDB implementation's behavior. Tests against in-memory will not catch filtering bugs. *(P2 -- dev/test parity.)*
+1. **`InMemoryDataSourceRepository.FindJobs` does not filter** (`inmemory/data_sources_repository.go:64-72`) -- Returns all data sources regardless of type or expiration, diverging from the MongoDB implementation's behavior. Tests against in-memory will not catch filtering bugs. *(P2 -- dev/test parity.)*
 
 #### Missing Functionality
 
-3. **`Find()` has no pagination or filtering** (`tenants_service.go`) -- *(Carried from 5/8 #1, P3.)*
+2. **`Find()` has no pagination or filtering** (`tenants_service.go`) -- *(Carried from 5/8 #1, P3.)*
 
-4. **`Lookup` value object has no validation** (`lookup.go`) -- *(Carried from 5/8 #3, P3.)*
+3. **`Lookup` value object has no validation** (`lookup.go`) -- *(Carried from 5/8 #3, P3.)*
 
 ### pkg/worker
 
 #### Architectural
 
-5. **`Elector` interface has no distributed implementation** (`elector.go`) -- `InMemoryElector` always returns `true`, meaning multiple replicas will all process jobs concurrently. The interface is well-designed for future extension (MongoDB/Redis-based election), but there is no protection against duplicate job processing in a multi-replica deployment today. *(P3 -- noted as in-progress/planned.)*
+4. **`Elector` interface has no distributed implementation** (`elector.go`) -- `InMemoryElector` always returns `true`, meaning multiple replicas will all process jobs concurrently. The interface is well-designed for future extension (MongoDB/Redis-based election), but there is no protection against duplicate job processing in a multi-replica deployment today. *(P3 -- noted as in-progress/planned.)*
 
-6. **`BackgroundWorker.Start` releases leadership on shutdown but not on `workFn` errors** (`background_worker.go:98`) -- If `workFn` consistently fails, the worker holds leadership indefinitely without doing useful work. Other replicas cannot take over. Consider releasing leadership after N consecutive failures. *(P3 -- resilience.)*
+5. **`BackgroundWorker.Start` releases leadership on shutdown but not on `workFn` errors** (`background_worker.go:98`) -- If `workFn` consistently fails, the worker holds leadership indefinitely without doing useful work. Other replicas cannot take over. Consider releasing leadership after N consecutive failures. *(P3 -- resilience.)*
 
-7. **Worker pool dispatch blocks indefinitely if all workers are busy** (`background_worker.go:131-135`) -- The `w := <-pool` receive will block until a worker becomes available. If all workers are processing long-running jobs, the ticker tick is effectively "lost" but the goroutine is stuck waiting. This is acceptable for the current use case (small pool, fast jobs) but could benefit from a `select` with a timeout or skip for observability. *(P3 -- future concern.)*
+6. **Worker pool dispatch blocks indefinitely if all workers are busy** (`background_worker.go:131-135`) -- The `w := <-pool` receive will block until a worker becomes available. If all workers are processing long-running jobs, the ticker tick is effectively "lost" but the goroutine is stuck waiting. This is acceptable for the current use case (small pool, fast jobs) but could benefit from a `select` with a timeout or skip for observability. *(P3 -- future concern.)*
 
 ### Submissions Service
 
 #### Architectural
 
-8. **`sendErrorResponse` wrapper adds no value** (`handlers.go:194-198`) -- The switch statement has only a `default` case delegating to `httputil.SendErrorResponse`. This indirection is unnecessary. Either add service-specific error cases (justifying the wrapper) or call `httputil.SendErrorResponse` directly. *(P3 -- dead code.)*
+7. **`sendErrorResponse` wrapper adds no value** (`handlers.go:194-198`) -- The switch statement has only a `default` case delegating to `httputil.SendErrorResponse`. This indirection is unnecessary. Either add service-specific error cases (justifying the wrapper) or call `httputil.SendErrorResponse` directly. *(P3 -- dead code.)*
 
 #### Missing Functionality
 
-9. **`Replay` service method is a stub** (`submissions_service.go`) -- *(Carried from 5/8 #5, P3.)*
+8. **`Replay` service method is a stub** (`submissions_service.go`) -- *(Carried from 5/8 #5, P3.)*
 
 #### Code Quality
 
-10. **`Payload` typed as `any`** (`submission.go`) -- *(Carried from 5/8 #6, P3.)*
+9. **`Payload` typed as `any`** (`submission.go`) -- *(Carried from 5/8 #6, P3.)*
 
 ### Cross-Service
 
 #### Architectural
 
-11. **Test coverage gaps** -- Submissions has no handler or service tests. No domain-layer or repository-layer tests exist. *(Carried from 5/8 #7, P3.)*
+10. **Test coverage gaps** -- Submissions has no handler or service tests. No domain-layer or repository-layer tests exist. *(Carried from 5/8 #7, P3.)*
 
-12. **No domain events** for cross-service communication. *(Carried from 5/8 #8, P3.)*
+11. **No domain events** for cross-service communication. *(Carried from 5/8 #8, P3.)*
 
-13. **No real authentication** -- Placeholder only. *(Carried from 5/8 #9, P3.)*
+12. **No real authentication** -- Placeholder only. *(Carried from 5/8 #9, P3.)*
 
 ---
 
@@ -80,19 +80,18 @@ See [5/8 review](code-review-5-8-26.md) for the full Will Not Fix list.
 
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
-| **P2** | 1 | Domain mutation without domain method | Tenants |
-| **P2** | 2 | In-memory `FindJobs` doesn't filter | Tenants |
-| **P3** | 3 | `Find()` no pagination | Tenants |
-| **P3** | 4 | `Lookup` no validation | Tenants |
-| **P3** | 5 | No distributed elector implementation | pkg/worker |
-| **P3** | 6 | Leadership held despite failures | pkg/worker |
-| **P3** | 7 | Pool dispatch blocks indefinitely | pkg/worker |
-| **P3** | 8 | `sendErrorResponse` wrapper is no-op | Submissions |
-| **P3** | 9 | `Replay` is a stub | Submissions |
-| **P3** | 10 | `Payload` typed as `any` | Submissions |
-| **P3** | 11 | Test coverage gaps | All |
-| **P3** | 12 | No domain events | All |
-| **P3** | 13 | No real authentication | All |
+| **P2** | 1 | In-memory `FindJobs` doesn't filter | Tenants |
+| **P3** | 2 | `Find()` no pagination | Tenants |
+| **P3** | 3 | `Lookup` no validation | Tenants |
+| **P3** | 4 | No distributed elector implementation | pkg/worker |
+| **P3** | 5 | Leadership held despite failures | pkg/worker |
+| **P3** | 6 | Pool dispatch blocks indefinitely | pkg/worker |
+| **P3** | 7 | `sendErrorResponse` wrapper is no-op | Submissions |
+| **P3** | 8 | `Replay` is a stub | Submissions |
+| **P3** | 9 | `Payload` typed as `any` | Submissions |
+| **P3** | 10 | Test coverage gaps | All |
+| **P3** | 11 | No domain events | All |
+| **P3** | 12 | No real authentication | All |
 
 ---
 
@@ -116,11 +115,11 @@ See [5/8 review](code-review-5-8-26.md) for the full Will Not Fix list.
 
 ### Current State
 
-**13 remaining issues** (9 from 5/8 → resolved 3, carried 6 unchanged, introduced 10 new issues; 3 fixed same-cycle; 1 moved to Will Not Fix).
+**12 remaining issues** (9 from 5/8 → resolved 3, carried 6 unchanged, introduced 10 new issues; 4 fixed same-cycle; 1 moved to Will Not Fix).
 
 **Forms Service** remains fully mature. No remaining issues.
 
-**Tenants Service** has taken a major step forward with a fully functional background job processing pipeline. The `DataSourcesJobService` fetches scheduled data sources due for refresh, delegates to `LookupClient` to retrieve fresh lookup data via HTTP, and persists the updated attributes. Leader election ensures only one replica processes jobs (once a distributed elector is implemented). The `Clients` adapter cleanly separates HTTP concerns from business logic. The primary remaining concern is domain encapsulation (direct attribute mutation).
+**Tenants Service** has taken a major step forward with a fully functional background job processing pipeline. The `DataSourcesJobService` fetches scheduled data sources due for refresh, delegates to `LookupClient` to retrieve fresh lookup data via HTTP, and persists the updated attributes via a proper domain method (`RefreshData`). Leader election ensures only one replica processes jobs (once a distributed elector is implemented). The `Clients` adapter cleanly separates HTTP concerns from business logic.
 
 **Submissions Service** error mapping is now correct via the shared `httputil.SendErrorResponse`. The remaining wrapper function is dead code but harmless. Core issues remain the `Replay` stub and untyped `Payload`.
 
@@ -128,12 +127,12 @@ See [5/8 review](code-review-5-8-26.md) for the full Will Not Fix list.
 
 **Hexagonal Architecture** -- The new `adapters/clients/` directory correctly implements a driven adapter. It depends inward on `core/ports/LookupClient` interface. The `strategies` and `services` packages consume it through the port boundary, never directly importing the adapter. The `Elector` interface in `pkg/worker` follows the same port pattern — infrastructure-agnostic with a pluggable implementation.
 
-**DDD** -- The main DDD concern is the direct mutation of `ScheduledDataSourceAttributes` in `DataSourcesJobService.Process`. The `FIXME` comment indicates awareness. A proper approach would be a domain method like `DataSource.RefreshLookups(data []*Lookup, nextExpiration time.Time)` that encapsulates the state transition and could enforce invariants (e.g., non-empty data, future expiration).
+**DDD** -- The `ScheduledDataSourceAttributes.RefreshData` domain method now encapsulates the data refresh and expiration update, using `domain.Now()` for testability. Domain entities own their state transitions. The remaining DDD gaps are structural (no domain events, no aggregate-level validation on `Lookup`).
 
 **Idiomatic Go** -- The `Elector` interface follows Go's small-interface preference (3 methods, single responsibility). Functional options continue to be applied consistently. The `LookupClient` adapter correctly uses `http.NewRequestWithContext` for cancellation propagation. `context.Background()` is appropriately used for the leadership release on shutdown (parent context is already cancelled).
 
 ### Highest-Impact Improvements
 
-1. **Encapsulate data source refresh in a domain method** (P2 -- fixes #1; use `domain.Now()` for next expiration)
-2. **Implement in-memory `FindJobs` filtering** (P2 -- dev/test parity with MongoDB)
-3. **Add a distributed `Elector` implementation** (P3 -- required before multi-replica deployment)
+1. **Implement in-memory `FindJobs` filtering** (P2 -- dev/test parity with MongoDB)
+2. **Add a distributed `Elector` implementation** (P3 -- required before multi-replica deployment)
+3. **Add test coverage for submissions handlers and services** (P3 -- largest untested surface area)

@@ -32,6 +32,11 @@ type ScheduledDataSourceAttributes struct {
 	ExpirationDate time.Time
 }
 
+func (attr *ScheduledDataSourceAttributes) RefreshData(data []*Lookup) {
+	attr.Data = data
+	attr.ExpirationDate = Now().Add(time.Duration(attr.IntervalHours * float64(time.Hour)))
+}
+
 type WebhookDataSourceAttributes struct {
 	baseDataSourceAttributes
 	URL     string
