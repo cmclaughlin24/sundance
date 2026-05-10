@@ -95,7 +95,7 @@ func (s *SubmissionsService) Create(ctx context.Context, command *ports.CreateSu
 
 	submission, err := s.repository.FindByIdempotencyID(ctx, command.IdempotencyID)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to check submission existencce", "tenant_id", command.TenantID, "submission_idempotency_id", command.IdempotencyID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to check submission existence", "tenant_id", command.TenantID, "submission_idempotency_id", command.IdempotencyID, "error", err)
 		return nil, err
 	}
 
