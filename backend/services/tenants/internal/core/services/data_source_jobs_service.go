@@ -42,10 +42,11 @@ func (s *DataSourcesJobService) Process(ctx context.Context, command *ports.Proc
 	}
 
 	ds := command.DataSource
-	s.logger.DebugContext(ctx, "processing data source", "data_source_id", ds.ID)
+	s.logger.DebugContext(ctx, "processing data source job", "data_source_id", ds.ID)
 
 	attr, err := domain.GetDataSourceAttributes[domain.ScheduledDataSourceAttributes](ds.Attributes)
 	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to process data source job", "data_source_id", ds.ID, "type", ds.Type, "error", err)
 		return err
 	}
 
@@ -56,7 +57,7 @@ func (s *DataSourcesJobService) Process(ctx context.Context, command *ports.Proc
 
 	// FIXME: Refactor into a domain update method.
 	attr.Data = lookups
-	attr.ExpirationDate = attr.ExpirationDate.Add(time.Duration(attr.IntervalHours * float64(time.Hour)))
+	attr.ExpirationDate = time.Now().Add(time.Duration(attr.IntervalHours * float64(time.Hour)))
 	ds.Attributes = attr
 
 	if _, err := s.repository.Upsert(ctx, ds); err != nil {

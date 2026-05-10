@@ -77,7 +77,10 @@ func main() {
 
 	dswCtx, dswCancel := context.WithCancel(context.Background())
 	defer dswCancel()
-	dsw := workers.NewDataSourcesBackgroundWorker(app)
+	dsw, err := workers.NewDataSourcesBackgroundWorker(app)
+	if err != nil {
+		panic(err)
+	}
 	go dsw.Start(dswCtx)
 
 	signalChan := make(chan os.Signal, 1)

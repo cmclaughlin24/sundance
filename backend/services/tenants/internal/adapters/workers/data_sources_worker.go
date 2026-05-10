@@ -2,7 +2,6 @@ package workers
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/worker"
@@ -27,7 +26,7 @@ func (j *dataSourceJob) Process(ctx context.Context) error {
 	return j.service.Process(ctx, ports.NewProcessDataSourceJobCommand(j.ds))
 }
 
-func NewDataSourcesBackgroundWorker(app *core.Application) *worker.BackgroundWorker[*dataSourceJob] {
+func NewDataSourcesBackgroundWorker(app *core.Application) (*worker.BackgroundWorker[*dataSourceJob], error) {
 	bw, err := worker.NewBackgroundWorker[*dataSourceJob](
 		worker.WithInterval[*dataSourceJob](1*time.Minute),
 		worker.WithLogger[*dataSourceJob](app.Logger),
@@ -36,10 +35,10 @@ func NewDataSourcesBackgroundWorker(app *core.Application) *worker.BackgroundWor
 	)
 
 	if err != nil {
-		panic(fmt.Errorf("failed to bootstrap DataSourcesBackgroundWorker; %w", err))
+		return nil, err
 	}
 
-	return bw
+	return bw, nil
 }
 
 func newDataSourceWorkFn(app *core.Application) worker.WorkFn[*dataSourceJob] {
