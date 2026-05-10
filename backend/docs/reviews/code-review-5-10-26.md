@@ -52,23 +52,31 @@ See [5/8 review](code-review-5-8-26.md) for the full Will Not Fix list.
 
 10. **`sendErrorResponse` wrapper adds no value** (`handlers.go:194-198`) -- The switch statement has only a `default` case delegating to `httputil.SendErrorResponse`. This indirection is unnecessary. Either add service-specific error cases (justifying the wrapper) or call `httputil.SendErrorResponse` directly. *(P3 -- dead code.)*
 
-### Cross-Service (Carried)
+#### Missing Functionality
 
-11. **`Replay` service method is a stub** (Submissions, `submissions_service.go`) -- *(Carried from 5/8 #5, P3.)*
+11. **`Replay` service method is a stub** (`submissions_service.go`) -- *(Carried from 5/8 #5, P3.)*
 
-12. **`Payload` typed as `any`** (Submissions, `submission.go`) -- *(Carried from 5/8 #6, P3.)*
+#### Code Quality
 
-13. **Test coverage gaps** -- Submissions has no handler or service tests. No domain-layer or repository-layer tests exist. *(Carried from 5/8 #7, P3.)*
+12. **`Payload` typed as `any`** (`submission.go`) -- *(Carried from 5/8 #6, P3.)*
 
-14. **No domain events** for cross-service communication. *(Carried from 5/8 #8, P3.)*
+### Tenants Service
 
-15. **No real authentication** -- Placeholder only. *(Carried from 5/8 #9, P3.)*
+#### Missing Functionality
 
-### Tenants Service (Carried)
+13. **`Find()` has no pagination or filtering** (`tenants_service.go`) -- *(Carried from 5/8 #1, P3.)*
 
-16. **`Find()` has no pagination or filtering** (`tenants_service.go`) -- *(Carried from 5/8 #1, P3.)*
+14. **`Lookup` value object has no validation** (`lookup.go`) -- *(Carried from 5/8 #3, P3.)*
 
-17. **`Lookup` value object has no validation** (`lookup.go`) -- *(Carried from 5/8 #3, P3.)*
+### Cross-Service
+
+#### Architectural
+
+15. **Test coverage gaps** -- Submissions has no handler or service tests. No domain-layer or repository-layer tests exist. *(Carried from 5/8 #7, P3.)*
+
+16. **No domain events** for cross-service communication. *(Carried from 5/8 #8, P3.)*
+
+17. **No real authentication** -- Placeholder only. *(Carried from 5/8 #9, P3.)*
 
 ---
 
@@ -88,11 +96,11 @@ See [5/8 review](code-review-5-8-26.md) for the full Will Not Fix list.
 | **P3** | 10 | `sendErrorResponse` wrapper is no-op | Submissions |
 | **P3** | 11 | `Replay` is a stub | Submissions |
 | **P3** | 12 | `Payload` typed as `any` | Submissions |
-| **P3** | 13 | Test coverage gaps | All |
-| **P3** | 14 | No domain events | All |
-| **P3** | 15 | No real authentication | All |
-| **P3** | 16 | `Find()` no pagination | Tenants |
-| **P3** | 17 | `Lookup` no validation | Tenants |
+| **P3** | 13 | `Find()` no pagination | Tenants |
+| **P3** | 14 | `Lookup` no validation | Tenants |
+| **P3** | 15 | Test coverage gaps | All |
+| **P3** | 16 | No domain events | All |
+| **P3** | 17 | No real authentication | All |
 
 ---
 
