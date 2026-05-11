@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/tenants"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
@@ -396,7 +396,7 @@ func Test_handlers_getDataSources(t *testing.T) {
 			s := &ports.Services{DataSources: &mockDataSourcesService{findFn: tt.fn}}
 			h := newTestHandlers(s)
 			req, _ := http.NewRequest(http.MethodGet, "/api/v1/data-sources", nil)
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(ctx)
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.getDataSources)
@@ -472,7 +472,7 @@ func Test_handlers_getDataSource(t *testing.T) {
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("dataSourceId", tt.id)
 			req, _ := http.NewRequest(http.MethodGet, "/api/v1/data-sources/"+tt.id, nil)
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.getDataSource)
@@ -558,7 +558,7 @@ func Test_handlers_createDataSource(t *testing.T) {
 			h := newTestHandlers(s)
 			body, _ := json.Marshal(tt.body)
 			req, _ := http.NewRequest(http.MethodPost, "/api/v1/data-sources", bytes.NewReader(body))
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(ctx)
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.createDataSource)
@@ -641,7 +641,7 @@ func Test_handlers_updateDataSource(t *testing.T) {
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("dataSourceId", tt.id)
 			req, _ := http.NewRequest(http.MethodPut, "/api/v1/data-sources/"+tt.id, bytes.NewReader(body))
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.updateDataSource)
@@ -704,7 +704,7 @@ func Test_handlers_deleteDataSource(t *testing.T) {
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("dataSourceId", tt.id)
 			req, _ := http.NewRequest(http.MethodDelete, "/api/v1/data-sources/"+tt.id, nil)
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.deleteDataSource)
@@ -770,7 +770,7 @@ func Test_handlers_getLookups(t *testing.T) {
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("dataSourceId", tt.id)
 			req, _ := http.NewRequest(http.MethodGet, "/api/v1/data-sources/"+tt.id+"/look-ups", nil)
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.getLookups)

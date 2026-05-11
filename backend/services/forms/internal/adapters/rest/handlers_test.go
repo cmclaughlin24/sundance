@@ -12,7 +12,7 @@ import (
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/auth"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/tenants"
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/rest/dto"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
@@ -73,7 +73,7 @@ func Test_handlers_getForms(t *testing.T) {
 			s := &ports.Services{Forms: &mockFormsService{findFn: tt.fn}}
 			h := newTestHandlers(s)
 			req, _ := http.NewRequest(http.MethodGet, "/api/v1/forms", nil)
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(ctx)
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.getForms)
@@ -149,7 +149,7 @@ func Test_handlers_getForm(t *testing.T) {
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("formId", tt.id)
 			req, _ := http.NewRequest(http.MethodGet, "/api/v1/forms/"+tt.id, nil)
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.getForm)
@@ -220,7 +220,7 @@ func Test_handlers_createForm(t *testing.T) {
 			h := newTestHandlers(s)
 			body, _ := json.Marshal(tt.body)
 			req, _ := http.NewRequest(http.MethodPost, "/api/v1/forms", bytes.NewReader(body))
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(ctx)
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.createForm)
@@ -288,7 +288,7 @@ func Test_handlers_updateForm(t *testing.T) {
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("formId", tt.id)
 			req, _ := http.NewRequest(http.MethodPut, "/api/v1/forms/"+tt.id, bytes.NewReader(body))
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.updateForm)
@@ -351,7 +351,7 @@ func Test_handlers_deleteForm(t *testing.T) {
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("formId", tt.id)
 			req, _ := http.NewRequest(http.MethodDelete, "/api/v1/forms/"+tt.id, nil)
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.deleteForm)
@@ -412,7 +412,7 @@ func Test_handlers_getVersions(t *testing.T) {
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("formId", "form-1")
 			req, _ := http.NewRequest(http.MethodGet, "/api/v1/forms/form-1/versions", nil)
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.getVersions)
@@ -486,7 +486,7 @@ func Test_handlers_getVersion(t *testing.T) {
 			rctx.URLParams.Add("formId", "form-1")
 			rctx.URLParams.Add("versionId", tt.versionId)
 			req, _ := http.NewRequest(http.MethodGet, "/api/v1/forms/form-1/versions/"+tt.versionId, nil)
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.getVersion)
@@ -547,7 +547,7 @@ func Test_handlers_createVersion(t *testing.T) {
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("formId", "form-1")
 			req, _ := http.NewRequest(http.MethodPost, "/api/v1/forms/form-1/versions", bytes.NewReader(body))
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.createVersion)
@@ -609,7 +609,7 @@ func Test_handlers_updateVersion(t *testing.T) {
 			rctx.URLParams.Add("formId", "form-1")
 			rctx.URLParams.Add("versionId", "v-1")
 			req, _ := http.NewRequest(http.MethodPut, "/api/v1/forms/form-1/versions/v-1", bytes.NewReader(body))
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
 			handler := http.HandlerFunc(h.updateVersion)
@@ -659,7 +659,7 @@ func Test_handlers_publishVersion(t *testing.T) {
 			rctx.URLParams.Add("formId", "form-1")
 			rctx.URLParams.Add("versionId", "v-1")
 			req, _ := http.NewRequest(http.MethodPost, "/api/v1/forms/form-1/versions/v-1/publish", nil)
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			ctx = auth.SetClaimsContext(ctx, &mockClaims{subject: "user-1"})
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
@@ -710,7 +710,7 @@ func Test_handlers_retireVersion(t *testing.T) {
 			rctx.URLParams.Add("formId", "form-1")
 			rctx.URLParams.Add("versionId", "v-1")
 			req, _ := http.NewRequest(http.MethodPost, "/api/v1/forms/form-1/versions/v-1/retire", nil)
-			ctx := tenants.SetTenantContext(req.Context(), "tenant-1")
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			ctx = auth.SetClaimsContext(ctx, &mockClaims{subject: "user-1"})
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
