@@ -3,6 +3,7 @@ package inmemory
 import (
 	"context"
 	"log/slog"
+	"slices"
 	"sync"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
@@ -59,7 +60,21 @@ func (r *inMemoryDataSourceRepository) FindJobs(ctx context.Context, filters *po
 
 	result := make([]*domain.DataSource, 0)
 	for _, ds := range r.dataSources {
+		if !slices.Contains(filters.Types, ds.Type) {
+			continue
+		}
+
+		if attr, ok := ds.Attributes.(*domain.ScheduledDataSourceAttributes); ok {
+			if !attr.ExpirationDate.IsZero() && attr.ExpirationDate.After(filters.ExpiredAtOrBefore) {
+				continue
+			}
+		}
+
 		result = append(result, ds)
+
+		if filters.Limit > 0 && len(result) >= filters.Limit {
+			break
+		}
 	}
 
 	return result, nil

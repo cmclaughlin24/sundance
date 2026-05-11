@@ -64,11 +64,11 @@ func (r *mongoDBDataSourcesRepository) FindJobs(ctx context.Context, filters *po
 	}
 
 	documents, err := r.base.Find(ctx, bson.M{
-		"type": domain.DataSourceTypeScheduled,
+		"type": bson.M{"$in": filters.Types},
 		"$or": []bson.M{
 			{"attributes.expirationDate": bson.M{"$exists": false}},
 			{"attributes.expirationDate": bson.M{"$type": "null"}},
-			{"attributes.expirationDate": bson.M{"$lte": Now()}},
+			{"attributes.expirationDate": bson.M{"$lte": filters.ExpiredAtOrBefore}},
 		},
 	}, opts)
 

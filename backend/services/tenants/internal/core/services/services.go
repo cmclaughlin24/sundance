@@ -2,9 +2,14 @@ package services
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
+
+// Package declaration for the current time function. Allows for easier testing by enabling the injection of a
+// mock time function.
+var Now = time.Now
 
 type serviceOptions struct {
 	logger     *slog.Logger

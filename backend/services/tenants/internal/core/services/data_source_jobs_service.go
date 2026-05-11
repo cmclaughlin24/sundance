@@ -25,7 +25,10 @@ func NewDataSourcesJobService(logger *slog.Logger, repository *ports.Repository,
 func (s *DataSourcesJobService) Find(ctx context.Context) ([]*domain.DataSource, error) {
 	s.logger.DebugContext(ctx, "listing data source jobs")
 
-	sources, err := s.repository.FindJobs(ctx, &ports.FindDataSourceJobsFilter{})
+	sources, err := s.repository.FindJobs(ctx, &ports.FindDataSourceJobsFilter{
+		Types:             []domain.DataSourceType{domain.DataSourceTypeScheduled},
+		ExpiredAtOrBefore: Now(),
+	})
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to retrieve data source jobs", "error", err)
 		return nil, err

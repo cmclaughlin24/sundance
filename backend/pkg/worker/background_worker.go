@@ -18,9 +18,9 @@ type FetchJobsFn[J Job] func(context.Context) ([]J, error)
 
 func NewBackgroundWorker[J Job](opts ...func(*BackgroundWorker[J])) (*BackgroundWorker[J], error) {
 	bw := &BackgroundWorker[J]{
-		elector:      elector.NewInMemoryElector(1 * time.Minute),
-		workInterval: 1 * time.Minute,
-		size:         5,
+		elector:  elector.NewInMemoryElector(1 * time.Minute),
+		interval: 1 * time.Minute,
+		size:     5,
 	}
 
 	for _, opt := range opts {
@@ -34,53 +34,53 @@ func NewBackgroundWorker[J Job](opts ...func(*BackgroundWorker[J])) (*Background
 	return bw, nil
 }
 
-func WithElector[J Job](elector elector.Elector) func(*BackgroundWorker[J]) {
+func BgWithElector[J Job](elector elector.Elector) func(*BackgroundWorker[J]) {
 	return func(bw *BackgroundWorker[J]) {
 		bw.elector = elector
 	}
 }
 
-func WithWorkInterval[J Job](interval time.Duration) func(*BackgroundWorker[J]) {
+func BgWithInterval[J Job](interval time.Duration) func(*BackgroundWorker[J]) {
 	return func(bw *BackgroundWorker[J]) {
-		bw.workInterval = interval
+		bw.interval = interval
 	}
 }
 
-func WithLogger[J Job](logger *slog.Logger) func(*BackgroundWorker[J]) {
+func BgWithLogger[J Job](logger *slog.Logger) func(*BackgroundWorker[J]) {
 	return func(bw *BackgroundWorker[J]) {
 		bw.logger = logger
 	}
 }
 
-func WithSize[J Job](size int) func(*BackgroundWorker[J]) {
+func BgWithSize[J Job](size int) func(*BackgroundWorker[J]) {
 	return func(bw *BackgroundWorker[J]) {
 		bw.size = size
 	}
 }
 
-func WithTimeout[J Job](timeout time.Duration) func(*BackgroundWorker[J]) {
+func BgWithTimeout[J Job](timeout time.Duration) func(*BackgroundWorker[J]) {
 	return func(bw *BackgroundWorker[J]) {
 		bw.timeout = timeout
 	}
 }
 
-func WithFetchJobsFn[J Job](fn FetchJobsFn[J]) func(*BackgroundWorker[J]) {
+func BgWithFetchJobsFn[J Job](fn FetchJobsFn[J]) func(*BackgroundWorker[J]) {
 	return func(bw *BackgroundWorker[J]) {
 		bw.fetchJobsFn = fn
 	}
 }
 
 type BackgroundWorker[J Job] struct {
-	elector      elector.Elector
-	workInterval time.Duration
-	logger       *slog.Logger
-	size         int
-	timeout      time.Duration
-	fetchJobsFn  FetchJobsFn[J]
+	elector     elector.Elector
+	interval    time.Duration
+	logger      *slog.Logger
+	size        int
+	timeout     time.Duration
+	fetchJobsFn FetchJobsFn[J]
 }
 
 func (bw *BackgroundWorker[J]) Start(ctx context.Context) {
-	bw.logger.InfoContext(ctx, "background worker started", "pool_size", bw.size, "work_interval", bw.workInterval.String())
+	bw.logger.InfoContext(ctx, "background worker started", "pool_size", bw.size, "work_interval", bw.interval.String())
 
 	ticker := time.NewTicker(bw.elector.GetInterval())
 	defer ticker.Stop()
@@ -145,7 +145,7 @@ func (bw *BackgroundWorker[J]) Start(ctx context.Context) {
 }
 
 func (bw *BackgroundWorker[J]) onLeader(ctx context.Context) {
-	ticker := time.NewTicker(bw.workInterval)
+	ticker := time.NewTicker(bw.interval)
 	defer ticker.Stop()
 
 	pool := make(chan chan J)
