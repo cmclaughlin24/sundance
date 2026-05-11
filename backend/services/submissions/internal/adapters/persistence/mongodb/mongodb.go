@@ -8,11 +8,16 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
-func Bootstrap(client *mongo.Client, logger *slog.Logger) *ports.Repository {
+func Bootstrap(client *mongo.Client, logger *slog.Logger) (*ports.Repository, error) {
 	db := client.Database("submissions")
+
+	submissions, err := newMongoDBSubmissionsRepository(db, logger)
+	if err != nil {
+		return nil, err
+	}
 
 	return &ports.Repository{
 		Database:    database.NewMongoDBDatabase(client, db, logger),
-		Submissions: newMongoDBSubmissionsRepository(db, logger),
-	}
+		Submissions: submissions,
+	}, nil
 }

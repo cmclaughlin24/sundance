@@ -24,3 +24,6 @@ func NewFindSubmissionByIDQuery[T any](tenantID string, id T) *FindSubmissionByI
 	return query
 }
 
+
+type FindSubmissionJobsQuery struct {
+}

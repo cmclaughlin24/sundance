@@ -27,18 +27,37 @@ type mongoDBSubmissionsRepository struct {
 	base *database.MongoDBRepository[submissionDocument]
 }
 
-func newMongoDBSubmissionsRepository(db *mongo.Database, logger *slog.Logger) ports.SubmissionsRepository {
+func newMongoDBSubmissionsRepository(db *mongo.Database, logger *slog.Logger) (ports.SubmissionsRepository, error) {
 	base := database.NewMongoDBRepository[submissionDocument](
 		db.Collection("submissions"),
 		logger,
 	)
+	repository := &mongoDBSubmissionsRepository{base}
+	
+	if err := repository.migrate(context.Background()); err != nil {
+		return nil, err
+	}
 
-	return &mongoDBSubmissionsRepository{base}
+	return repository, nil
+}
+
+func (r *mongoDBSubmissionsRepository) migrate(ctx context.Context) error {
+	_, err := r.base.Collection().Indexes().CreateMany(ctx, indexes)
+	return err
 }
 
 func (r *mongoDBSubmissionsRepository) Find(ctx context.Context, filter *ports.FindSubmissionsFilter) ([]*domain.Submission, error) {
-	documents, err := r.base.Find(ctx, bson.M{"tenant_id": filter.TenantID})
+	f := bson.M{}
 
+	if filter.TenantID != "" {
+		f["tenant_id"] = filter.TenantID
+	}
+
+	if len(filter.Statuses) > 0 {
+		f["status"] = bson.M{"$in": filter.Statuses}
+	}
+
+	documents, err := r.base.Find(ctx, f)
 	if err != nil {
 		return nil, err
 	}

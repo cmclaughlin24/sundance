@@ -7,7 +7,8 @@ import (
 )
 
 type Services struct {
-	Submissions SubmissionsService
+	Submissions    SubmissionsService
+	SubmissionJobs SubmissionJobsService
 }
 
 type SubmissionsService interface {
@@ -16,4 +17,9 @@ type SubmissionsService interface {
 	FindByReferenceID(context.Context, *FindSubmissionByIDQuery[domain.ReferenceID]) (*domain.Submission, error)
 	Create(context.Context, *CreateSubmissionCommand) (*domain.Submission, error)
 	Replay(context.Context, *ReplaySubmissionCommand) error
+}
+
+type SubmissionJobsService interface {
+	Find(context.Context, *FindSubmissionJobsQuery) ([]*domain.Submission, error)
+	Process(context.Context) error
 }

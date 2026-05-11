@@ -15,6 +15,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/logger"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/persistence"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/rest"
+	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/workers"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/services"
 )
@@ -69,6 +70,14 @@ func main() {
 		}
 	}()
 
+	sw, err := workers.NewDataSourcesBackgroundWorker(app)
+	if err != nil {
+		panic(err)
+	}
+	swCtx, swCancel := context.WithCancel(context.Background())
+	defer swCancel()
+	go sw.Start(swCtx)
+
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 
@@ -79,10 +88,10 @@ func main() {
 		app.Logger.Info(fmt.Sprintf("application received shutdown signal: %v", sig))
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer shutdownCancel()
 
-	if err := server.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(shutdownCtx); err != nil {
 		app.Logger.Info(fmt.Sprintf("application shutdown failed: %v", err))
 		return
 	}
