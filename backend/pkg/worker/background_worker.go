@@ -5,20 +5,22 @@ import (
 	"errors"
 	"log/slog"
 	"time"
+
+	"github.com/cmclaughlin24/sundance/backend/pkg/worker/elector"
 )
 
 var (
-	ErrLoggerIsRequired = errors.New("logger is required")
-	ErrWorkFnIsRequired = errors.New("workFn is required")
+	ErrLoggerIsRequired      = errors.New("logger is required")
+	ErrFetchJobsFnIsRequired = errors.New("fetchJobsFn is required")
 )
 
-type WorkFn[J Job] func(context.Context) ([]J, error)
+type FetchJobsFn[J Job] func(context.Context) ([]J, error)
 
 func NewBackgroundWorker[J Job](opts ...func(*BackgroundWorker[J])) (*BackgroundWorker[J], error) {
 	bw := &BackgroundWorker[J]{
-		elector:  NewInMemoryElector(),
-		interval: 1 * time.Minute,
-		size:     5,
+		elector:      elector.NewInMemoryElector(1 * time.Minute),
+		workInterval: 1 * time.Minute,
+		size:         5,
 	}
 
 	for _, opt := range opts {
@@ -32,15 +34,15 @@ func NewBackgroundWorker[J Job](opts ...func(*BackgroundWorker[J])) (*Background
 	return bw, nil
 }
 
-func WithElector[J Job](elector Elector) func(*BackgroundWorker[J]) {
+func WithElector[J Job](elector elector.Elector) func(*BackgroundWorker[J]) {
 	return func(bw *BackgroundWorker[J]) {
 		bw.elector = elector
 	}
 }
 
-func WithInterval[J Job](interval time.Duration) func(*BackgroundWorker[J]) {
+func WithWorkInterval[J Job](interval time.Duration) func(*BackgroundWorker[J]) {
 	return func(bw *BackgroundWorker[J]) {
-		bw.interval = interval
+		bw.workInterval = interval
 	}
 }
 
@@ -62,36 +64,29 @@ func WithTimeout[J Job](timeout time.Duration) func(*BackgroundWorker[J]) {
 	}
 }
 
-func WithWorkFn[J Job](fn WorkFn[J]) func(*BackgroundWorker[J]) {
+func WithFetchJobsFn[J Job](fn FetchJobsFn[J]) func(*BackgroundWorker[J]) {
 	return func(bw *BackgroundWorker[J]) {
-		bw.workFn = fn
+		bw.fetchJobsFn = fn
 	}
 }
 
 type BackgroundWorker[J Job] struct {
-	elector  Elector
-	interval time.Duration
-	logger   *slog.Logger
-	size     int
-	timeout  time.Duration
-	workFn   WorkFn[J]
+	elector      elector.Elector
+	workInterval time.Duration
+	logger       *slog.Logger
+	size         int
+	timeout      time.Duration
+	fetchJobsFn  FetchJobsFn[J]
 }
 
 func (bw *BackgroundWorker[J]) Start(ctx context.Context) {
-	bw.logger.InfoContext(ctx, "background worker started", "pool_size", bw.size, "interval", bw.interval)
+	bw.logger.InfoContext(ctx, "background worker started", "pool_size", bw.size, "work_interval", bw.workInterval.String())
 
-	ticker := time.NewTicker(bw.interval)
+	ticker := time.NewTicker(bw.elector.GetInterval())
 	defer ticker.Stop()
 
-	pool := make(chan chan J)
-	defer close(pool)
-
-	for range bw.size {
-		w := NewWorker(WorkerWithPool(pool), WorkerWithLogger[J](bw.logger), WorkerWithTimeout[J](bw.timeout))
-		w.Start(ctx)
-	}
-
 	isLeader := false
+	var leaderCancel context.CancelFunc
 
 	for {
 		select {
@@ -100,6 +95,10 @@ func (bw *BackgroundWorker[J]) Start(ctx context.Context) {
 
 			if isLeader {
 				_ = bw.elector.Release(context.Background())
+			}
+
+			if leaderCancel != nil {
+				leaderCancel()
 			}
 
 			return
@@ -117,38 +116,74 @@ func (bw *BackgroundWorker[J]) Start(ctx context.Context) {
 				}
 
 				bw.logger.InfoContext(ctx, "leadership acquired")
+
 				isLeader = true
-			} else {
-				ok, err := bw.elector.Renew(ctx)
+				lctx, cancel := context.WithCancel(ctx)
+				leaderCancel = cancel
+				go bw.onLeader(lctx)
 
-				if err != nil || !ok {
-					if err != nil {
-						bw.logger.ErrorContext(ctx, "failed to renew leadership", "error", err)
-					}
-
-					bw.logger.WarnContext(ctx, "leadership lost")
-					isLeader = false
-					continue
-				}
-			}
-
-			jobs, err := bw.workFn(ctx)
-
-			if err != nil {
-				bw.logger.WarnContext(ctx, "failed to fetch jobs", "error", err)
 				continue
 			}
 
-			bw.logger.DebugContext(ctx, "dispatching jobs", "count", len(jobs))
+			ok, err := bw.elector.Renew(ctx)
 
-			for _, j := range jobs {
-				select {
-				case w := <-pool:
-					w <- j
-				case <-ctx.Done():
-					return
+			if err != nil || !ok {
+				if err != nil {
+					bw.logger.ErrorContext(ctx, "failed to renew leadership", "error", err)
+				}
+
+				bw.logger.WarnContext(ctx, "leadership lost")
+				isLeader = false
+
+				if leaderCancel != nil {
+					leaderCancel()
+					leaderCancel = nil
 				}
 			}
+		}
+	}
+}
+
+func (bw *BackgroundWorker[J]) onLeader(ctx context.Context) {
+	ticker := time.NewTicker(bw.workInterval)
+	defer ticker.Stop()
+
+	pool := make(chan chan J)
+	defer close(pool)
+
+	for range bw.size {
+		w := NewWorker(WorkerWithPool(pool), WorkerWithLogger[J](bw.logger), WorkerWithTimeout[J](bw.timeout))
+		w.Start(ctx)
+	}
+
+	bw.work(ctx, pool)
+
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			bw.work(ctx, pool)
+		}
+	}
+}
+
+func (bw *BackgroundWorker[J]) work(ctx context.Context, pool chan chan J) {
+	jobs, err := bw.fetchJobsFn(ctx)
+
+	if err != nil {
+		bw.logger.WarnContext(ctx, "failed to fetch jobs", "error", err)
+		return
+	}
+
+	bw.logger.DebugContext(ctx, "dispatching jobs", "count", len(jobs))
+
+	for _, j := range jobs {
+		select {
+		case w := <-pool:
+			w <- j
+		case <-ctx.Done():
+			return
 		}
 	}
 }
@@ -158,8 +193,8 @@ func (bw *BackgroundWorker[J]) Validate() error {
 		return ErrLoggerIsRequired
 	}
 
-	if bw.workFn == nil {
-		return ErrWorkFnIsRequired
+	if bw.fetchJobsFn == nil {
+		return ErrFetchJobsFnIsRequired
 	}
 
 	return nil

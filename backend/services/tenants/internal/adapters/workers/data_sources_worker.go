@@ -28,10 +28,10 @@ func (j *dataSourceJob) Process(ctx context.Context) error {
 
 func NewDataSourcesBackgroundWorker(app *core.Application) (*worker.BackgroundWorker[*dataSourceJob], error) {
 	bw, err := worker.NewBackgroundWorker[*dataSourceJob](
-		worker.WithInterval[*dataSourceJob](1*time.Minute),
+		worker.WithWorkInterval[*dataSourceJob](1*time.Minute),
 		worker.WithLogger[*dataSourceJob](app.Logger),
 		worker.WithSize[*dataSourceJob](5),
-		worker.WithWorkFn[*dataSourceJob](newDataSourceWorkFn(app)),
+		worker.WithFetchJobsFn[*dataSourceJob](newDataSourceWorkFn(app)),
 	)
 
 	if err != nil {
@@ -41,7 +41,7 @@ func NewDataSourcesBackgroundWorker(app *core.Application) (*worker.BackgroundWo
 	return bw, nil
 }
 
-func newDataSourceWorkFn(app *core.Application) worker.WorkFn[*dataSourceJob] {
+func newDataSourceWorkFn(app *core.Application) worker.FetchJobsFn[*dataSourceJob] {
 	return func(ctx context.Context) ([]*dataSourceJob, error) {
 		dataSources, err := app.Services.DataSourceJobs.Find(ctx)
 
