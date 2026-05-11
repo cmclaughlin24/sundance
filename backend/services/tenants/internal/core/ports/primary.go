@@ -30,6 +30,6 @@ type DataSourcesService interface {
 }
 
 type DataSourceJobsService interface {
-	Find(context.Context) ([]*domain.DataSource, error)
+	Find(context.Context, *FindDataSourceJobsQuery) ([]*domain.DataSource, error)
 	Process(context.Context, *ProcessDataSourceJobCommand) error
 }

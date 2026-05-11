@@ -43,7 +43,7 @@ func NewDataSourcesBackgroundWorker(app *core.Application) (*worker.BackgroundWo
 
 func newDataSourceWorkFn(app *core.Application) worker.FetchJobsFn[*dataSourceJob] {
 	return func(ctx context.Context) ([]*dataSourceJob, error) {
-		dataSources, err := app.Services.DataSourceJobs.Find(ctx)
+		dataSources, err := app.Services.DataSourceJobs.Find(ctx, ports.NewFindDataSourceJobsQuery(0))
 
 		if err != nil {
 			return nil, err

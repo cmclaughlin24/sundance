@@ -51,3 +51,15 @@ func NewGetDataSourceLookupsQuery(tenantID domain.TenantID, sourceID domain.Data
 func (q *GetDataSourceLookupsQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
+
+type FindDataSourceJobsQuery struct {
+	Limit int `validate:"min=0"`
+}
+
+func NewFindDataSourceJobsQuery(limit int) *FindDataSourceJobsQuery {
+	return &FindDataSourceJobsQuery{limit}
+}
+
+func (q *FindDataSourceJobsQuery) Validate() error {
+	return validate.ValidateStruct(q)
+}
