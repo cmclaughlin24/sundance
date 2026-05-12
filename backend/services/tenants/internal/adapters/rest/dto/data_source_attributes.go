@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/stratreg"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
@@ -61,10 +62,12 @@ type staticDataSourceAttributesResponse struct {
 }
 
 type scheduledDataSourceAttributesResponse struct {
-	Data    []*LookupResponse `json:"data"`
-	URL     string            `json:"url"`
-	Method  string            `json:"method"`
-	Headers map[string]string `json:"headers,omitempty"`
+	Data           []*LookupResponse `json:"data"`
+	URL            string            `json:"url"`
+	Method         string            `json:"method"`
+	Headers        map[string]string `json:"headers,omitempty"`
+	IntervalHours  float64           `json:"intervalHours"`
+	ExpirationDate time.Time         `json:"expirationDate"`
 }
 
 type webhookDataSourceAttributesResponse struct {
@@ -79,10 +82,12 @@ func dataSourceAttributesToResponse(attr domain.DataSourceAttributes) any {
 		data := LookupsToResponse(t.Data)
 
 		return scheduledDataSourceAttributesResponse{
-			Data: data,
-			URL:     t.URL,
-			Method:  t.Method,
-			Headers: t.Headers,
+			Data:           data,
+			URL:            t.URL,
+			Method:         t.Method,
+			Headers:        t.Headers,
+			IntervalHours:  t.IntervalHours,
+			ExpirationDate: t.ExpirationDate,
 		}
 	case domain.StaticDataSourceAttributes:
 		data := LookupsToResponse(t.Data)

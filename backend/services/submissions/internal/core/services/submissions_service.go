@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
@@ -145,7 +146,7 @@ func (s *SubmissionsService) Replay(ctx context.Context, command *ports.ReplaySu
 }
 
 func (s *SubmissionsService) logFindByIDError(ctx context.Context, err error, id domain.SubmissionID) {
-	if err == common.ErrNotFound {
+	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "submission not found", "submission_id", id)
 	} else {
 		s.logger.ErrorContext(ctx, "failed to retrieve submission", "submission_id", id, "error", err)
@@ -153,7 +154,7 @@ func (s *SubmissionsService) logFindByIDError(ctx context.Context, err error, id
 }
 
 func (s *SubmissionsService) logFindByReferenceIDError(ctx context.Context, err error, id domain.ReferenceID) {
-	if err == common.ErrNotFound {
+	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "submission not found", "reference_id", id)
 	} else {
 		s.logger.ErrorContext(ctx, "failed to retrieve submission", "reference_id", id, "error", err)

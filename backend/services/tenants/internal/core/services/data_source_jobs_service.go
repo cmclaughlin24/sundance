@@ -32,6 +32,7 @@ func (s *DataSourcesJobService) Find(ctx context.Context, query *ports.FindDataS
 
 	sources, err := s.repository.FindJobs(ctx, &ports.FindDataSourceJobsFilter{
 		Types:             []domain.DataSourceType{domain.DataSourceTypeScheduled},
+		Limit:             query.Limit,
 		ExpiredAtOrBefore: Now(),
 	})
 

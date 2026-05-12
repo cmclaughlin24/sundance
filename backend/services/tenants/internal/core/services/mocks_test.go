@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
 
 var (
@@ -67,6 +68,7 @@ func (r *mockTenantsRepository) Delete(ctx context.Context, id domain.TenantID) 
 type mockDataSourcesRepository struct {
 	findFn      func(context.Context, domain.TenantID) ([]*domain.DataSource, error)
 	findByIdFn  func(context.Context, domain.TenantID, domain.DataSourceID) (*domain.DataSource, error)
+	findJobsFn  func(context.Context, *ports.FindDataSourceJobsFilter) ([]*domain.DataSource, error)
 	existsFn    func(context.Context, domain.TenantID, domain.DataSourceID) (bool, error)
 	upsertFn    func(context.Context, *domain.DataSource) (*domain.DataSource, error)
 	deleteFn    func(context.Context, domain.TenantID, domain.DataSourceID) error
@@ -79,6 +81,10 @@ func (r *mockDataSourcesRepository) Find(ctx context.Context, tenantID domain.Te
 
 func (r *mockDataSourcesRepository) FindByID(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) (*domain.DataSource, error) {
 	return r.findByIdFn(ctx, tenantID, id)
+}
+
+func (r *mockDataSourcesRepository) FindJobs(ctx context.Context, filter *ports.FindDataSourceJobsFilter) ([]*domain.DataSource, error) {
+	return r.findJobsFn(ctx, filter)
 }
 
 func (r *mockDataSourcesRepository) Exists(ctx context.Context, tenantID domain.TenantID, id domain.DataSourceID) (bool, error) {

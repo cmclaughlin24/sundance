@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
@@ -94,13 +95,13 @@ func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenant
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "tenant updated", "tenant_id", tenant.ID)
-
 	tenant, err = s.tenantsRepository.Upsert(ctx, tenant)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to persist tenant", "error", err)
 		return nil, err
 	}
+
+	s.logger.InfoContext(ctx, "tenant updated", "tenant_id", tenant.ID)
 
 	return tenant, nil
 }
@@ -148,7 +149,7 @@ func (s *TenantsService) Delete(ctx context.Context, id domain.TenantID) error {
 }
 
 func (s *TenantsService) logFindByIDError(ctx context.Context, err error, id domain.TenantID) {
-	if err == common.ErrNotFound {
+	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "tenant not found", "tenant_id", id)
 	} else {
 		s.logger.ErrorContext(ctx, "failed to retrieve tenant", "tenant_id", id, "error", err)

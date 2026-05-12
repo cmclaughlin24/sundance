@@ -8,7 +8,7 @@ import (
 type baseFormCommand struct {
 	TenantID    string `validate:"required"`
 	Name        string `validate:"required,max=75"`
-	Description string `validate:"required,max=250"`
+	Description string `validate:"required,max=500"`
 }
 
 type CreateFormCommand struct {

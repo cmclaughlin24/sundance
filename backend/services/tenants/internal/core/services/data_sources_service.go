@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
@@ -212,7 +213,7 @@ func (s *DataSourcesService) tenantExists(ctx context.Context, tenantID domain.T
 }
 
 func (s *DataSourcesService) logFindByIDError(ctx context.Context, err error, tenantID domain.TenantID, id domain.DataSourceID) {
-	if err == common.ErrNotFound {
+	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "data source not found", "tenant_id", tenantID, "data_source_id", id)
 	} else {
 		s.logger.ErrorContext(ctx, "failed to retrieve data source", "tenant_id", tenantID, "data_source_id", id, "error", err)

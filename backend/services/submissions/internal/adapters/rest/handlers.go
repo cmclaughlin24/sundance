@@ -100,7 +100,7 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 		domain.IdempotencyID(idempotencyID),
 		body.Payload,
 	)
-	resultChan := make(chan result[*domain.Submission])
+	resultChan := make(chan result[*domain.Submission], 1)
 
 	go func() {
 		defer close(resultChan)

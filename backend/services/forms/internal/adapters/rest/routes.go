@@ -15,7 +15,7 @@ import (
 func NewRoutes(app *core.Application) http.Handler {
 	h := newHandlers(app)
 	mux := chi.NewRouter()
-	placeholderAuthenticator := authenticators.NewPlaceholderAuthenticator("placholder") // TODO: Remove for a proper authentication implementation.
+	placeholderAuthenticator := authenticators.NewPlaceholderAuthenticator("placeholder") // TODO: Remove for a proper authentication implementation.
 
 	mux.Use(middleware.RequestID)
 	mux.Use(httplog.RequestLogger(app.Logger, &httplog.Options{

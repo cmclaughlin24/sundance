@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
@@ -388,7 +389,7 @@ func (s *FormsService) hasActiveVersion(ctx context.Context, id domain.FormID) (
 }
 
 func (s *FormsService) logFindFormByIDError(ctx context.Context, err error, formID domain.FormID) {
-	if err == common.ErrNotFound {
+	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "form not found", "form_id", formID)
 	} else {
 		s.logger.ErrorContext(ctx, "failed to retrieve form", "form_id", formID, "error", err)
@@ -396,7 +397,7 @@ func (s *FormsService) logFindFormByIDError(ctx context.Context, err error, form
 }
 
 func (s *FormsService) logFindVersionByIDError(ctx context.Context, err error, formID domain.FormID, versionID domain.VersionID) {
-	if err == common.ErrNotFound {
+	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "version not found", "form_id", formID, "version_id", versionID)
 	} else {
 		s.logger.ErrorContext(ctx, "failed to retrieve version", "form_id", formID, "version_id", versionID, "error", err)
