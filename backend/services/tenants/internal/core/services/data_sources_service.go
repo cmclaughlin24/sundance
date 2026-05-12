@@ -10,7 +10,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
 
-type DataSourcesService struct {
+type dataSourcesService struct {
 	logger                *slog.Logger
 	tenantsRepository     ports.TenantsRepository
 	dataSourcesRepository ports.DataSourcesRepository
@@ -18,7 +18,7 @@ type DataSourcesService struct {
 }
 
 func NewDataSourcesService(logger *slog.Logger, repository *ports.Repository, strategies *ports.Strategies) ports.DataSourcesService {
-	return &DataSourcesService{
+	return &dataSourcesService{
 		logger:                logger,
 		dataSourcesRepository: repository.DataSources,
 		tenantsRepository:     repository.Tenants,
@@ -26,7 +26,7 @@ func NewDataSourcesService(logger *slog.Logger, repository *ports.Repository, st
 	}
 }
 
-func (s *DataSourcesService) Find(ctx context.Context, query *ports.ListDataSourceQuery) ([]*domain.DataSource, error) {
+func (s *dataSourcesService) Find(ctx context.Context, query *ports.ListDataSourceQuery) ([]*domain.DataSource, error) {
 	s.logger.DebugContext(ctx, "listing data sources", "tenant_id", query.TenantID)
 
 	if err := query.Validate(); err != nil {
@@ -43,7 +43,7 @@ func (s *DataSourcesService) Find(ctx context.Context, query *ports.ListDataSour
 	return sources, nil
 }
 
-func (s *DataSourcesService) FindByID(ctx context.Context, query *ports.FindDataSourceByIDQuery) (*domain.DataSource, error) {
+func (s *dataSourcesService) FindByID(ctx context.Context, query *ports.FindDataSourceByIDQuery) (*domain.DataSource, error) {
 	s.logger.DebugContext(ctx, "finding data source", "tenant_id", query.TenantID, "data_source_id", query.ID)
 
 	if err := query.Validate(); err != nil {
@@ -64,7 +64,7 @@ func (s *DataSourcesService) FindByID(ctx context.Context, query *ports.FindData
 	return ds, nil
 }
 
-func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
+func (s *dataSourcesService) Create(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
 	s.logger.DebugContext(ctx, "creating data source", "tenant_id", command.TenantID)
 
 	if err := command.Validate(); err != nil {
@@ -100,7 +100,7 @@ func (s *DataSourcesService) Create(ctx context.Context, command *ports.CreateDa
 	return ds, nil
 }
 
-func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
+func (s *dataSourcesService) Update(ctx context.Context, command *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
 	s.logger.DebugContext(ctx, "updating data source", "tenant_id", command.TenantID, "data_source_id", command.ID)
 
 	if err := command.Validate(); err != nil {
@@ -134,7 +134,7 @@ func (s *DataSourcesService) Update(ctx context.Context, command *ports.UpdateDa
 	return ds, nil
 }
 
-func (s *DataSourcesService) Delete(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
+func (s *dataSourcesService) Delete(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
 	s.logger.DebugContext(ctx, "deleting data source", "tenant_id", command.TenantID, "data_source_id", command.ID)
 
 	if err := command.Validate(); err != nil {
@@ -167,7 +167,7 @@ func (s *DataSourcesService) Delete(ctx context.Context, command *ports.RemoveDa
 	return nil
 }
 
-func (s *DataSourcesService) Lookup(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
+func (s *dataSourcesService) Lookup(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
 	s.logger.DebugContext(ctx, "looking up data source", "tenant_id", query.TenantID, "data_source_id", query.ID)
 
 	if err := query.Validate(); err != nil {
@@ -196,7 +196,7 @@ func (s *DataSourcesService) Lookup(ctx context.Context, query *ports.GetDataSou
 	return lookups, nil
 }
 
-func (s *DataSourcesService) tenantExists(ctx context.Context, tenantID domain.TenantID) error {
+func (s *dataSourcesService) tenantExists(ctx context.Context, tenantID domain.TenantID) error {
 	exists, err := s.tenantsRepository.Exists(ctx, tenantID)
 
 	if err != nil {
@@ -212,7 +212,7 @@ func (s *DataSourcesService) tenantExists(ctx context.Context, tenantID domain.T
 	return nil
 }
 
-func (s *DataSourcesService) logFindByIDError(ctx context.Context, err error, tenantID domain.TenantID, id domain.DataSourceID) {
+func (s *dataSourcesService) logFindByIDError(ctx context.Context, err error, tenantID domain.TenantID, id domain.DataSourceID) {
 	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "data source not found", "tenant_id", tenantID, "data_source_id", id)
 	} else {

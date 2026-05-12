@@ -39,7 +39,7 @@ func TestTenantsService_Find(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := TenantsService{
+			s := tenantsService{
 				logger: logger,
 				tenantsRepository: &mockTenantsRepository{
 					findFn: func(_ context.Context) ([]*domain.Tenant, error) {
@@ -102,7 +102,7 @@ func TestTenantsService_FindByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := TenantsService{
+			s := tenantsService{
 				logger: logger,
 				tenantsRepository: &mockTenantsRepository{
 					findByIdFn: func(_ context.Context, _ domain.TenantID) (*domain.Tenant, error) {
@@ -162,7 +162,7 @@ func TestTenantsService_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := TenantsService{
+			s := tenantsService{
 				logger: logger,
 				tenantsRepository: &mockTenantsRepository{
 					upsertFn: func(_ context.Context, _ *domain.Tenant) (*domain.Tenant, error) {
@@ -235,7 +235,7 @@ func TestTenantsService_Update(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := TenantsService{
+			s := tenantsService{
 				logger: logger,
 				tenantsRepository: &mockTenantsRepository{
 					findByIdFn: func(_ context.Context, _ domain.TenantID) (*domain.Tenant, error) {
@@ -290,7 +290,7 @@ func TestTenantsService_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := TenantsService{
+			s := tenantsService{
 				logger: logger,
 				database: &mockDatabase{
 					beginTxFn: func(ctx context.Context) (context.Context, error) {

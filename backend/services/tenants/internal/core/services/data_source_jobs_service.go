@@ -8,21 +8,21 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
 
-type DataSourcesJobService struct {
+type dataSourcesJobService struct {
 	logger     *slog.Logger
 	repository ports.DataSourcesRepository
 	client     ports.LookupClient
 }
 
 func NewDataSourcesJobService(logger *slog.Logger, repository *ports.Repository, clients *ports.Clients) ports.DataSourceJobsService {
-	return &DataSourcesJobService{
+	return &dataSourcesJobService{
 		logger:     logger,
 		repository: repository.DataSources,
 		client:     clients.Lookups,
 	}
 }
 
-func (s *DataSourcesJobService) Find(ctx context.Context, query *ports.FindDataSourceJobsQuery) ([]*domain.DataSource, error) {
+func (s *dataSourcesJobService) Find(ctx context.Context, query *ports.FindDataSourceJobsQuery) ([]*domain.DataSource, error) {
 	s.logger.DebugContext(ctx, "listing data source jobs")
 
 	if err := query.Validate(); err != nil {
@@ -44,7 +44,7 @@ func (s *DataSourcesJobService) Find(ctx context.Context, query *ports.FindDataS
 	return sources, nil
 }
 
-func (s *DataSourcesJobService) Process(ctx context.Context, command *ports.ProcessDataSourceJobCommand) error {
+func (s *dataSourcesJobService) Process(ctx context.Context, command *ports.ProcessDataSourceJobCommand) error {
 	if err := command.Validate(); err != nil {
 		s.logger.WarnContext(ctx, "data source job process failed; invalid command", "error", err)
 		return err

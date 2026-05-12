@@ -21,7 +21,7 @@ type mockDatabase struct {
 	rollbackTxfn func(context.Context) error
 }
 
-func (d *mockDatabase) Close() error {
+func (d *mockDatabase) Close(context.Context) error {
 	return d.closeFn()
 }
 

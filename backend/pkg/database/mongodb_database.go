@@ -34,6 +34,7 @@ func (db *MongoDBDatabase) BeginTx(ctx context.Context) (context.Context, error)
 	}
 
 	if err := session.StartTransaction(); err != nil {
+		session.EndSession(ctx)
 		db.logger.ErrorContext(ctx, "failed to start transaction", "error", err)
 		return ctx, err
 	}

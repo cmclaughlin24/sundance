@@ -11,7 +11,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
 
-type TenantsService struct {
+type tenantsService struct {
 	logger                *slog.Logger
 	database              database.Database
 	tenantsRepository     ports.TenantsRepository
@@ -19,7 +19,7 @@ type TenantsService struct {
 }
 
 func NewTenantsService(logger *slog.Logger, repository *ports.Repository) ports.TenantsService {
-	return &TenantsService{
+	return &tenantsService{
 		logger:                logger,
 		database:              repository.Database,
 		tenantsRepository:     repository.Tenants,
@@ -27,7 +27,7 @@ func NewTenantsService(logger *slog.Logger, repository *ports.Repository) ports.
 	}
 }
 
-func (s *TenantsService) Find(ctx context.Context) ([]*domain.Tenant, error) {
+func (s *tenantsService) Find(ctx context.Context) ([]*domain.Tenant, error) {
 	s.logger.DebugContext(ctx, "listing tenants")
 
 	tenants, err := s.tenantsRepository.Find(ctx)
@@ -39,7 +39,7 @@ func (s *TenantsService) Find(ctx context.Context) ([]*domain.Tenant, error) {
 	return tenants, nil
 }
 
-func (s *TenantsService) FindByID(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
+func (s *tenantsService) FindByID(ctx context.Context, id domain.TenantID) (*domain.Tenant, error) {
 	s.logger.DebugContext(ctx, "finding tenant", "tenant_id", id)
 
 	t, err := s.tenantsRepository.FindByID(ctx, id)
@@ -51,7 +51,7 @@ func (s *TenantsService) FindByID(ctx context.Context, id domain.TenantID) (*dom
 	return t, nil
 }
 
-func (s *TenantsService) Create(ctx context.Context, command *ports.CreateTenantCommand) (*domain.Tenant, error) {
+func (s *tenantsService) Create(ctx context.Context, command *ports.CreateTenantCommand) (*domain.Tenant, error) {
 	s.logger.DebugContext(ctx, "creating tenant")
 
 	if err := command.Validate(); err != nil {
@@ -76,7 +76,7 @@ func (s *TenantsService) Create(ctx context.Context, command *ports.CreateTenant
 	return t, nil
 }
 
-func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenantCommand) (*domain.Tenant, error) {
+func (s *tenantsService) Update(ctx context.Context, command *ports.UpdateTenantCommand) (*domain.Tenant, error) {
 	s.logger.DebugContext(ctx, "updating tenant", "tenant_id", command.ID)
 
 	if err := command.Validate(); err != nil {
@@ -106,7 +106,7 @@ func (s *TenantsService) Update(ctx context.Context, command *ports.UpdateTenant
 	return tenant, nil
 }
 
-func (s *TenantsService) Delete(ctx context.Context, id domain.TenantID) error {
+func (s *tenantsService) Delete(ctx context.Context, id domain.TenantID) error {
 	s.logger.DebugContext(ctx, "deleting tenant", "tenant_id", id)
 
 	txCtx, err := s.database.BeginTx(ctx)
@@ -148,7 +148,7 @@ func (s *TenantsService) Delete(ctx context.Context, id domain.TenantID) error {
 	return nil
 }
 
-func (s *TenantsService) logFindByIDError(ctx context.Context, err error, id domain.TenantID) {
+func (s *tenantsService) logFindByIDError(ctx context.Context, err error, id domain.TenantID) {
 	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "tenant not found", "tenant_id", id)
 	} else {

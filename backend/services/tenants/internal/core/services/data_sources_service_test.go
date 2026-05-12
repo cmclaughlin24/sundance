@@ -49,7 +49,7 @@ func TestDataSourcesService_Find(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := DataSourcesService{
+			s := dataSourcesService{
 				logger: logger,
 				dataSourcesRepository: &mockDataSourcesRepository{
 					findFn: func(_ context.Context, _ domain.TenantID) ([]*domain.DataSource, error) {
@@ -137,7 +137,7 @@ func TestDataSourcesService_FindByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := DataSourcesService{
+			s := dataSourcesService{
 				logger: logger,
 				tenantsRepository: &mockTenantsRepository{
 					existsFn: func(_ context.Context, _ domain.TenantID) (bool, error) {
@@ -271,7 +271,7 @@ func TestDataSourcesService_Create(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := DataSourcesService{
+			s := dataSourcesService{
 				logger: logger,
 				tenantsRepository: &mockTenantsRepository{
 					existsFn: func(_ context.Context, _ domain.TenantID) (bool, error) {
@@ -378,7 +378,7 @@ func TestDataSourcesService_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := DataSourcesService{
+			s := dataSourcesService{
 				logger: logger,
 				tenantsRepository: &mockTenantsRepository{
 					existsFn: func(_ context.Context, _ domain.TenantID) (bool, error) {

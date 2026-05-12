@@ -92,6 +92,12 @@ func (r *InMemoryVersionsRepository) Upsert(ctx context.Context, version *domain
 		r.versions[string(version.FormID)] = formVersions
 	}
 
+	for _, existing := range formVersions {
+		if existing.ID != version.ID && existing.Version == version.Version {
+			return nil, domain.ErrDuplicateVersion
+		}
+	}
+
 	formVersions[string(version.ID)] = version
 
 	return version, nil

@@ -11,7 +11,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
 )
 
-type FormsService struct {
+type formsService struct {
 	logger             *slog.Logger
 	database           database.Database
 	formsRepository    ports.FormsRepository
@@ -19,7 +19,7 @@ type FormsService struct {
 }
 
 func NewFormsService(logger *slog.Logger, repository *ports.Repository) ports.FormsService {
-	return &FormsService{
+	return &formsService{
 		logger:             logger,
 		database:           repository.Database,
 		formsRepository:    repository.Forms,
@@ -27,7 +27,7 @@ func NewFormsService(logger *slog.Logger, repository *ports.Repository) ports.Fo
 	}
 }
 
-func (s *FormsService) Find(ctx context.Context, query *ports.FindFormsQuery) ([]*domain.Form, error) {
+func (s *formsService) Find(ctx context.Context, query *ports.FindFormsQuery) ([]*domain.Form, error) {
 	s.logger.DebugContext(ctx, "listing forms", "tenant_id", query.TenantID)
 
 	if err := query.Validate(); err != nil {
@@ -46,7 +46,7 @@ func (s *FormsService) Find(ctx context.Context, query *ports.FindFormsQuery) ([
 	return forms, nil
 }
 
-func (s *FormsService) FindByID(ctx context.Context, query *ports.FindFormsByIDQuery) (*domain.Form, error) {
+func (s *formsService) FindByID(ctx context.Context, query *ports.FindFormsByIDQuery) (*domain.Form, error) {
 	s.logger.DebugContext(ctx, "finding form", "tenant_id", query.TenantID, "form_id", query.FormID)
 
 	if err := query.Validate(); err != nil {
@@ -68,7 +68,7 @@ func (s *FormsService) FindByID(ctx context.Context, query *ports.FindFormsByIDQ
 	return form, nil
 }
 
-func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormCommand) (*domain.Form, error) {
+func (s *formsService) Create(ctx context.Context, command *ports.CreateFormCommand) (*domain.Form, error) {
 	s.logger.DebugContext(ctx, "creating form", "tenant_id", command.TenantID)
 
 	if err := command.Validate(); err != nil {
@@ -93,7 +93,7 @@ func (s *FormsService) Create(ctx context.Context, command *ports.CreateFormComm
 	return form, nil
 }
 
-func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormCommand) (*domain.Form, error) {
+func (s *formsService) Update(ctx context.Context, command *ports.UpdateFormCommand) (*domain.Form, error) {
 	s.logger.DebugContext(ctx, "updating form", "tenant_id", command.TenantID, "form_id", command.ID)
 
 	if err := command.Validate(); err != nil {
@@ -128,7 +128,7 @@ func (s *FormsService) Update(ctx context.Context, command *ports.UpdateFormComm
 	return form, nil
 }
 
-func (s *FormsService) Delete(ctx context.Context, command *ports.RemoveFormCommand) error {
+func (s *formsService) Delete(ctx context.Context, command *ports.RemoveFormCommand) error {
 	s.logger.DebugContext(ctx, "deleting form", "tenant_id", command.TenantID, "form_id", command.ID)
 
 	if err := command.Validate(); err != nil {
@@ -158,7 +158,7 @@ func (s *FormsService) Delete(ctx context.Context, command *ports.RemoveFormComm
 	return nil
 }
 
-func (s *FormsService) FindVersions(ctx context.Context, query *ports.FindVersionsQuery) ([]*domain.Version, error) {
+func (s *formsService) FindVersions(ctx context.Context, query *ports.FindVersionsQuery) ([]*domain.Version, error) {
 	s.logger.DebugContext(ctx, "listing versions", "tenant_id", query.TenantID, "form_id", query.FormID)
 
 	if err := query.Validate(); err != nil {
@@ -179,7 +179,7 @@ func (s *FormsService) FindVersions(ctx context.Context, query *ports.FindVersio
 	return versions, nil
 }
 
-func (s *FormsService) FindVersion(ctx context.Context, query *ports.FindVersionByIDQuery) (*domain.Version, error) {
+func (s *formsService) FindVersion(ctx context.Context, query *ports.FindVersionByIDQuery) (*domain.Version, error) {
 	s.logger.DebugContext(ctx, "finding version", "tenant_id", query.TenantID, "form_id", query.FormID, "version_id", query.VersionID)
 
 	if err := query.Validate(); err != nil {
@@ -200,7 +200,7 @@ func (s *FormsService) FindVersion(ctx context.Context, query *ports.FindVersion
 	return version, nil
 }
 
-func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateVersionCommand) (*domain.Version, error) {
+func (s *formsService) CreateVersion(ctx context.Context, command *ports.CreateVersionCommand) (*domain.Version, error) {
 	s.logger.DebugContext(ctx, "creating version", "tenant_id", command.TenantID, "form_id", command.FormID)
 
 	if err := command.Validate(); err != nil {
@@ -253,7 +253,7 @@ func (s *FormsService) CreateVersion(ctx context.Context, command *ports.CreateV
 	return version, nil
 }
 
-func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateVersionCommand) (*domain.Version, error) {
+func (s *formsService) UpdateVersion(ctx context.Context, command *ports.UpdateVersionCommand) (*domain.Version, error) {
 	s.logger.DebugContext(ctx, "updating version", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID)
 
 	if err := command.Validate(); err != nil {
@@ -287,7 +287,7 @@ func (s *FormsService) UpdateVersion(ctx context.Context, command *ports.UpdateV
 	return version, nil
 }
 
-func (s *FormsService) PublishVersion(ctx context.Context, command *ports.PublishVersionCommand) (*domain.Version, error) {
+func (s *formsService) PublishVersion(ctx context.Context, command *ports.PublishVersionCommand) (*domain.Version, error) {
 	s.logger.DebugContext(ctx, "publishing version", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID)
 
 	if err := command.Validate(); err != nil {
@@ -321,7 +321,7 @@ func (s *FormsService) PublishVersion(ctx context.Context, command *ports.Publis
 	return version, nil
 }
 
-func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireVersionCommand) (*domain.Version, error) {
+func (s *formsService) RetireVersion(ctx context.Context, command *ports.RetireVersionCommand) (*domain.Version, error) {
 	s.logger.DebugContext(ctx, "retiring version", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID)
 
 	if err := command.Validate(); err != nil {
@@ -355,7 +355,7 @@ func (s *FormsService) RetireVersion(ctx context.Context, command *ports.RetireV
 	return version, nil
 }
 
-func (s *FormsService) isValidAccess(ctx context.Context, tenantID string, formID domain.FormID) error {
+func (s *formsService) isValidAccess(ctx context.Context, tenantID string, formID domain.FormID) error {
 	form, err := s.formsRepository.FindByID(ctx, formID)
 
 	if err != nil {
@@ -371,7 +371,7 @@ func (s *FormsService) isValidAccess(ctx context.Context, tenantID string, formI
 	return nil
 }
 
-func (s *FormsService) hasActiveVersion(ctx context.Context, id domain.FormID) (bool, error) {
+func (s *formsService) hasActiveVersion(ctx context.Context, id domain.FormID) (bool, error) {
 	versions, err := s.versionsRepository.Find(ctx, id)
 
 	if err != nil {
@@ -388,7 +388,7 @@ func (s *FormsService) hasActiveVersion(ctx context.Context, id domain.FormID) (
 	return false, nil
 }
 
-func (s *FormsService) logFindFormByIDError(ctx context.Context, err error, formID domain.FormID) {
+func (s *formsService) logFindFormByIDError(ctx context.Context, err error, formID domain.FormID) {
 	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "form not found", "form_id", formID)
 	} else {
@@ -396,7 +396,7 @@ func (s *FormsService) logFindFormByIDError(ctx context.Context, err error, form
 	}
 }
 
-func (s *FormsService) logFindVersionByIDError(ctx context.Context, err error, formID domain.FormID, versionID domain.VersionID) {
+func (s *formsService) logFindVersionByIDError(ctx context.Context, err error, formID domain.FormID, versionID domain.VersionID) {
 	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "version not found", "form_id", formID, "version_id", versionID)
 	} else {

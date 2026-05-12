@@ -6,9 +6,9 @@ import (
 	"log/slog"
 )
 
-type ClaimsContextKey string
+type claimsContextKey string
 
-const ClaimsKey ClaimsContextKey = "claims"
+const ClaimsKey claimsContextKey = "claims"
 
 type Claims interface {
 	GetSubject() string

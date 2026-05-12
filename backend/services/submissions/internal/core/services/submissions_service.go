@@ -11,19 +11,19 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
 )
 
-type SubmissionsService struct {
+type submissionsService struct {
 	logger     *slog.Logger
 	repository ports.SubmissionsRepository
 }
 
 func NewSubmissionsService(logger *slog.Logger, repository *ports.Repository) ports.SubmissionsService {
-	return &SubmissionsService{
+	return &submissionsService{
 		logger:     logger,
 		repository: repository.Submissions,
 	}
 }
 
-func (s *SubmissionsService) Find(ctx context.Context, query *ports.FindSubmissionsQuery) ([]*domain.Submission, error) {
+func (s *submissionsService) Find(ctx context.Context, query *ports.FindSubmissionsQuery) ([]*domain.Submission, error) {
 	s.logger.DebugContext(ctx, "listing submissions", "tenant_id", query.TenantID)
 
 	if err := validate.ValidateStruct(query); err != nil {
@@ -42,7 +42,7 @@ func (s *SubmissionsService) Find(ctx context.Context, query *ports.FindSubmissi
 	return submissions, nil
 }
 
-func (s *SubmissionsService) FindByID(ctx context.Context, query *ports.FindSubmissionByIDQuery[domain.SubmissionID]) (*domain.Submission, error) {
+func (s *submissionsService) FindByID(ctx context.Context, query *ports.FindSubmissionByIDQuery[domain.SubmissionID]) (*domain.Submission, error) {
 	s.logger.DebugContext(ctx, "finding submission", "tenant_id", query.TenantID, "submission_id", query.ID)
 
 	if err := validate.ValidateStruct(query); err != nil {
@@ -64,7 +64,7 @@ func (s *SubmissionsService) FindByID(ctx context.Context, query *ports.FindSubm
 	return submission, nil
 }
 
-func (s *SubmissionsService) FindByReferenceID(ctx context.Context, query *ports.FindSubmissionByIDQuery[domain.ReferenceID]) (*domain.Submission, error) {
+func (s *submissionsService) FindByReferenceID(ctx context.Context, query *ports.FindSubmissionByIDQuery[domain.ReferenceID]) (*domain.Submission, error) {
 	s.logger.DebugContext(ctx, "finding submission by reference", "tenant_id", query.TenantID, "reference_id", query.ID)
 
 	if err := validate.ValidateStruct(query); err != nil {
@@ -86,7 +86,7 @@ func (s *SubmissionsService) FindByReferenceID(ctx context.Context, query *ports
 	return submission, nil
 }
 
-func (s *SubmissionsService) Create(ctx context.Context, command *ports.CreateSubmissionCommand) (*domain.Submission, error) {
+func (s *submissionsService) Create(ctx context.Context, command *ports.CreateSubmissionCommand) (*domain.Submission, error) {
 	s.logger.DebugContext(ctx, "creating submission", "tenant_id", command.TenantID)
 
 	if err := validate.ValidateStruct(command); err != nil {
@@ -128,7 +128,7 @@ func (s *SubmissionsService) Create(ctx context.Context, command *ports.CreateSu
 	return submission, nil
 }
 
-func (s *SubmissionsService) Replay(ctx context.Context, command *ports.ReplaySubmissionCommand) error {
+func (s *submissionsService) Replay(ctx context.Context, command *ports.ReplaySubmissionCommand) error {
 	s.logger.DebugContext(ctx, "replaying submission", "tenant_id", command.TenantID, "submission_id", command.ID)
 
 	if err := validate.ValidateStruct(command); err != nil {
@@ -145,7 +145,7 @@ func (s *SubmissionsService) Replay(ctx context.Context, command *ports.ReplaySu
 	return nil
 }
 
-func (s *SubmissionsService) logFindByIDError(ctx context.Context, err error, id domain.SubmissionID) {
+func (s *submissionsService) logFindByIDError(ctx context.Context, err error, id domain.SubmissionID) {
 	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "submission not found", "submission_id", id)
 	} else {
@@ -153,7 +153,7 @@ func (s *SubmissionsService) logFindByIDError(ctx context.Context, err error, id
 	}
 }
 
-func (s *SubmissionsService) logFindByReferenceIDError(ctx context.Context, err error, id domain.ReferenceID) {
+func (s *submissionsService) logFindByReferenceIDError(ctx context.Context, err error, id domain.ReferenceID) {
 	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "submission not found", "reference_id", id)
 	} else {

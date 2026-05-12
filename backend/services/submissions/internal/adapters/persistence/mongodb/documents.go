@@ -76,12 +76,11 @@ func fromSubmissionDocument(s *submissionDocument) *domain.Submission {
 }
 
 type submissionAttemptDocument struct {
-	ID            string    `bson:"_id"`
-	IdempotencyID string    `bson:"idempotency_id"`
-	Attempt       int       `bson:"attempt"`
-	Result        string    `bson:"result"`
-	ErrorDetails  bson.Raw  `bson:"error_details"`
-	CreatedAt     time.Time `bson:"created_at"`
+	ID           string    `bson:"_id"`
+	Attempt      int       `bson:"attempt"`
+	Result       string    `bson:"result"`
+	ErrorDetails bson.Raw  `bson:"error_details"`
+	CreatedAt    time.Time `bson:"created_at"`
 }
 
 func toSubmissionAttemptDocument(att *domain.SubmissionAttempt) (*submissionAttemptDocument, error) {

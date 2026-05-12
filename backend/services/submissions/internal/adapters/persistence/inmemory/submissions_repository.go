@@ -3,6 +3,7 @@ package inmemory
 import (
 	"context"
 	"log/slog"
+	"slices"
 	"sync"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
@@ -33,6 +34,11 @@ func (r *InMemorySubmissionsRepository) Find(ctx context.Context, filter *ports.
 		if filter != nil && filter.TenantID != "" && submission.TenantID != filter.TenantID {
 			continue
 		}
+
+		if filter != nil && len(filter.Statuses) > 0 && !slices.Contains(filter.Statuses, submission.Status) {
+			continue
+		}
+
 		submissions = append(submissions, submission)
 	}
 
