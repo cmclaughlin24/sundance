@@ -11,8 +11,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/cache"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/logger"
+	"github.com/cmclaughlin24/sundance/backend/pkg/worker"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/persistence"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/rest"
 	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/adapters/workers"
@@ -23,6 +25,7 @@ import (
 type settings struct {
 	Port        int                             `json:"port"`
 	Persistence persistence.PersistenceSettings `json:"persistence"`
+	Cache       cache.CacheSettings             `json:"cache"`
 	LogLevel    string                          `json:"log_level"`
 }
 
@@ -39,18 +42,24 @@ func main() {
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: logger.LogLevelToLevel(settings.LogLevel),
 	})
-	l := slog.New(&logger.RequestContextHandler{Handler: handler})
-	r, err := persistence.Bootstrap(settings.Persistence, l)
+	l := slog.New(&worker.WorkerContextHandler{Handler: &logger.RequestContextHandler{Handler: handler}})
 
+	r, err := persistence.Bootstrap(settings.Persistence, l)
 	if err != nil {
-		l.Error(err.Error())
+		l.Error("error", err.Error())
+		panic(err)
+	}
+
+	cm, err := cache.Bootstrap(settings.Cache, l)
+	if err != nil {
+		l.Error("error", err.Error())
 		panic(err)
 	}
 
 	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r))
-	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s))
+	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s), core.WithCache(cm))
 
-	defer app.Close()
+	defer app.Close(context.Background())
 	mux := rest.NewRoutes(app)
 
 	server := &http.Server{

@@ -42,14 +42,14 @@ func main() {
 	r, err := persistence.Bootstrap(settings.Persistence, l)
 
 	if err != nil {
-		l.Error(err.Error())
+		l.Error("error", err.Error())
 		panic(err)
 	}
 
 	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r))
 	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s))
 
-	defer app.Close()
+	defer app.Close(context.Background())
 	mux := rest.NewRoutes(app)
 
 	server := &http.Server{

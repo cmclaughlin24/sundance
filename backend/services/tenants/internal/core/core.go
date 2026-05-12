@@ -1,58 +1,55 @@
 package core
 
 import (
+	"context"
 	"log/slog"
-	"os"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/cache"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
 )
 
 type Application struct {
 	Logger     *slog.Logger
 	Services   *ports.Services
+	Cache      cache.CacheManager
 	repository *ports.Repository
 }
 
-type applicationOptions struct {
-	logger     *slog.Logger
-	repository *ports.Repository
-	services   *ports.Services
-}
-
-func NewApplication(opts ...func(*applicationOptions)) *Application {
-	var ao applicationOptions
+func NewApplication(opts ...func(*Application)) *Application {
+	var a Application
 	for _, opt := range opts {
-		opt(&ao)
+		opt(&a)
 	}
 
-	return &Application{
-		Logger:     ao.logger,
-		Services:   ao.services,
-		repository: ao.repository,
+	return &a
+}
+
+func WithCache(manager cache.CacheManager) func(*Application) {
+	return func(a *Application) {
+		a.Cache = manager
 	}
 }
 
-func WithLogger(logger *slog.Logger) func(*applicationOptions) {
-	return func(ao *applicationOptions) {
-		ao.logger = logger
+func WithLogger(logger *slog.Logger) func(*Application) {
+	return func(a *Application) {
+		a.Logger = logger
 	}
 }
 
-func WithRepository(repository *ports.Repository) func(*applicationOptions) {
-	return func(ao *applicationOptions) {
-		ao.repository = repository
+func WithRepository(repository *ports.Repository) func(*Application) {
+	return func(a *Application) {
+		a.repository = repository
 	}
 }
 
-func WithServices(services *ports.Services) func(*applicationOptions) {
-	return func(ao *applicationOptions) {
-		ao.services = services
+func WithServices(services *ports.Services) func(*Application) {
+	return func(a *Application) {
+		a.Services = services
 	}
 }
 
-func (app *Application) Close() {
-	if err := app.repository.Database.Close(); err != nil {
+func (app *Application) Close(ctx context.Context) {
+	if err := app.repository.Database.Close(ctx); err != nil {
 		app.Logger.Error("an error occurred while closing the database connection", "error", err.Error())
-		os.Exit(1)
 	}
 }

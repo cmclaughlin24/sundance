@@ -12,7 +12,7 @@ func NewInMemoryDatabase() *InMemoryDatabase {
 	return &InMemoryDatabase{}
 }
 
-func (db *InMemoryDatabase) Close() error {
+func (db *InMemoryDatabase) Close(context.Context) error {
 	return nil
 }
 

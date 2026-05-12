@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/worker"
+	"github.com/cmclaughlin24/sundance/backend/pkg/worker/elector"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
@@ -32,6 +33,12 @@ func NewDataSourcesBackgroundWorker(app *core.Application) (*worker.BackgroundWo
 		worker.BgWithLogger[*dataSourceJob](app.Logger),
 		worker.BgWithSize[*dataSourceJob](5),
 		worker.BgWithFetchJobsFn[*dataSourceJob](newDataSourceWorkFn(app)),
+		worker.BgWithElector[*dataSourceJob](elector.NewCacheElector(
+			elector.CacheElectorWithKey("service:tenants:elector"),
+			elector.CacheElectorWithManager(app.Cache),
+			elector.CacheElectorWithInterval(1*time.Minute),
+			elector.CacheElectorWithTTL(2*time.Minute),
+		)),
 	)
 
 	if err != nil {

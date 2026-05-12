@@ -19,8 +19,8 @@ func NewMongoDBDatabase(client *mongo.Client, _ *mongo.Database, logger *slog.Lo
 	}
 }
 
-func (db *MongoDBDatabase) Close() error {
-	return db.client.Disconnect(context.Background())
+func (db *MongoDBDatabase) Close(ctx context.Context) error {
+	return db.client.Disconnect(ctx)
 }
 
 func (db *MongoDBDatabase) BeginTx(ctx context.Context) (context.Context, error) {
