@@ -48,7 +48,7 @@ func (m *RedisCacheManager) Get(ctx context.Context, key string, data any) error
 	if err != nil {
 		if err == redis.Nil {
 			m.logger.DebugContext(ctx, "cache miss", "key", key)
-			return nil
+			return ErrCacheMiss
 		}
 
 		m.logger.ErrorContext(ctx, "failed to get cache entry", "key", key, "error", err)
@@ -57,7 +57,7 @@ func (m *RedisCacheManager) Get(ctx context.Context, key string, data any) error
 
 	if val == "" {
 		m.logger.DebugContext(ctx, "cache miss", "key", key)
-		return nil
+		return ErrCacheMiss
 	}
 
 	if err := json.Unmarshal([]byte(val), &data); err != nil {

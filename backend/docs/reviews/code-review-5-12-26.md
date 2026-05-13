@@ -40,6 +40,10 @@
 
 19. ~~`MongoDBDatabase.BeginTx` leaks session on `StartTransaction` failure~~ (pkg/database, P2) -- `session.EndSession(ctx)` is now called before returning on the `StartTransaction` error path, preventing session leaks. *(Unstaged.)*
 
+20. ~~`CacheManager.Get` cannot distinguish cache miss from cached zero-value~~ (pkg/cache, P2) -- A new `ErrCacheMiss` sentinel error is defined in `cache.go`. Both `InMemoryCacheManager.Get` and `RedisCacheManager.Get` now return `ErrCacheMiss` instead of `nil` when the key doesn't exist or the value is empty. *(Unstaged.)*
+
+21. ~~`Create` blocked by `FindByIdempotencyID` error handling~~ (Submissions, P0) -- The `Create` method now checks `err != nil && err != common.ErrNotFound`, so an `ErrNotFound` return from `FindByIdempotencyID` is correctly treated as "no existing submission" and creation proceeds. Note: uses `==` instead of `errors.Is` for the comparison -- see new issue #1. *(Unstaged.)*
+
 ---
 
 ## Will Not Fix
@@ -54,7 +58,7 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Bugs
 
-1. **`Create` blocked -- `FindByIdempotencyID` returns `ErrNotFound` on miss, treated as failure** (`submissions_service.go:96-105`) -- The `Create` method calls `FindByIdempotencyID` and treats any non-nil error as a failure. The in-memory repository returns `common.ErrNotFound` when no match exists, meaning every genuinely new submission creation fails. The service assumes `nil, nil` means "not found" but repositories return `nil, ErrNotFound`. *(P0 -- blocks all submission creation.)*
+1. **`Create` idempotency check uses `==` instead of `errors.Is`** (`submissions_service.go:98`) -- The fix for the P0 `FindByIdempotencyID` bug uses `err != common.ErrNotFound` instead of `!errors.Is(err, common.ErrNotFound)`. If `ErrNotFound` is ever wrapped, the `==` check will fail silently and re-introduce the creation-blocking bug. Inconsistent with the `errors.Is` pattern adopted across the rest of the codebase this cycle. *(P3.)*
 
 2. **`Replay` does not check tenant authorization** (`submissions_service.go:130-145`) -- Unlike `FindByID` and `FindByReferenceID`, the `Replay` method does NOT verify `submission.TenantID != command.TenantID`. Any tenant can replay another tenant's submission. *(P1 -- authorization bypass.)*
 
@@ -98,21 +102,19 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Bugs
 
-12. **`CacheManager.Get` cannot distinguish cache miss from cached zero-value** (`redis_cache_manager.go:45-69`, `inmemory_cache_manager.go:28-43`) -- Returns `nil` error for both cache miss and cached zero-value. Should return a `bool` hit/miss indicator or a sentinel `ErrCacheMiss`. *(P2.)*
-
-13. **`ErrMissingIdempotencyHeader` and `ErrMissingTenantID` map to 500** (`httputil/http.go:104-109`) -- Neither error matches any `errors.Is` check in `SendErrorResponse`, falling through to the default 500 case. Should be 400 Bad Request. *(P2.)*
+12. **`ErrMissingIdempotencyHeader` and `ErrMissingTenantID` map to 500** (`httputil/http.go:104-109`) -- Neither error matches any `errors.Is` check in `SendErrorResponse`, falling through to the default 500 case. Should be 400 Bad Request. *(P2.)*
 
 #### Architectural
 
-14. **`BackgroundWorker.Start` releases leadership on shutdown but not on `workFn` errors** (`background_worker.go:98`) -- *(Carried from 5/10 #5, P3.)*
+13. **`BackgroundWorker.Start` releases leadership on shutdown but not on `workFn` errors** (`background_worker.go:98`) -- *(Carried from 5/10 #5, P3.)*
 
-15. **`CacheManager` interface conflates caching with distributed locking** (`cache/cache.go:29-36`) -- `Get/Set/Del` (caching) bundled with `AcquireLock/RenewLock/ReleaseLock` (distributed locking). These are separate concerns; violates ISP. *(P2.)*
+14. **`CacheManager` interface conflates caching with distributed locking** (`cache/cache.go:29-36`) -- `Get/Set/Del` (caching) bundled with `AcquireLock/RenewLock/ReleaseLock` (distributed locking). These are separate concerns; violates ISP. *(P2.)*
 
 #### Missing Functionality
 
-16. **No `Close()` on `CacheManager`** (`cache/cache.go`) -- Redis connection never cleanly shut down. Compare with `Database` which has `Close`. *(P3.)*
+15. **No `Close()` on `CacheManager`** (`cache/cache.go`) -- Redis connection never cleanly shut down. Compare with `Database` which has `Close`. *(P3.)*
 
-17. **`RedisCacheManager.Set` hardcodes TTL=0** (`redis_cache_manager.go:79`) -- All cache entries stored with no expiry. Cache grows unboundedly. *(P3.)*
+16. **`RedisCacheManager.Set` hardcodes TTL=0** (`redis_cache_manager.go:79`) -- All cache entries stored with no expiry. Cache grows unboundedly. *(P3.)*
 
 ---
 
@@ -120,11 +122,11 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Architectural
 
-18. **Test coverage gaps** -- Submissions has no handler or service tests. No domain-layer or repository-layer tests exist across services. Zero test files in entire `pkg/` directory. *(Carried from 5/10 #10, P3.)*
+17. **Test coverage gaps** -- Submissions has no handler or service tests. No domain-layer or repository-layer tests exist across services. Zero test files in entire `pkg/` directory. *(Carried from 5/10 #10, P3.)*
 
-19. **No domain events** for cross-service communication. *(Carried from 5/10 #11, P3.)*
+18. **No domain events** for cross-service communication. *(Carried from 5/10 #11, P3.)*
 
-20. **No real authentication** -- Placeholder only. *(Carried from 5/10 #12, P3.)*
+19. **No real authentication** -- Placeholder only. *(Carried from 5/10 #12, P3.)*
 
 ---
 
@@ -132,26 +134,25 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
-| **P0** | 1 | `Create` blocked by `FindByIdempotencyID` error handling | Submissions |
 | **P1** | 2 | `Replay` tenant authorization bypass | Submissions |
 | **P1** | 3 | Worker data flow broken -- submission not passed to `Process` | Submissions |
 | **P2** | 4 | `ReplaySubmissionCommand` no validation tags | Submissions |
 | **P2** | 11 | `Form.Update` mutates before validation | Forms |
-| **P2** | 12 | Cache miss indistinguishable from zero-value | pkg/cache |
-| **P2** | 13 | Middleware errors map to 500 instead of 400 | pkg/common |
-| **P2** | 15 | `CacheManager` conflates caching with locking (ISP) | pkg/cache |
+| **P2** | 12 | Middleware errors map to 500 instead of 400 | pkg/common |
+| **P2** | 14 | `CacheManager` conflates caching with locking (ISP) | pkg/cache |
+| **P3** | 1 | `Create` idempotency check uses `==` not `errors.Is` | Submissions |
 | **P3** | 5 | `sendErrorResponse` wrapper is no-op | Submissions |
 | **P3** | 6 | `Replay` is a stub | Submissions |
 | **P3** | 7 | `SubmissionJobsService.Process` is a stub | Submissions |
 | **P3** | 8 | `Payload` typed as `any` | Submissions |
 | **P3** | 9 | `Find()` no pagination | Tenants |
 | **P3** | 10 | `Lookup` no validation | Tenants |
-| **P3** | 14 | Leadership held despite failures | pkg/worker |
-| **P3** | 16 | No `Close()` on `CacheManager` | pkg/cache |
-| **P3** | 17 | Redis cache has no TTL | pkg/cache |
-| **P3** | 18 | Test coverage gaps | All |
-| **P3** | 19 | No domain events | All |
-| **P3** | 20 | No real authentication | All |
+| **P3** | 13 | Leadership held despite failures | pkg/worker |
+| **P3** | 15 | No `Close()` on `CacheManager` | pkg/cache |
+| **P3** | 16 | Redis cache has no TTL | pkg/cache |
+| **P3** | 17 | Test coverage gaps | All |
+| **P3** | 18 | No domain events | All |
+| **P3** | 19 | No real authentication | All |
 
 ---
 
@@ -161,8 +162,8 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 |---------|--------|------------|
 | **Forms** | **8/10 -- Beta** | Most mature service. Complete CRUD with versioning lifecycle (create, publish, retire). Handler tests provide good HTTP layer coverage. In-memory adapter now enforces version uniqueness matching MongoDB. Service structs properly unexported. Blocked from production by: no service/domain layer tests, `Form.Update` dirty-state bug, no real authentication. |
 | **Tenants** | **7/10 -- Beta** | Fully functional including background job processing pipeline and leader election infrastructure. Clean hexagonal structure with strategies pattern. Service structs properly unexported. Multiple issues resolved this cycle. Remaining gaps are pagination and `Lookup` validation -- both P3. |
-| **Submissions** | **3/10 -- Alpha** | **Critical P0 bug blocks all submission creation.** Authorization bypass in `Replay`. Worker data flow fundamentally broken. `Process` is a stub. Nearly zero test coverage (only route registration tested). Improved from 2/10: in-memory `Statuses` filtering fixed, unused BSON field removed, service structs properly unexported. Not deployable in any environment. |
-| **pkg/** | **5/10 -- Beta** | Cache has no TTL, no miss detection, no shutdown. Middleware errors incorrectly map to 500. `CacheManager` conflates caching with distributed locking (ISP violation). Zero test coverage. The abstractions are well-designed but the implementations have gaps. Session leak in `BeginTx` fixed (unstaged). |
+| **Submissions** | **4/10 -- Alpha** | P0 creation bug resolved (unstaged). Authorization bypass in `Replay`. Worker data flow fundamentally broken. `Process` is a stub. Nearly zero test coverage (only route registration tested). Improved: in-memory `Statuses` filtering fixed, unused BSON field removed, service structs properly unexported, idempotency check functional. Not deployable due to P1 security and worker issues. |
+| **pkg/** | **6/10 -- Beta** | Session leak and cache miss detection both fixed (unstaged). Remaining gaps: cache has no TTL, no shutdown, middleware errors map to 500, `CacheManager` conflates caching with distributed locking (ISP violation). Zero test coverage. The abstractions are well-designed and implementations are improving. |
 
 ---
 
@@ -208,17 +209,21 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 - **`BeginTx` session leak fixed** (unstaged) -- `session.EndSession(ctx)` now called on the `StartTransaction` error path, preventing session leaks when transaction start fails.
 
+- **`CacheManager.Get` cache miss detection** (unstaged) -- New `ErrCacheMiss` sentinel error defined. Both `InMemoryCacheManager.Get` and `RedisCacheManager.Get` now return `ErrCacheMiss` instead of `nil` when the key doesn't exist or the value is empty. Callers can now distinguish cache miss from cached zero-value.
+
+- **P0 `FindByIdempotencyID` creation bug fixed** (unstaged) -- `Create` now checks `err != nil && err != common.ErrNotFound`, so `ErrNotFound` is correctly treated as "no existing submission" and creation proceeds. Note: uses `==` instead of `errors.Is` — tracked as a new P3.
+
 ### Current State
 
-**20 remaining issues** (6 carried from 5/10; 14 newly identified; 19 resolved this cycle). 1 P0, 2 P1, 4 P2, 13 P3.
+**19 remaining issues** (6 carried from 5/10; 13 newly identified; 21 resolved this cycle). 0 P0, 2 P1, 4 P2, 13 P3.
 
 **Forms Service** remains the most mature with handler-level tests and a complete domain model. The `Form.Update` dirty-state mutation bug is the only remaining P2. In-memory version uniqueness enforcement now matches MongoDB. Service struct properly unexported. No service or domain layer tests exist. Production readiness improved to 8/10.
 
 **Tenants Service** has made strong progress this cycle with 6 issues resolved. The background job processing pipeline and leader election are fully functional. Service structs properly unexported. Only two P3 items remain (pagination and `Lookup` validation). Production readiness at 7/10.
 
-**Submissions Service** has a critical P0 bug that blocks all creation. The `FindByIdempotencyID` error handling assumes `nil, nil` for "not found" but repositories return `ErrNotFound`. Additionally, `Replay` has a tenant authorization bypass, the worker data flow is broken (submission not passed to `Process`), and both `Process` stubs remain. Unstaged improvements include `Statuses` filtering, unused BSON field cleanup, and service struct unexport. This service needs significant work before deployment.
+**Submissions Service** P0 creation bug is resolved (unstaged) — `FindByIdempotencyID` now correctly treats `ErrNotFound` as "no existing submission". The fix uses `==` instead of `errors.Is` (tracked as new P3). `Replay` still has a tenant authorization bypass (P1), the worker data flow is broken (P1), and both `Process` stubs remain. Unstaged improvements also include `Statuses` filtering, unused BSON field cleanup, and service struct unexport. Production readiness improved to 4/10.
 
-**pkg/** provides well-designed abstractions (`Database`, `CacheManager`, `Elector`, `BackgroundWorker`) with functioning implementations. The `BeginTx` session leak is fixed (unstaged). Remaining gaps: cache entries never expire, cache miss is indistinguishable from zero-value, middleware errors produce 500s, and `CacheManager` conflates caching with distributed locking. Zero test coverage across the entire shared package.
+**pkg/** provides well-designed abstractions (`Database`, `CacheManager`, `Elector`, `BackgroundWorker`) with functioning implementations. The `BeginTx` session leak and cache miss detection are both fixed (unstaged). Remaining gaps: cache entries never expire, middleware errors produce 500s, `CacheManager` conflates caching with distributed locking, and no `Close()` for clean shutdown. Zero test coverage across the entire shared package. Production readiness improved to 6/10.
 
 **Hexagonal Architecture** -- All three services maintain correct dependency direction (adapters -> core, never core -> adapters). Port interfaces cleanly separate primary (driving) and secondary (driven) boundaries. The `pkg/` packages serve as infrastructure modules consumed by adapter layers. The unstaged service struct unexport reinforces this: consumers depend on port interfaces, not concrete types.
 
@@ -228,8 +233,8 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 ### Highest-Impact Improvements
 
-1. **Fix `FindByIdempotencyID` error handling in submissions `Create`** (P0 -- all creation blocked)
-2. **Add tenant authorization check to `Replay`** (P1 -- security)
-3. **Fix submissions worker data flow** (P1 -- pass submission to `Process`)
-4. **Add `validate` tags to `ReplaySubmissionCommand`** (P2 -- validation no-op)
-5. **Add `ErrMissingIdempotencyHeader`/`ErrMissingTenantID` mappings to `SendErrorResponse`** (P2 -- middleware errors produce 500s)
+1. **Add tenant authorization check to `Replay`** (P1 -- security)
+2. **Fix submissions worker data flow** (P1 -- pass submission to `Process`)
+3. **Add `validate` tags to `ReplaySubmissionCommand`** (P2 -- validation no-op)
+4. **Add `ErrMissingIdempotencyHeader`/`ErrMissingTenantID` mappings to `SendErrorResponse`** (P2 -- middleware errors produce 500s)
+5. **Use `errors.Is` in submissions `Create` idempotency check** (P3 -- fragile if error is ever wrapped)

@@ -32,11 +32,11 @@ func (m *InMemoryCacheManager) Get(ctx context.Context, key string, data any) er
 	val, ok := m.cache[key]
 
 	if !ok {
-		return nil
+		return ErrCacheMiss
 	}
 
 	if val == "" {
-		return nil
+		return ErrCacheMiss
 	}
 
 	return json.Unmarshal([]byte(val), &data)

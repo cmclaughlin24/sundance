@@ -3,6 +3,7 @@ package cache
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 	"time"
@@ -15,6 +16,10 @@ type CacheType string
 const (
 	CacheTypeInMemory CacheType = "inmemory"
 	CacheTypeRedis    CacheType = "redis"
+)
+
+var (
+	ErrCacheMiss = errors.New("cache miss")
 )
 
 type bootstrapFn func(CacheOptions, *slog.Logger) (CacheManager, error)
