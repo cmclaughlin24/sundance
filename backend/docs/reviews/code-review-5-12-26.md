@@ -42,7 +42,7 @@
 
 20. ~~`CacheManager.Get` cannot distinguish cache miss from cached zero-value~~ (pkg/cache, P2) -- A new `ErrCacheMiss` sentinel error is defined in `cache.go`. Both `InMemoryCacheManager.Get` and `RedisCacheManager.Get` now return `ErrCacheMiss` instead of `nil` when the key doesn't exist or the value is empty. *(Unstaged.)*
 
-21. ~~`Create` blocked by `FindByIdempotencyID` error handling~~ (Submissions, P0) -- The `Create` method now checks `err != nil && err != common.ErrNotFound`, so an `ErrNotFound` return from `FindByIdempotencyID` is correctly treated as "no existing submission" and creation proceeds. Note: uses `==` instead of `errors.Is` for the comparison -- see new issue #1. *(Unstaged.)*
+21. ~~`Create` blocked by `FindByIdempotencyID` error handling~~ (Submissions, P0) -- The `Create` method now checks `err != nil && err != common.ErrNotFound`, so an `ErrNotFound` return from `FindByIdempotencyID` is correctly treated as "no existing submission" and creation proceeds. *(Unstaged.)*
 
 ---
 
@@ -58,25 +58,23 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Bugs
 
-1. **`Create` idempotency check uses `==` instead of `errors.Is`** (`submissions_service.go:98`) -- The fix for the P0 `FindByIdempotencyID` bug uses `err != common.ErrNotFound` instead of `!errors.Is(err, common.ErrNotFound)`. If `ErrNotFound` is ever wrapped, the `==` check will fail silently and re-introduce the creation-blocking bug. Inconsistent with the `errors.Is` pattern adopted across the rest of the codebase this cycle. *(P3.)*
+1. **`Replay` does not check tenant authorization** (`submissions_service.go:130-145`) -- Unlike `FindByID` and `FindByReferenceID`, the `Replay` method does NOT verify `submission.TenantID != command.TenantID`. Any tenant can replay another tenant's submission. *(P1 -- authorization bypass.)*
 
-2. **`Replay` does not check tenant authorization** (`submissions_service.go:130-145`) -- Unlike `FindByID` and `FindByReferenceID`, the `Replay` method does NOT verify `submission.TenantID != command.TenantID`. Any tenant can replay another tenant's submission. *(P1 -- authorization bypass.)*
+2. **`submissionJob.Process` does not pass the held `*domain.Submission` to the service** (`workers/submissions_worker.go:26-28`) -- The `submissionJob` holds a `*domain.Submission` in field `s`, but `Process` calls `j.service.Process(ctx)` without passing it. The `SubmissionJobsService.Process` method has no way to know which submission to process. Worker data flow is fundamentally broken. *(P1 -- worker non-functional.)*
 
-3. **`submissionJob.Process` does not pass the held `*domain.Submission` to the service** (`workers/submissions_worker.go:26-28`) -- The `submissionJob` holds a `*domain.Submission` in field `s`, but `Process` calls `j.service.Process(ctx)` without passing it. The `SubmissionJobsService.Process` method has no way to know which submission to process. Worker data flow is fundamentally broken. *(P1 -- worker non-functional.)*
-
-4. **`ReplaySubmissionCommand` has no `validate` tags** (`ports/commands.go:29-32`) -- `TenantID` and `ID` fields have no `validate:"required"` tags, so `validate.ValidateStruct(command)` always passes even with empty values. *(P2.)*
+3. **`ReplaySubmissionCommand` has no `validate` tags** (`ports/commands.go:29-32`) -- `TenantID` and `ID` fields have no `validate:"required"` tags, so `validate.ValidateStruct(command)` always passes even with empty values. *(P2.)*
 
 #### Missing Functionality
 
-5. **`sendErrorResponse` wrapper adds no value** (`handlers.go:194-199`) -- *(Carried from 5/10 #7, P3.)*
+4. **`sendErrorResponse` wrapper adds no value** (`handlers.go:194-199`) -- *(Carried from 5/10 #7, P3.)*
 
-6. **`Replay` service method is a stub** (`submissions_service.go:130-145`) -- *(Carried from 5/10 #8, P3.)*
+5. **`Replay` service method is a stub** (`submissions_service.go:130-145`) -- *(Carried from 5/10 #8, P3.)*
 
-7. **`SubmissionJobsService.Process` is a stub** (`submission_jobs_service.go:35-37`) -- Returns `nil` without doing anything. Separate from the `Replay` stub. *(P3.)*
+6. **`SubmissionJobsService.Process` is a stub** (`submission_jobs_service.go:35-37`) -- Returns `nil` without doing anything. Separate from the `Replay` stub. *(P3.)*
 
 #### Code Quality
 
-8. **`Payload` typed as `any`** (`submission.go:36`) -- *(Carried from 5/10 #9, P3.)*
+7. **`Payload` typed as `any`** (`submission.go:36`) -- *(Carried from 5/10 #9, P3.)*
 
 ---
 
@@ -84,9 +82,9 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Missing Functionality
 
-9. **`Find()` has no pagination or filtering** (`tenants_service.go`) -- *(Carried from 5/10 #2, P3.)*
+8. **`Find()` has no pagination or filtering** (`tenants_service.go`) -- *(Carried from 5/10 #2, P3.)*
 
-10. **`Lookup` value object has no validation** (`lookup.go`) -- *(Carried from 5/10 #3, P3.)*
+9. **`Lookup` value object has no validation** (`lookup.go`) -- *(Carried from 5/10 #3, P3.)*
 
 ---
 
@@ -94,7 +92,7 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Bugs
 
-11. **`Form.Update` mutates fields before validation** (`domain/form.go:53-66`) -- The `Update` method sets fields, then calls `validate.ValidateStruct(f)`. If validation fails, the entity is left in a dirty state with the invalid data already applied. Should validate first or operate on a copy. *(P2.)*
+10. **`Form.Update` mutates fields before validation** (`domain/form.go:53-66`) -- The `Update` method sets fields, then calls `validate.ValidateStruct(f)`. If validation fails, the entity is left in a dirty state with the invalid data already applied. Should validate first or operate on a copy. *(P2.)*
 
 ---
 
@@ -102,19 +100,19 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Bugs
 
-12. **`ErrMissingIdempotencyHeader` and `ErrMissingTenantID` map to 500** (`httputil/http.go:104-109`) -- Neither error matches any `errors.Is` check in `SendErrorResponse`, falling through to the default 500 case. Should be 400 Bad Request. *(P2.)*
+11. **`ErrMissingIdempotencyHeader` and `ErrMissingTenantID` map to 500** (`httputil/http.go:104-109`) -- Neither error matches any `errors.Is` check in `SendErrorResponse`, falling through to the default 500 case. Should be 400 Bad Request. *(P2.)*
 
 #### Architectural
 
-13. **`BackgroundWorker.Start` releases leadership on shutdown but not on `workFn` errors** (`background_worker.go:98`) -- *(Carried from 5/10 #5, P3.)*
+12. **`BackgroundWorker.Start` releases leadership on shutdown but not on `workFn` errors** (`background_worker.go:98`) -- *(Carried from 5/10 #5, P3.)*
 
-14. **`CacheManager` interface conflates caching with distributed locking** (`cache/cache.go:29-36`) -- `Get/Set/Del` (caching) bundled with `AcquireLock/RenewLock/ReleaseLock` (distributed locking). These are separate concerns; violates ISP. *(P2.)*
+13. **`CacheManager` interface conflates caching with distributed locking** (`cache/cache.go:29-36`) -- `Get/Set/Del` (caching) bundled with `AcquireLock/RenewLock/ReleaseLock` (distributed locking). These are separate concerns; violates ISP. *(P2.)*
 
 #### Missing Functionality
 
-15. **No `Close()` on `CacheManager`** (`cache/cache.go`) -- Redis connection never cleanly shut down. Compare with `Database` which has `Close`. *(P3.)*
+14. **No `Close()` on `CacheManager`** (`cache/cache.go`) -- Redis connection never cleanly shut down. Compare with `Database` which has `Close`. *(P3.)*
 
-16. **`RedisCacheManager.Set` hardcodes TTL=0** (`redis_cache_manager.go:79`) -- All cache entries stored with no expiry. Cache grows unboundedly. *(P3.)*
+15. **`RedisCacheManager.Set` hardcodes TTL=0** (`redis_cache_manager.go:79`) -- All cache entries stored with no expiry. Cache grows unboundedly. *(P3.)*
 
 ---
 
@@ -122,11 +120,11 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Architectural
 
-17. **Test coverage gaps** -- Submissions has no handler or service tests. No domain-layer or repository-layer tests exist across services. Zero test files in entire `pkg/` directory. *(Carried from 5/10 #10, P3.)*
+16. **Test coverage gaps** -- Submissions has no handler or service tests. No domain-layer or repository-layer tests exist across services. Zero test files in entire `pkg/` directory. *(Carried from 5/10 #10, P3.)*
 
-18. **No domain events** for cross-service communication. *(Carried from 5/10 #11, P3.)*
+17. **No domain events** for cross-service communication. *(Carried from 5/10 #11, P3.)*
 
-19. **No real authentication** -- Placeholder only. *(Carried from 5/10 #12, P3.)*
+18. **No real authentication** -- Placeholder only. *(Carried from 5/10 #12, P3.)*
 
 ---
 
@@ -134,25 +132,24 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
-| **P1** | 2 | `Replay` tenant authorization bypass | Submissions |
-| **P1** | 3 | Worker data flow broken -- submission not passed to `Process` | Submissions |
-| **P2** | 4 | `ReplaySubmissionCommand` no validation tags | Submissions |
-| **P2** | 11 | `Form.Update` mutates before validation | Forms |
-| **P2** | 12 | Middleware errors map to 500 instead of 400 | pkg/common |
-| **P2** | 14 | `CacheManager` conflates caching with locking (ISP) | pkg/cache |
-| **P3** | 1 | `Create` idempotency check uses `==` not `errors.Is` | Submissions |
-| **P3** | 5 | `sendErrorResponse` wrapper is no-op | Submissions |
-| **P3** | 6 | `Replay` is a stub | Submissions |
-| **P3** | 7 | `SubmissionJobsService.Process` is a stub | Submissions |
-| **P3** | 8 | `Payload` typed as `any` | Submissions |
-| **P3** | 9 | `Find()` no pagination | Tenants |
-| **P3** | 10 | `Lookup` no validation | Tenants |
-| **P3** | 13 | Leadership held despite failures | pkg/worker |
-| **P3** | 15 | No `Close()` on `CacheManager` | pkg/cache |
-| **P3** | 16 | Redis cache has no TTL | pkg/cache |
-| **P3** | 17 | Test coverage gaps | All |
-| **P3** | 18 | No domain events | All |
-| **P3** | 19 | No real authentication | All |
+| **P1** | 1 | `Replay` tenant authorization bypass | Submissions |
+| **P1** | 2 | Worker data flow broken -- submission not passed to `Process` | Submissions |
+| **P2** | 3 | `ReplaySubmissionCommand` no validation tags | Submissions |
+| **P2** | 10 | `Form.Update` mutates before validation | Forms |
+| **P2** | 11 | Middleware errors map to 500 instead of 400 | pkg/common |
+| **P2** | 13 | `CacheManager` conflates caching with locking (ISP) | pkg/cache |
+| **P3** | 4 | `sendErrorResponse` wrapper is no-op | Submissions |
+| **P3** | 5 | `Replay` is a stub | Submissions |
+| **P3** | 6 | `SubmissionJobsService.Process` is a stub | Submissions |
+| **P3** | 7 | `Payload` typed as `any` | Submissions |
+| **P3** | 8 | `Find()` no pagination | Tenants |
+| **P3** | 9 | `Lookup` no validation | Tenants |
+| **P3** | 12 | Leadership held despite failures | pkg/worker |
+| **P3** | 14 | No `Close()` on `CacheManager` | pkg/cache |
+| **P3** | 15 | Redis cache has no TTL | pkg/cache |
+| **P3** | 16 | Test coverage gaps | All |
+| **P3** | 17 | No domain events | All |
+| **P3** | 18 | No real authentication | All |
 
 ---
 
@@ -211,11 +208,11 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 - **`CacheManager.Get` cache miss detection** (unstaged) -- New `ErrCacheMiss` sentinel error defined. Both `InMemoryCacheManager.Get` and `RedisCacheManager.Get` now return `ErrCacheMiss` instead of `nil` when the key doesn't exist or the value is empty. Callers can now distinguish cache miss from cached zero-value.
 
-- **P0 `FindByIdempotencyID` creation bug fixed** (unstaged) -- `Create` now checks `err != nil && err != common.ErrNotFound`, so `ErrNotFound` is correctly treated as "no existing submission" and creation proceeds. Note: uses `==` instead of `errors.Is` — tracked as a new P3.
+- **P0 `FindByIdempotencyID` creation bug fixed** (unstaged) -- `Create` now checks `err != nil && err != common.ErrNotFound`, so `ErrNotFound` is correctly treated as "no existing submission" and creation proceeds.
 
 ### Current State
 
-**19 remaining issues** (6 carried from 5/10; 13 newly identified; 21 resolved this cycle). 0 P0, 2 P1, 4 P2, 13 P3.
+**18 remaining issues** (6 carried from 5/10; 12 newly identified; 21 resolved this cycle). 0 P0, 2 P1, 4 P2, 12 P3.
 
 **Forms Service** remains the most mature with handler-level tests and a complete domain model. The `Form.Update` dirty-state mutation bug is the only remaining P2. In-memory version uniqueness enforcement now matches MongoDB. Service struct properly unexported. No service or domain layer tests exist. Production readiness improved to 8/10.
 
@@ -237,4 +234,4 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 2. **Fix submissions worker data flow** (P1 -- pass submission to `Process`)
 3. **Add `validate` tags to `ReplaySubmissionCommand`** (P2 -- validation no-op)
 4. **Add `ErrMissingIdempotencyHeader`/`ErrMissingTenantID` mappings to `SendErrorResponse`** (P2 -- middleware errors produce 500s)
-5. **Use `errors.Is` in submissions `Create` idempotency check** (P3 -- fragile if error is ever wrapped)
+5. **Fix `Form.Update` dirty-state mutation** (P2 -- validate before mutating)
