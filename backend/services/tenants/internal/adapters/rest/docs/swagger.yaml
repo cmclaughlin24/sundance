@@ -1,16 +1,45 @@
 basePath: /api/v1
 definitions:
-  domain.DataSourceType:
-    enum:
-    - static
-    - scheduled
-    - webhook
-    type: string
-    x-enum-varnames:
-    - DataSourceTypeStatic
-    - DataSourceTypeScheduled
-    - DataSourceTypeWebhook
-  dto.DataSourceResponse:
+  APIErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+      statusCode:
+        type: integer
+    type: object
+  APIResponse-DataSourceResponse:
+    properties:
+      data:
+        $ref: '#/definitions/DataSourceResponse'
+      message:
+        type: string
+    type: object
+  APIResponse-TenantResponse:
+    properties:
+      data:
+        $ref: '#/definitions/TenantResponse'
+      message:
+        type: string
+    type: object
+  DataSourceRequest:
+    properties:
+      attributes: {}
+      description:
+        maxLength: 500
+        type: string
+      name:
+        maxLength: 75
+        type: string
+      type:
+        $ref: '#/definitions/DataSourceType'
+    required:
+    - attributes
+    - name
+    - type
+    type: object
+  DataSourceResponse:
     properties:
       attributes: {}
       createdAt:
@@ -24,18 +53,39 @@ definitions:
       tenantId:
         type: string
       type:
-        $ref: '#/definitions/domain.DataSourceType'
+        $ref: '#/definitions/DataSourceType'
       updatedAt:
         type: string
     type: object
-  dto.LookupResponse:
+  DataSourceType:
+    enum:
+    - static
+    - scheduled
+    - webhook
+    type: string
+    x-enum-varnames:
+    - DataSourceTypeStatic
+    - DataSourceTypeScheduled
+    - DataSourceTypeWebhook
+  LookupResponse:
     properties:
       label:
         type: string
       value:
         type: string
     type: object
-  dto.TenantResponse:
+  TenantRequest:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+      name:
+        maxLength: 75
+        type: string
+    required:
+    - name
+    type: object
+  TenantResponse:
     properties:
       createdAt:
         type: string
@@ -71,8 +121,48 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dto.DataSourceResponse'
+              $ref: '#/definitions/DataSourceResponse'
             type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Get all data sources
+      tags:
+      - Data Sources
+    post:
+      consumes:
+      - application/json
+      description: The attributes field is validated against the schema for the specified
+        data source type.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Create Data Source
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/DataSourceRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/APIResponse-DataSourceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Create a data source
       tags:
       - Data Sources
   /data-sources/{id}:
@@ -92,7 +182,18 @@ paths:
         type: string
       produces:
       - application/json
-      responses: {}
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Delete a data source
       tags:
       - Data Sources
     get:
@@ -115,12 +216,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.DataSourceResponse'
+            $ref: '#/definitions/DataSourceResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Get a data source by ID
       tags:
       - Data Sources
     put:
       consumes:
       - application/json
+      description: The attributes field is validated against the schema for the specified
+        data source type.
       parameters:
       - description: Tenant ID
         in: header
@@ -132,15 +244,40 @@ paths:
         name: id
         required: true
         type: string
+      - description: Update Data Source
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/DataSourceRequest'
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/APIResponse-DataSourceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Update a data source
       tags:
       - Data Sources
   /data-sources/{id}/look-ups:
     get:
       consumes:
       - application/json
+      description: Returns key-value pairs suitable for populating selection inputs
+        from the specified data source.
       parameters:
       - description: Tenant ID
         in: header
@@ -158,7 +295,18 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.LookupResponse'
+            items:
+              $ref: '#/definitions/LookupResponse'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Get data source look-ups
       tags:
       - Data Sources
   /tenants:
@@ -172,22 +320,48 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dto.TenantResponse'
+              $ref: '#/definitions/TenantResponse'
             type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Get all tenants
       tags:
       - Tenants
     post:
       consumes:
       - application/json
+      parameters:
+      - description: Create Tenant
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/TenantRequest'
       produces:
       - application/json
-      responses: {}
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/APIResponse-TenantResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Create a tenant
       tags:
       - Tenants
   /tenants/{id}:
     delete:
       consumes:
       - application/json
+      description: All data sources belonging to the tenant will also be deleted.
       parameters:
       - description: Tenant ID
         in: path
@@ -196,7 +370,18 @@ paths:
         type: string
       produces:
       - application/json
-      responses: {}
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Delete a tenant
       tags:
       - Tenants
     get:
@@ -214,7 +399,16 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.TenantResponse'
+            $ref: '#/definitions/TenantResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Get a tenant by ID
       tags:
       - Tenants
     put:
@@ -226,9 +420,32 @@ paths:
         name: id
         required: true
         type: string
+      - description: Update Tenant
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/TenantRequest'
       produces:
       - application/json
-      responses: {}
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/APIResponse-TenantResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Update a tenant
       tags:
       - Tenants
 swagger: "2.0"

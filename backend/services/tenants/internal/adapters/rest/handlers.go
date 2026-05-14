@@ -27,12 +27,13 @@ func newHandlers(app *core.Application) *handlers {
 	}
 }
 
-// @summary
-// @tags 		Tenants
-// @accept 		json
-// @produce 	json
-// @success 	200 {array} dto.TenantResponse
-// @Router 		/tenants [get]
+// @summary		Get all tenants
+// @tags		Tenants
+// @accept		json
+// @produce		json
+// @success		200 {array} dto.TenantResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/tenants [get]
 func (h *handlers) getTenants(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[[]*domain.Tenant], 1)
 
@@ -61,13 +62,15 @@ func (h *handlers) getTenants(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// @summary
-// @tags 		Tenants
-// @accept 		json
-// @produce 	json
-// @param 		id path string true "Tenant ID"
-// @success 	200 {object} dto.TenantResponse
-// @Router 		/tenants/{id} [get]
+// @summary		Get a tenant by ID
+// @tags		Tenants
+// @accept		json
+// @produce		json
+// @param		id path string true "Tenant ID"
+// @success		200 {object} dto.TenantResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/tenants/{id} [get]
 func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantIDPathValue(r)
 	resultChan := make(chan result[*domain.Tenant], 1)
@@ -92,11 +95,15 @@ func (h *handlers) getTenant(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// @summary
-// @tags 		Tenants
-// @accept 		json
-// @produce 	json
-// @Router 		/tenants [post]
+// @summary		Create a tenant
+// @tags		Tenants
+// @accept		json
+// @produce		json
+// @param		body body dto.TenantRequest true "Create Tenant"
+// @success		201 {object} httputil.APIResponse[dto.TenantResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/tenants [post]
 func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 	var body dto.TenantRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -131,12 +138,17 @@ func (h *handlers) createTenant(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// @summary
-// @tags 		Tenants
-// @accept 		json
-// @produce 	json
-// @param 		id path string true "Tenant ID"
-// @Router 		/tenants/{id} [put]
+// @summary		Update a tenant
+// @tags		Tenants
+// @accept		json
+// @produce		json
+// @param		id path string true "Tenant ID"
+// @param		body body dto.TenantRequest true "Update Tenant"
+// @success		200 {object} httputil.APIResponse[dto.TenantResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/tenants/{id} [put]
 func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantIDPathValue(r)
 
@@ -173,12 +185,16 @@ func (h *handlers) updateTenant(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// @summary
-// @tags 		Tenants
-// @accept 		json
-// @produce 	json
-// @param 		id path string true "Tenant ID"
-// @Router 		/tenants/{id} [delete]
+// @summary		Delete a tenant
+// @description	All data sources belonging to the tenant will also be deleted.
+// @tags		Tenants
+// @accept		json
+// @produce		json
+// @param		id path string true "Tenant ID"
+// @success		204
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/tenants/{id} [delete]
 func (h *handlers) deleteTenant(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantIDPathValue(r)
 	resultChan := make(chan result[any], 1)
@@ -203,13 +219,14 @@ func (h *handlers) deleteTenant(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// @summary
-// @tags 		Data Sources
-// @accept 		json
-// @produce 	json
-// @param  		X-Tenant-ID header string true "Tenant ID"
-// @success 	200 {array} dto.DataSourceResponse
-// @Router 		/data-sources [get]
+// @summary		Get all data sources
+// @tags		Data Sources
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @success		200 {array} dto.DataSourceResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/data-sources [get]
 func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
 	query := ports.NewListDataSourceQuery(tenantID)
@@ -240,14 +257,16 @@ func (h *handlers) getDataSources(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// @summary
-// @tags 		Data Sources
-// @accept 		json
-// @produce 	json
-// @param  		X-Tenant-ID header string true "Tenant ID"
-// @param 		id path string true "Data Source ID"
-// @success 	200 {object} dto.DataSourceResponse
-// @Router 		/data-sources/{id} [get]
+// @summary		Get a data source by ID
+// @tags		Data Sources
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		id path string true "Data Source ID"
+// @success		200 {object} dto.DataSourceResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/data-sources/{id} [get]
 func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
 	sourceID := chi.URLParam(r, "dataSourceId")
@@ -274,6 +293,17 @@ func (h *handlers) getDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Create a data source
+// @description	The attributes field is validated against the schema for the specified data source type.
+// @tags		Data Sources
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		body body dto.DataSourceRequest true "Create Data Source"
+// @success		201 {object} httputil.APIResponse[dto.DataSourceResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/data-sources [post]
 func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
 
@@ -322,13 +352,19 @@ func (h *handlers) createDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// @summary
-// @tags 		Data Sources
-// @accept 		json
-// @produce 	json
-// @param  		X-Tenant-ID header string true "Tenant ID"
-// @param 		id path string true "Data Source ID"
-// @Router 		/data-sources/{id} [put]
+// @summary		Update a data source
+// @description	The attributes field is validated against the schema for the specified data source type.
+// @tags		Data Sources
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		id path string true "Data Source ID"
+// @param		body body dto.DataSourceRequest true "Update Data Source"
+// @success		200 {object} httputil.APIResponse[dto.DataSourceResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/data-sources/{id} [put]
 func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 	var body dto.DataSourceRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -378,13 +414,16 @@ func (h *handlers) updateDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// @summary
-// @tags 		Data Sources
-// @accept 		json
-// @produce 	json
-// @param  		X-Tenant-ID header string true "Tenant ID"
-// @param 		id path string true "Data Source ID"
-// @Router 		/data-sources/{id} [delete]
+// @summary		Delete a data source
+// @tags		Data Sources
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		id path string true "Data Source ID"
+// @success		204
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/data-sources/{id} [delete]
 func (h *handlers) deleteDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
 	sourceID := chi.URLParam(r, "dataSourceId")
@@ -411,14 +450,17 @@ func (h *handlers) deleteDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// @summary
-// @tags 		Data Sources
-// @accept 		json
-// @produce 	json
-// @param  		X-Tenant-ID header string true "Tenant ID"
-// @param 		id path string true "Data Source ID"
-// @success 	200 {object} dto.LookupResponse
-// @Router 		/data-sources/{id}/look-ups [get]
+// @summary		Get data source look-ups
+// @description	Returns key-value pairs suitable for populating selection inputs from the specified data source.
+// @tags		Data Sources
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		id path string true "Data Source ID"
+// @success		200 {array} dto.LookupResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/data-sources/{id}/look-ups [get]
 func (h *handlers) getLookups(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
 	sourceID := chi.URLParam(r, "dataSourceId")

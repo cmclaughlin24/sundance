@@ -26,6 +26,7 @@ const docTemplate = `{
                 "tags": [
                     "Data Sources"
                 ],
+                "summary": "Get all data sources",
                 "parameters": [
                     {
                         "type": "string",
@@ -41,8 +42,65 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.DataSourceResponse"
+                                "$ref": "#/definitions/DataSourceResponse"
                             }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "The attributes field is validated against the schema for the specified data source type.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Data Sources"
+                ],
+                "summary": "Create a data source",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Create Data Source",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DataSourceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/APIResponse-DataSourceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -59,6 +117,7 @@ const docTemplate = `{
                 "tags": [
                     "Data Sources"
                 ],
+                "summary": "Get a data source by ID",
                 "parameters": [
                     {
                         "type": "string",
@@ -79,12 +138,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.DataSourceResponse"
+                            "$ref": "#/definitions/DataSourceResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
             },
             "put": {
+                "description": "The attributes field is validated against the schema for the specified data source type.",
                 "consumes": [
                     "application/json"
                 ],
@@ -94,6 +166,7 @@ const docTemplate = `{
                 "tags": [
                     "Data Sources"
                 ],
+                "summary": "Update a data source",
                 "parameters": [
                     {
                         "type": "string",
@@ -108,9 +181,43 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Update Data Source",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DataSourceRequest"
+                        }
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/APIResponse-DataSourceResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
             },
             "delete": {
                 "consumes": [
@@ -122,6 +229,7 @@ const docTemplate = `{
                 "tags": [
                     "Data Sources"
                 ],
+                "summary": "Delete a data source",
                 "parameters": [
                     {
                         "type": "string",
@@ -138,11 +246,28 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/data-sources/{id}/look-ups": {
             "get": {
+                "description": "Returns key-value pairs suitable for populating selection inputs from the specified data source.",
                 "consumes": [
                     "application/json"
                 ],
@@ -152,6 +277,7 @@ const docTemplate = `{
                 "tags": [
                     "Data Sources"
                 ],
+                "summary": "Get data source look-ups",
                 "parameters": [
                     {
                         "type": "string",
@@ -172,7 +298,22 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.LookupResponse"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/LookupResponse"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -189,14 +330,21 @@ const docTemplate = `{
                 "tags": [
                     "Tenants"
                 ],
+                "summary": "Get all tenants",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dto.TenantResponse"
+                                "$ref": "#/definitions/TenantResponse"
                             }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -211,7 +359,38 @@ const docTemplate = `{
                 "tags": [
                     "Tenants"
                 ],
-                "responses": {}
+                "summary": "Create a tenant",
+                "parameters": [
+                    {
+                        "description": "Create Tenant",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/TenantRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/APIResponse-TenantResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
             }
         },
         "/tenants/{id}": {
@@ -225,6 +404,7 @@ const docTemplate = `{
                 "tags": [
                     "Tenants"
                 ],
+                "summary": "Get a tenant by ID",
                 "parameters": [
                     {
                         "type": "string",
@@ -238,7 +418,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dto.TenantResponse"
+                            "$ref": "#/definitions/TenantResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -253,6 +445,7 @@ const docTemplate = `{
                 "tags": [
                     "Tenants"
                 ],
+                "summary": "Update a tenant",
                 "parameters": [
                     {
                         "type": "string",
@@ -260,11 +453,46 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Update Tenant",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/TenantRequest"
+                        }
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/APIResponse-TenantResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
             },
             "delete": {
+                "description": "All data sources belonging to the tenant will also be deleted.",
                 "consumes": [
                     "application/json"
                 ],
@@ -274,6 +502,7 @@ const docTemplate = `{
                 "tags": [
                     "Tenants"
                 ],
+                "summary": "Delete a tenant",
                 "parameters": [
                     {
                         "type": "string",
@@ -283,25 +512,86 @@ const docTemplate = `{
                         "required": true
                     }
                 ],
-                "responses": {}
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
             }
         }
     },
     "definitions": {
-        "domain.DataSourceType": {
-            "type": "string",
-            "enum": [
-                "static",
-                "scheduled",
-                "webhook"
-            ],
-            "x-enum-varnames": [
-                "DataSourceTypeStatic",
-                "DataSourceTypeScheduled",
-                "DataSourceTypeWebhook"
-            ]
+        "APIErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "statusCode": {
+                    "type": "integer"
+                }
+            }
         },
-        "dto.DataSourceResponse": {
+        "APIResponse-DataSourceResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/DataSourceResponse"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "APIResponse-TenantResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/TenantResponse"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "DataSourceRequest": {
+            "type": "object",
+            "required": [
+                "attributes",
+                "name",
+                "type"
+            ],
+            "properties": {
+                "attributes": {},
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 75
+                },
+                "type": {
+                    "$ref": "#/definitions/DataSourceType"
+                }
+            }
+        },
+        "DataSourceResponse": {
             "type": "object",
             "properties": {
                 "attributes": {},
@@ -321,14 +611,27 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/domain.DataSourceType"
+                    "$ref": "#/definitions/DataSourceType"
                 },
                 "updatedAt": {
                     "type": "string"
                 }
             }
         },
-        "dto.LookupResponse": {
+        "DataSourceType": {
+            "type": "string",
+            "enum": [
+                "static",
+                "scheduled",
+                "webhook"
+            ],
+            "x-enum-varnames": [
+                "DataSourceTypeStatic",
+                "DataSourceTypeScheduled",
+                "DataSourceTypeWebhook"
+            ]
+        },
+        "LookupResponse": {
             "type": "object",
             "properties": {
                 "label": {
@@ -339,7 +642,23 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.TenantResponse": {
+        "TenantRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 75
+                }
+            }
+        },
+        "TenantResponse": {
             "type": "object",
             "properties": {
                 "createdAt": {
