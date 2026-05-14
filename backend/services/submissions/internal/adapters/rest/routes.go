@@ -45,7 +45,7 @@ func NewRoutes(app *core.Application) http.Handler {
 
 	docs.SwaggerInfo.Host = "localhost:8081"
 	docs.SwaggerInfo.Title = "Form Builder SaaS | Submissions Service"
-	docs.SwaggerInfo.Description = ""
+	docs.SwaggerInfo.Description = "The Submissions Service handles form submission intake and lifecycle tracking for the Form Builder SaaS platform. It provides idempotent submission creation with asynchronous processing, status tracking via reference IDs, and the ability to replay submission events for reprocessing by downstream consumers."
 	docs.SwaggerInfo.Version = "1.0.0"
 	docs.SwaggerInfo.BasePath = "/api/v1"
 

@@ -65,6 +65,16 @@ func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Get a submission by reference ID
+// @tags		Submissions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		referenceId path string true "Reference ID"
+// @success		200 {object} dto.SubmissionResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/submissions/by-reference/{referenceId} [get]
 func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	referenceID := h.getReferenceIDPathValue(r)
@@ -91,6 +101,18 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 	}
 }
 
+// @summary		Create a submission
+// @description	Accepts a form submission for asynchronous processing. An Idempotency-Key header is required to prevent duplicate submissions.
+// @tags		Submissions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		Idempotency-Key header string true "Idempotency Key"
+// @param		body body dto.SubmissionRequest true "Create Submission"
+// @success		202 {object} httputil.APIResponse[dto.SubmissionResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/submissions [post]
 func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 	var body dto.SubmissionRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -133,6 +155,16 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Get a submission status
+// @tags		Submissions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		referenceId path string true "Reference ID"
+// @success		200 {object} object{status=string}
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/submissions/by-reference/{referenceId}/status [get]
 func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	referenceID := h.getReferenceIDPathValue(r)
@@ -163,6 +195,17 @@ func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Replay a submission
+// @description	Re-publishes the submission event for reprocessing by downstream consumers.
+// @tags		Submissions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		submissionId path string true "Submission ID"
+// @success		202 {object} httputil.APIResponse[dto.SubmissionResponse]
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/submissions/{submissionId}/replay [post]
 func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	id := chi.URLParam(r, "submissionId")
@@ -188,7 +231,7 @@ func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[*dto.SubmissionResponse]{
+		httputil.SendJSONResponse(w, http.StatusAccepted, httputil.APIResponse[*dto.SubmissionResponse]{
 			Message: fmt.Sprintf("Successfully replayed submission %s", id),
 		})
 	}

@@ -55,7 +55,7 @@ func NewRoutes(app *core.Application) http.Handler {
 
 	docs.SwaggerInfo.Host = "localhost:8080"
 	docs.SwaggerInfo.Title = "Form Builder SaaS | Forms Service"
-	docs.SwaggerInfo.Description = ""
+	docs.SwaggerInfo.Description = "The Forms Service manages form definitions and their versioned schemas for the Form Builder SaaS platform. It provides CRUD operations for forms and versions, where versions define the structure of a form (pages, sections, fields, and validation rules) and follow a lifecycle of draft, published, and retired statuses."
 	docs.SwaggerInfo.Version = "1.0.0"
 	docs.SwaggerInfo.BasePath = "/api/v1"
 

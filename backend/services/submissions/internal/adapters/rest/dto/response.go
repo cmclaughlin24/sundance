@@ -13,7 +13,7 @@ type SubmissionResponse struct {
 	VersionID   string                  `json:"versionId"`
 	ReferenceID domain.ReferenceID      `json:"referenceId"`
 	Status      domain.SubmissionStatus `json:"status"`
-	Payload     any                     `json:"payload"`
+	Payload     any                     `json:"payload" swaggertype:"object"`
 	CreatedAt   time.Time               `json:"createdAt"`
 	UpdatedAt   time.Time               `json:"updatedAt"`
 }
