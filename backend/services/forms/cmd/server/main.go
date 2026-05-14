@@ -23,6 +23,7 @@ type settings struct {
 	Port        int                             `json:"port"`
 	Persistence persistence.PersistenceSettings `json:"persistence"`
 	LogLevel    string                          `json:"log_level"`
+	Host        string                          `json:"host"`
 }
 
 func main() {
@@ -50,7 +51,7 @@ func main() {
 	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s))
 
 	defer app.Close(context.Background())
-	mux := rest.NewRoutes(app)
+	mux := rest.NewRoutes(app, settings.Host)
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", settings.Port),

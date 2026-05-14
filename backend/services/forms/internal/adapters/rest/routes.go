@@ -1,7 +1,9 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/auth"
 	"github.com/cmclaughlin24/sundance/backend/pkg/auth/authenticators"
@@ -14,7 +16,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
-func NewRoutes(app *core.Application) http.Handler {
+func NewRoutes(app *core.Application, host string) http.Handler {
 	h := newHandlers(app)
 	mux := chi.NewRouter()
 	placeholderAuthenticator := authenticators.NewPlaceholderAuthenticator("placeholder") // TODO: Remove for a proper authentication implementation.
@@ -53,14 +55,15 @@ func NewRoutes(app *core.Application) http.Handler {
 		})
 	})
 
-	docs.SwaggerInfo.Host = "localhost:8080"
+	re := regexp.MustCompile(`https?://`)
+	docs.SwaggerInfo.Host = re.ReplaceAllString(host, "")
 	docs.SwaggerInfo.Title = "Form Builder SaaS | Forms Service"
 	docs.SwaggerInfo.Description = "The Forms Service manages form definitions and their versioned schemas for the Form Builder SaaS platform. It provides CRUD operations for forms and versions, where versions define the structure of a form (pages, sections, fields, and validation rules) and follow a lifecycle of draft, published, and retired statuses."
 	docs.SwaggerInfo.Version = "1.0.0"
 	docs.SwaggerInfo.BasePath = "/api/v1"
 
 	mux.Route("/swagger", func(r chi.Router) {
-		r.Get("/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8080/swagger/doc.json")))
+		r.Get("/*", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("%s/swagger/doc.json", host))))
 	})
 
 	return mux

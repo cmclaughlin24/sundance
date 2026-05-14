@@ -27,6 +27,7 @@ type settings struct {
 	Persistence persistence.PersistenceSettings `json:"persistence"`
 	Cache       cache.CacheSettings             `json:"cache"`
 	LogLevel    string                          `json:"log_level"`
+	Host        string                          `json:"host"`
 }
 
 func main() {
@@ -61,7 +62,7 @@ func main() {
 	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s), core.WithCache(cm.(core.Cache)))
 
 	defer app.Close(context.Background())
-	mux := rest.NewRoutes(app)
+	mux := rest.NewRoutes(app, settings.Host)
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", settings.Port),

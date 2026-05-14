@@ -1,7 +1,9 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest/docs"
@@ -12,7 +14,7 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
-func NewRoutes(app *core.Application) http.Handler {
+func NewRoutes(app *core.Application, host string) http.Handler {
 	h := newHandlers(app)
 	mux := chi.NewRouter()
 
@@ -48,14 +50,15 @@ func NewRoutes(app *core.Application) http.Handler {
 		})
 	})
 
-	docs.SwaggerInfo.Host = "localhost:8082"
+	re := regexp.MustCompile(`https?://`)
+	docs.SwaggerInfo.Host = re.ReplaceAllString(host, "")
 	docs.SwaggerInfo.Title = "Form Builder SaaS | Tenants Service"
 	docs.SwaggerInfo.Description = "The Tenants Service manages multi-tenant configurations and their associated data sources for the Form Builder SaaS platform. It provides CRUD operations for tenants and data sources, where data sources supply lookup key-value pairs (e.g., for populating dropdowns) via static data, scheduled external fetches, or on-demand webhook calls."
 	docs.SwaggerInfo.Version = "1.0.0"
 	docs.SwaggerInfo.BasePath = "/api/v1"
 
 	mux.Route("/swagger", func(r chi.Router) {
-		r.Get("/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8082/swagger/doc.json")))
+		r.Get("/*", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("%s/swagger/doc.json", host))))
 	})
 
 	return mux
