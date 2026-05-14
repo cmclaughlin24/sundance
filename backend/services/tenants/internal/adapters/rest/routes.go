@@ -4,18 +4,13 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
-	_ "github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest/docs"
+	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest/docs"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v3"
-	"github.com/swaggo/http-swagger/v2"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
-
-// @title 			Form Builder SaaS | Tenants Service
-// @version 		1.0.0
-// @host			localhost:80
-// @BasePath 		/api/v1
 
 func NewRoutes(app *core.Application) http.Handler {
 	h := newHandlers(app)
@@ -52,6 +47,12 @@ func NewRoutes(app *core.Application) http.Handler {
 			})
 		})
 	})
+
+	docs.SwaggerInfo.Host = "localhost:8082"
+	docs.SwaggerInfo.Title = "Form Builder SaaS | Tenants Service"
+	docs.SwaggerInfo.Description = "The Tenants Service manages multi-tenant configurations and their associated data sources for the Form Builder SaaS platform. It provides CRUD operations for tenants and data sources, where data sources supply lookup key-value pairs (e.g., for populating dropdowns) via static data, scheduled external fetches, or on-demand webhook calls."
+	docs.SwaggerInfo.Version = "1.0.0"
+	docs.SwaggerInfo.BasePath = "/api/v1"
 
 	mux.Route("/swagger", func(r chi.Router) {
 		r.Get("/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8082/swagger/doc.json")))

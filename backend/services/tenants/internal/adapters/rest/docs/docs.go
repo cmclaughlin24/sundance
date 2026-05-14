@@ -577,7 +577,9 @@ const docTemplate = `{
                 "type"
             ],
             "properties": {
-                "attributes": {},
+                "attributes": {
+                    "type": "object"
+                },
                 "description": {
                     "type": "string",
                     "maxLength": 500
@@ -594,7 +596,9 @@ const docTemplate = `{
         "DataSourceResponse": {
             "type": "object",
             "properties": {
-                "attributes": {},
+                "attributes": {
+                    "type": "object"
+                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -683,11 +687,11 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0.0",
-	Host:             "localhost:80",
-	BasePath:         "/api/v1",
+	Version:          "",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Form Builder SaaS | Tenants Service",
+	Title:            "",
 	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

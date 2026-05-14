@@ -10,6 +10,9 @@ WORKDIR /app/services/${SERVICE}
 
 RUN go mod download
 
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+RUN swag init -g ./internal/adapters/rest/routes.go -o ./internal/adapters/rest/docs --parseDependency --useStructName
+
 EXPOSE 80
 
 CMD [ "air", "-c", ".air.toml" ]

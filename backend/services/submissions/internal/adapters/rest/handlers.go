@@ -27,6 +27,14 @@ func newHandlers(app *core.Application) *handlers {
 	}
 }
 
+// @summary		Get all Submissions
+// @tags		Submissions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @success		200 {array} dto.SubmissionResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/submissions [get]
 func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	query := ports.NewFindSubmissionsQuery(tenantID)

@@ -1,4 +1,3 @@
-basePath: /api/v1
 definitions:
   APIErrorResponse:
     properties:
@@ -25,7 +24,8 @@ definitions:
     type: object
   DataSourceRequest:
     properties:
-      attributes: {}
+      attributes:
+        type: object
       description:
         maxLength: 500
         type: string
@@ -41,7 +41,8 @@ definitions:
     type: object
   DataSourceResponse:
     properties:
-      attributes: {}
+      attributes:
+        type: object
       createdAt:
         type: string
       description:
@@ -98,11 +99,8 @@ definitions:
       updatedAt:
         type: string
     type: object
-host: localhost:80
 info:
   contact: {}
-  title: Form Builder SaaS | Tenants Service
-  version: 1.0.0
 paths:
   /data-sources:
     get:

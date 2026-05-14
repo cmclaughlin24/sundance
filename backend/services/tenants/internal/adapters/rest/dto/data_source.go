@@ -10,7 +10,7 @@ type DataSourceRequest struct {
 	Name        string                `json:"name" validate:"required,max=75"`
 	Description string                `json:"description" validate:"max=500"`
 	Type        domain.DataSourceType `json:"type" validate:"required"`
-	Attributes  any                   `json:"attributes" validate:"required"`
+	Attributes  any                   `json:"attributes" validate:"required" swaggertype:"object"`
 }
 
 type DataSourceResponse struct {
@@ -19,7 +19,7 @@ type DataSourceResponse struct {
 	Name        string                `json:"name"`
 	Description string                `json:"description"`
 	Type        domain.DataSourceType `json:"type"`
-	Attributes  any                   `json:"attributes"`
+	Attributes  any                   `json:"attributes" swaggertype:"object"`
 	CreatedAt   time.Time             `json:"createdAt"`
 	UpdatedAt   time.Time             `json:"updatedAt"`
 }

@@ -6,10 +6,12 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/pkg/auth"
 	"github.com/cmclaughlin24/sundance/backend/pkg/auth/authenticators"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/rest/docs"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v3"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 func NewRoutes(app *core.Application) http.Handler {
@@ -21,11 +23,13 @@ func NewRoutes(app *core.Application) http.Handler {
 	mux.Use(httplog.RequestLogger(app.Logger, &httplog.Options{
 		Schema: httplog.SchemaOTEL,
 	}))
-	mux.Use(httputil.NewTenantMiddleware("X-Tenant-ID"))
-	mux.Use(auth.NewMiddleware(placeholderAuthenticator))
 
 	mux.Route("/api/v1", func(routes chi.Router) {
+		routes.Use(auth.NewMiddleware(placeholderAuthenticator))
+
 		routes.Route("/forms", func(formsRoutes chi.Router) {
+			formsRoutes.Use(httputil.NewTenantMiddleware("X-Tenant-ID"))
+
 			formsRoutes.Get("/", h.getForms)
 			formsRoutes.Post("/", h.createForm)
 
@@ -47,6 +51,16 @@ func NewRoutes(app *core.Application) http.Handler {
 				})
 			})
 		})
+	})
+
+	docs.SwaggerInfo.Host = "localhost:8080"
+	docs.SwaggerInfo.Title = "Form Builder SaaS | Forms Service"
+	docs.SwaggerInfo.Description = ""
+	docs.SwaggerInfo.Version = "1.0.0"
+	docs.SwaggerInfo.BasePath = "/api/v1"
+
+	mux.Route("/swagger", func(r chi.Router) {
+		r.Get("/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8080/swagger/doc.json")))
 	})
 
 	return mux

@@ -1,12 +1,8 @@
 {
     "swagger": "2.0",
     "info": {
-        "title": "Form Builder SaaS | Tenants Service",
-        "contact": {},
-        "version": "1.0.0"
+        "contact": {}
     },
-    "host": "localhost:80",
-    "basePath": "/api/v1",
     "paths": {
         "/data-sources": {
             "get": {
@@ -570,7 +566,9 @@
                 "type"
             ],
             "properties": {
-                "attributes": {},
+                "attributes": {
+                    "type": "object"
+                },
                 "description": {
                     "type": "string",
                     "maxLength": 500
@@ -587,7 +585,9 @@
         "DataSourceResponse": {
             "type": "object",
             "properties": {
-                "attributes": {},
+                "attributes": {
+                    "type": "object"
+                },
                 "createdAt": {
                     "type": "string"
                 },
