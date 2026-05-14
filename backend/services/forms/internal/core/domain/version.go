@@ -39,7 +39,7 @@ type Version struct {
 	RetiredAt   time.Time
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	pages       map[int]*Page
+	pages       map[float32]*Page
 }
 
 func NewVersion(formID FormID, version int, status VersionStatus) (*Version, error) {
@@ -52,7 +52,7 @@ func NewVersion(formID FormID, version int, status VersionStatus) (*Version, err
 		FormID:    formID,
 		Version:   version,
 		Status:    status,
-		pages:     make(map[int]*Page),
+		pages:     make(map[float32]*Page),
 		CreatedAt: Now(),
 	}
 
@@ -86,11 +86,11 @@ func HydrateVersion(
 		RetiredAt:   retiredAt,
 		CreatedAt:   createdAt,
 		UpdatedAt:   updatedAt,
-		pages:       make(map[int]*Page),
+		pages:       make(map[float32]*Page),
 	}
 }
 
-func (v *Version) GetPages() map[int]*Page {
+func (v *Version) GetPages() map[float32]*Page {
 	return v.pages
 }
 
@@ -111,7 +111,7 @@ func (v *Version) SetPages(pages ...*Page) error {
 	}
 
 	if v.pages == nil {
-		v.pages = make(map[int]*Page)
+		v.pages = make(map[float32]*Page)
 	}
 
 	for _, page := range pages {
@@ -138,7 +138,7 @@ func (v *Version) ReplacePages(pages ...*Page) error {
 	}
 
 	old := v.pages
-	v.pages = make(map[int]*Page)
+	v.pages = make(map[float32]*Page)
 
 	if err := v.SetPages(pages...); err != nil {
 		v.pages = old

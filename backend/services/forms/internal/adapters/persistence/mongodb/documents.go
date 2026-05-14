@@ -118,7 +118,7 @@ type pageDocument struct {
 	ID       string             `bson:"_id"`
 	Key      string             `bson:"key"`
 	Name     string             `bson:"name"`
-	Position int                `bson:"position"`
+	Position float32            `bson:"position"`
 	Sections []*sectionDocument `bson:"sections"`
 	Rules    []*ruleDocument    `bson:"rules"`
 }
@@ -184,7 +184,7 @@ type sectionDocument struct {
 	ID       string           `bson:"_id"`
 	Key      string           `bson:"key"`
 	Name     string           `bson:"name"`
-	Position int              `bson:"position"`
+	Position float32          `bson:"position"`
 	Fields   []*fieldDocument `bson:"fields"`
 	Rules    []*ruleDocument  `bson:"rules"`
 }
@@ -252,7 +252,7 @@ type fieldDocument struct {
 	Name       string          `bson:"name"`
 	Type       string          `bson:"type"`
 	Attributes bson.Raw        `bson:"attributes"`
-	Position   int             `bson:"position"`
+	Position   float32         `bson:"position"`
 	Rules      []*ruleDocument `bson:"rules"`
 }
 

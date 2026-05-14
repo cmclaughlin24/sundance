@@ -93,3 +93,7 @@ func HydrateSubmission(
 		Attempts:      attempts,
 	}
 }
+
+func (s *Submission) Reset() {
+	s.Status = SubmissionStatusPending
+}

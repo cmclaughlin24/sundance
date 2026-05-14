@@ -8,17 +8,17 @@ var (
 )
 
 type withPosition struct {
-	position int
+	position float32
 }
 
-func (wp *withPosition) GetPosition() int {
+func (wp *withPosition) GetPosition() float32 {
 	return wp.position
 }
 
-func (wp *withPosition) SetPosition(position int) {
+func (wp *withPosition) SetPosition(position float32) {
 	wp.position = position
 }
 
-func isValidPosition(position int) bool {
+func isValidPosition(position float32) bool {
 	return position >= 0
 }

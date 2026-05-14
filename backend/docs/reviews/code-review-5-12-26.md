@@ -44,6 +44,12 @@
 
 21. ~~`Create` blocked by `FindByIdempotencyID` error handling~~ (Submissions, P0) -- The `Create` method now checks `err != nil && err != common.ErrNotFound`, so an `ErrNotFound` return from `FindByIdempotencyID` is correctly treated as "no existing submission" and creation proceeds. *(Unstaged.)*
 
+22. ~~`BackgroundWorker.Start` releases leadership on shutdown but not on `workFn` errors~~ (pkg/worker, P3) -- `BackgroundWorker` now tracks consecutive `fetchJobsFn` failures via `recordFailure()`. A configurable `BgWithFailureLimit` option sets the threshold. When reached, `shouldFailover()` triggers leadership release, context cancellation, and failure counter reset -- enabling another instance to take over. Successful fetches reset the counter. `work()` now returns `error` and `onLeader` records failures, skipping `context.Canceled`. *(Unstaged. Resolves 5/10 #5.)*
+
+23. ~~`Replay` does not check tenant authorization~~ (Submissions, P1) -- `Replay` now verifies `submission.TenantID != command.TenantID` and returns `common.ErrUnauthorized`, matching the pattern in `FindByID` and `FindByReferenceID`. *(Unstaged.)*
+
+24. ~~`Replay` service method is a stub~~ (Submissions, P3) -- `Replay` now calls `submission.Reset()` to reset the submission status and persists the change via `s.repository.Upsert(ctx, submission)`. No longer a stub. *(Unstaged. Resolves 5/10 #8.)*
+
 ---
 
 ## Will Not Fix
@@ -58,23 +64,19 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Bugs
 
-1. **`Replay` does not check tenant authorization** (`submissions_service.go:130-145`) -- Unlike `FindByID` and `FindByReferenceID`, the `Replay` method does NOT verify `submission.TenantID != command.TenantID`. Any tenant can replay another tenant's submission. *(P1 -- authorization bypass.)*
+1. **`submissionJob.Process` does not pass the held `*domain.Submission` to the service** (`workers/submissions_worker.go:26-28`) -- The `submissionJob` holds a `*domain.Submission` in field `s`, but `Process` calls `j.service.Process(ctx)` without passing it. The `SubmissionJobsService.Process` method has no way to know which submission to process. Worker data flow is fundamentally broken. *(P1 -- worker non-functional.)*
 
-2. **`submissionJob.Process` does not pass the held `*domain.Submission` to the service** (`workers/submissions_worker.go:26-28`) -- The `submissionJob` holds a `*domain.Submission` in field `s`, but `Process` calls `j.service.Process(ctx)` without passing it. The `SubmissionJobsService.Process` method has no way to know which submission to process. Worker data flow is fundamentally broken. *(P1 -- worker non-functional.)*
-
-3. **`ReplaySubmissionCommand` has no `validate` tags** (`ports/commands.go:29-32`) -- `TenantID` and `ID` fields have no `validate:"required"` tags, so `validate.ValidateStruct(command)` always passes even with empty values. *(P2.)*
+2. **`ReplaySubmissionCommand` has no `validate` tags** (`ports/commands.go:29-32`) -- `TenantID` and `ID` fields have no `validate:"required"` tags, so `validate.ValidateStruct(command)` always passes even with empty values. *(P2.)*
 
 #### Missing Functionality
 
-4. **`sendErrorResponse` wrapper adds no value** (`handlers.go:194-199`) -- *(Carried from 5/10 #7, P3.)*
+3. **`sendErrorResponse` wrapper adds no value** (`handlers.go:194-199`) -- *(Carried from 5/10 #7, P3.)*
 
-5. **`Replay` service method is a stub** (`submissions_service.go:130-145`) -- *(Carried from 5/10 #8, P3.)*
-
-6. **`SubmissionJobsService.Process` is a stub** (`submission_jobs_service.go:35-37`) -- Returns `nil` without doing anything. Separate from the `Replay` stub. *(P3.)*
+4. **`SubmissionJobsService.Process` is a stub** (`submission_jobs_service.go:35-37`) -- Returns `nil` without doing anything. Separate from the `Replay` stub. *(P3.)*
 
 #### Code Quality
 
-7. **`Payload` typed as `any`** (`submission.go:36`) -- *(Carried from 5/10 #9, P3.)*
+5. **`Payload` typed as `any`** (`submission.go:36`) -- *(Carried from 5/10 #9, P3.)*
 
 ---
 
@@ -82,9 +84,9 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Missing Functionality
 
-8. **`Find()` has no pagination or filtering** (`tenants_service.go`) -- *(Carried from 5/10 #2, P3.)*
+6. **`Find()` has no pagination or filtering** (`tenants_service.go`) -- *(Carried from 5/10 #2, P3.)*
 
-9. **`Lookup` value object has no validation** (`lookup.go`) -- *(Carried from 5/10 #3, P3.)*
+7. **`Lookup` value object has no validation** (`lookup.go`) -- *(Carried from 5/10 #3, P3.)*
 
 ---
 
@@ -92,7 +94,7 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Bugs
 
-10. **`Form.Update` mutates fields before validation** (`domain/form.go:53-66`) -- The `Update` method sets fields, then calls `validate.ValidateStruct(f)`. If validation fails, the entity is left in a dirty state with the invalid data already applied. Should validate first or operate on a copy. *(P2.)*
+8. **`Form.Update` mutates fields before validation** (`domain/form.go:53-66`) -- The `Update` method sets fields, then calls `validate.ValidateStruct(f)`. If validation fails, the entity is left in a dirty state with the invalid data already applied. Should validate first or operate on a copy. *(P2.)*
 
 ---
 
@@ -100,19 +102,17 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Bugs
 
-11. **`ErrMissingIdempotencyHeader` and `ErrMissingTenantID` map to 500** (`httputil/http.go:104-109`) -- Neither error matches any `errors.Is` check in `SendErrorResponse`, falling through to the default 500 case. Should be 400 Bad Request. *(P2.)*
+9. **`ErrMissingIdempotencyHeader` and `ErrMissingTenantID` map to 500** (`httputil/http.go:104-109`) -- Neither error matches any `errors.Is` check in `SendErrorResponse`, falling through to the default 500 case. Should be 400 Bad Request. *(P2.)*
 
 #### Architectural
 
-12. **`BackgroundWorker.Start` releases leadership on shutdown but not on `workFn` errors** (`background_worker.go:98`) -- *(Carried from 5/10 #5, P3.)*
-
-13. **`CacheManager` interface conflates caching with distributed locking** (`cache/cache.go:29-36`) -- `Get/Set/Del` (caching) bundled with `AcquireLock/RenewLock/ReleaseLock` (distributed locking). These are separate concerns; violates ISP. *(P2.)*
+10. **`CacheManager` interface conflates caching with distributed locking** (`cache/cache.go:29-36`) -- `Get/Set/Del` (caching) bundled with `AcquireLock/RenewLock/ReleaseLock` (distributed locking). These are separate concerns; violates ISP. *(P2.)*
 
 #### Missing Functionality
 
-14. **No `Close()` on `CacheManager`** (`cache/cache.go`) -- Redis connection never cleanly shut down. Compare with `Database` which has `Close`. *(P3.)*
+11. **No `Close()` on `CacheManager`** (`cache/cache.go`) -- Redis connection never cleanly shut down. Compare with `Database` which has `Close`. *(P3.)*
 
-15. **`RedisCacheManager.Set` hardcodes TTL=0** (`redis_cache_manager.go:79`) -- All cache entries stored with no expiry. Cache grows unboundedly. *(P3.)*
+12. **`RedisCacheManager.Set` hardcodes TTL=0** (`redis_cache_manager.go:79`) -- All cache entries stored with no expiry. Cache grows unboundedly. *(P3.)*
 
 ---
 
@@ -120,11 +120,11 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Architectural
 
-16. **Test coverage gaps** -- Submissions has no handler or service tests. No domain-layer or repository-layer tests exist across services. Zero test files in entire `pkg/` directory. *(Carried from 5/10 #10, P3.)*
+13. **Test coverage gaps** -- Submissions has no handler or service tests. No domain-layer or repository-layer tests exist across services. Zero test files in entire `pkg/` directory. *(Carried from 5/10 #10, P3.)*
 
-17. **No domain events** for cross-service communication. *(Carried from 5/10 #11, P3.)*
+14. **No domain events** for cross-service communication. *(Carried from 5/10 #11, P3.)*
 
-18. **No real authentication** -- Placeholder only. *(Carried from 5/10 #12, P3.)*
+15. **No real authentication** -- Placeholder only. *(Carried from 5/10 #12, P3.)*
 
 ---
 
@@ -132,24 +132,21 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
-| **P1** | 1 | `Replay` tenant authorization bypass | Submissions |
-| **P1** | 2 | Worker data flow broken -- submission not passed to `Process` | Submissions |
-| **P2** | 3 | `ReplaySubmissionCommand` no validation tags | Submissions |
-| **P2** | 10 | `Form.Update` mutates before validation | Forms |
-| **P2** | 11 | Middleware errors map to 500 instead of 400 | pkg/common |
-| **P2** | 13 | `CacheManager` conflates caching with locking (ISP) | pkg/cache |
-| **P3** | 4 | `sendErrorResponse` wrapper is no-op | Submissions |
-| **P3** | 5 | `Replay` is a stub | Submissions |
-| **P3** | 6 | `SubmissionJobsService.Process` is a stub | Submissions |
-| **P3** | 7 | `Payload` typed as `any` | Submissions |
-| **P3** | 8 | `Find()` no pagination | Tenants |
-| **P3** | 9 | `Lookup` no validation | Tenants |
-| **P3** | 12 | Leadership held despite failures | pkg/worker |
-| **P3** | 14 | No `Close()` on `CacheManager` | pkg/cache |
-| **P3** | 15 | Redis cache has no TTL | pkg/cache |
-| **P3** | 16 | Test coverage gaps | All |
-| **P3** | 17 | No domain events | All |
-| **P3** | 18 | No real authentication | All |
+| **P1** | 1 | Worker data flow broken -- submission not passed to `Process` | Submissions |
+| **P2** | 2 | `ReplaySubmissionCommand` no validation tags | Submissions |
+| **P2** | 8 | `Form.Update` mutates before validation | Forms |
+| **P2** | 9 | Middleware errors map to 500 instead of 400 | pkg/common |
+| **P2** | 10 | `CacheManager` conflates caching with locking (ISP) | pkg/cache |
+| **P3** | 3 | `sendErrorResponse` wrapper is no-op | Submissions |
+| **P3** | 4 | `SubmissionJobsService.Process` is a stub | Submissions |
+| **P3** | 5 | `Payload` typed as `any` | Submissions |
+| **P3** | 6 | `Find()` no pagination | Tenants |
+| **P3** | 7 | `Lookup` no validation | Tenants |
+| **P3** | 11 | No `Close()` on `CacheManager` | pkg/cache |
+| **P3** | 12 | Redis cache has no TTL | pkg/cache |
+| **P3** | 13 | Test coverage gaps | All |
+| **P3** | 14 | No domain events | All |
+| **P3** | 15 | No real authentication | All |
 
 ---
 
@@ -159,8 +156,8 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 |---------|--------|------------|
 | **Forms** | **8/10 -- Beta** | Most mature service. Complete CRUD with versioning lifecycle (create, publish, retire). Handler tests provide good HTTP layer coverage. In-memory adapter now enforces version uniqueness matching MongoDB. Service structs properly unexported. Blocked from production by: no service/domain layer tests, `Form.Update` dirty-state bug, no real authentication. |
 | **Tenants** | **7/10 -- Beta** | Fully functional including background job processing pipeline and leader election infrastructure. Clean hexagonal structure with strategies pattern. Service structs properly unexported. Multiple issues resolved this cycle. Remaining gaps are pagination and `Lookup` validation -- both P3. |
-| **Submissions** | **4/10 -- Alpha** | P0 creation bug resolved (unstaged). Authorization bypass in `Replay`. Worker data flow fundamentally broken. `Process` is a stub. Nearly zero test coverage (only route registration tested). Improved: in-memory `Statuses` filtering fixed, unused BSON field removed, service structs properly unexported, idempotency check functional. Not deployable due to P1 security and worker issues. |
-| **pkg/** | **6/10 -- Beta** | Session leak and cache miss detection both fixed (unstaged). Remaining gaps: cache has no TTL, no shutdown, middleware errors map to 500, `CacheManager` conflates caching with distributed locking (ISP violation). Zero test coverage. The abstractions are well-designed and implementations are improving. |
+| **Submissions** | **5/10 -- Beta** | P0 creation bug and `Replay` authorization bypass both resolved (unstaged). `Replay` now fully functional with tenant check, `Reset()`, and persistence. Worker data flow still broken (P1). `SubmissionJobsService.Process` is a stub. Nearly zero test coverage (only route registration tested). Improved: in-memory `Statuses` filtering, unused BSON field removed, service structs unexported. Not deployable due to P1 worker issue. |
+| **pkg/** | **6/10 -- Beta** | Session leak, cache miss detection, and worker failover all fixed (unstaged). Remaining gaps: cache has no TTL, no shutdown, middleware errors map to 500, `CacheManager` conflates caching with distributed locking (ISP violation). Zero test coverage. The abstractions are well-designed and implementations are improving. |
 
 ---
 
@@ -210,17 +207,21 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 - **P0 `FindByIdempotencyID` creation bug fixed** (unstaged) -- `Create` now checks `err != nil && err != common.ErrNotFound`, so `ErrNotFound` is correctly treated as "no existing submission" and creation proceeds.
 
+- **BackgroundWorker failover mechanism** (unstaged) -- Configurable failure limit via `BgWithFailureLimit`. `work()` now returns `error`; consecutive `fetchJobsFn` failures are tracked via `recordFailure()`. On reaching the limit, `shouldFailover()` triggers leadership release, context cancellation, and counter reset -- enabling another instance to acquire leadership. Successful fetches reset the counter. Graceful shutdown properly handles leadership release, context cancellation, and wait group drain with a 30-second timeout.
+
+- **Position type changed to `float32`** (unstaged) -- `withPosition`, `Page.sections`, `Section.fields`, `Version.pages` map keys, constructors, hydrate functions, DTOs, and BSON documents all changed from `int` to `float32`. Enables fractional positioning (e.g., insert between positions 1 and 2 as 1.5) without reindexing siblings.
+
 ### Current State
 
-**18 remaining issues** (6 carried from 5/10; 12 newly identified; 21 resolved this cycle). 0 P0, 2 P1, 4 P2, 12 P3.
+**15 remaining issues** (4 carried from 5/10; 11 newly identified; 24 resolved this cycle). 0 P0, 1 P1, 4 P2, 10 P3.
 
 **Forms Service** remains the most mature with handler-level tests and a complete domain model. The `Form.Update` dirty-state mutation bug is the only remaining P2. In-memory version uniqueness enforcement now matches MongoDB. Service struct properly unexported. No service or domain layer tests exist. Production readiness improved to 8/10.
 
 **Tenants Service** has made strong progress this cycle with 6 issues resolved. The background job processing pipeline and leader election are fully functional. Service structs properly unexported. Only two P3 items remain (pagination and `Lookup` validation). Production readiness at 7/10.
 
-**Submissions Service** P0 creation bug is resolved (unstaged) — `FindByIdempotencyID` now correctly treats `ErrNotFound` as "no existing submission". The fix uses `==` instead of `errors.Is` (tracked as new P3). `Replay` still has a tenant authorization bypass (P1), the worker data flow is broken (P1), and both `Process` stubs remain. Unstaged improvements also include `Statuses` filtering, unused BSON field cleanup, and service struct unexport. Production readiness improved to 4/10.
+**Submissions Service** P0 creation bug is resolved (unstaged) -- `FindByIdempotencyID` now correctly treats `ErrNotFound` as "no existing submission". `Replay` still has a tenant authorization bypass (P1), the worker data flow is broken (P1), and both `Process` stubs remain. Unstaged improvements also include `Statuses` filtering, unused BSON field cleanup, and service struct unexport. Production readiness improved to 4/10.
 
-**pkg/** provides well-designed abstractions (`Database`, `CacheManager`, `Elector`, `BackgroundWorker`) with functioning implementations. The `BeginTx` session leak and cache miss detection are both fixed (unstaged). Remaining gaps: cache entries never expire, middleware errors produce 500s, `CacheManager` conflates caching with distributed locking, and no `Close()` for clean shutdown. Zero test coverage across the entire shared package. Production readiness improved to 6/10.
+**pkg/** provides well-designed abstractions (`Database`, `CacheManager`, `Elector`, `BackgroundWorker`) with functioning implementations. The `BeginTx` session leak, cache miss detection, and worker failover mechanism are all fixed (unstaged). `BackgroundWorker` now has configurable failure limits, graceful shutdown with wait group drain and 30-second timeout, and fractional position support added to forms. Remaining gaps: cache entries never expire, middleware errors produce 500s, `CacheManager` conflates caching with distributed locking, and no `Close()` for clean shutdown. Zero test coverage across the entire shared package. Production readiness improved to 6/10.
 
 **Hexagonal Architecture** -- All three services maintain correct dependency direction (adapters -> core, never core -> adapters). Port interfaces cleanly separate primary (driving) and secondary (driven) boundaries. The `pkg/` packages serve as infrastructure modules consumed by adapter layers. The unstaged service struct unexport reinforces this: consumers depend on port interfaces, not concrete types.
 

@@ -7,7 +7,7 @@ import (
 type SectionRequest struct {
 	Key      string         `json:"key" validate:"required,max=25"`
 	Name     string         `json:"name" validate:"required,max=75"`
-	Position int            `json:"position" validate:"gte=0,lte=10"`
+	Position float32        `json:"position" validate:"gte=0,lte=10"`
 	Fields   []FieldRequest `json:"fields" validate:"dive"`
 	Rules    []RuleRequest  `json:"rules" validate:"dive"`
 }
@@ -16,7 +16,7 @@ type SectionResponse struct {
 	ID       domain.SectionID `json:"id"`
 	Key      string           `json:"key"`
 	Name     string           `json:"name"`
-	Position int              `json:"position"`
+	Position float32          `json:"position"`
 	Fields   []*FieldResponse `json:"fields"`
 	Rules    []*RuleResponse  `json:"rules"`
 }

@@ -46,13 +46,13 @@ func main() {
 
 	r, err := persistence.Bootstrap(settings.Persistence, l)
 	if err != nil {
-		l.Error("error", err.Error())
+		l.Error("failed to bootstrap persistance", "error", err.Error())
 		panic(err)
 	}
 
 	cm, err := cache.Bootstrap(settings.Cache, l)
 	if err != nil {
-		l.Error("error", err.Error())
+		l.Error("failed to bootstrap cache", "error", err.Error())
 		panic(err)
 	}
 

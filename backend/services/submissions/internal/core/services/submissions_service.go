@@ -95,7 +95,7 @@ func (s *submissionsService) Create(ctx context.Context, command *ports.CreateSu
 	}
 
 	submission, err := s.repository.FindByIdempotencyID(ctx, command.IdempotencyID)
-	if err != nil && errors.Is(err, common.ErrNotFound) {
+	if err != nil && !errors.Is(err, common.ErrNotFound) {
 		s.logger.ErrorContext(ctx, "failed to check submission existence", "tenant_id", command.TenantID, "submission_idempotency_id", command.IdempotencyID, "error", err)
 		return nil, err
 	}
@@ -136,11 +136,25 @@ func (s *submissionsService) Replay(ctx context.Context, command *ports.ReplaySu
 		return err
 	}
 
-	_, err := s.repository.FindByID(ctx, command.ID)
+	submission, err := s.repository.FindByID(ctx, command.ID)
 	if err != nil {
 		s.logFindByIDError(ctx, err, command.ID)
 		return err
 	}
+
+	if submission.TenantID != command.TenantID {
+		s.logger.WarnContext(ctx, "unauthorized form access", "tenant_id", command.TenantID, "submission_id", command.ID)
+		return common.ErrUnauthorized
+	}
+
+	submission.Reset()
+
+	if _, err := s.repository.Upsert(ctx, submission); err != nil {
+		s.logger.ErrorContext(ctx, "submission replay failed", "tenant_id", command.TenantID, "submission_id", submission.ID, "error", err)
+		return err
+	}
+
+	s.logger.InfoContext(ctx, "submission replayed", "tenant_id", command.TenantID, "submission_id", submission.ID)
 
 	return nil
 }

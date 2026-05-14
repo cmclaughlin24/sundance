@@ -18,12 +18,12 @@ type Section struct {
 	ID     SectionID
 	Key    string `validate:"required,nowhitespace"`
 	Name   string `validate:"required"`
-	fields map[int]*Field
+	fields map[float32]*Field
 	withPosition
 	withRules
 }
 
-func NewSection(key, name string, position int) (*Section, error) {
+func NewSection(key, name string, position float32) (*Section, error) {
 	if !isValidPosition(position) {
 		return nil, ErrInvalidPosition
 	}
@@ -32,7 +32,7 @@ func NewSection(key, name string, position int) (*Section, error) {
 		ID:     SectionID(NewID()),
 		Key:    key,
 		Name:   name,
-		fields: make(map[int]*Field),
+		fields: make(map[float32]*Field),
 		withPosition: withPosition{
 			position: position,
 		},
@@ -45,19 +45,19 @@ func NewSection(key, name string, position int) (*Section, error) {
 	return s, nil
 }
 
-func HydrateSection(id SectionID, key, name string, position int) *Section {
+func HydrateSection(id SectionID, key, name string, position float32) *Section {
 	return &Section{
 		ID:     id,
 		Key:    key,
 		Name:   name,
-		fields: make(map[int]*Field),
+		fields: make(map[float32]*Field),
 		withPosition: withPosition{
 			position: position,
 		},
 	}
 }
 
-func (s *Section) GetFields() map[int]*Field {
+func (s *Section) GetFields() map[float32]*Field {
 	return s.fields
 }
 
@@ -78,7 +78,7 @@ func (s *Section) SetFields(fields ...*Field) error {
 	}
 
 	if s.fields == nil {
-		s.fields = make(map[int]*Field)
+		s.fields = make(map[float32]*Field)
 	}
 
 	for _, field := range fields {
@@ -101,7 +101,7 @@ func (s *Section) ReplaceFields(fields ...*Field) error {
 	}
 
 	old := s.fields
-	s.fields = make(map[int]*Field)
+	s.fields = make(map[float32]*Field)
 
 	if err := s.SetFields(fields...); err != nil {
 		s.fields = old

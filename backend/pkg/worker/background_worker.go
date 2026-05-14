@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/worker/elector"
@@ -18,9 +19,11 @@ type FetchJobsFn[J Job] func(context.Context) ([]J, error)
 
 func NewBackgroundWorker[J Job](opts ...func(*BackgroundWorker[J])) (*BackgroundWorker[J], error) {
 	bw := &BackgroundWorker[J]{
-		elector:  elector.NewInMemoryElector(1 * time.Minute),
-		interval: 1 * time.Minute,
-		size:     5,
+		elector:      elector.NewInMemoryElector(1 * time.Minute),
+		interval:     1 * time.Minute,
+		size:         5,
+		failures:     0,
+		failureLimit: nil,
 	}
 
 	for _, opt := range opts {
@@ -70,13 +73,21 @@ func BgWithFetchJobsFn[J Job](fn FetchJobsFn[J]) func(*BackgroundWorker[J]) {
 	}
 }
 
+func BgWithFailureLimit[J Job](limit int) func(*BackgroundWorker[J]) {
+	return func(bw *BackgroundWorker[J]) {
+		bw.failureLimit = &limit
+	}
+}
+
 type BackgroundWorker[J Job] struct {
-	elector     elector.Elector
-	interval    time.Duration
-	logger      *slog.Logger
-	size        int
-	timeout     time.Duration
-	fetchJobsFn FetchJobsFn[J]
+	elector      elector.Elector
+	interval     time.Duration
+	logger       *slog.Logger
+	size         int
+	timeout      time.Duration
+	fetchJobsFn  FetchJobsFn[J]
+	failureLimit *int
+	failures     int
 }
 
 func (bw *BackgroundWorker[J]) Start(ctx context.Context) {
@@ -87,6 +98,7 @@ func (bw *BackgroundWorker[J]) Start(ctx context.Context) {
 
 	isLeader := false
 	var leaderCancel context.CancelFunc
+	var wg sync.WaitGroup
 
 	for {
 		select {
@@ -99,6 +111,15 @@ func (bw *BackgroundWorker[J]) Start(ctx context.Context) {
 
 			if leaderCancel != nil {
 				leaderCancel()
+			}
+
+			done := make(chan struct{})
+			go func() { wg.Wait(); close(done) }()
+			select {
+			case <-done:
+				bw.logger.InfoContext(ctx, "background worker gracefully shutdown")
+			case <-time.After(30 * time.Second):
+				bw.logger.ErrorContext(ctx, "background worker shutdown timed out")
 			}
 
 			return
@@ -120,7 +141,23 @@ func (bw *BackgroundWorker[J]) Start(ctx context.Context) {
 				isLeader = true
 				lctx, cancel := context.WithCancel(ctx)
 				leaderCancel = cancel
-				go bw.onLeader(lctx)
+				wg.Go(func() { bw.onLeader(lctx) })
+
+				continue
+			}
+
+			if bw.shouldFailover() {
+				isLeader = false
+				bw.failures = 0
+
+				if err := bw.elector.Release(ctx); err != nil {
+					bw.logger.ErrorContext(ctx, "failed to release leadership", "error", err)
+				}
+
+				if leaderCancel != nil {
+					leaderCancel()
+					leaderCancel = nil
+				}
 
 				continue
 			}
@@ -156,26 +193,31 @@ func (bw *BackgroundWorker[J]) onLeader(ctx context.Context) {
 		w.Start(ctx)
 	}
 
-	bw.work(ctx, pool)
+	if err := bw.work(ctx, pool); err != nil {
+		bw.recordFailure()
+	}
 
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			bw.work(ctx, pool)
+			if err := bw.work(ctx, pool); err != nil && !errors.Is(err, context.Canceled) {
+				bw.recordFailure()
+			}
 		}
 	}
 }
 
-func (bw *BackgroundWorker[J]) work(ctx context.Context, pool chan chan J) {
+func (bw *BackgroundWorker[J]) work(ctx context.Context, pool chan chan J) error {
 	jobs, err := bw.fetchJobsFn(ctx)
 
 	if err != nil {
 		bw.logger.WarnContext(ctx, "failed to fetch jobs", "error", err)
-		return
+		return err
 	}
 
+	bw.failures = 0
 	bw.logger.DebugContext(ctx, "dispatching jobs", "count", len(jobs))
 
 	for _, j := range jobs {
@@ -183,9 +225,11 @@ func (bw *BackgroundWorker[J]) work(ctx context.Context, pool chan chan J) {
 		case w := <-pool:
 			w <- j
 		case <-ctx.Done():
-			return
+			return context.Canceled
 		}
 	}
+
+	return nil
 }
 
 func (bw *BackgroundWorker[J]) Validate() error {
@@ -198,4 +242,15 @@ func (bw *BackgroundWorker[J]) Validate() error {
 	}
 
 	return nil
+}
+
+func (bw *BackgroundWorker[J]) recordFailure() {
+	bw.failures += 1
+}
+
+func (bw *BackgroundWorker[J]) shouldFailover() bool {
+	if bw.failureLimit == nil {
+		return false
+	}
+	return bw.failures >= *bw.failureLimit
 }

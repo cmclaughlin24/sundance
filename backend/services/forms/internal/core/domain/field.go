@@ -33,7 +33,7 @@ type Field struct {
 	withRules
 }
 
-func NewField(key, name string, fieldType FieldType, attributes FieldAttributes, position int) (*Field, error) {
+func NewField(key, name string, fieldType FieldType, attributes FieldAttributes, position float32) (*Field, error) {
 	if !isValidPosition(position) {
 		return nil, ErrInvalidPosition
 	}
@@ -64,7 +64,7 @@ func NewField(key, name string, fieldType FieldType, attributes FieldAttributes,
 	return f, nil
 }
 
-func HydrateField(id FieldID, key, name string, fieldType FieldType, attr FieldAttributes, position int) *Field {
+func HydrateField(id FieldID, key, name string, fieldType FieldType, attr FieldAttributes, position float32) *Field {
 	return &Field{
 		ID:         id,
 		Key:        key,

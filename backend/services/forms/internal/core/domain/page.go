@@ -18,12 +18,12 @@ type Page struct {
 	ID       PageID
 	Key      string `validate:"required,nowhitespace"`
 	Name     string `validate:"required"`
-	sections map[int]*Section
+	sections map[float32]*Section
 	withPosition
 	withRules
 }
 
-func NewPage(key, name string, position int) (*Page, error) {
+func NewPage(key, name string, position float32) (*Page, error) {
 	if !isValidPosition(position) {
 		return nil, ErrInvalidPosition
 	}
@@ -32,7 +32,7 @@ func NewPage(key, name string, position int) (*Page, error) {
 		ID:       PageID(NewID()),
 		Key:      key,
 		Name:     name,
-		sections: make(map[int]*Section),
+		sections: make(map[float32]*Section),
 		withPosition: withPosition{
 			position: position,
 		},
@@ -45,19 +45,19 @@ func NewPage(key, name string, position int) (*Page, error) {
 	return p, nil
 }
 
-func HydratePage(id PageID, key, name string, position int) *Page {
+func HydratePage(id PageID, key, name string, position float32) *Page {
 	return &Page{
 		ID:       id,
 		Key:      key,
 		Name:     name,
-		sections: make(map[int]*Section),
+		sections: make(map[float32]*Section),
 		withPosition: withPosition{
 			position: position,
 		},
 	}
 }
 
-func (p *Page) GetSections() map[int]*Section {
+func (p *Page) GetSections() map[float32]*Section {
 	return p.sections
 }
 
@@ -78,7 +78,7 @@ func (p *Page) SetSections(sections ...*Section) error {
 	}
 
 	if p.sections == nil {
-		p.sections = make(map[int]*Section)
+		p.sections = make(map[float32]*Section)
 	}
 
 	for _, section := range sections {
@@ -101,7 +101,7 @@ func (p *Page) ReplaceSections(section ...*Section) error {
 	}
 
 	old := p.sections
-	p.sections = make(map[int]*Section)
+	p.sections = make(map[float32]*Section)
 
 	if err := p.SetSections(section...); err != nil {
 		p.sections = old
