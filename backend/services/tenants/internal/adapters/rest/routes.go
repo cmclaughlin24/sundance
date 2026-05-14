@@ -4,11 +4,18 @@ import (
 	"net/http"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
+	_ "github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest/docs"
 	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v3"
+	"github.com/swaggo/http-swagger/v2"
 )
+
+// @title 			Form Builder SaaS | Tenants Service
+// @version 		1.0.0
+// @host			localhost:80
+// @BasePath 		/api/v1
 
 func NewRoutes(app *core.Application) http.Handler {
 	h := newHandlers(app)
@@ -44,6 +51,10 @@ func NewRoutes(app *core.Application) http.Handler {
 				dataSourceRoutes.Get("/look-ups", h.getLookups)
 			})
 		})
+	})
+
+	mux.Route("/swagger", func(r chi.Router) {
+		r.Get("/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8082/swagger/doc.json")))
 	})
 
 	return mux
