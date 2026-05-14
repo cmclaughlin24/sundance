@@ -209,6 +209,10 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 - **BackgroundWorker failover mechanism** (unstaged) -- Configurable failure limit via `BgWithFailureLimit`. `work()` now returns `error`; consecutive `fetchJobsFn` failures are tracked via `recordFailure()`. On reaching the limit, `shouldFailover()` triggers leadership release, context cancellation, and counter reset -- enabling another instance to acquire leadership. Successful fetches reset the counter. Graceful shutdown properly handles leadership release, context cancellation, and wait group drain with a 30-second timeout.
 
+- **`Replay` tenant authorization added** (unstaged) -- `Replay` now verifies `submission.TenantID != command.TenantID` and returns `common.ErrUnauthorized`, matching the authorization pattern in `FindByID` and `FindByReferenceID`.
+
+- **`Replay` fully implemented** (unstaged) -- `Replay` now calls `submission.Reset()` to reset submission status and persists via `s.repository.Upsert(ctx, submission)`. No longer a stub.
+
 - **Position type changed to `float32`** (unstaged) -- `withPosition`, `Page.sections`, `Section.fields`, `Version.pages` map keys, constructors, hydrate functions, DTOs, and BSON documents all changed from `int` to `float32`. Enables fractional positioning (e.g., insert between positions 1 and 2 as 1.5) without reindexing siblings.
 
 ### Current State
@@ -219,7 +223,7 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 **Tenants Service** has made strong progress this cycle with 6 issues resolved. The background job processing pipeline and leader election are fully functional. Service structs properly unexported. Only two P3 items remain (pagination and `Lookup` validation). Production readiness at 7/10.
 
-**Submissions Service** P0 creation bug is resolved (unstaged) -- `FindByIdempotencyID` now correctly treats `ErrNotFound` as "no existing submission". `Replay` still has a tenant authorization bypass (P1), the worker data flow is broken (P1), and both `Process` stubs remain. Unstaged improvements also include `Statuses` filtering, unused BSON field cleanup, and service struct unexport. Production readiness improved to 4/10.
+**Submissions Service** has seen significant progress this cycle. P0 creation bug resolved, `Replay` authorization bypass fixed with tenant check, and `Replay` is now fully functional (calls `Reset()` and persists). The remaining P1 is the worker data flow -- `submissionJob.Process` does not pass the held submission to the service. `SubmissionJobsService.Process` remains a stub. Unstaged improvements also include `Statuses` filtering, unused BSON field cleanup, and service struct unexport. Production readiness improved to 5/10.
 
 **pkg/** provides well-designed abstractions (`Database`, `CacheManager`, `Elector`, `BackgroundWorker`) with functioning implementations. The `BeginTx` session leak, cache miss detection, and worker failover mechanism are all fixed (unstaged). `BackgroundWorker` now has configurable failure limits, graceful shutdown with wait group drain and 30-second timeout, and fractional position support added to forms. Remaining gaps: cache entries never expire, middleware errors produce 500s, `CacheManager` conflates caching with distributed locking, and no `Close()` for clean shutdown. Zero test coverage across the entire shared package. Production readiness improved to 6/10.
 
@@ -231,8 +235,8 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 ### Highest-Impact Improvements
 
-1. **Add tenant authorization check to `Replay`** (P1 -- security)
-2. **Fix submissions worker data flow** (P1 -- pass submission to `Process`)
-3. **Add `validate` tags to `ReplaySubmissionCommand`** (P2 -- validation no-op)
-4. **Add `ErrMissingIdempotencyHeader`/`ErrMissingTenantID` mappings to `SendErrorResponse`** (P2 -- middleware errors produce 500s)
-5. **Fix `Form.Update` dirty-state mutation** (P2 -- validate before mutating)
+1. **Fix submissions worker data flow** (P1 -- pass submission to `Process`)
+2. **Add `validate` tags to `ReplaySubmissionCommand`** (P2 -- validation no-op)
+3. **Add `ErrMissingIdempotencyHeader`/`ErrMissingTenantID` mappings to `SendErrorResponse`** (P2 -- middleware errors produce 500s)
+4. **Fix `Form.Update` dirty-state mutation** (P2 -- validate before mutating)
+5. **Separate `CacheManager` caching from distributed locking** (P2 -- ISP violation)
