@@ -28,6 +28,14 @@ func newHandlers(app *core.Application) *handlers {
 	}
 }
 
+// @summary		Get all forms
+// @tags		Forms
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @success		200 {array} dto.FormResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/forms [get]
 func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	query := ports.NewFindFormsQuery(tenantID)
@@ -58,6 +66,16 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Get a form by ID
+// @tags		Forms
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		formId path string true "Form ID"
+// @success		200 {object} dto.FormResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/forms/{formId} [get]
 func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
@@ -84,6 +102,16 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Create a form
+// @tags		Forms
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		body body dto.UpsertFormRequest true "Create Form"
+// @success		201 {object} httputil.APIResponse[dto.FormResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/forms [post]
 func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 	var body dto.UpsertFormRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -119,6 +147,18 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Update a form
+// @tags		Forms
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		formId path string true "Form ID"
+// @param		body body dto.UpsertFormRequest true "Update Form"
+// @success		200 {object} httputil.APIResponse[dto.FormResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/forms/{formId} [put]
 func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 	var body dto.UpsertFormRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -155,6 +195,18 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Delete a form
+// @description	All versions belonging to the form will also be deleted.
+// @tags		Forms
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		formId path string true "Form ID"
+// @success		204
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/forms/{formId} [delete]
 func (h *handlers) deleteForm(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
@@ -181,6 +233,15 @@ func (h *handlers) deleteForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Get all versions
+// @tags		Versions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		formId path string true "Form ID"
+// @success		200 {array} dto.VersionResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/forms/{formId}/versions [get]
 func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
@@ -212,6 +273,17 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Get a version by ID
+// @tags		Versions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		formId path string true "Form ID"
+// @param		versionId path string true "Version ID"
+// @success		200 {object} dto.VersionResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/forms/{formId}/versions/{versionId} [get]
 func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
@@ -239,6 +311,18 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Create a version
+// @description	The pages field defines the structure of the form version including sections, fields, and validation rules.
+// @tags		Versions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		formId path string true "Form ID"
+// @param		body body dto.UpsertVersionRequest true "Create Version"
+// @success		201 {object} httputil.APIResponse[dto.VersionResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/forms/{formId}/versions [post]
 func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
@@ -282,6 +366,20 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Update a version
+// @description	Only draft versions can be updated. Published or retired versions are locked.
+// @tags		Versions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		formId path string true "Form ID"
+// @param		versionId path string true "Version ID"
+// @param		body body dto.UpsertVersionRequest true "Update Version"
+// @success		200 {object} httputil.APIResponse[dto.VersionResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/forms/{formId}/versions/{versionId} [put]
 func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
@@ -326,6 +424,19 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Publish a version
+// @description	Transitions a draft version to published status. Only one version per form can be published at a time.
+// @tags		Versions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		formId path string true "Form ID"
+// @param		versionId path string true "Version ID"
+// @success		200 {object} httputil.APIResponse[dto.VersionResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/forms/{formId}/versions/{versionId}/publish [post]
 func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
@@ -357,6 +468,19 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Retire a version
+// @description	Transitions a published version to retired status, making it no longer active.
+// @tags		Versions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		formId path string true "Form ID"
+// @param		versionId path string true "Version ID"
+// @success		200 {object} httputil.APIResponse[dto.VersionResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/forms/{formId}/versions/{versionId}/retire [post]
 func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)

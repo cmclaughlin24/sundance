@@ -1,4 +1,673 @@
+definitions:
+  APIErrorResponse:
+    properties:
+      error:
+        type: string
+      message:
+        type: string
+      statusCode:
+        type: integer
+    type: object
+  APIResponse-FormResponse:
+    properties:
+      data:
+        $ref: '#/definitions/FormResponse'
+      message:
+        type: string
+    type: object
+  APIResponse-VersionResponse:
+    properties:
+      data:
+        $ref: '#/definitions/VersionResponse'
+      message:
+        type: string
+    type: object
+  FieldRequest:
+    properties:
+      attributes:
+        type: object
+      key:
+        maxLength: 25
+        type: string
+      name:
+        maxLength: 250
+        type: string
+      position:
+        maximum: 50
+        minimum: 0
+        type: number
+      rules:
+        items:
+          $ref: '#/definitions/RuleRequest'
+        type: array
+      type:
+        type: string
+    required:
+    - attributes
+    - key
+    - name
+    - type
+    type: object
+  FieldResponse:
+    properties:
+      attributes:
+        type: object
+      id:
+        type: string
+      key:
+        type: string
+      name:
+        type: string
+      position:
+        type: number
+      rules:
+        items:
+          $ref: '#/definitions/RuleResponse'
+        type: array
+      type:
+        type: string
+    type: object
+  FormResponse:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      tenantId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  PageRequest:
+    properties:
+      key:
+        maxLength: 25
+        type: string
+      name:
+        maxLength: 75
+        type: string
+      position:
+        maximum: 10
+        minimum: 0
+        type: number
+      rules:
+        items:
+          $ref: '#/definitions/RuleRequest'
+        type: array
+      sections:
+        items:
+          $ref: '#/definitions/SectionRequest'
+        type: array
+    required:
+    - key
+    - name
+    type: object
+  PageResponse:
+    properties:
+      id:
+        type: string
+      key:
+        type: string
+      name:
+        type: string
+      position:
+        type: number
+      rules:
+        items:
+          $ref: '#/definitions/RuleResponse'
+        type: array
+      sections:
+        items:
+          $ref: '#/definitions/SectionResponse'
+        type: array
+    type: object
+  RuleRequest:
+    properties:
+      expression:
+        type: string
+      type:
+        type: string
+    required:
+    - expression
+    - type
+    type: object
+  RuleResponse:
+    properties:
+      expression:
+        type: string
+      id:
+        type: string
+      type:
+        $ref: '#/definitions/RuleType'
+    type: object
+  RuleType:
+    enum:
+    - visible
+    - required
+    - readonly
+    type: string
+    x-enum-varnames:
+    - RuleTypeVisible
+    - RuleTypeRequired
+    - RuleTypeReadOnly
+  SectionRequest:
+    properties:
+      fields:
+        items:
+          $ref: '#/definitions/FieldRequest'
+        type: array
+      key:
+        maxLength: 25
+        type: string
+      name:
+        maxLength: 75
+        type: string
+      position:
+        maximum: 10
+        minimum: 0
+        type: number
+      rules:
+        items:
+          $ref: '#/definitions/RuleRequest'
+        type: array
+    required:
+    - key
+    - name
+    type: object
+  SectionResponse:
+    properties:
+      fields:
+        items:
+          $ref: '#/definitions/FieldResponse'
+        type: array
+      id:
+        type: string
+      key:
+        type: string
+      name:
+        type: string
+      position:
+        type: number
+      rules:
+        items:
+          $ref: '#/definitions/RuleResponse'
+        type: array
+    type: object
+  UpsertFormRequest:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+      name:
+        maxLength: 75
+        type: string
+    required:
+    - name
+    type: object
+  UpsertVersionRequest:
+    properties:
+      pages:
+        items:
+          $ref: '#/definitions/PageRequest'
+        type: array
+    type: object
+  VersionResponse:
+    properties:
+      createdAt:
+        type: string
+      formId:
+        type: string
+      id:
+        type: string
+      pages:
+        items:
+          $ref: '#/definitions/PageResponse'
+        type: array
+      publishedAt:
+        type: string
+      publishedById:
+        type: string
+      retiredAt:
+        type: string
+      retiredById:
+        type: string
+      status:
+        $ref: '#/definitions/VersionStatus'
+      updatedAt:
+        type: string
+      version:
+        type: integer
+    type: object
+  VersionStatus:
+    enum:
+    - draft
+    - active
+    - retired
+    type: string
+    x-enum-varnames:
+    - VersionStatusDraft
+    - VersionStatusActive
+    - VersionStatusRetired
 info:
   contact: {}
-paths: {}
+paths:
+  /forms:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/FormResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Get all forms
+      tags:
+      - Forms
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Create Form
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/UpsertFormRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/APIResponse-FormResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Create a form
+      tags:
+      - Forms
+  /forms/{formId}:
+    delete:
+      consumes:
+      - application/json
+      description: All versions belonging to the form will also be deleted.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Form ID
+        in: path
+        name: formId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Delete a form
+      tags:
+      - Forms
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Form ID
+        in: path
+        name: formId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/FormResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Get a form by ID
+      tags:
+      - Forms
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Form ID
+        in: path
+        name: formId
+        required: true
+        type: string
+      - description: Update Form
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/UpsertFormRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/APIResponse-FormResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Update a form
+      tags:
+      - Forms
+  /forms/{formId}/versions:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Form ID
+        in: path
+        name: formId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/VersionResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Get all versions
+      tags:
+      - Versions
+    post:
+      consumes:
+      - application/json
+      description: The pages field defines the structure of the form version including
+        sections, fields, and validation rules.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Form ID
+        in: path
+        name: formId
+        required: true
+        type: string
+      - description: Create Version
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/UpsertVersionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/APIResponse-VersionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Create a version
+      tags:
+      - Versions
+  /forms/{formId}/versions/{versionId}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Form ID
+        in: path
+        name: formId
+        required: true
+        type: string
+      - description: Version ID
+        in: path
+        name: versionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/VersionResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Get a version by ID
+      tags:
+      - Versions
+    put:
+      consumes:
+      - application/json
+      description: Only draft versions can be updated. Published or retired versions
+        are locked.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Form ID
+        in: path
+        name: formId
+        required: true
+        type: string
+      - description: Version ID
+        in: path
+        name: versionId
+        required: true
+        type: string
+      - description: Update Version
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/UpsertVersionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/APIResponse-VersionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Update a version
+      tags:
+      - Versions
+  /forms/{formId}/versions/{versionId}/publish:
+    post:
+      consumes:
+      - application/json
+      description: Transitions a draft version to published status. Only one version
+        per form can be published at a time.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Form ID
+        in: path
+        name: formId
+        required: true
+        type: string
+      - description: Version ID
+        in: path
+        name: versionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/APIResponse-VersionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Publish a version
+      tags:
+      - Versions
+  /forms/{formId}/versions/{versionId}/retire:
+    post:
+      consumes:
+      - application/json
+      description: Transitions a published version to retired status, making it no
+        longer active.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Form ID
+        in: path
+        name: formId
+        required: true
+        type: string
+      - description: Version ID
+        in: path
+        name: versionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/APIResponse-VersionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Retire a version
+      tags:
+      - Versions
 swagger: "2.0"

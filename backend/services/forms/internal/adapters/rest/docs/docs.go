@@ -14,7 +14,999 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {}
+    "paths": {
+        "/forms": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Get all forms",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/FormResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Create a form",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Create Form",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpsertFormRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/APIResponse-FormResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/forms/{formId}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Get a form by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/FormResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Update a form",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Form",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpsertFormRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/APIResponse-FormResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "All versions belonging to the form will also be deleted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Delete a form",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/forms/{formId}/versions": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Get all versions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/VersionResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "The pages field defines the structure of the form version including sections, fields, and validation rules.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Create a version",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create Version",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpsertVersionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/APIResponse-VersionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/forms/{formId}/versions/{versionId}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Get a version by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "versionId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/VersionResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Only draft versions can be updated. Published or retired versions are locked.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Update a version",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "versionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Version",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpsertVersionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/APIResponse-VersionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/forms/{formId}/versions/{versionId}/publish": {
+            "post": {
+                "description": "Transitions a draft version to published status. Only one version per form can be published at a time.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Publish a version",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "versionId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/APIResponse-VersionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/forms/{formId}/versions/{versionId}/retire": {
+            "post": {
+                "description": "Transitions a published version to retired status, making it no longer active.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Versions"
+                ],
+                "summary": "Retire a version",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "versionId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/APIResponse-VersionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "APIErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "statusCode": {
+                    "type": "integer"
+                }
+            }
+        },
+        "APIResponse-FormResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/FormResponse"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "APIResponse-VersionResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/VersionResponse"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "FieldRequest": {
+            "type": "object",
+            "required": [
+                "attributes",
+                "key",
+                "name",
+                "type"
+            ],
+            "properties": {
+                "attributes": {
+                    "type": "object"
+                },
+                "key": {
+                    "type": "string",
+                    "maxLength": 25
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 250
+                },
+                "position": {
+                    "type": "number",
+                    "maximum": 50,
+                    "minimum": 0
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/RuleRequest"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "FieldResponse": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "object"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "number"
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/RuleResponse"
+                    }
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "FormResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tenantId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "PageRequest": {
+            "type": "object",
+            "required": [
+                "key",
+                "name"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "maxLength": 25
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 75
+                },
+                "position": {
+                    "type": "number",
+                    "maximum": 10,
+                    "minimum": 0
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/RuleRequest"
+                    }
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SectionRequest"
+                    }
+                }
+            }
+        },
+        "PageResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "number"
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/RuleResponse"
+                    }
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SectionResponse"
+                    }
+                }
+            }
+        },
+        "RuleRequest": {
+            "type": "object",
+            "required": [
+                "expression",
+                "type"
+            ],
+            "properties": {
+                "expression": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "RuleResponse": {
+            "type": "object",
+            "properties": {
+                "expression": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/RuleType"
+                }
+            }
+        },
+        "RuleType": {
+            "type": "string",
+            "enum": [
+                "visible",
+                "required",
+                "readonly"
+            ],
+            "x-enum-varnames": [
+                "RuleTypeVisible",
+                "RuleTypeRequired",
+                "RuleTypeReadOnly"
+            ]
+        },
+        "SectionRequest": {
+            "type": "object",
+            "required": [
+                "key",
+                "name"
+            ],
+            "properties": {
+                "fields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/FieldRequest"
+                    }
+                },
+                "key": {
+                    "type": "string",
+                    "maxLength": 25
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 75
+                },
+                "position": {
+                    "type": "number",
+                    "maximum": 10,
+                    "minimum": 0
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/RuleRequest"
+                    }
+                }
+            }
+        },
+        "SectionResponse": {
+            "type": "object",
+            "properties": {
+                "fields": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/FieldResponse"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "number"
+                },
+                "rules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/RuleResponse"
+                    }
+                }
+            }
+        },
+        "UpsertFormRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 75
+                }
+            }
+        },
+        "UpsertVersionRequest": {
+            "type": "object",
+            "properties": {
+                "pages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PageRequest"
+                    }
+                }
+            }
+        },
+        "VersionResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "formId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "pages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PageResponse"
+                    }
+                },
+                "publishedAt": {
+                    "type": "string"
+                },
+                "publishedById": {
+                    "type": "string"
+                },
+                "retiredAt": {
+                    "type": "string"
+                },
+                "retiredById": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/VersionStatus"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "VersionStatus": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "active",
+                "retired"
+            ],
+            "x-enum-varnames": [
+                "VersionStatusDraft",
+                "VersionStatusActive",
+                "VersionStatusRetired"
+            ]
+        }
+    }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it

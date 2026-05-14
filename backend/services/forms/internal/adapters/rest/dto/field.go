@@ -7,7 +7,7 @@ type FieldRequest struct {
 	Name       string        `json:"name" validate:"required,max=250"`
 	Type       string        `json:"type" validate:"required"`
 	Position   float32       `json:"position" validate:"gte=0,lte=50"`
-	Attributes any           `json:"attributes" validate:"required"`
+	Attributes any           `json:"attributes" validate:"required" swaggertype:"object"`
 	Rules      []RuleRequest `json:"rules" validate:"dive"`
 }
 
@@ -17,7 +17,7 @@ type FieldResponse struct {
 	Name       string          `json:"name"`
 	Type       string          `json:"type"`
 	Position   float32         `json:"position"`
-	Attributes any             `json:"attributes"`
+	Attributes any             `json:"attributes" swaggertype:"object"`
 	Rules      []*RuleResponse `json:"rules"`
 }
 
