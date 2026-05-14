@@ -96,15 +96,18 @@ func (ds *DataSource) Update(name, description string, sourceType DataSourceType
 		return ErrInvalidSourceTypeAttributes
 	}
 
-	ds.Name = name
-	ds.Description = description
-	ds.Type = sourceType
-	ds.Attributes = attr
-	ds.UpdatedAt = Now()
+	cpy := *ds
+	cpy.Name = name
+	cpy.Description = description
+	cpy.Type = sourceType
+	cpy.Attributes = attr
 
-	if err := validate.ValidateStruct(ds); err != nil {
+	if err := validate.ValidateStruct(cpy); err != nil {
 		return err
 	}
+
+	*ds = cpy
+	ds.UpdatedAt = Now()
 
 	return nil
 }

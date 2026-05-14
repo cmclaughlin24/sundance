@@ -51,13 +51,16 @@ func (t *Tenant) Update(name, description string) error {
 		return ErrInvalidTenant
 	}
 
-	t.Name = name
-	t.Description = description
-	t.UpdatedAt = Now()
+	cpy := *t
+	cpy.Name = name
+	cpy.Description = description
 
-	if err := validate.ValidateStruct(t); err != nil {
+	if err := validate.ValidateStruct(cpy); err != nil {
 		return err
 	}
+
+	*t = cpy
+	t.UpdatedAt = Now()
 
 	return nil
 }

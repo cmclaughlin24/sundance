@@ -55,13 +55,16 @@ func (f *Form) Update(name, description string) error {
 		return ErrInvalidForm
 	}
 
-	f.Name = name
-	f.Description = description
-	f.UpdatedAt = Now()
+	cpy := *f
+	cpy.Name = name
+	cpy.Description = description
 
-	if err := validate.ValidateStruct(f); err != nil {
+	if err := validate.ValidateStruct(cpy); err != nil {
 		return err
 	}
+
+	*f = cpy
+	f.UpdatedAt = Now()
 
 	return nil
 }
