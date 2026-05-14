@@ -50,14 +50,15 @@ func main() {
 		panic(err)
 	}
 
-	cm, err := cache.Bootstrap(settings.Cache, l)
+	cm, cacheClose, err := cache.Bootstrap(settings.Cache, l)
 	if err != nil {
 		l.Error("failed to bootstrap cache", "error", err.Error())
 		panic(err)
 	}
+	defer cacheClose()
 
 	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r))
-	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s), core.WithCache(cm))
+	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s), core.WithCache(cm.(core.Cache)))
 
 	defer app.Close(context.Background())
 	mux := rest.NewRoutes(app)

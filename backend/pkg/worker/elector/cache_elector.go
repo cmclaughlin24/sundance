@@ -3,12 +3,10 @@ package elector
 import (
 	"context"
 	"time"
-
-	"github.com/cmclaughlin24/sundance/backend/pkg/cache"
 )
 
 type CacheElector struct {
-	manager    cache.CacheManager
+	locker     CacheLocker
 	key        string
 	instanceID string
 	ttl        time.Duration
@@ -29,9 +27,9 @@ func NewCacheElector(opts ...func(*CacheElector)) *CacheElector {
 	return e
 }
 
-func CacheElectorWithManager(manager cache.CacheManager) func(*CacheElector) {
+func CacheElectorWithLocker(locker CacheLocker) func(*CacheElector) {
 	return func(e *CacheElector) {
-		e.manager = manager
+		e.locker = locker
 	}
 }
 
@@ -64,13 +62,13 @@ func (e *CacheElector) GetInterval() time.Duration {
 }
 
 func (e *CacheElector) TryAcquire(ctx context.Context) (bool, error) {
-	return e.manager.AcquireLock(ctx, e.key, e.instanceID, e.ttl)
+	return e.locker.AcquireLock(ctx, e.key, e.instanceID, e.ttl)
 }
 
 func (e *CacheElector) Renew(ctx context.Context) (bool, error) {
-	return e.manager.RenewLock(ctx, e.key, e.instanceID, e.ttl)
+	return e.locker.RenewLock(ctx, e.key, e.instanceID, e.ttl)
 }
 
 func (e *CacheElector) Release(ctx context.Context) error {
-	return e.manager.ReleaseLock(ctx, e.key, e.instanceID)
+	return e.locker.ReleaseLock(ctx, e.key, e.instanceID)
 }

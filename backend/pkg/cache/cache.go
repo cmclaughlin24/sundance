@@ -22,7 +22,9 @@ var (
 	ErrCacheMiss = errors.New("cache miss")
 )
 
-type bootstrapFn func(CacheOptions, *slog.Logger) (CacheManager, error)
+type CacheCloser func() error
+
+type bootstrapFn func(CacheOptions, *slog.Logger) (CacheManager, CacheCloser, error)
 
 type CacheOptions any
 
@@ -33,14 +35,11 @@ type CacheSettings struct {
 
 type CacheManager interface {
 	Get(context.Context, string, any) error
-	Set(context.Context, string, any) error
+	Set(context.Context, string, any, time.Duration) error
 	Del(context.Context, string) error
-	AcquireLock(context.Context, string, string, time.Duration) (bool, error)
-	RenewLock(context.Context, string, string, time.Duration) (bool, error)
-	ReleaseLock(context.Context, string, string) error
 }
 
-func Bootstrap(settings CacheSettings, logger *slog.Logger) (CacheManager, error) {
+func Bootstrap(settings CacheSettings, logger *slog.Logger) (CacheManager, CacheCloser, error) {
 	var fn bootstrapFn
 
 	switch settings.Type {
@@ -51,20 +50,20 @@ func Bootstrap(settings CacheSettings, logger *slog.Logger) (CacheManager, error
 	}
 
 	if fn == nil {
-		return nil, fmt.Errorf("unknown cache type : %s", settings.Type)
+		return nil, nil, fmt.Errorf("unknown cache type : %s", settings.Type)
 	}
 
 	return fn(settings.Options, logger)
 }
 
-func bootstrapInMemory(o CacheOptions, logger *slog.Logger) (CacheManager, error) {
-	return NewInMemoryCacheManager(logger), nil
+func bootstrapInMemory(o CacheOptions, logger *slog.Logger) (CacheManager, CacheCloser, error) {
+	return NewInMemoryCacheManager(logger), func() error { return nil }, nil
 }
 
-func bootstrapRedis(o CacheOptions, logger *slog.Logger) (CacheManager, error) {
+func bootstrapRedis(o CacheOptions, logger *slog.Logger) (CacheManager, CacheCloser, error) {
 	opts, err := parseOptions[RedisOptions](o)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	client := redis.NewClient(&redis.Options{
@@ -72,10 +71,10 @@ func bootstrapRedis(o CacheOptions, logger *slog.Logger) (CacheManager, error) {
 	})
 
 	if status := client.Ping(context.Background()); status.Err() != nil {
-		return nil, status.Err()
+		return nil, nil, status.Err()
 	}
 
-	return NewRedisCacheManager(client, logger), nil
+	return NewRedisCacheManager(client, logger), client.Close, nil
 }
 
 func parseOptions[T CacheOptions](options CacheOptions) (T, error) {

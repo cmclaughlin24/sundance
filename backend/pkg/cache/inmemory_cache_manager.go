@@ -42,7 +42,7 @@ func (m *InMemoryCacheManager) Get(ctx context.Context, key string, data any) er
 	return json.Unmarshal([]byte(val), &data)
 }
 
-func (m *InMemoryCacheManager) Set(ctx context.Context, key string, data any) error {
+func (m *InMemoryCacheManager) Set(ctx context.Context, key string, data any, _ time.Duration) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 

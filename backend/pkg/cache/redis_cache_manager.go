@@ -68,7 +68,7 @@ func (m *RedisCacheManager) Get(ctx context.Context, key string, data any) error
 	return nil
 }
 
-func (m *RedisCacheManager) Set(ctx context.Context, key string, data any) error {
+func (m *RedisCacheManager) Set(ctx context.Context, key string, data any, ttl time.Duration) error {
 	out, err := json.Marshal(data)
 
 	if err != nil {
@@ -76,7 +76,7 @@ func (m *RedisCacheManager) Set(ctx context.Context, key string, data any) error
 		return err
 	}
 
-	status := m.client.Set(ctx, key, out, 0)
+	status := m.client.Set(ctx, key, out, ttl)
 
 	if status.Err() != nil {
 		m.logger.ErrorContext(ctx, "failed to set cache entry", "key", key, "error", status.Err())

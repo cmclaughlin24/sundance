@@ -77,7 +77,7 @@ func SendErrorResponse(w http.ResponseWriter, err error) error {
 	}
 
 	switch {
-	case errors.Is(err, ErrDecodeJSON) || errors.Is(err, common.ErrInvalidID) || validate.IsValidationErr(err):
+	case isBadRequest(err):
 		return SendJSONResponse(w, http.StatusBadRequest, APIErrorResponse{
 			Message:    "Bad Request",
 			Error:      err.Error(),
@@ -124,4 +124,12 @@ func DecodeJSONResponse[T any](resp *http.Response, data T) error {
 	}
 
 	return nil
+}
+
+func isBadRequest(err error) bool {
+	return errors.Is(err, ErrDecodeJSON) ||
+		errors.Is(err, common.ErrInvalidID) ||
+		errors.Is(err, ErrMissingTenantID) ||
+		errors.Is(err, ErrMissingIdempotencyHeader) ||
+		validate.IsValidationErr(err)
 }

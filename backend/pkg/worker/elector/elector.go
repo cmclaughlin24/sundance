@@ -25,3 +25,9 @@ type Elector interface {
 	Renew(context.Context) (bool, error)
 	Release(context.Context) error
 }
+
+type CacheLocker interface {
+	AcquireLock(context.Context, string, string, time.Duration) (bool, error)
+	RenewLock(context.Context, string, string, time.Duration) (bool, error)
+	ReleaseLock(context.Context, string, string) error
+}
