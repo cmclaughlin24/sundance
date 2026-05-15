@@ -97,3 +97,8 @@ func HydrateSubmission(
 func (s *Submission) Reset() {
 	s.Status = SubmissionStatusPending
 }
+
+type SubmissionFieldValue struct {
+	FieldID FieldID
+	Value   any
+}

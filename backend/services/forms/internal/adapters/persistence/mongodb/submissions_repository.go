@@ -48,15 +48,7 @@ func (r *mongoDBSubmissionsRepository) migrate(ctx context.Context) error {
 }
 
 func (r *mongoDBSubmissionsRepository) Find(ctx context.Context, filter *ports.FindSubmissionsFilter) ([]*domain.Submission, error) {
-	f := bson.M{}
-
-	if filter.TenantID != "" {
-		f["tenant_id"] = filter.TenantID
-	}
-
-	if len(filter.Statuses) > 0 {
-		f["status"] = bson.M{"$in": filter.Statuses}
-	}
+	f := newSubmissionFilter(filter)
 
 	docs, err := r.base.Find(ctx, f)
 	if err != nil {
@@ -74,6 +66,23 @@ func (r *mongoDBSubmissionsRepository) Find(ctx context.Context, filter *ports.F
 	}
 
 	return submissions, nil
+}
+
+func (r *mongoDBSubmissionsRepository) FindJobs(ctx context.Context, filter *ports.FindSubmissionsFilter) ([]domain.SubmissionID, error) {
+	f := newSubmissionFilter(filter)
+
+	// TODO: Time permiting this query could be optimized by using the collection to query for only thi IDs.
+	docs, err := r.base.Find(ctx, f)
+	if err != nil {
+		return nil, err
+	}
+
+	ids := make([]domain.SubmissionID, 0, len(docs))
+	for _, doc := range docs {
+		ids = append(ids, domain.SubmissionID(doc.ID))
+	}
+
+	return ids, nil
 }
 
 func (r *mongoDBSubmissionsRepository) FindByID(ctx context.Context, id domain.SubmissionID) (*domain.Submission, error) {
@@ -135,4 +144,18 @@ func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Sub
 	}
 
 	return documents.FromSubmissionDocument(&result)
+}
+
+func newSubmissionFilter(filter *ports.FindSubmissionsFilter) bson.M {
+	f := bson.M{}
+
+	if filter.TenantID != "" {
+		f["tenant_id"] = filter.TenantID
+	}
+
+	if len(filter.Statuses) > 0 {
+		f["status"] = bson.M{"$in": filter.Statuses}
+	}
+
+	return f
 }

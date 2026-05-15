@@ -84,6 +84,27 @@ func (r *InMemorySubmissionsRepository) FindByIdempotencyID(ctx context.Context,
 	return nil, common.ErrNotFound
 }
 
+func (r *InMemorySubmissionsRepository) FindJobs(ctx context.Context, filter *ports.FindSubmissionsFilter) ([]domain.SubmissionID, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	ids := make([]domain.SubmissionID, 0, len(r.submissions))
+
+	for _, submission := range r.submissions {
+		if filter != nil && filter.TenantID != "" && submission.TenantID != filter.TenantID {
+			continue
+		}
+
+		if filter != nil && len(filter.Statuses) > 0 && !slices.Contains(filter.Statuses, submission.Status) {
+			continue
+		}
+
+		ids = append(ids, submission.ID)
+	}
+
+	return ids, nil
+}
+
 func (r *InMemorySubmissionsRepository) Upsert(ctx context.Context, submission *domain.Submission) (*domain.Submission, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()

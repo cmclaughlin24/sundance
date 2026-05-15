@@ -12,19 +12,19 @@ import (
 )
 
 type submissionJob struct {
-	s       *domain.Submission
+	id      domain.SubmissionID
 	service ports.SubmissionJobsService
 }
 
-func newSubmissionJob(service ports.SubmissionJobsService, s *domain.Submission) *submissionJob {
+func newSubmissionJob(service ports.SubmissionJobsService, id domain.SubmissionID) *submissionJob {
 	return &submissionJob{
-		s:       s,
+		id:      id,
 		service: service,
 	}
 }
 
 func (j *submissionJob) Process(ctx context.Context) error {
-	return j.service.Process(ctx)
+	return j.service.Process(ctx, ports.NewProcessSubmissionJobCommand(j.id))
 }
 
 func NewSubmissionsBackgroundWorker(app *core.Application) (*worker.BackgroundWorker[*submissionJob], error) {
@@ -50,18 +50,15 @@ func NewSubmissionsBackgroundWorker(app *core.Application) (*worker.BackgroundWo
 
 func newSubmissionWorkFn(app *core.Application) worker.FetchJobsFn[*submissionJob] {
 	return func(ctx context.Context) ([]*submissionJob, error) {
-		dataSources, err := app.Services.SubmissionJobs.Find(ctx, &ports.FindSubmissionJobsQuery{})
+		ids, err := app.Services.SubmissionJobs.Find(ctx, &ports.FindSubmissionJobsQuery{})
 
 		if err != nil {
 			return nil, err
 		}
 
-		jobs := make([]*submissionJob, 0, len(dataSources))
-		for _, ds := range dataSources {
-			jobs = append(jobs, newSubmissionJob(
-				app.Services.SubmissionJobs,
-				ds,
-			))
+		jobs := make([]*submissionJob, 0, len(ids))
+		for _, id := range ids {
+			jobs = append(jobs, newSubmissionJob(app.Services.SubmissionJobs, id))
 		}
 
 		return jobs, nil
