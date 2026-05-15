@@ -63,7 +63,7 @@ func bootstrapMongoDB(o PersistenceOptions, logger *slog.Logger) (*ports.Reposit
 		return nil, err
 	}
 
-	return mongodb.Bootstrap(client, logger)
+	return mongodb.Bootstrap(client, logger, options.DatabaseName)
 }
 
 func parseOptions[T PersistenceOptions](options PersistenceOptions) (T, error) {
