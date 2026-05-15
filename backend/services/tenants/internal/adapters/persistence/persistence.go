@@ -56,10 +56,7 @@ func bootstrapMongoDB(o PersistenceOptions, logger *slog.Logger) (*ports.Reposit
 	}
 
 	client, err := database.ConnectMongoDB(
-		database.MongoDBWithHost(options.Host),
-		database.MongoDBWithPort(options.Port),
-		database.MongoDBWithUsername(options.Username),
-		database.MongoDBWithPassword(options.Password),
+		database.MongoDBWithURI(options.URI),
 	)
 
 	if err != nil {

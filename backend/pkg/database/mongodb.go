@@ -2,17 +2,13 @@ package database
 
 import (
 	"context"
-	"fmt"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type MongoDBOpts struct {
-	Port     int    `json:"port"`
-	Host     string `json:"host"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	URI string `json:"uri"`
 }
 
 func ConnectMongoDB(opts ...func(*MongoDBOpts)) (*mongo.Client, error) {
@@ -22,9 +18,8 @@ func ConnectMongoDB(opts ...func(*MongoDBOpts)) (*mongo.Client, error) {
 		opt(&o)
 	}
 
-	uri := createMongoURI(o)
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	clientOpts := options.Client().ApplyURI(uri).SetServerAPIOptions(serverAPI)
+	clientOpts := options.Client().ApplyURI(o.URI).SetServerAPIOptions(serverAPI)
 	client, err := mongo.Connect(clientOpts)
 
 	if err != nil {
@@ -38,38 +33,8 @@ func ConnectMongoDB(opts ...func(*MongoDBOpts)) (*mongo.Client, error) {
 	return client, nil
 }
 
-func MongoDBWithPort(port int) func(*MongoDBOpts) {
+func MongoDBWithURI(uri string) func(*MongoDBOpts) {
 	return func(o *MongoDBOpts) {
-		o.Port = port
+		o.URI = uri
 	}
-}
-
-func MongoDBWithHost(host string) func(*MongoDBOpts) {
-	return func(o *MongoDBOpts) {
-		o.Host = host
-	}
-}
-
-func MongoDBWithUsername(username string) func(*MongoDBOpts) {
-	return func(o *MongoDBOpts) {
-		o.Username = username
-	}
-}
-
-func MongoDBWithPassword(password string) func(*MongoDBOpts) {
-	return func(o *MongoDBOpts) {
-		o.Password = password
-	}
-}
-
-func createMongoURI(opts MongoDBOpts) string {
-	uri := "mongodb://"
-
-	if opts.Username != "" && opts.Password != "" {
-		uri += fmt.Sprintf("%s:%s@", opts.Username, opts.Password)
-	}
-
-	uri += fmt.Sprintf("%s:%d", opts.Host, opts.Port)
-
-	return uri
 }

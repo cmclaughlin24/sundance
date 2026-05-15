@@ -4,8 +4,7 @@
   "persistence": {
     "driver": "mongodb",
     "options": {
-      "host": "mongo",
-      "port": 27017
+      "uri": "mongodb://mongo:27017"
     }
   },
   "cache": {
