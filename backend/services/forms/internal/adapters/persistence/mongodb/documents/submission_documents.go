@@ -42,8 +42,8 @@ func ToSubmissionDocument(s *domain.Submission) (*SubmissionDocument, error) {
 	return &SubmissionDocument{
 		ID:            string(s.ID),
 		TenantID:      s.TenantID,
-		FormID:        s.FormID,
-		VersionID:     s.VersionID,
+		FormID:        string(s.FormID),
+		VersionID:     string(s.VersionID),
 		ReferenceID:   string(s.ReferenceID),
 		IdempotencyID: string(s.IdempotencyID),
 		Status:        string(s.Status),
@@ -68,8 +68,8 @@ func FromSubmissionDocument(s *SubmissionDocument) (*domain.Submission, error) {
 	return domain.HydrateSubmission(
 		domain.SubmissionID(s.ID),
 		s.TenantID,
-		s.FormID,
-		s.VersionID,
+		domain.FormID(s.FormID),
+		domain.VersionID(s.VersionID),
 		domain.ReferenceID(s.ReferenceID),
 		domain.IdempotencyID(s.IdempotencyID),
 		domain.SubmissionStatus(s.Status),

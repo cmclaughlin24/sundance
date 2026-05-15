@@ -27,9 +27,9 @@ var (
 
 type Submission struct {
 	ID            SubmissionID
-	TenantID      string `validate:"required"`
-	FormID        string `validate:"required"`
-	VersionID     string `validate:"required"`
+	TenantID      string    `validate:"required"`
+	FormID        FormID    `validate:"required"`
+	VersionID     VersionID `validate:"required"`
 	ReferenceID   ReferenceID
 	IdempotencyID IdempotencyID `validate:"required"`
 	Status        SubmissionStatus
@@ -41,8 +41,8 @@ type Submission struct {
 
 func NewSubmission(
 	tenantID string,
-	formID string,
-	versionID string,
+	formID FormID,
+	versionID VersionID,
 	idempotencyID IdempotencyID,
 	payload map[string]any,
 ) (*Submission, error) {
@@ -69,8 +69,8 @@ func NewSubmission(
 func HydrateSubmission(
 	id SubmissionID,
 	tenantID string,
-	formID string,
-	versionID string,
+	formID FormID,
+	versionID VersionID,
 	referenceID ReferenceID,
 	idempotencyID IdempotencyID,
 	status SubmissionStatus,

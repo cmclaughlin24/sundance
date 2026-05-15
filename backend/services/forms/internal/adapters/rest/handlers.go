@@ -611,8 +611,8 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 	idempotencyID := httputil.IdempotencyFromContext(r.Context())
 	command := ports.NewCreateSubmissionCommand(
 		tenantID,
-		body.FormID,
-		body.VersionID,
+		domain.FormID(body.FormID),
+		domain.VersionID(body.VersionID),
 		domain.IdempotencyID(idempotencyID),
 		body.Payload,
 	)

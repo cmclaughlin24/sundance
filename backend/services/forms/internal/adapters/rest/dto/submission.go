@@ -15,8 +15,8 @@ type SubmissionRequest struct {
 type SubmissionResponse struct {
 	ID          domain.SubmissionID     `json:"id"`
 	TenantID    string                  `json:"tenantId"`
-	FormID      string                  `json:"formId"`
-	VersionID   string                  `json:"versionId"`
+	FormID      domain.FormID           `json:"formId"`
+	VersionID   domain.VersionID        `json:"versionId"`
 	ReferenceID domain.ReferenceID      `json:"referenceId"`
 	Status      domain.SubmissionStatus `json:"status"`
 	Payload     any                     `json:"payload" swaggertype:"object"`
