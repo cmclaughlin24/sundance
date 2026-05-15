@@ -61,7 +61,7 @@ func (s *submissionJobsService) Process(ctx context.Context, command *ports.Proc
 	}
 
 	if version.Status == domain.VersionStatusDraft {
-		s.logger.WarnContext(ctx, "failed to process submission job; invalid status", "submssion_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "version_status", version.Status)
+		s.logger.WarnContext(ctx, "failed to process submission job; invalid status", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "version_status", version.Status)
 		return fmt.Errorf("")
 	}
 
