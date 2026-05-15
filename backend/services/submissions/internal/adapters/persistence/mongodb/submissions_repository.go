@@ -33,7 +33,7 @@ func newMongoDBSubmissionsRepository(db *mongo.Database, logger *slog.Logger) (p
 		logger,
 	)
 	repository := &mongoDBSubmissionsRepository{base}
-	
+
 	if err := repository.migrate(context.Background()); err != nil {
 		return nil, err
 	}
@@ -64,7 +64,12 @@ func (r *mongoDBSubmissionsRepository) Find(ctx context.Context, filter *ports.F
 
 	submissions := make([]*domain.Submission, 0, len(documents))
 	for _, doc := range documents {
-		submissions = append(submissions, fromSubmissionDocument(&doc))
+		s, err := fromSubmissionDocument(&doc)
+		if err != nil {
+			return nil, err
+		}
+
+		submissions = append(submissions, s)
 	}
 
 	return submissions, nil
@@ -77,7 +82,7 @@ func (r *mongoDBSubmissionsRepository) FindByID(ctx context.Context, id domain.S
 		return nil, err
 	}
 
-	return fromSubmissionDocument(&document), nil
+	return fromSubmissionDocument(&document)
 }
 
 func (r *mongoDBSubmissionsRepository) FindByReferenceID(ctx context.Context, id domain.ReferenceID) (*domain.Submission, error) {
@@ -87,7 +92,7 @@ func (r *mongoDBSubmissionsRepository) FindByReferenceID(ctx context.Context, id
 		return nil, err
 	}
 
-	return fromSubmissionDocument(&document), nil
+	return fromSubmissionDocument(&document)
 }
 
 func (r *mongoDBSubmissionsRepository) FindByIdempotencyID(ctx context.Context, id domain.IdempotencyID) (*domain.Submission, error) {
@@ -97,7 +102,7 @@ func (r *mongoDBSubmissionsRepository) FindByIdempotencyID(ctx context.Context, 
 		return nil, err
 	}
 
-	return fromSubmissionDocument(&document), nil
+	return fromSubmissionDocument(&document)
 }
 
 func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Submission) (*domain.Submission, error) {
@@ -128,5 +133,5 @@ func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Sub
 		return nil, err
 	}
 
-	return fromSubmissionDocument(&result), nil
+	return fromSubmissionDocument(&result)
 }

@@ -54,7 +54,12 @@ func toSubmissionDocument(s *domain.Submission) (*submissionDocument, error) {
 	}, nil
 }
 
-func fromSubmissionDocument(s *submissionDocument) *domain.Submission {
+func fromSubmissionDocument(s *submissionDocument) (*domain.Submission, error) {
+	payload, err := parsePayload(s.Payload)
+	if err != nil {
+		return nil, err
+	}
+
 	attempts := make([]*domain.SubmissionAttempt, 0, len(s.Attempts))
 	for _, doc := range s.Attempts {
 		attempts = append(attempts, fromSubmissionAttemptDocument(doc))
@@ -68,11 +73,11 @@ func fromSubmissionDocument(s *submissionDocument) *domain.Submission {
 		domain.ReferenceID(s.ReferenceID),
 		domain.IdempotencyID(s.IdempotencyID),
 		domain.SubmissionStatus(s.Status),
-		s.Payload,
+		payload,
 		s.CreatedAt,
 		s.UpdatedAt,
 		attempts,
-	)
+	), nil
 }
 
 type submissionAttemptDocument struct {
@@ -107,4 +112,14 @@ func fromSubmissionAttemptDocument(att *submissionAttemptDocument) *domain.Submi
 		att.ErrorDetails,
 		att.CreatedAt,
 	)
+}
+
+func parsePayload(raw bson.Raw) (map[string]any, error) {
+	var payload map[string]any
+
+	if err := bson.Unmarshal(raw, &payload); err != nil {
+		return nil, err
+	}
+
+	return payload, nil
 }

@@ -15,7 +15,7 @@ func NewCreateSubmissionCommand(
 	formID,
 	versionID string,
 	idempotencyID domain.IdempotencyID,
-	payload any,
+	payload map[string]any,
 ) *CreateSubmissionCommand {
 	return &CreateSubmissionCommand{
 		TenantID:      tenantID,

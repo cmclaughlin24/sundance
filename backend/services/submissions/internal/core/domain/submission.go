@@ -33,7 +33,7 @@ type Submission struct {
 	ReferenceID   ReferenceID
 	IdempotencyID IdempotencyID `validate:"required"`
 	Status        SubmissionStatus
-	Payload       any `validate:"required"`
+	Payload       map[string]any `validate:"required"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	Attempts      []*SubmissionAttempt
@@ -44,7 +44,7 @@ func NewSubmission(
 	formID string,
 	versionID string,
 	idempotencyID IdempotencyID,
-	payload any,
+	payload map[string]any,
 ) (*Submission, error) {
 	s := &Submission{
 		ID:            SubmissionID(NewID()),
@@ -74,7 +74,7 @@ func HydrateSubmission(
 	referenceID ReferenceID,
 	idempotencyID IdempotencyID,
 	status SubmissionStatus,
-	payload any,
+	payload map[string]any,
 	createdAt time.Time,
 	updatedAt time.Time,
 	attempts []*SubmissionAttempt,
