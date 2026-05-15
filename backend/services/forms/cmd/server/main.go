@@ -11,10 +11,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/cache"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/logger"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/persistence"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/rest"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/workers"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/services"
 )
@@ -22,6 +24,7 @@ import (
 type settings struct {
 	Port        int                             `json:"port"`
 	Persistence persistence.PersistenceSettings `json:"persistence"`
+	Cache       cache.CacheSettings             `json:"cache"`
 	LogLevel    string                          `json:"log_level"`
 	Host        string                          `json:"host"`
 }
@@ -40,15 +43,22 @@ func main() {
 		Level: logger.LogLevelToLevel(settings.LogLevel),
 	})
 	l := slog.New(&logger.RequestContextHandler{Handler: handler})
-	r, err := persistence.Bootstrap(settings.Persistence, l)
 
+	r, err := persistence.Bootstrap(settings.Persistence, l)
 	if err != nil {
 		l.Error("failed to bootstrap persistance", "error", err.Error())
 		panic(err)
 	}
 
+	cm, cacheClose, err := cache.Bootstrap(settings.Cache, l)
+	if err != nil {
+		l.Error("failed to bootstrap cache", "error", err.Error())
+		panic(err)
+	}
+	defer cacheClose()
+
 	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r))
-	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s))
+	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s), core.WithCache(cm.(core.Cache)))
 
 	defer app.Close(context.Background())
 	mux := rest.NewRoutes(app, settings.Host)
@@ -69,6 +79,14 @@ func main() {
 			serverErrChan <- err
 		}
 	}()
+
+	sw, err := workers.NewSubmissionsBackgroundWorker(app)
+	if err != nil {
+		panic(err)
+	}
+	swCtx, swCancel := context.WithCancel(context.Background())
+	defer swCancel()
+	go sw.Start(swCtx)
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)

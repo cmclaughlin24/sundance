@@ -6,9 +6,9 @@ import (
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/worker"
 	"github.com/cmclaughlin24/sundance/backend/pkg/worker/elector"
-	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core"
-	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
 )
 
 type submissionJob struct {
@@ -27,14 +27,14 @@ func (j *submissionJob) Process(ctx context.Context) error {
 	return j.service.Process(ctx)
 }
 
-func NewDataSourcesBackgroundWorker(app *core.Application) (*worker.BackgroundWorker[*submissionJob], error) {
+func NewSubmissionsBackgroundWorker(app *core.Application) (*worker.BackgroundWorker[*submissionJob], error) {
 	bw, err := worker.NewBackgroundWorker[*submissionJob](
 		worker.BgWithInterval[*submissionJob](1*time.Minute),
 		worker.BgWithLogger[*submissionJob](app.Logger),
 		worker.BgWithSize[*submissionJob](5),
 		worker.BgWithFetchJobsFn[*submissionJob](newSubmissionWorkFn(app)),
 		worker.BgWithElector[*submissionJob](elector.NewCacheElector(
-			elector.CacheElectorWithKey("service:submissions:elector"),
+			elector.CacheElectorWithKey("service:forms:elector"),
 			elector.CacheElectorWithLocker(app.Cache),
 			elector.CacheElectorWithInterval(1*time.Minute),
 			elector.CacheElectorWithTTL(2*time.Minute),

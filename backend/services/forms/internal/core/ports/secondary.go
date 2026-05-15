@@ -8,9 +8,10 @@ import (
 )
 
 type Repository struct {
-	Database database.Database
-	Forms    FormsRepository
-	Versions VersionRepository
+	Database    database.Database
+	Forms       FormsRepository
+	Versions    VersionRepository
+	Submissions SubmissionsRepository
 }
 
 type FormsRepository interface {
@@ -25,4 +26,12 @@ type VersionRepository interface {
 	FindByID(context.Context, domain.FormID, domain.VersionID) (*domain.Version, error)
 	FindNextVersionNumber(context.Context, domain.FormID) (int, error)
 	Upsert(context.Context, *domain.Version) (*domain.Version, error)
+}
+
+type SubmissionsRepository interface {
+	Find(context.Context, *FindSubmissionsFilter) ([]*domain.Submission, error)
+	FindByID(context.Context, domain.SubmissionID) (*domain.Submission, error)
+	FindByReferenceID(context.Context, domain.ReferenceID) (*domain.Submission, error)
+	FindByIdempotencyID(context.Context, domain.IdempotencyID) (*domain.Submission, error)
+	Upsert(context.Context, *domain.Submission) (*domain.Submission, error)
 }

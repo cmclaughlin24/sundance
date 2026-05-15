@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/persistence/mongodb/documents"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -13,11 +14,11 @@ import (
 )
 
 type mongoDBFormsRepository struct {
-	base *database.MongoDBRepository[formDocument]
+	base *database.MongoDBRepository[documents.FormDocument]
 }
 
 func newMongoDBFormsRepository(db *mongo.Database, logger *slog.Logger) (ports.FormsRepository, error) {
-	base := database.NewMongoDBRepository[formDocument](
+	base := database.NewMongoDBRepository[documents.FormDocument](
 		db.Collection("forms"),
 		logger,
 	)
@@ -32,39 +33,39 @@ func (r *mongoDBFormsRepository) Find(ctx context.Context, f *ports.FormFilters)
 		filter["tenant_id"] = f.TenantID
 	}
 
-	documents, err := r.base.Find(ctx, filter)
+	docs, err := r.base.Find(ctx, filter)
 
 	if err != nil {
 		return nil, err
 	}
 
-	forms := make([]*domain.Form, 0, len(documents))
-	for _, document := range documents {
-		forms = append(forms, fromFormDocument(&document))
+	forms := make([]*domain.Form, 0, len(docs))
+	for _, document := range docs {
+		forms = append(forms, documents.FromFormDocument(&document))
 	}
 
 	return forms, nil
 }
 
 func (r *mongoDBFormsRepository) FindByID(ctx context.Context, formID domain.FormID) (*domain.Form, error) {
-	document, err := r.base.FindOne(ctx, bson.M{"_id": formID})
+	doc, err := r.base.FindOne(ctx, bson.M{"_id": formID})
 
 	if err != nil {
 		return nil, err
 	}
 
-	return fromFormDocument(&document), nil
+	return documents.FromFormDocument(&doc), nil
 }
 
 func (r *mongoDBFormsRepository) Upsert(ctx context.Context, f *domain.Form) (*domain.Form, error) {
 	r.base.Logger().DebugContext(ctx, "upsert form", "form_id", f.ID)
 
-	doc := toFormDocument(f)
+	doc := documents.ToFormDocument(f)
 	filter := bson.M{"_id": doc.ID}
 	update := bson.M{"$set": doc}
 	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
-	var result formDocument
+	var result documents.FormDocument
 	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
 		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
 	})
@@ -74,7 +75,7 @@ func (r *mongoDBFormsRepository) Upsert(ctx context.Context, f *domain.Form) (*d
 		return nil, err
 	}
 
-	return fromFormDocument(&result), nil
+	return documents.FromFormDocument(&result), nil
 }
 
 func (r *mongoDBFormsRepository) Delete(ctx context.Context, id domain.FormID) error {

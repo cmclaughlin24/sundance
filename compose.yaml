@@ -54,27 +54,6 @@ services:
     depends_on:
       - dozzle
       - mongo
-  submissions:
-    build:
-      context: ./backend
-      dockerfile: ./docker/Dockerfile.dev
-      args:
-        SERVICE: submissions
-    ports:
-      - 8081:80
-    develop:
-      watch:
-        - action: sync
-          path: ./backend
-          target: /app
-          ignore:
-            - ./backend/services/forms
-            - ./backend/services/tenants
-        - action: rebuild
-          path: ./backend/services/submissions/go.mod
-    depends_on:
-      - dozzle
-      - mongo
       - redis
   tenants:
     build:
@@ -83,7 +62,7 @@ services:
       args:
         SERVICE: tenants
     ports:
-      - 8082:80
+      - 8081:80
     develop:
       watch:
         - action: sync

@@ -1,4 +1,4 @@
-package mongodb
+package documents
 
 import (
 	"time"
@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-type formDocument struct {
+type FormDocument struct {
 	ID          string    `bson:"_id"`
 	TenantID    string    `bson:"tenant_id"`
 	Name        string    `bson:"name"`
@@ -17,8 +17,8 @@ type formDocument struct {
 	UpdatedAt   time.Time `bson:"updated_at"`
 }
 
-func toFormDocument(f *domain.Form) *formDocument {
-	return &formDocument{
+func ToFormDocument(f *domain.Form) *FormDocument {
+	return &FormDocument{
 		ID:          string(f.ID),
 		TenantID:    f.TenantID,
 		Name:        f.Name,
@@ -28,7 +28,7 @@ func toFormDocument(f *domain.Form) *formDocument {
 	}
 }
 
-func fromFormDocument(f *formDocument) *domain.Form {
+func FromFormDocument(f *FormDocument) *domain.Form {
 	return domain.HydrateForm(
 		domain.FormID(f.ID),
 		f.TenantID,
@@ -39,7 +39,7 @@ func fromFormDocument(f *formDocument) *domain.Form {
 	)
 }
 
-type versionDocument struct {
+type VersionDocument struct {
 	ID          string          `bson:"_id"`
 	FormID      string          `bson:"form_id"`
 	Version     int             `bson:"version"`
@@ -50,15 +50,15 @@ type versionDocument struct {
 	RetiredAt   time.Time       `bson:"retired_at"`
 	CreatedAt   time.Time       `bson:"created_at"`
 	UpdatedAt   time.Time       `bson:"updated_at"`
-	Pages       []*pageDocument `bson:"pages"`
+	Pages       []*PageDocument `bson:"pages"`
 }
 
-func toVersionDocument(v *domain.Version) (*versionDocument, error) {
+func ToVersionDocument(v *domain.Version) (*VersionDocument, error) {
 	pages := v.GetPagesSlice()
-	pageDocs := make([]*pageDocument, 0, len(pages))
+	pageDocs := make([]*PageDocument, 0, len(pages))
 
 	for _, p := range pages {
-		doc, err := toPageDocument(p)
+		doc, err := ToPageDocument(p)
 
 		if err != nil {
 			return nil, err
@@ -67,7 +67,7 @@ func toVersionDocument(v *domain.Version) (*versionDocument, error) {
 		pageDocs = append(pageDocs, doc)
 	}
 
-	return &versionDocument{
+	return &VersionDocument{
 		ID:          string(v.ID),
 		FormID:      string(v.FormID),
 		Version:     v.Version,
@@ -82,7 +82,7 @@ func toVersionDocument(v *domain.Version) (*versionDocument, error) {
 	}, nil
 }
 
-func fromVersionDocument(v *versionDocument) (*domain.Version, error) {
+func FromVersionDocument(v *VersionDocument) (*domain.Version, error) {
 	version := domain.HydrateVersion(
 		domain.VersionID(v.ID),
 		domain.FormID(v.FormID),
@@ -98,7 +98,7 @@ func fromVersionDocument(v *versionDocument) (*domain.Version, error) {
 
 	pages := make([]*domain.Page, 0, len(v.Pages))
 	for _, p := range v.Pages {
-		page, err := fromPageDocument(p)
+		page, err := FromPageDocument(p)
 
 		if err != nil {
 			return nil, err
@@ -114,21 +114,21 @@ func fromVersionDocument(v *versionDocument) (*domain.Version, error) {
 	return version, nil
 }
 
-type pageDocument struct {
+type PageDocument struct {
 	ID       string             `bson:"_id"`
 	Key      string             `bson:"key"`
 	Name     string             `bson:"name"`
 	Position float32            `bson:"position"`
-	Sections []*sectionDocument `bson:"sections"`
+	Sections []*SectionDocument `bson:"sections"`
 	Rules    []*ruleDocument    `bson:"rules"`
 }
 
-func toPageDocument(p *domain.Page) (*pageDocument, error) {
+func ToPageDocument(p *domain.Page) (*PageDocument, error) {
 	sections := p.GetSectionsSlice()
-	sectionDocs := make([]*sectionDocument, 0, len(sections))
+	sectionDocs := make([]*SectionDocument, 0, len(sections))
 
 	for _, s := range sections {
-		doc, err := toSectionDocument(s)
+		doc, err := ToSectionDocument(s)
 
 		if err != nil {
 			return nil, err
@@ -137,9 +137,9 @@ func toPageDocument(p *domain.Page) (*pageDocument, error) {
 		sectionDocs = append(sectionDocs, doc)
 	}
 
-	rules := rulesToDocuments(p.GetRules())
+	rules := RulesToDocuments(p.GetRules())
 
-	return &pageDocument{
+	return &PageDocument{
 		ID:       string(p.ID),
 		Key:      p.Key,
 		Name:     p.Name,
@@ -149,7 +149,7 @@ func toPageDocument(p *domain.Page) (*pageDocument, error) {
 	}, nil
 }
 
-func fromPageDocument(p *pageDocument) (*domain.Page, error) {
+func FromPageDocument(p *PageDocument) (*domain.Page, error) {
 	page := domain.HydratePage(
 		domain.PageID(p.ID),
 		p.Key,
@@ -159,7 +159,7 @@ func fromPageDocument(p *pageDocument) (*domain.Page, error) {
 
 	sections := make([]*domain.Section, 0, len(p.Sections))
 	for _, s := range p.Sections {
-		section, err := fromSectionDocument(s)
+		section, err := FromSectionDocument(s)
 
 		if err != nil {
 			return nil, err
@@ -180,21 +180,21 @@ func fromPageDocument(p *pageDocument) (*domain.Page, error) {
 	return page, nil
 }
 
-type sectionDocument struct {
+type SectionDocument struct {
 	ID       string           `bson:"_id"`
 	Key      string           `bson:"key"`
 	Name     string           `bson:"name"`
 	Position float32          `bson:"position"`
-	Fields   []*fieldDocument `bson:"fields"`
+	Fields   []*FieldDocument `bson:"fields"`
 	Rules    []*ruleDocument  `bson:"rules"`
 }
 
-func toSectionDocument(s *domain.Section) (*sectionDocument, error) {
+func ToSectionDocument(s *domain.Section) (*SectionDocument, error) {
 	fields := s.GetFieldsSlice()
-	fieldDocs := make([]*fieldDocument, 0, len(fields))
+	fieldDocs := make([]*FieldDocument, 0, len(fields))
 
 	for _, f := range fields {
-		doc, err := toFieldDocument(f)
+		doc, err := ToFieldDocument(f)
 
 		if err != nil {
 			return nil, err
@@ -203,9 +203,9 @@ func toSectionDocument(s *domain.Section) (*sectionDocument, error) {
 		fieldDocs = append(fieldDocs, doc)
 	}
 
-	rules := rulesToDocuments(s.GetRules())
+	rules := RulesToDocuments(s.GetRules())
 
-	return &sectionDocument{
+	return &SectionDocument{
 		ID:       string(s.ID),
 		Key:      s.Key,
 		Name:     s.Name,
@@ -215,7 +215,7 @@ func toSectionDocument(s *domain.Section) (*sectionDocument, error) {
 	}, nil
 }
 
-func fromSectionDocument(s *sectionDocument) (*domain.Section, error) {
+func FromSectionDocument(s *SectionDocument) (*domain.Section, error) {
 	section := domain.HydrateSection(
 		domain.SectionID(s.ID),
 		s.Key,
@@ -225,7 +225,7 @@ func fromSectionDocument(s *sectionDocument) (*domain.Section, error) {
 
 	fields := make([]*domain.Field, 0, len(s.Fields))
 	for _, f := range s.Fields {
-		field, err := fromFieldDocument(f)
+		field, err := FromFieldDocument(f)
 
 		if err != nil {
 			return nil, err
@@ -246,7 +246,7 @@ func fromSectionDocument(s *sectionDocument) (*domain.Section, error) {
 	return section, nil
 }
 
-type fieldDocument struct {
+type FieldDocument struct {
 	ID         string          `bson:"_id"`
 	Key        string          `bson:"key"`
 	Name       string          `bson:"name"`
@@ -256,16 +256,16 @@ type fieldDocument struct {
 	Rules      []*ruleDocument `bson:"rules"`
 }
 
-func toFieldDocument(f *domain.Field) (*fieldDocument, error) {
+func ToFieldDocument(f *domain.Field) (*FieldDocument, error) {
 	attr, err := bson.Marshal(f.Attributes)
 
 	if err != nil {
 		return nil, err
 	}
 
-	rules := rulesToDocuments(f.GetRules())
+	rules := RulesToDocuments(f.GetRules())
 
-	return &fieldDocument{
+	return &FieldDocument{
 		ID:         string(f.ID),
 		Key:        f.Key,
 		Name:       f.Name,
@@ -276,7 +276,7 @@ func toFieldDocument(f *domain.Field) (*fieldDocument, error) {
 	}, nil
 }
 
-func fromFieldDocument(f *fieldDocument) (*domain.Field, error) {
+func FromFieldDocument(f *FieldDocument) (*domain.Field, error) {
 	fieldType := domain.FieldType(f.Type)
 	attr, err := unmarshalFieldAttributes(fieldType, f.Attributes)
 
@@ -307,7 +307,7 @@ type ruleDocument struct {
 	Expression string `bson:"expression"`
 }
 
-func rulesToDocuments(rules map[domain.RuleType]*domain.Rule) []*ruleDocument {
+func RulesToDocuments(rules map[domain.RuleType]*domain.Rule) []*ruleDocument {
 	documents := make([]*ruleDocument, 0, len(rules))
 	for _, r := range rules {
 		documents = append(documents, toRuleDocument(r))

@@ -7,7 +7,9 @@ import (
 )
 
 type Services struct {
-	Forms FormsService
+	Forms          FormsService
+	Submissions    SubmissionsService
+	SubmissionJobs SubmissionJobsService
 }
 
 type FormsService interface {
@@ -22,4 +24,17 @@ type FormsService interface {
 	UpdateVersion(context.Context, *UpdateVersionCommand) (*domain.Version, error)
 	PublishVersion(context.Context, *PublishVersionCommand) (*domain.Version, error)
 	RetireVersion(context.Context, *RetireVersionCommand) (*domain.Version, error)
+}
+
+type SubmissionsService interface {
+	Find(context.Context, *FindSubmissionsQuery) ([]*domain.Submission, error)
+	FindByID(context.Context, *FindSubmissionByIDQuery[domain.SubmissionID]) (*domain.Submission, error)
+	FindByReferenceID(context.Context, *FindSubmissionByIDQuery[domain.ReferenceID]) (*domain.Submission, error)
+	Create(context.Context, *CreateSubmissionCommand) (*domain.Submission, error)
+	Replay(context.Context, *ReplaySubmissionCommand) error
+}
+
+type SubmissionJobsService interface {
+	Find(context.Context, *FindSubmissionJobsQuery) ([]*domain.Submission, error)
+	Process(context.Context) error
 }

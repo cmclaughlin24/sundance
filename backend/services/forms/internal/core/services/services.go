@@ -18,7 +18,9 @@ func Bootstrap(opts ...func(*serviceOptions)) *ports.Services {
 	}
 
 	return &ports.Services{
-		Forms: NewFormsService(so.logger, so.repository),
+		Forms:          NewFormsService(so.logger, so.repository),
+		Submissions:    NewSubmissionsService(so.logger, so.repository),
+		SubmissionJobs: NewSubmissionJobsService(so.logger, so.repository),
 	}
 }
 

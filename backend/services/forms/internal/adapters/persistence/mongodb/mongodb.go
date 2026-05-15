@@ -21,9 +21,15 @@ func Bootstrap(client *mongo.Client, logger *slog.Logger) (*ports.Repository, er
 		return nil, err
 	}
 
+	submissions, err := newMongoDBSubmissionsRepository(db, logger)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ports.Repository{
-		Database: database.NewMongoDBDatabase(client, db, logger),
-		Forms:    forms,
-		Versions: versions,
+		Database:    database.NewMongoDBDatabase(client, db, logger),
+		Forms:       forms,
+		Versions:    versions,
+		Submissions: submissions,
 	}, nil
 }

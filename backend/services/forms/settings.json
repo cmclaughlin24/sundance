@@ -8,5 +8,12 @@
       "port": 27017
     }
   },
+  "cache": {
+    "type": "redis",
+    "options": {
+      "host": "redis",
+      "port": 6379
+    }
+  },
   "log_level": "debug"
 }

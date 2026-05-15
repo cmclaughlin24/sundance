@@ -5,6 +5,7 @@ import (
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/persistence/mongodb/documents"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
 	"go.mongodb.org/mongo-driver/v2/bson"
@@ -13,7 +14,7 @@ import (
 )
 
 var (
-	indexes = []mongo.IndexModel{
+	versionIndexes = []mongo.IndexModel{
 		{
 			Keys: bson.D{
 				{Key: "form_id", Value: 1},
@@ -25,11 +26,11 @@ var (
 )
 
 type mongoDBVersionsRepository struct {
-	base *database.MongoDBRepository[versionDocument]
+	base *database.MongoDBRepository[documents.VersionDocument]
 }
 
 func newMongoDBVersionsRepository(db *mongo.Database, logger *slog.Logger) (ports.VersionRepository, error) {
-	base := database.NewMongoDBRepository[versionDocument](
+	base := database.NewMongoDBRepository[documents.VersionDocument](
 		db.Collection("versions"),
 		logger,
 	)
@@ -43,20 +44,20 @@ func newMongoDBVersionsRepository(db *mongo.Database, logger *slog.Logger) (port
 }
 
 func (r *mongoDBVersionsRepository) migrate(ctx context.Context) error {
-	_, err := r.base.Collection().Indexes().CreateMany(ctx, indexes)
+	_, err := r.base.Collection().Indexes().CreateMany(ctx, versionIndexes)
 	return err
 }
 
 func (r *mongoDBVersionsRepository) Find(ctx context.Context, formID domain.FormID) ([]*domain.Version, error) {
-	documents, err := r.base.Find(ctx, bson.M{"form_id": formID})
+	docs, err := r.base.Find(ctx, bson.M{"form_id": formID})
 
 	if err != nil {
 		return nil, err
 	}
 
-	versions := make([]*domain.Version, 0, len(documents))
-	for _, document := range documents {
-		v, err := fromVersionDocument(&document)
+	versions := make([]*domain.Version, 0, len(docs))
+	for _, document := range docs {
+		v, err := documents.FromVersionDocument(&document)
 
 		if err != nil {
 			return nil, err
@@ -75,7 +76,7 @@ func (r *mongoDBVersionsRepository) FindByID(ctx context.Context, formID domain.
 		return nil, err
 	}
 
-	return fromVersionDocument(&document)
+	return documents.FromVersionDocument(&document)
 }
 
 func (r *mongoDBVersionsRepository) FindNextVersionNumber(ctx context.Context, formID domain.FormID) (int, error) {
@@ -94,7 +95,7 @@ func (r *mongoDBVersionsRepository) FindNextVersionNumber(ctx context.Context, f
 
 		defer cursor.Close(sctx)
 
-		var documents []versionDocument
+		var documents []documents.VersionDocument
 		if err := cursor.All(sctx, &documents); err != nil {
 			return err
 		}
@@ -119,7 +120,7 @@ func (r *mongoDBVersionsRepository) FindNextVersionNumber(ctx context.Context, f
 func (r *mongoDBVersionsRepository) Upsert(ctx context.Context, v *domain.Version) (*domain.Version, error) {
 	r.base.Logger().DebugContext(ctx, "upsert version", "version_id", v.ID, "form_id", v.FormID)
 
-	doc, err := toVersionDocument(v)
+	doc, err := documents.ToVersionDocument(v)
 
 	if err != nil {
 		r.base.Logger().ErrorContext(ctx, "failed to convert version to document", "version_id", v.ID, "form_id", v.FormID, "error", err)
@@ -130,7 +131,7 @@ func (r *mongoDBVersionsRepository) Upsert(ctx context.Context, v *domain.Versio
 	update := bson.M{"$set": doc}
 	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
-	var result versionDocument
+	var result documents.VersionDocument
 	err = mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
 		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
 	})
@@ -144,5 +145,5 @@ func (r *mongoDBVersionsRepository) Upsert(ctx context.Context, v *domain.Versio
 		return nil, err
 	}
 
-	return fromVersionDocument(&result)
+	return documents.FromVersionDocument(&result)
 }

@@ -151,3 +151,39 @@ func NewRetireVersionCommand(tenantID string, formID domain.FormID, versionID do
 func (c *RetireVersionCommand) Validate() error {
 	return validate.ValidateStruct(c)
 }
+
+type CreateSubmissionCommand struct {
+	TenantID      string               `validate:"required"`
+	FormID        string               `validate:"required"`
+	VersionID     string               `validate:"required"`
+	IdempotencyID domain.IdempotencyID `validate:"required"`
+	Payload       map[string]any       `validate:"required"`
+}
+
+func NewCreateSubmissionCommand(
+	tenantID,
+	formID,
+	versionID string,
+	idempotencyID domain.IdempotencyID,
+	payload map[string]any,
+) *CreateSubmissionCommand {
+	return &CreateSubmissionCommand{
+		TenantID:      tenantID,
+		FormID:        formID,
+		VersionID:     versionID,
+		IdempotencyID: idempotencyID,
+		Payload:       payload,
+	}
+}
+
+type ReplaySubmissionCommand struct {
+	TenantID string
+	ID       domain.SubmissionID
+}
+
+func NewReplaySubmissionCommand(tenantID string, id domain.SubmissionID) *ReplaySubmissionCommand {
+	return &ReplaySubmissionCommand{
+		TenantID: tenantID,
+		ID:       id,
+	}
+}

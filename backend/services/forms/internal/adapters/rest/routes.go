@@ -27,11 +27,10 @@ func NewRoutes(app *core.Application, host string) http.Handler {
 	}))
 
 	mux.Route("/api/v1", func(routes chi.Router) {
+		routes.Use(httputil.NewTenantMiddleware("X-Tenant-ID"))
 		routes.Use(auth.NewMiddleware(placeholderAuthenticator))
 
 		routes.Route("/forms", func(formsRoutes chi.Router) {
-			formsRoutes.Use(httputil.NewTenantMiddleware("X-Tenant-ID"))
-
 			formsRoutes.Get("/", h.getForms)
 			formsRoutes.Post("/", h.createForm)
 
@@ -51,6 +50,20 @@ func NewRoutes(app *core.Application, host string) http.Handler {
 						versionRoutes.Post("/retire", h.retireVersion)
 					})
 				})
+			})
+		})
+
+		routes.Route("/submissions", func(submissionsRoutes chi.Router) {
+			submissionsRoutes.Get("/", h.getSubmissions)
+			submissionsRoutes.With(httputil.IdempotencyMiddleware).Post("/", h.createSubmission)
+
+			submissionsRoutes.Route("/{submissionId}", func(submissionRoutes chi.Router) {
+				submissionRoutes.Post("/replay", h.replaySubmission)
+			})
+
+			submissionsRoutes.Route("/by-reference/{referenceId}", func(submissionRoutes chi.Router) {
+				submissionRoutes.Get("/", h.getSubmissionByReferenceID)
+				submissionRoutes.Get("/status", h.getSubmissionStatus)
 			})
 		})
 	})

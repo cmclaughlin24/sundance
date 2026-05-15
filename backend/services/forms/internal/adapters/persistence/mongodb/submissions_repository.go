@@ -5,15 +5,16 @@ import (
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
-	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/ports"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/persistence/mongodb/documents"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 var (
-	indexes = []mongo.IndexModel{
+	submissionIndexes = []mongo.IndexModel{
 		{
 			Keys: bson.D{
 				{Key: "idempotency_id", Value: 1},
@@ -24,11 +25,11 @@ var (
 )
 
 type mongoDBSubmissionsRepository struct {
-	base *database.MongoDBRepository[submissionDocument]
+	base *database.MongoDBRepository[documents.SubmissionDocument]
 }
 
 func newMongoDBSubmissionsRepository(db *mongo.Database, logger *slog.Logger) (ports.SubmissionsRepository, error) {
-	base := database.NewMongoDBRepository[submissionDocument](
+	base := database.NewMongoDBRepository[documents.SubmissionDocument](
 		db.Collection("submissions"),
 		logger,
 	)
@@ -42,7 +43,7 @@ func newMongoDBSubmissionsRepository(db *mongo.Database, logger *slog.Logger) (p
 }
 
 func (r *mongoDBSubmissionsRepository) migrate(ctx context.Context) error {
-	_, err := r.base.Collection().Indexes().CreateMany(ctx, indexes)
+	_, err := r.base.Collection().Indexes().CreateMany(ctx, submissionIndexes)
 	return err
 }
 
@@ -57,14 +58,14 @@ func (r *mongoDBSubmissionsRepository) Find(ctx context.Context, filter *ports.F
 		f["status"] = bson.M{"$in": filter.Statuses}
 	}
 
-	documents, err := r.base.Find(ctx, f)
+	docs, err := r.base.Find(ctx, f)
 	if err != nil {
 		return nil, err
 	}
 
-	submissions := make([]*domain.Submission, 0, len(documents))
-	for _, doc := range documents {
-		s, err := fromSubmissionDocument(&doc)
+	submissions := make([]*domain.Submission, 0, len(docs))
+	for _, doc := range docs {
+		s, err := documents.FromSubmissionDocument(&doc)
 		if err != nil {
 			return nil, err
 		}
@@ -82,33 +83,33 @@ func (r *mongoDBSubmissionsRepository) FindByID(ctx context.Context, id domain.S
 		return nil, err
 	}
 
-	return fromSubmissionDocument(&document)
+	return documents.FromSubmissionDocument(&document)
 }
 
 func (r *mongoDBSubmissionsRepository) FindByReferenceID(ctx context.Context, id domain.ReferenceID) (*domain.Submission, error) {
-	document, err := r.base.FindOne(ctx, bson.M{"reference_id": id})
+	doc, err := r.base.FindOne(ctx, bson.M{"reference_id": id})
 
 	if err != nil {
 		return nil, err
 	}
 
-	return fromSubmissionDocument(&document)
+	return documents.FromSubmissionDocument(&doc)
 }
 
 func (r *mongoDBSubmissionsRepository) FindByIdempotencyID(ctx context.Context, id domain.IdempotencyID) (*domain.Submission, error) {
-	document, err := r.base.FindOne(ctx, bson.M{"idempotency_id": id})
+	doc, err := r.base.FindOne(ctx, bson.M{"idempotency_id": id})
 
 	if err != nil {
 		return nil, err
 	}
 
-	return fromSubmissionDocument(&document)
+	return documents.FromSubmissionDocument(&doc)
 }
 
 func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Submission) (*domain.Submission, error) {
 	r.base.Logger().DebugContext(ctx, "upsert submission", "submission_id", s.ID)
 
-	doc, err := toSubmissionDocument(s)
+	doc, err := documents.ToSubmissionDocument(s)
 
 	if err != nil {
 		r.base.Logger().ErrorContext(ctx, "failed to convert submission to document", "submission_id", s.ID, "error", err)
@@ -119,7 +120,7 @@ func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Sub
 	update := bson.M{"$set": doc}
 	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
-	var result submissionDocument
+	var result documents.SubmissionDocument
 	err = mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
 		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
 	})
@@ -133,5 +134,5 @@ func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Sub
 		return nil, err
 	}
 
-	return fromSubmissionDocument(&result)
+	return documents.FromSubmissionDocument(&result)
 }

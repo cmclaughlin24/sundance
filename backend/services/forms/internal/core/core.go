@@ -4,12 +4,20 @@ import (
 	"context"
 	"log/slog"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/cache"
+	"github.com/cmclaughlin24/sundance/backend/pkg/worker/elector"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
 )
+
+type Cache interface {
+	cache.CacheManager
+	elector.CacheLocker
+}
 
 type Application struct {
 	Logger     *slog.Logger
 	Services   *ports.Services
+	Cache      Cache
 	repository *ports.Repository
 }
 
@@ -20,6 +28,12 @@ func NewApplication(opts ...func(*Application)) *Application {
 	}
 
 	return &a
+}
+
+func WithCache(cache Cache) func(*Application) {
+	return func(a *Application) {
+		a.Cache = cache
+	}
 }
 
 func WithLogger(logger *slog.Logger) func(*Application) {

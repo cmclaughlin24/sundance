@@ -1,13 +1,13 @@
-package mongodb
+package documents
 
 import (
 	"time"
 
-	"github.com/cmclaughlin24/sundance/backend/services/submissions/internal/core/domain"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-type submissionDocument struct {
+type SubmissionDocument struct {
 	ID            string                       `bson:"_id"`
 	TenantID      string                       `bson:"tenant_id"`
 	FormID        string                       `bson:"form_id"`
@@ -21,7 +21,7 @@ type submissionDocument struct {
 	Attempts      []*submissionAttemptDocument `bson:"attempts"`
 }
 
-func toSubmissionDocument(s *domain.Submission) (*submissionDocument, error) {
+func ToSubmissionDocument(s *domain.Submission) (*SubmissionDocument, error) {
 	payload, err := bson.Marshal(s.Payload)
 
 	if err != nil {
@@ -39,7 +39,7 @@ func toSubmissionDocument(s *domain.Submission) (*submissionDocument, error) {
 		attempts = append(attempts, doc)
 	}
 
-	return &submissionDocument{
+	return &SubmissionDocument{
 		ID:            string(s.ID),
 		TenantID:      s.TenantID,
 		FormID:        s.FormID,
@@ -54,7 +54,7 @@ func toSubmissionDocument(s *domain.Submission) (*submissionDocument, error) {
 	}, nil
 }
 
-func fromSubmissionDocument(s *submissionDocument) (*domain.Submission, error) {
+func FromSubmissionDocument(s *SubmissionDocument) (*domain.Submission, error) {
 	payload, err := parsePayload(s.Payload)
 	if err != nil {
 		return nil, err
