@@ -2,6 +2,7 @@ package strategies
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
@@ -18,14 +19,29 @@ func NewNumberFieldValidatorStrategy(logger *slog.Logger) ports.FieldValidatorSt
 	}
 }
 
-func (s *NumberFieldValidatorStrategy) Validate(ctx context.Context, field domain.Field, value domain.SubmissionFieldValue) error {
-	_, err := domain.GetFieldAttributes[domain.NumberFieldAttributes](field.Attributes)
+func (s *NumberFieldValidatorStrategy) Validate(ctx context.Context, field domain.Field, fv domain.SubmissionFieldValue) error {
+	attr, err := domain.GetFieldAttributes[domain.NumberFieldAttributes](field.Attributes)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "field_id", field.ID, "field_type", field.Type, "error", err)
 		return err
 	}
 
-	// TODO: Implement validation.
+	val, err := checkValueRequired[float64](attr, fv.Value)
+	if err != nil {
+		return err
+	}
+
+	if fv.Value == nil {
+		return nil
+	}
+
+	if attr.Min != nil && val < *attr.Min {
+		return fmt.Errorf("")
+	}
+
+	if attr.Max != nil && val > *attr.Max {
+		return fmt.Errorf("")
+	}
 
 	return nil
 }

@@ -18,7 +18,7 @@ func NewCheckboxFieldValidatorStrategy(logger *slog.Logger) ports.FieldValidator
 	}
 }
 
-func (s *CheckboxFieldValidatorStrategy) Validate(ctx context.Context, field domain.Field, value domain.SubmissionFieldValue) error {
+func (s *CheckboxFieldValidatorStrategy) Validate(ctx context.Context, field domain.Field, fv domain.SubmissionFieldValue) error {
 	_, err := domain.GetFieldAttributes[domain.CheckboxFieldAttributes](field.Attributes)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "field_id", field.ID, "field_type", field.Type, "error", err)
