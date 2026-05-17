@@ -1,5 +1,11 @@
 package domain
 
+import "errors"
+
+var (
+	ErrFieldAttributeMismatch = errors.New("field type and attributes mismatch")
+)
+
 type FieldAttributes interface {
 	GetIsRequired() bool
 	GetIsReadOnly() bool
@@ -49,4 +55,13 @@ type DateFieldAttributes struct {
 	BaseFieldAttributes
 	MinDate *string
 	MaxDate *string
+}
+
+func GetFieldAttributes[T FieldAttributes](attr FieldAttributes) (T, error) {
+	switch t := attr.(type) {
+	case T:
+		return t, nil
+	default:
+		return *new(T), ErrFieldAttributeMismatch
+	}
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/workers"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/services"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/strategies"
 )
 
 type settings struct {
@@ -57,7 +58,8 @@ func main() {
 	}
 	defer cacheClose()
 
-	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r))
+	st := strategies.Bootstrap(strategies.WithLogger(l))
+	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithStrategies(st))
 	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s), core.WithCache(cm.(core.Cache)))
 
 	defer app.Close(context.Background())
