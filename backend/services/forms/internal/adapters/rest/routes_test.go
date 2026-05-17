@@ -28,7 +28,7 @@ func TestNewRoutes(t *testing.T) {
 		{"/api/v1/forms/{formId}/versions/{versionId}/publish", http.MethodPost},
 		{"/api/v1/forms/{formId}/versions/{versionId}/retire", http.MethodPost},
 	}
-	mux := rest.NewRoutes(&core.Application{})
+	mux := rest.NewRoutes(&core.Application{}, "")
 
 	for _, r := range routes {
 		// Act/Assert.
