@@ -6,23 +6,23 @@ var (
 	ErrStrategyNotFound = errors.New("strategy not found")
 )
 
-type StrategyRegistry[K comparable, U any] map[K]U
+type StrategyRegistry[K comparable, S any] map[K]S
 
-func New[K comparable, U any]() StrategyRegistry[K, U] {
-	strategy := make(StrategyRegistry[K, U])
+func New[K comparable, S any]() StrategyRegistry[K, S] {
+	strategy := make(StrategyRegistry[K, S])
 	return strategy
 }
 
-func (s StrategyRegistry[K, U]) Set(key K, strategy U) StrategyRegistry[K, U] {
+func (s StrategyRegistry[K, S]) Set(key K, strategy S) StrategyRegistry[K, S] {
 	s[key] = strategy
 	return s
 }
 
-func (s StrategyRegistry[K, U]) Get(key K) (U, error) {
+func (s StrategyRegistry[K, S]) Get(key K) (S, error) {
 	strategy, ok := s[key]
 
 	if !ok {
-		var z U
+		var z S
 		return z, ErrStrategyNotFound
 	}
 

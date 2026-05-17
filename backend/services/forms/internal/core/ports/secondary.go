@@ -3,6 +3,7 @@ package ports
 import (
 	"context"
 
+	"github.com/cmclaughlin24/sundance/backend/pkg/common/stratreg"
 	"github.com/cmclaughlin24/sundance/backend/pkg/database"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 )
@@ -36,3 +37,13 @@ type SubmissionsRepository interface {
 	FindByIdempotencyID(context.Context, domain.IdempotencyID) (*domain.Submission, error)
 	Upsert(context.Context, *domain.Submission) (*domain.Submission, error)
 }
+
+type Strategies struct {
+	FieldValidator  FieldValidatorRegistry
+}
+
+type FieldValidatorStrategy interface {
+	Validate(context.Context, *domain.Field) error
+}
+
+type FieldValidatorRegistry = stratreg.StrategyRegistry[domain.FieldType, FieldValidatorStrategy]
