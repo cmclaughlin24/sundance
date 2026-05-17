@@ -153,11 +153,11 @@ func (c *RetireVersionCommand) Validate() error {
 }
 
 type CreateSubmissionCommand struct {
-	TenantID      string               `validate:"required"`
-	FormID        domain.FormID        `validate:"required"`
-	VersionID     domain.VersionID     `validate:"required"`
-	IdempotencyID domain.IdempotencyID `validate:"required"`
-	Payload       map[string]any       `validate:"required"`
+	TenantID      string                         `validate:"required"`
+	FormID        domain.FormID                  `validate:"required"`
+	VersionID     domain.VersionID               `validate:"required"`
+	IdempotencyID domain.IdempotencyID           `validate:"required"`
+	Values        []*domain.SubmissionFieldValue `validate:"required,min=1"`
 }
 
 func NewCreateSubmissionCommand(
@@ -165,14 +165,14 @@ func NewCreateSubmissionCommand(
 	formID domain.FormID,
 	versionID domain.VersionID,
 	idempotencyID domain.IdempotencyID,
-	payload map[string]any,
+	values []*domain.SubmissionFieldValue,
 ) *CreateSubmissionCommand {
 	return &CreateSubmissionCommand{
 		TenantID:      tenantID,
 		FormID:        formID,
 		VersionID:     versionID,
 		IdempotencyID: idempotencyID,
-		Payload:       payload,
+		Values:        values,
 	}
 }
 

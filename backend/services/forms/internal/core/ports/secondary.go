@@ -39,11 +39,11 @@ type SubmissionsRepository interface {
 }
 
 type Strategies struct {
-	FieldValidator  FieldValidatorRegistry
+	FieldValidator FieldValidatorRegistry
 }
 
 type FieldValidatorStrategy interface {
-	Validate(context.Context, *domain.Field) error
+	Validate(context.Context, domain.Field, domain.SubmissionFieldValue) error
 }
 
 type FieldValidatorRegistry = stratreg.StrategyRegistry[domain.FieldType, FieldValidatorStrategy]

@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
@@ -82,13 +83,7 @@ func (s *submissionJobsService) Process(ctx context.Context, command *ports.Proc
 			for _, field := range section.GetFieldsSlice() {
 				// TODO: Check field rules and see if field should be evaluated.
 
-				fieldValidator, err := s.fieldValidatorStrategies.Get(field.Type)
-				if err != nil {
-					s.logger.ErrorContext(ctx, "failed to prcoess submission; missing field validation strategy", "submission_id", submission.ID, "form_id", version.FormID, "version_id", version.ID, "field_id", field.ID, "field_type", field.Type)
-					return err
-				}
-
-				if err = fieldValidator.Validate(ctx, field); err != nil {
+				if err := s.validateField(ctx, field, submission); err != nil {
 					validationErr = append(validationErr, err)
 				}
 			}
@@ -97,6 +92,30 @@ func (s *submissionJobsService) Process(ctx context.Context, command *ports.Proc
 
 	if len(validationErr) > 0 {
 		// TODO: Return concat the list of errors into a single error and return.
+		s.logger.WarnContext(ctx, "submission contains errors", "error", err)
+	}
+
+	return nil
+}
+
+func (s *submissionJobsService) validateField(ctx context.Context, field *domain.Field, submission *domain.Submission) error {
+	fieldValidator, err := s.fieldValidatorStrategies.Get(field.Type)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to process submission; missing field validation strategy", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.ID, "field_id", field.ID, "field_type", field.Type)
+		return err
+	}
+
+	value, ok := submission.GetFieldValue(field.ID)
+	if !ok {
+		if field.Attributes.GetIsRequired() {
+			return fmt.Errorf("field id=%s key=%s is required", field.ID, field.Key)
+		}
+
+		return nil
+	}
+
+	if err = fieldValidator.Validate(ctx, *field, *value); err != nil {
+		return err
 	}
 
 	return nil

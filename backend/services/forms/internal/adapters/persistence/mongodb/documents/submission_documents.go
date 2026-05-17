@@ -8,24 +8,23 @@ import (
 )
 
 type SubmissionDocument struct {
-	ID            string                       `bson:"_id"`
-	TenantID      string                       `bson:"tenant_id"`
-	FormID        string                       `bson:"form_id"`
-	VersionID     string                       `bson:"version_id"`
-	ReferenceID   string                       `bson:"reference_id"`
-	IdempotencyID string                       `bson:"idempotency_id"`
-	Status        string                       `bson:"status"`
-	Payload       bson.Raw                     `bson:"payload"`
-	CreatedAt     time.Time                    `bson:"created_at"`
-	UpdatedAt     time.Time                    `bson:"updated_at"`
-	Attempts      []*submissionAttemptDocument `bson:"attempts"`
+	ID            string                          `bson:"_id"`
+	TenantID      string                          `bson:"tenant_id"`
+	FormID        string                          `bson:"form_id"`
+	VersionID     string                          `bson:"version_id"`
+	ReferenceID   string                          `bson:"reference_id"`
+	IdempotencyID string                          `bson:"idempotency_id"`
+	Status        string                          `bson:"status"`
+	CreatedAt     time.Time                       `bson:"created_at"`
+	UpdatedAt     time.Time                       `bson:"updated_at"`
+	Attempts      []*submissionAttemptDocument    `bson:"attempts"`
+	Values        []*submissionFieldValueDocument `bson:"values"`
 }
 
 func ToSubmissionDocument(s *domain.Submission) (*SubmissionDocument, error) {
-	payload, err := bson.Marshal(s.Payload)
-
-	if err != nil {
-		return nil, err
+	values := make([]*submissionFieldValueDocument, 0, len(s.Values))
+	for _, doc := range s.Values {
+		values = append(values, toSubmissionFieldValueDocument(doc))
 	}
 
 	attempts := make([]*submissionAttemptDocument, 0, len(s.Attempts))
@@ -47,17 +46,17 @@ func ToSubmissionDocument(s *domain.Submission) (*SubmissionDocument, error) {
 		ReferenceID:   string(s.ReferenceID),
 		IdempotencyID: string(s.IdempotencyID),
 		Status:        string(s.Status),
-		Payload:       payload,
 		CreatedAt:     s.CreatedAt,
 		UpdatedAt:     s.UpdatedAt,
 		Attempts:      attempts,
+		Values:        values,
 	}, nil
 }
 
 func FromSubmissionDocument(s *SubmissionDocument) (*domain.Submission, error) {
-	payload, err := parsePayload(s.Payload)
-	if err != nil {
-		return nil, err
+	values := make([]*domain.SubmissionFieldValue, 0, len(s.Values))
+	for _, doc := range s.Values {
+		values = append(values, fromSubmissionFieldValueDocument(doc))
 	}
 
 	attempts := make([]*domain.SubmissionAttempt, 0, len(s.Attempts))
@@ -73,10 +72,10 @@ func FromSubmissionDocument(s *SubmissionDocument) (*domain.Submission, error) {
 		domain.ReferenceID(s.ReferenceID),
 		domain.IdempotencyID(s.IdempotencyID),
 		domain.SubmissionStatus(s.Status),
-		payload,
+		values,
+		attempts,
 		s.CreatedAt,
 		s.UpdatedAt,
-		attempts,
 	), nil
 }
 
@@ -114,12 +113,18 @@ func fromSubmissionAttemptDocument(att *submissionAttemptDocument) *domain.Submi
 	)
 }
 
-func parsePayload(raw bson.Raw) (map[string]any, error) {
-	var payload map[string]any
+type submissionFieldValueDocument struct {
+	FieldID string `bson:"field_id"`
+	Value   any    `bson:"value"`
+}
 
-	if err := bson.Unmarshal(raw, &payload); err != nil {
-		return nil, err
+func toSubmissionFieldValueDocument(fv *domain.SubmissionFieldValue) *submissionFieldValueDocument {
+	return &submissionFieldValueDocument{
+		FieldID: string(fv.FieldID),
+		Value:   fv.Value,
 	}
+}
 
-	return payload, nil
+func fromSubmissionFieldValueDocument(doc *submissionFieldValueDocument) *domain.SubmissionFieldValue {
+	return domain.HydrateSubmissionFieldValue(domain.FieldID(doc.FieldID), doc.Value)
 }
