@@ -28,7 +28,7 @@ func TestNewRoutes(t *testing.T) {
 		{"/api/v1/data-sources/{dataSourceId}/", http.MethodDelete},
 		{"/api/v1/data-sources/{dataSourceId}/look-ups", http.MethodGet},
 	}
-	mux := rest.NewRoutes(&core.Application{})
+	mux := rest.NewRoutes(&core.Application{}, "")
 
 	for _, r := range routes {
 		// Act/Assert.

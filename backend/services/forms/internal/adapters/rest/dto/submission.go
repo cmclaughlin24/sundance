@@ -31,7 +31,7 @@ type SubmissionResponse struct {
 
 func SubmissionToResponse(s *domain.Submission) *SubmissionResponse {
 	values := make([]SubmissionFieldValueDto, 0, len(s.Values))
-	for _, value := range values {
+	for _, value := range s.Values {
 		values = append(values, SubmissionFieldValueDto{value.FieldID, value.Value})
 	}
 

@@ -92,7 +92,6 @@ func (s *submissionJobsService) Process(ctx context.Context, command *ports.Proc
 
 	if len(validationErr) > 0 {
 		// TODO: Return concat the list of errors into a single error and return.
-		s.logger.WarnContext(ctx, "submission contains errors", "error", err)
 	}
 
 	return nil
@@ -101,7 +100,7 @@ func (s *submissionJobsService) Process(ctx context.Context, command *ports.Proc
 func (s *submissionJobsService) validateField(ctx context.Context, field *domain.Field, submission *domain.Submission) error {
 	fieldValidator, err := s.fieldValidatorStrategies.Get(field.Type)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to process submission; missing field validation strategy", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.ID, "field_id", field.ID, "field_type", field.Type)
+		s.logger.ErrorContext(ctx, "failed to process submission; missing field validation strategy", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "field_id", field.ID, "field_type", field.Type)
 		return err
 	}
 
