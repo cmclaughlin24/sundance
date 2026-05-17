@@ -607,6 +607,11 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	values := make([]*domain.SubmissionFieldValue, 0, len(body.Values))
+	for _, fv := range body.Values {
+		values = append(values, domain.NewSubmissionFieldValue(fv.FieldID, fv.Value))
+	}
+
 	tenantID := httputil.TenantFromContext(r.Context())
 	idempotencyID := httputil.IdempotencyFromContext(r.Context())
 	command := ports.NewCreateSubmissionCommand(
@@ -614,7 +619,7 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 		domain.FormID(body.FormID),
 		domain.VersionID(body.VersionID),
 		domain.IdempotencyID(idempotencyID),
-		body.Payload,
+		values,
 	)
 	resultChan := make(chan result[*domain.Submission], 1)
 

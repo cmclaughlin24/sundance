@@ -110,7 +110,7 @@ func (s *submissionsService) Create(ctx context.Context, command *ports.CreateSu
 		command.FormID,
 		command.VersionID,
 		command.IdempotencyID,
-		command.Payload,
+		command.Values,
 	)
 	if err != nil {
 		s.logger.WarnContext(ctx, "submission creation failed; domain invariant violation", "tenant_id", command.TenantID, "error", err)

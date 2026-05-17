@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"slices"
 	"time"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
@@ -33,9 +34,9 @@ type Submission struct {
 	ReferenceID   ReferenceID
 	IdempotencyID IdempotencyID `validate:"required"`
 	Status        SubmissionStatus
-	Payload       map[string]any `validate:"required"`
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
+	Values        []*SubmissionFieldValue
 	Attempts      []*SubmissionAttempt
 }
 
@@ -44,7 +45,7 @@ func NewSubmission(
 	formID FormID,
 	versionID VersionID,
 	idempotencyID IdempotencyID,
-	payload map[string]any,
+	values []*SubmissionFieldValue,
 ) (*Submission, error) {
 	s := &Submission{
 		ID:            SubmissionID(NewID()),
@@ -54,9 +55,9 @@ func NewSubmission(
 		ReferenceID:   ReferenceID(NewID()), // TODO: Investigate a more order number style implementation.
 		IdempotencyID: idempotencyID,
 		Status:        SubmissionStatusPending,
-		Payload:       payload,
-		CreatedAt:     Now(),
+		Values:        values,
 		Attempts:      make([]*SubmissionAttempt, 0),
+		CreatedAt:     Now(),
 	}
 
 	if err := validate.ValidateStruct(s); err != nil {
@@ -74,10 +75,10 @@ func HydrateSubmission(
 	referenceID ReferenceID,
 	idempotencyID IdempotencyID,
 	status SubmissionStatus,
-	payload map[string]any,
+	values []*SubmissionFieldValue,
+	attempts []*SubmissionAttempt,
 	createdAt time.Time,
 	updatedAt time.Time,
-	attempts []*SubmissionAttempt,
 ) *Submission {
 	return &Submission{
 		ID:            id,
@@ -87,11 +88,23 @@ func HydrateSubmission(
 		ReferenceID:   referenceID,
 		IdempotencyID: idempotencyID,
 		Status:        status,
-		Payload:       payload,
+		Values:        values,
+		Attempts:      attempts,
 		CreatedAt:     createdAt,
 		UpdatedAt:     updatedAt,
-		Attempts:      attempts,
 	}
+}
+
+func (s *Submission) GetFieldValue(id FieldID) (*SubmissionFieldValue, bool) {
+	idx := slices.IndexFunc(s.Values, func(fv *SubmissionFieldValue) bool {
+		return id == fv.FieldID
+	})
+
+	if idx == -1 {
+		return nil, false
+	}
+
+	return s.Values[idx], true
 }
 
 func (s *Submission) Reset() {
@@ -101,4 +114,18 @@ func (s *Submission) Reset() {
 type SubmissionFieldValue struct {
 	FieldID FieldID
 	Value   any
+}
+
+func NewSubmissionFieldValue(fieldID FieldID, value any) *SubmissionFieldValue {
+	return &SubmissionFieldValue{
+		FieldID: fieldID,
+		Value:   value,
+	}
+}
+
+func HydrateSubmissionFieldValue(fieldID FieldID, value any) *SubmissionFieldValue {
+	return &SubmissionFieldValue{
+		FieldID: fieldID,
+		Value:   value,
+	}
 }
