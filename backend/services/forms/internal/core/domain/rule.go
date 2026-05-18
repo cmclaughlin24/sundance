@@ -57,24 +57,24 @@ func (r *Rule) GetExpressions() []*RuleExpression {
 	return r.expressions
 }
 
-func (r *Rule) SetExpressions(expressions ...*RuleExpression) error {
+func (r *Rule) AddExpressions(expressions ...*RuleExpression) error {
 	if r == nil {
 		return ErrInvalidRule
 	}
 
-	seen := make(map[float32]struct{}, len(expressions))
-	for _, exp := range expressions {
-		position := exp.GetPosition()
+	cpy := slices.Clone(r.expressions)
+	cpy = append(cpy, expressions...)
 
+	seen := make(map[float32]struct{}, len(cpy))
+	for _, exp := range cpy {
+		position := exp.GetPosition()
 		if _, exists := seen[position]; exists {
 			return ErrDuplicatePosition
 		}
-
 		seen[position] = struct{}{}
 	}
 
-	r.expressions = slices.Clone(expressions)
-	slices.SortFunc(r.expressions, func(a, b *RuleExpression) int {
+	slices.SortFunc(cpy, func(a, b *RuleExpression) int {
 		if a.GetPosition() < b.GetPosition() {
 			return -1
 		}
@@ -83,6 +83,7 @@ func (r *Rule) SetExpressions(expressions ...*RuleExpression) error {
 		}
 		return 0
 	})
+	r.expressions = cpy
 
 	return nil
 }

@@ -232,7 +232,7 @@ func (s *formsService) CreateVersion(ctx context.Context, command *ports.CreateV
 		return nil, err
 	}
 
-	if err := version.SetPages(command.Pages...); err != nil {
+	if err := version.AddPages(command.Pages...); err != nil {
 		s.logger.WarnContext(ctx, "version creation failed; domain invariant violation", "tenant_id", command.TenantID, "form_id", command.FormID, "error", err)
 		return nil, err
 	}

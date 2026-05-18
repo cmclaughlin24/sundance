@@ -107,7 +107,7 @@ func FromVersionDocument(v *VersionDocument) (*domain.Version, error) {
 		pages = append(pages, page)
 	}
 
-	if err := version.SetPages(pages...); err != nil {
+	if err := version.AddPages(pages...); err != nil {
 		return nil, err
 	}
 
@@ -168,7 +168,7 @@ func FromPageDocument(p *PageDocument) (*domain.Page, error) {
 		sections = append(sections, section)
 	}
 
-	if err := page.SetSections(sections...); err != nil {
+	if err := page.AddSections(sections...); err != nil {
 		return nil, err
 	}
 
@@ -238,7 +238,7 @@ func FromSectionDocument(s *SectionDocument) (*domain.Section, error) {
 		fields = append(fields, field)
 	}
 
-	if err := section.SetFields(fields...); err != nil {
+	if err := section.AddFields(fields...); err != nil {
 		return nil, err
 	}
 
@@ -367,7 +367,7 @@ func fromRuleDocument(doc *ruleDocument) (*domain.Rule, error) {
 		expressions = append(expressions, fromRuleExpressionDocument(e))
 	}
 
-	if err := r.SetExpressions(expressions...); err != nil {
+	if err := r.AddExpressions(expressions...); err != nil {
 		return nil, err
 	}
 

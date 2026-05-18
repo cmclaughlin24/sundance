@@ -44,7 +44,7 @@ func RequestToSection(dto SectionRequest) (*domain.Section, error) {
 		return nil, err
 	}
 
-	if err := section.SetFields(fields...); err != nil {
+	if err := section.AddFields(fields...); err != nil {
 		return nil, err
 	}
 

@@ -24,7 +24,7 @@ func RequestToRule(dto RuleRequest) (*domain.Rule, error) {
 		return nil, err
 	}
 
-	if err := r.SetExpressions(expressions...); err != nil {
+	if err := r.AddExpressions(expressions...); err != nil {
 		return nil, err
 	}
 

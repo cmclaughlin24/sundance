@@ -60,7 +60,7 @@ func RequestToPage(dto PageRequest) (*domain.Page, error) {
 		return nil, err
 	}
 
-	if err := page.SetSections(sections...); err != nil {
+	if err := page.AddSections(sections...); err != nil {
 		return nil, err
 	}
 

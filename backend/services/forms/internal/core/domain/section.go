@@ -72,7 +72,7 @@ func (s *Section) GetFieldsSlice() []*Field {
 	return fields
 }
 
-func (s *Section) SetFields(fields ...*Field) error {
+func (s *Section) AddFields(fields ...*Field) error {
 	if s == nil {
 		return ErrInvalidSection
 	}
@@ -103,7 +103,7 @@ func (s *Section) ReplaceFields(fields ...*Field) error {
 	old := s.fields
 	s.fields = make(map[float32]*Field)
 
-	if err := s.SetFields(fields...); err != nil {
+	if err := s.AddFields(fields...); err != nil {
 		s.fields = old
 		return err
 	}

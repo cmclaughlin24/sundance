@@ -72,7 +72,7 @@ func (p *Page) GetSectionsSlice() []*Section {
 	return sections
 }
 
-func (p *Page) SetSections(sections ...*Section) error {
+func (p *Page) AddSections(sections ...*Section) error {
 	if p == nil {
 		return ErrInvalidPage
 	}
@@ -103,7 +103,7 @@ func (p *Page) ReplaceSections(section ...*Section) error {
 	old := p.sections
 	p.sections = make(map[float32]*Section)
 
-	if err := p.SetSections(section...); err != nil {
+	if err := p.AddSections(section...); err != nil {
 		p.sections = old
 		return err
 	}

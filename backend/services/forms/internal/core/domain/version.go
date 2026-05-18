@@ -105,7 +105,7 @@ func (v *Version) GetPagesSlice() []*Page {
 	return pages
 }
 
-func (v *Version) SetPages(pages ...*Page) error {
+func (v *Version) AddPages(pages ...*Page) error {
 	if v == nil {
 		return ErrInvalidVersion
 	}
@@ -140,7 +140,7 @@ func (v *Version) ReplacePages(pages ...*Page) error {
 	old := v.pages
 	v.pages = make(map[float32]*Page)
 
-	if err := v.SetPages(pages...); err != nil {
+	if err := v.AddPages(pages...); err != nil {
 		v.pages = old
 		return err
 	}
