@@ -3,21 +3,32 @@ package dto
 import "github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
 
 type RuleRequest struct {
-	Type       string `json:"type" validate:"required"`
-	Expression string `json:"expression" validate:"required"`
+	Type        string                   `json:"type" validate:"required"`
+	Expressions []*RuleExpressionRequest `json:"expressions" validate:"dive"`
 }
 
 type RuleResponse struct {
-	ID         domain.RuleID   `json:"id"`
-	Type       domain.RuleType `json:"type"`
-	Expression string          `json:"expression"`
+	ID          domain.RuleID             `json:"id"`
+	Type        domain.RuleType           `json:"type"`
+	Expressions []*RuleExpressionResponse `json:"expressions"`
 }
 
 func RequestToRule(dto RuleRequest) (*domain.Rule, error) {
-	return domain.NewRule(
-		domain.RuleType(dto.Type),
-		dto.Expression,
-	)
+	expressions, err := requestsToRuleExpressions(dto.Expressions)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := domain.NewRule(domain.RuleType(dto.Type))
+	if err != nil {
+		return nil, err
+	}
+
+	if err := r.SetExpressions(expressions...); err != nil {
+		return nil, err
+	}
+
+	return r, nil
 }
 
 func RequestsToRules(dtos []RuleRequest) ([]*domain.Rule, error) {
@@ -36,13 +47,16 @@ func RequestsToRules(dtos []RuleRequest) ([]*domain.Rule, error) {
 	return rules, nil
 }
 
-func RuleToResponse(rules map[domain.RuleType]*domain.Rule) []*RuleResponse {
+func RulesToResponse(rules map[domain.RuleType]*domain.Rule) []*RuleResponse {
 	dtos := make([]*RuleResponse, 0, len(rules))
+
 	for _, r := range rules {
+		expressions := ruleExpressionsToResponse(r.GetExpressionsSlice())
+
 		dtos = append(dtos, &RuleResponse{
-			ID:         r.ID,
-			Type:       r.Type,
-			Expression: r.Expression,
+			ID:          r.ID,
+			Type:        r.Type,
+			Expressions: expressions,
 		})
 	}
 

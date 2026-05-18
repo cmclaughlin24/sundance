@@ -67,7 +67,7 @@ func SectionToResponse(section *domain.Section) *SectionResponse {
 		dtos = append(dtos, FieldToResponse(f))
 	}
 
-	rules := RuleToResponse(section.GetRules())
+	rules := RulesToResponse(section.GetRules())
 
 	return &SectionResponse{
 		ID:       section.ID,

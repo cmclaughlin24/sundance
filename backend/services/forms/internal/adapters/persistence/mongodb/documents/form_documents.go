@@ -172,7 +172,11 @@ func FromPageDocument(p *PageDocument) (*domain.Page, error) {
 		return nil, err
 	}
 
-	rules := documentsToRules(p.Rules)
+	rules, err := documentsToRules(p.Rules)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := page.SetRules(rules...); err != nil {
 		return nil, err
 	}
@@ -238,7 +242,11 @@ func FromSectionDocument(s *SectionDocument) (*domain.Section, error) {
 		return nil, err
 	}
 
-	rules := documentsToRules(s.Rules)
+	rules, err := documentsToRules(s.Rules)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := section.SetRules(rules...); err != nil {
 		return nil, err
 	}
@@ -293,7 +301,11 @@ func FromFieldDocument(f *FieldDocument) (*domain.Field, error) {
 		f.Position,
 	)
 
-	rules := documentsToRules(f.Rules)
+	rules, err := documentsToRules(f.Rules)
+	if err != nil {
+		return nil, err
+	}
+
 	if err := field.SetRules(rules...); err != nil {
 		return nil, err
 	}
@@ -302,9 +314,9 @@ func FromFieldDocument(f *FieldDocument) (*domain.Field, error) {
 }
 
 type ruleDocument struct {
-	ID         string `bson:"_id"`
-	Type       string `bson:"type"`
-	Expression string `bson:"expression"`
+	ID          string                    `bson:"_id"`
+	Type        string                    `bson:"type"`
+	Expressions []*ruleExpressionDocument `bson:"expressions"`
 }
 
 func RulesToDocuments(rules map[domain.RuleType]*domain.Rule) []*ruleDocument {
@@ -316,26 +328,77 @@ func RulesToDocuments(rules map[domain.RuleType]*domain.Rule) []*ruleDocument {
 }
 
 func toRuleDocument(r *domain.Rule) *ruleDocument {
+	expressions := r.GetExpressionsSlice()
+	documents := make([]*ruleExpressionDocument, 0, len(expressions))
+
+	for _, e := range expressions {
+		documents = append(documents, toRuleExpressionDocument(e))
+	}
+
 	return &ruleDocument{
-		ID:         string(r.ID),
-		Type:       string(r.Type),
-		Expression: r.Expression,
+		ID:          string(r.ID),
+		Type:        string(r.Type),
+		Expressions: documents,
 	}
 }
 
-func documentsToRules(documents []*ruleDocument) []*domain.Rule {
+func documentsToRules(documents []*ruleDocument) ([]*domain.Rule, error) {
 	rules := make([]*domain.Rule, 0, len(documents))
 	for _, d := range documents {
-		rules = append(rules, fromRuleDocument(d))
+		rule, err := fromRuleDocument(d)
+		if err != nil {
+			return nil, err
+		}
+		
+		rules = append(rules, rule)
 	}
-	return rules
+
+	return rules, nil
 }
 
-func fromRuleDocument(r *ruleDocument) *domain.Rule {
-	return domain.HydrateRule(
-		domain.RuleID(r.ID),
-		domain.RuleType(r.Type),
-		r.Expression,
+func fromRuleDocument(doc *ruleDocument) (*domain.Rule, error) {
+	r := domain.HydrateRule(
+		domain.RuleID(doc.ID),
+		domain.RuleType(doc.Type),
+	)
+
+	expressions := make([]*domain.RuleExpression, 0, len(doc.Expressions))
+	for _, e := range doc.Expressions {
+		expressions = append(expressions, fromRuleExpressionDocument(e))
+	}
+
+	if err := r.SetExpressions(expressions...); err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
+type ruleExpressionDocument struct {
+	FieldID          string  `bson:"field_id"`
+	Operator         string  `bson:"operator"`
+	Value            any     `bson:"value"`
+	JoinWithPrevious *string `bson:"join_with_previous"`
+	Position         float32 `bson:"position"`
+}
+
+func toRuleExpressionDocument(e *domain.RuleExpression) *ruleExpressionDocument {
+	return &ruleExpressionDocument{
+		FieldID:          string(e.FieldID),
+		Operator:         string(e.Operator),
+		Value:            e.Value,
+		JoinWithPrevious: (*string)(e.JoinWithPrevious),
+		Position:         e.GetPosition(),
+	}
+}
+
+func fromRuleExpressionDocument(e *ruleExpressionDocument) *domain.RuleExpression {
+	return domain.HydrateRuleExpression(
+		domain.FieldID(e.FieldID),
+		domain.ExpressionOperator(e.Operator),
+		e.Value,
+		(*domain.JoinOperator)(e.JoinWithPrevious),
+		e.Position,
 	)
 }
 
