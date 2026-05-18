@@ -51,7 +51,7 @@ func RulesToResponse(rules map[domain.RuleType]*domain.Rule) []*RuleResponse {
 	dtos := make([]*RuleResponse, 0, len(rules))
 
 	for _, r := range rules {
-		expressions := ruleExpressionsToResponse(r.GetExpressionsSlice())
+		expressions := ruleExpressionsToResponse(r.GetExpressions())
 
 		dtos = append(dtos, &RuleResponse{
 			ID:          r.ID,

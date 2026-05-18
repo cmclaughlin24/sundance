@@ -328,7 +328,7 @@ func RulesToDocuments(rules map[domain.RuleType]*domain.Rule) []*ruleDocument {
 }
 
 func toRuleDocument(r *domain.Rule) *ruleDocument {
-	expressions := r.GetExpressionsSlice()
+	expressions := r.GetExpressions()
 	documents := make([]*ruleExpressionDocument, 0, len(expressions))
 
 	for _, e := range expressions {

@@ -2,7 +2,6 @@ package domain
 
 import (
 	"errors"
-	"maps"
 	"slices"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
@@ -27,7 +26,7 @@ var (
 type Rule struct {
 	ID          RuleID
 	Type        RuleType
-	expressions map[float32]*RuleExpression
+	expressions []*RuleExpression
 }
 
 func NewRule(ruleType RuleType) (*Rule, error) {
@@ -36,9 +35,8 @@ func NewRule(ruleType RuleType) (*Rule, error) {
 	}
 
 	r := &Rule{
-		ID:          RuleID(NewID()),
-		Type:        ruleType,
-		expressions: make(map[float32]*RuleExpression),
+		ID:   RuleID(NewID()),
+		Type: ruleType,
 	}
 
 	if err := validate.ValidateStruct(r); err != nil {
@@ -50,21 +48,13 @@ func NewRule(ruleType RuleType) (*Rule, error) {
 
 func HydrateRule(id RuleID, ruleType RuleType) *Rule {
 	return &Rule{
-		ID:          id,
-		Type:        ruleType,
-		expressions: make(map[float32]*RuleExpression),
+		ID:   id,
+		Type: ruleType,
 	}
 }
 
-func (r *Rule) GetExpressionsSlice() []*RuleExpression {
-	positions := slices.Sorted(maps.Keys(r.expressions))
-	expressions := make([]*RuleExpression, 0, len(r.expressions))
-
-	for _, position := range positions {
-		expressions = append(expressions, r.expressions[position])
-	}
-
-	return expressions
+func (r *Rule) GetExpressions() []*RuleExpression {
+	return r.expressions
 }
 
 func (r *Rule) SetExpressions(expressions ...*RuleExpression) error {
@@ -72,20 +62,27 @@ func (r *Rule) SetExpressions(expressions ...*RuleExpression) error {
 		return ErrInvalidRule
 	}
 
-	if r.expressions == nil {
-		r.expressions = make(map[float32]*RuleExpression)
-	}
-
+	seen := make(map[float32]struct{}, len(expressions))
 	for _, exp := range expressions {
 		position := exp.GetPosition()
-		_, exists := r.expressions[position]
 
-		if exists {
+		if _, exists := seen[position]; exists {
 			return ErrDuplicatePosition
 		}
 
-		r.expressions[position] = exp
+		seen[position] = struct{}{}
 	}
+
+	r.expressions = slices.Clone(expressions)
+	slices.SortFunc(r.expressions, func(a, b *RuleExpression) int {
+		if a.GetPosition() < b.GetPosition() {
+			return -1
+		}
+		if a.GetPosition() > b.GetPosition() {
+			return 1
+		}
+		return 0
+	})
 
 	return nil
 }

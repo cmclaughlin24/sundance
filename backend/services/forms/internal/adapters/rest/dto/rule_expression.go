@@ -7,7 +7,7 @@ type RuleExpressionRequest struct {
 	Operator         string  `json:"operator" validate:"required"`
 	Value            any     `json:"value"`
 	JoinWithPrevious *string `json:"joinWithPrevious"`
-	Position         float32 `json:"position" validate:"gte=0,lte=15"`
+	Position         float32 `json:"position" validate:"gte=0"`
 }
 
 type RuleExpressionResponse struct {
