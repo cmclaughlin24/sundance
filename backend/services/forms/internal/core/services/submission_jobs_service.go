@@ -78,26 +78,61 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 		return ErrVersionStatus
 	}
 
-	validationErr := make([]error, 0)
+	if err := s.validate(ctx, version, submission); err != nil {
+		// TODO: Decide how to handle errors based on type.
+		return err
+	}
 
+	return nil
+}
+
+func (s *submissionJobsService) validate(ctx context.Context, version *domain.Version, submission *domain.Submission) error {
+	evalCtx := make(ports.RuleEvaluationContext, len(submission.Values))
+	for _, fv := range submission.Values {
+		evalCtx[string(fv.FieldID)] = fv.Value
+	}
+
+pageLoop:
 	for _, page := range version.GetPages() {
-		// TODO: Check page rules and see if page should be evaluated.
+		visible, err := s.shouldValidate(ctx, page, evalCtx)
 
+		if err != nil {
+			return err
+		}
+
+		if !visible {
+			continue pageLoop
+		}
+
+	sectionLoop:
 		for _, section := range page.GetSections() {
-			// TODO: Check section rules and see if section should be evaluated.
+			visible, err := s.shouldValidate(ctx, section, evalCtx)
 
+			if err != nil {
+				return err
+			}
+
+			if !visible {
+				continue sectionLoop
+			}
+
+		fieldLoop:
 			for _, field := range section.GetFields() {
-				// TODO: Check field rules and see if field should be evaluated.
+				visible, err := s.shouldValidate(ctx, field, evalCtx)
+
+				if err != nil {
+					return err
+				}
+
+				if !visible {
+					continue fieldLoop
+				}
 
 				if err := s.validateField(ctx, field, submission); err != nil {
-					validationErr = append(validationErr, err)
+					return err
 				}
 			}
 		}
-	}
-
-	if len(validationErr) > 0 {
-		// TODO: Return concat the list of errors into a single error and return.
 	}
 
 	return nil
