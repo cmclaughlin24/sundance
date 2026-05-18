@@ -2,7 +2,6 @@ package domain
 
 import (
 	"errors"
-	"maps"
 	"slices"
 	"time"
 
@@ -39,7 +38,7 @@ type Version struct {
 	RetiredAt   time.Time
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
-	pages       map[float32]*Page
+	pages       PositionElements[*Page]
 }
 
 func NewVersion(formID FormID, version int, status VersionStatus) (*Version, error) {
@@ -52,7 +51,7 @@ func NewVersion(formID FormID, version int, status VersionStatus) (*Version, err
 		FormID:    formID,
 		Version:   version,
 		Status:    status,
-		pages:     make(map[float32]*Page),
+		pages:     make(PositionElements[*Page], 0),
 		CreatedAt: Now(),
 	}
 
@@ -86,23 +85,12 @@ func HydrateVersion(
 		RetiredAt:   retiredAt,
 		CreatedAt:   createdAt,
 		UpdatedAt:   updatedAt,
-		pages:       make(map[float32]*Page),
+		pages:       make(PositionElements[*Page], 0),
 	}
 }
 
-func (v *Version) GetPages() map[float32]*Page {
+func (v *Version) GetPages() []*Page {
 	return v.pages
-}
-
-func (v *Version) GetPagesSlice() []*Page {
-	positions := slices.Sorted(maps.Keys(v.pages))
-	pages := make([]*Page, 0, len(v.pages))
-
-	for _, position := range positions {
-		pages = append(pages, v.pages[position])
-	}
-
-	return pages
 }
 
 func (v *Version) AddPages(pages ...*Page) error {
@@ -110,20 +98,15 @@ func (v *Version) AddPages(pages ...*Page) error {
 		return ErrInvalidVersion
 	}
 
-	if v.pages == nil {
-		v.pages = make(map[float32]*Page)
+	cpy := slices.Clone(v.pages)
+	cpy = append(cpy, pages...)
+
+	if ok := hasUniqueElements(cpy); !ok {
+		return ErrDuplicatePosition
 	}
 
-	for _, page := range pages {
-		position := page.GetPosition()
-		_, exists := v.pages[position]
-
-		if exists {
-			return ErrDuplicatePosition
-		}
-
-		v.pages[position] = page
-	}
+	sortElements(cpy)
+	v.pages = cpy
 
 	return nil
 }
@@ -138,7 +121,7 @@ func (v *Version) ReplacePages(pages ...*Page) error {
 	}
 
 	old := v.pages
-	v.pages = make(map[float32]*Page)
+	v.pages = make(PositionElements[*Page], 0)
 
 	if err := v.AddPages(pages...); err != nil {
 		v.pages = old

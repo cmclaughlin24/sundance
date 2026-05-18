@@ -36,5 +36,5 @@ type SubmissionsService interface {
 
 type SubmissionJobsService interface {
 	Find(context.Context, *FindSubmissionJobsQuery) ([]domain.SubmissionID, error)
-	Process(context.Context, *ProcessSubmissionJobCommand) error
+	Process(context.Context, domain.SubmissionID) error
 }

@@ -54,7 +54,7 @@ type VersionDocument struct {
 }
 
 func ToVersionDocument(v *domain.Version) (*VersionDocument, error) {
-	pages := v.GetPagesSlice()
+	pages := v.GetPages()
 	pageDocs := make([]*PageDocument, 0, len(pages))
 
 	for _, p := range pages {
@@ -124,7 +124,7 @@ type PageDocument struct {
 }
 
 func ToPageDocument(p *domain.Page) (*PageDocument, error) {
-	sections := p.GetSectionsSlice()
+	sections := p.GetSections()
 	sectionDocs := make([]*SectionDocument, 0, len(sections))
 
 	for _, s := range sections {
@@ -194,7 +194,7 @@ type SectionDocument struct {
 }
 
 func ToSectionDocument(s *domain.Section) (*SectionDocument, error) {
-	fields := s.GetFieldsSlice()
+	fields := s.GetFields()
 	fieldDocs := make([]*FieldDocument, 0, len(fields))
 
 	for _, f := range fields {

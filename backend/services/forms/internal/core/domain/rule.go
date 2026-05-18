@@ -26,7 +26,7 @@ var (
 type Rule struct {
 	ID          RuleID
 	Type        RuleType
-	expressions []*RuleExpression
+	expressions PositionElements[*RuleExpression]
 }
 
 func NewRule(ruleType RuleType) (*Rule, error) {
@@ -53,7 +53,7 @@ func HydrateRule(id RuleID, ruleType RuleType) *Rule {
 	}
 }
 
-func (r *Rule) GetExpressions() []*RuleExpression {
+func (r *Rule) GetExpressions() PositionElements[*RuleExpression] {
 	return r.expressions
 }
 
@@ -65,24 +65,11 @@ func (r *Rule) AddExpressions(expressions ...*RuleExpression) error {
 	cpy := slices.Clone(r.expressions)
 	cpy = append(cpy, expressions...)
 
-	seen := make(map[float32]struct{}, len(cpy))
-	for _, exp := range cpy {
-		position := exp.GetPosition()
-		if _, exists := seen[position]; exists {
-			return ErrDuplicatePosition
-		}
-		seen[position] = struct{}{}
+	if ok := hasUniqueElements(cpy); !ok {
+		return ErrDuplicatePosition
 	}
 
-	slices.SortFunc(cpy, func(a, b *RuleExpression) int {
-		if a.GetPosition() < b.GetPosition() {
-			return -1
-		}
-		if a.GetPosition() > b.GetPosition() {
-			return 1
-		}
-		return 0
-	})
+	sortElements(cpy)
 	r.expressions = cpy
 
 	return nil

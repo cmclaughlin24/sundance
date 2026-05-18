@@ -60,7 +60,7 @@ func SectionToResponse(section *domain.Section) *SectionResponse {
 		return nil
 	}
 
-	fields := section.GetFieldsSlice()
+	fields := section.GetFields()
 	dtos := make([]*FieldResponse, 0, len(fields))
 
 	for _, f := range fields {

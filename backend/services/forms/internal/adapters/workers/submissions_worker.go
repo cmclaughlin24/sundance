@@ -24,7 +24,7 @@ func newSubmissionJob(service ports.SubmissionJobsService, id domain.SubmissionI
 }
 
 func (j *submissionJob) Process(ctx context.Context) error {
-	return j.service.Process(ctx, ports.NewProcessSubmissionJobCommand(j.id))
+	return j.service.Process(ctx, j.id)
 }
 
 func NewSubmissionsBackgroundWorker(app *core.Application) (*worker.BackgroundWorker[*submissionJob], error) {

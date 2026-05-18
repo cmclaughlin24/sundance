@@ -2,7 +2,6 @@ package domain
 
 import (
 	"errors"
-	"maps"
 	"slices"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
@@ -18,7 +17,7 @@ type Page struct {
 	ID       PageID
 	Key      string `validate:"required,nowhitespace"`
 	Name     string `validate:"required"`
-	sections map[float32]*Section
+	sections PositionElements[*Section]
 	withPosition
 	withRules
 }
@@ -32,7 +31,7 @@ func NewPage(key, name string, position float32) (*Page, error) {
 		ID:       PageID(NewID()),
 		Key:      key,
 		Name:     name,
-		sections: make(map[float32]*Section),
+		sections: make(PositionElements[*Section], 0),
 		withPosition: withPosition{
 			position: position,
 		},
@@ -50,26 +49,15 @@ func HydratePage(id PageID, key, name string, position float32) *Page {
 		ID:       id,
 		Key:      key,
 		Name:     name,
-		sections: make(map[float32]*Section),
+		sections: make(PositionElements[*Section], 0),
 		withPosition: withPosition{
 			position: position,
 		},
 	}
 }
 
-func (p *Page) GetSections() map[float32]*Section {
+func (p *Page) GetSections() []*Section {
 	return p.sections
-}
-
-func (p *Page) GetSectionsSlice() []*Section {
-	positions := slices.Sorted(maps.Keys(p.sections))
-	sections := make([]*Section, 0, len(p.sections))
-
-	for _, position := range positions {
-		sections = append(sections, p.sections[position])
-	}
-
-	return sections
 }
 
 func (p *Page) AddSections(sections ...*Section) error {
@@ -77,20 +65,15 @@ func (p *Page) AddSections(sections ...*Section) error {
 		return ErrInvalidPage
 	}
 
-	if p.sections == nil {
-		p.sections = make(map[float32]*Section)
+	cpy := slices.Clone(p.sections)
+	cpy = append(cpy, sections...)
+
+	if ok := hasUniqueElements(cpy); !ok {
+		return ErrDuplicatePosition
 	}
 
-	for _, section := range sections {
-		position := section.GetPosition()
-		_, exists := p.sections[position]
-
-		if exists {
-			return ErrDuplicatePosition
-		}
-
-		p.sections[position] = section
-	}
+	sortElements(cpy)
+	p.sections = cpy
 
 	return nil
 }
@@ -101,7 +84,7 @@ func (p *Page) ReplaceSections(section ...*Section) error {
 	}
 
 	old := p.sections
-	p.sections = make(map[float32]*Section)
+	p.sections = make(PositionElements[*Section], 0)
 
 	if err := p.AddSections(section...); err != nil {
 		p.sections = old

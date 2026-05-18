@@ -14,6 +14,7 @@ import (
 	"github.com/cmclaughlin24/sundance/backend/pkg/cache"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common"
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/logger"
+	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/evaluators"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/persistence"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/rest"
 	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/workers"
@@ -59,7 +60,7 @@ func main() {
 	defer cacheClose()
 
 	st := strategies.Bootstrap(strategies.WithLogger(l))
-	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithStrategies(st))
+	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithStrategies(st), services.WithRuleEvaluator(&evaluators.ExprRuleEvaluator{}))
 	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s), core.WithCache(cm.(core.Cache)))
 
 	defer app.Close(context.Background())

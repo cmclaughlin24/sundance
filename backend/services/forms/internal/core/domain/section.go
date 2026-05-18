@@ -2,7 +2,6 @@ package domain
 
 import (
 	"errors"
-	"maps"
 	"slices"
 
 	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
@@ -18,7 +17,7 @@ type Section struct {
 	ID     SectionID
 	Key    string `validate:"required,nowhitespace"`
 	Name   string `validate:"required"`
-	fields map[float32]*Field
+	fields PositionElements[*Field]
 	withPosition
 	withRules
 }
@@ -32,7 +31,7 @@ func NewSection(key, name string, position float32) (*Section, error) {
 		ID:     SectionID(NewID()),
 		Key:    key,
 		Name:   name,
-		fields: make(map[float32]*Field),
+		fields: make(PositionElements[*Field], 0),
 		withPosition: withPosition{
 			position: position,
 		},
@@ -50,26 +49,15 @@ func HydrateSection(id SectionID, key, name string, position float32) *Section {
 		ID:     id,
 		Key:    key,
 		Name:   name,
-		fields: make(map[float32]*Field),
+		fields: make(PositionElements[*Field], 0),
 		withPosition: withPosition{
 			position: position,
 		},
 	}
 }
 
-func (s *Section) GetFields() map[float32]*Field {
+func (s *Section) GetFields() PositionElements[*Field] {
 	return s.fields
-}
-
-func (s *Section) GetFieldsSlice() []*Field {
-	positions := slices.Sorted(maps.Keys(s.fields))
-	fields := make([]*Field, 0, len(s.fields))
-
-	for _, p := range positions {
-		fields = append(fields, s.fields[p])
-	}
-
-	return fields
 }
 
 func (s *Section) AddFields(fields ...*Field) error {
@@ -77,20 +65,15 @@ func (s *Section) AddFields(fields ...*Field) error {
 		return ErrInvalidSection
 	}
 
-	if s.fields == nil {
-		s.fields = make(map[float32]*Field)
+	cpy := slices.Clone(s.fields)
+	cpy = append(cpy, fields...)
+
+	if ok := hasUniqueElements(cpy); !ok {
+		return ErrDuplicatePosition
 	}
 
-	for _, field := range fields {
-		position := field.GetPosition()
-		_, exists := s.fields[position]
-
-		if exists {
-			return ErrDuplicatePosition
-		}
-
-		s.fields[position] = field
-	}
+	sortElements(cpy)
+	s.fields = cpy
 
 	return nil
 }
@@ -101,7 +84,7 @@ func (s *Section) ReplaceFields(fields ...*Field) error {
 	}
 
 	old := s.fields
-	s.fields = make(map[float32]*Field)
+	s.fields = make(PositionElements[*Field], 0)
 
 	if err := s.AddFields(fields...); err != nil {
 		s.fields = old

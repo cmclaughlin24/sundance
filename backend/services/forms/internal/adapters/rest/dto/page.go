@@ -76,7 +76,7 @@ func PageToResponse(page *domain.Page) *PageResponse {
 		return nil
 	}
 
-	sections := page.GetSectionsSlice()
+	sections := page.GetSections()
 	dtos := make([]*SectionResponse, 0, len(sections))
 
 	for _, s := range sections {

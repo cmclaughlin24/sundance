@@ -29,7 +29,7 @@ func VersionToResponse(version *domain.Version) *VersionResponse {
 		return nil
 	}
 
-	pages := version.GetPagesSlice()
+	pages := version.GetPages()
 	dtos := make([]*PageResponse, 0, len(pages))
 
 	for _, p := range pages {

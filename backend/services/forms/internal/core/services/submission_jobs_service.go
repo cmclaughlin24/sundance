@@ -14,16 +14,27 @@ var (
 	ErrVersionStatus = errors.New("invalid version status")
 )
 
+type ruleGetter interface {
+	GetRule(domain.RuleType) *domain.Rule
+}
+
 type submissionJobsService struct {
 	logger                   *slog.Logger
+	evaluator                ports.RuleEvaluator
 	versionRepository        ports.VersionRepository
 	submissionRepository     ports.SubmissionsRepository
 	fieldValidatorStrategies ports.FieldValidatorRegistry
 }
 
-func NewSubmissionJobsService(logger *slog.Logger, repository *ports.Repository, strategies *ports.Strategies) ports.SubmissionJobsService {
+func NewSubmissionJobsService(
+	logger *slog.Logger,
+	evaluator ports.RuleEvaluator,
+	repository *ports.Repository,
+	strategies *ports.Strategies,
+) ports.SubmissionJobsService {
 	return &submissionJobsService{
 		logger:                   logger,
+		evaluator:                evaluator,
 		versionRepository:        repository.Versions,
 		submissionRepository:     repository.Submissions,
 		fieldValidatorStrategies: strategies.FieldValidator,
@@ -42,17 +53,12 @@ func (s *submissionJobsService) Find(ctx context.Context, query *ports.FindSubmi
 	return ids, nil
 }
 
-func (s *submissionJobsService) Process(ctx context.Context, command *ports.ProcessSubmissionJobCommand) error {
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "submission job process failed; invalid command", "error", err)
-		return err
-	}
+func (s *submissionJobsService) Process(ctx context.Context, id domain.SubmissionID) error {
+	s.logger.DebugContext(ctx, "processing submission job", "submission_id", id)
 
-	s.logger.DebugContext(ctx, "processing submission job", "submission_id", command.ID)
-
-	submission, err := s.submissionRepository.FindByID(ctx, command.ID)
+	submission, err := s.submissionRepository.FindByID(ctx, id)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to retrieve submission job", "submission_id", command.ID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to retrieve submission job", "submission_id", id, "error", err)
 		return err
 	}
 
@@ -74,13 +80,13 @@ func (s *submissionJobsService) Process(ctx context.Context, command *ports.Proc
 
 	validationErr := make([]error, 0)
 
-	for _, page := range version.GetPagesSlice() {
+	for _, page := range version.GetPages() {
 		// TODO: Check page rules and see if page should be evaluated.
 
-		for _, section := range page.GetSectionsSlice() {
+		for _, section := range page.GetSections() {
 			// TODO: Check section rules and see if section should be evaluated.
 
-			for _, field := range section.GetFieldsSlice() {
+			for _, field := range section.GetFields() {
 				// TODO: Check field rules and see if field should be evaluated.
 
 				if err := s.validateField(ctx, field, submission); err != nil {
@@ -118,4 +124,12 @@ func (s *submissionJobsService) validateField(ctx context.Context, field *domain
 	}
 
 	return nil
+}
+
+func (s submissionJobsService) shouldValidate(ctx context.Context, getter ruleGetter, evalCtx ports.RuleEvaluationContext) (bool, error) {
+	rule := getter.GetRule(domain.RuleTypeVisible)
+	if rule == nil {
+		return true, nil
+	}
+	return s.evaluator.Evaluate(ctx, rule, evalCtx)
 }

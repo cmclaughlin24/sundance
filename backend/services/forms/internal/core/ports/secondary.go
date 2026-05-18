@@ -47,3 +47,9 @@ type FieldValidatorStrategy interface {
 }
 
 type FieldValidatorRegistry = stratreg.StrategyRegistry[domain.FieldType, FieldValidatorStrategy]
+
+type RuleEvaluationContext = map[string]any
+
+type RuleEvaluator interface {
+	Evaluate(context.Context, *domain.Rule, RuleEvaluationContext) (bool, error)
+}
