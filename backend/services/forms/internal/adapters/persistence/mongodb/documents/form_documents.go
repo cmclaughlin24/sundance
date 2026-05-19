@@ -395,7 +395,7 @@ func toRuleExpressionDocument(e *domain.RuleExpression) *ruleExpressionDocument 
 func fromRuleExpressionDocument(e *ruleExpressionDocument) *domain.RuleExpression {
 	return domain.HydrateRuleExpression(
 		domain.FieldID(e.FieldID),
-		domain.ExpressionOperator(e.Operator),
+		domain.ExprOperator(e.Operator),
 		e.Value,
 		(*domain.JoinOperator)(e.JoinWithPrevious),
 		e.Position,

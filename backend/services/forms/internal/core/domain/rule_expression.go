@@ -6,22 +6,30 @@ import (
 	"sundance/backend/pkg/common/validate"
 )
 
-type ExpressionOperator string
+type ExprOperator string
 
 type JoinOperator string
 
 const (
+	ExprOperatorEquals  ExprOperator = "equal"
+	ExprOperatorNEquals ExprOperator = "nequal"
+	ExprOperatorLT      ExprOperator = "lt"
+	ExprOperatorGT      ExprOperator = "gt"
+	ExprOperatorLTE     ExprOperator = "lte"
+	ExprOperatorGTE     ExprOperator = "gte"
+
 	JoinOperatorAnd JoinOperator = "and"
 	JoinOperatorOr  JoinOperator = "or"
 )
 
 var (
+	ErrInvalidExprOperator = errors.New("invalid expression operator")
 	ErrInvalidJoinOperator = errors.New("invalid join operator")
 )
 
 type RuleExpression struct {
 	FieldID          FieldID
-	Operator         ExpressionOperator
+	Operator         ExprOperator
 	Value            any
 	JoinWithPrevious *JoinOperator
 	withPosition
@@ -29,12 +37,14 @@ type RuleExpression struct {
 
 func NewRuleExpression(
 	fieldID FieldID,
-	operator ExpressionOperator,
+	operator ExprOperator,
 	value any,
 	joinWithPrevious *JoinOperator,
 	position float32,
 ) (*RuleExpression, error) {
-	// TODO: Implement validation for operators.
+	if !isValidExprOperator(operator) {
+		return nil, ErrInvalidExprOperator
+	}
 
 	if joinWithPrevious != nil && !isValidJoinOperator(*joinWithPrevious) {
 		return nil, ErrInvalidJoinOperator
@@ -53,7 +63,7 @@ func NewRuleExpression(
 
 func HydrateRuleExpression(
 	fieldID FieldID,
-	operator ExpressionOperator,
+	operator ExprOperator,
 	value any,
 	joinWithPrevious *JoinOperator,
 	position float32,
@@ -72,4 +82,13 @@ func HydrateRuleExpression(
 var isValidJoinOperator = validate.NewTypeValidator([]JoinOperator{
 	JoinOperatorAnd,
 	JoinOperatorOr,
+})
+
+var isValidExprOperator = validate.NewTypeValidator([]ExprOperator{
+	ExprOperatorEquals,
+	ExprOperatorNEquals,
+	ExprOperatorLT,
+	ExprOperatorGT,
+	ExprOperatorLTE,
+	ExprOperatorGTE,
 })

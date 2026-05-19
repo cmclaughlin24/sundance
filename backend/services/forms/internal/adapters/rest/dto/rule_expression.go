@@ -21,7 +21,7 @@ type RuleExpressionResponse struct {
 func requestToRuleExpression(dto *RuleExpressionRequest) (*domain.RuleExpression, error) {
 	return domain.NewRuleExpression(
 		domain.FieldID(dto.FieldID),
-		domain.ExpressionOperator(dto.Operator),
+		domain.ExprOperator(dto.Operator),
 		dto.Value,
 		(*domain.JoinOperator)(dto.JoinWithPrevious),
 		dto.Position,
