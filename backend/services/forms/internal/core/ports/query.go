@@ -97,4 +97,14 @@ func NewFindSubmissionByIDQuery[T any](tenantID string, id T) *FindSubmissionByI
 }
 
 type FindSubmissionJobsQuery struct {
+	Limit int `validate:"min=0"`
 }
+
+func NewFindSubmissionJobsQuery(limit int) *FindSubmissionJobsQuery {
+	return &FindSubmissionJobsQuery{limit}
+}
+
+func (q *FindSubmissionJobsQuery) Validate() error {
+	return validate.ValidateStruct(q)
+}
+

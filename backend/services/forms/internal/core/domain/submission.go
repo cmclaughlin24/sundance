@@ -20,6 +20,7 @@ const (
 	SubmissionStatusPending  SubmissionStatus = "pending"
 	SubmissionStatusAccepted SubmissionStatus = "accepted"
 	SubmissionStatusRejected SubmissionStatus = "rejected"
+	SubmissionStatusFailed   SubmissionStatus = "failed"
 )
 
 var (
@@ -107,8 +108,19 @@ func (s *Submission) GetFieldValue(id FieldID) (*SubmissionFieldValue, bool) {
 	return s.Values[idx], true
 }
 
+func (s *Submission) Accept() {
+	s.Status = SubmissionStatusAccepted
+	s.UpdatedAt = Now()
+}
+
+func (s *Submission) Reject(err error) {
+	s.Status = SubmissionStatusRejected
+	s.UpdatedAt = Now()
+}
+
 func (s *Submission) Reset() {
 	s.Status = SubmissionStatusPending
+	s.UpdatedAt = Now()
 }
 
 type SubmissionFieldValue struct {

@@ -177,8 +177,8 @@ func NewCreateSubmissionCommand(
 }
 
 type ReplaySubmissionCommand struct {
-	TenantID string
-	ID       domain.SubmissionID
+	TenantID string              `validate:"required"`
+	ID       domain.SubmissionID `validate:"required"`
 }
 
 func NewReplaySubmissionCommand(tenantID string, id domain.SubmissionID) *ReplaySubmissionCommand {

@@ -50,7 +50,7 @@ func NewSubmissionsBackgroundWorker(app *core.Application) (*worker.BackgroundWo
 
 func newSubmissionWorkFn(app *core.Application) worker.FetchJobsFn[*submissionJob] {
 	return func(ctx context.Context) ([]*submissionJob, error) {
-		ids, err := app.Services.SubmissionJobs.Find(ctx, &ports.FindSubmissionJobsQuery{})
+		ids, err := app.Services.SubmissionJobs.Find(ctx, ports.NewFindSubmissionJobsQuery(0))
 
 		if err != nil {
 			return nil, err

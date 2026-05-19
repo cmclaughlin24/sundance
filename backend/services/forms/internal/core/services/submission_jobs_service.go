@@ -47,7 +47,16 @@ func NewSubmissionJobsService(
 func (s *submissionJobsService) Find(ctx context.Context, query *ports.FindSubmissionJobsQuery) ([]domain.SubmissionID, error) {
 	s.logger.DebugContext(ctx, "listing submission jobs")
 
-	ids, err := s.submissionRepository.FindJobs(ctx, &ports.FindSubmissionsFilter{Statuses: []domain.SubmissionStatus{domain.SubmissionStatusPending}})
+	if err := query.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "submission job listing failed; invalid query", "error", err)
+		return nil, err
+	}
+
+	ids, err := s.submissionRepository.FindJobs(ctx, &ports.FindSubmissionsFilter{
+		Limit:    query.Limit,
+		Statuses: []domain.SubmissionStatus{domain.SubmissionStatusPending},
+	})
+
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to retrieve submission jobs", "error", err)
 		return nil, err
@@ -76,14 +85,15 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 		return err
 	}
 
-	// FIXME: If the version is draft status, the submission should be marked as rejected so it will not be re-processed.
 	if version.Status == domain.VersionStatusDraft {
 		s.logger.WarnContext(ctx, "skipping submission job; invalid status", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "version_status", version.Status)
-		return ErrVersionStatus
-	}
-
-	if err := s.validate(ctx, version, submission); err != nil {
-		return err
+		submission.Reject(ErrVersionStatus)
+	} else {
+		if err := s.validate(ctx, version, submission); err != nil {
+			// FIXME: If an error occurred update the submission's status based on the type of error that occurred. otherwise
+		} else {
+			submission.Accept()
+		}
 	}
 
 	txCtx, err := s.database.BeginTx(ctx)
