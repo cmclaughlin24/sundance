@@ -1085,15 +1085,58 @@ const docTemplate = `{
                 }
             }
         },
+        "RuleExpressionRequest": {
+            "type": "object",
+            "required": [
+                "fieldKey",
+                "operator"
+            ],
+            "properties": {
+                "fieldKey": {
+                    "type": "string"
+                },
+                "joinWithPrevious": {
+                    "type": "string"
+                },
+                "operator": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "value": {}
+            }
+        },
+        "RuleExpressionResponse": {
+            "type": "object",
+            "properties": {
+                "fieldKey": {
+                    "type": "string"
+                },
+                "joinWithPrevious": {
+                    "type": "string"
+                },
+                "operator": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "number"
+                },
+                "value": {}
+            }
+        },
         "RuleRequest": {
             "type": "object",
             "required": [
-                "expression",
                 "type"
             ],
             "properties": {
-                "expression": {
-                    "type": "string"
+                "expressions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/RuleExpressionRequest"
+                    }
                 },
                 "type": {
                     "type": "string"
@@ -1103,8 +1146,11 @@ const docTemplate = `{
         "RuleResponse": {
             "type": "object",
             "properties": {
-                "expression": {
-                    "type": "string"
+                "expressions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/RuleExpressionResponse"
+                    }
                 },
                 "id": {
                     "type": "string"

@@ -3,7 +3,7 @@ package dto
 import "sundance/backend/services/forms/internal/core/domain"
 
 type RuleExpressionRequest struct {
-	FieldID          string  `json:"fieldId" validate:"required"`
+	FieldKey         string  `json:"fieldKey" validate:"required"`
 	Operator         string  `json:"operator" validate:"required"`
 	Value            any     `json:"value"`
 	JoinWithPrevious *string `json:"joinWithPrevious"`
@@ -11,7 +11,7 @@ type RuleExpressionRequest struct {
 }
 
 type RuleExpressionResponse struct {
-	FieldID          string  `json:"fieldId"`
+	FieldKey         string  `json:"fieldKey"`
 	Operator         string  `json:"operator"`
 	Value            any     `json:"value"`
 	JoinWithPrevious *string `json:"joinWithPrevious"`
@@ -20,7 +20,7 @@ type RuleExpressionResponse struct {
 
 func requestToRuleExpression(dto *RuleExpressionRequest) (*domain.RuleExpression, error) {
 	return domain.NewRuleExpression(
-		domain.FieldID(dto.FieldID),
+		dto.FieldKey,
 		domain.ExprOperator(dto.Operator),
 		dto.Value,
 		(*domain.JoinOperator)(dto.JoinWithPrevious),
@@ -46,7 +46,7 @@ func ruleExpressionsToResponse(expressions []*domain.RuleExpression) []*RuleExpr
 	dtos := make([]*RuleExpressionResponse, 0, len(expressions))
 	for _, exp := range expressions {
 		dtos = append(dtos, &RuleExpressionResponse{
-			FieldID:          string(exp.FieldID),
+			FieldKey:         string(exp.FieldKey),
 			Operator:         string(exp.Operator),
 			Value:            exp.Value,
 			JoinWithPrevious: (*string)(exp.JoinWithPrevious),

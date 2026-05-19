@@ -5,6 +5,7 @@ import (
 
 	"sundance/backend/pkg/common/stratreg"
 	"sundance/backend/services/forms/internal/core/domain"
+
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
@@ -349,7 +350,7 @@ func documentsToRules(documents []*ruleDocument) ([]*domain.Rule, error) {
 		if err != nil {
 			return nil, err
 		}
-		
+
 		rules = append(rules, rule)
 	}
 
@@ -375,7 +376,7 @@ func fromRuleDocument(doc *ruleDocument) (*domain.Rule, error) {
 }
 
 type ruleExpressionDocument struct {
-	FieldID          string  `bson:"field_id"`
+	FieldKey         string  `bson:"field_key"`
 	Operator         string  `bson:"operator"`
 	Value            any     `bson:"value"`
 	JoinWithPrevious *string `bson:"join_with_previous"`
@@ -384,7 +385,7 @@ type ruleExpressionDocument struct {
 
 func toRuleExpressionDocument(e *domain.RuleExpression) *ruleExpressionDocument {
 	return &ruleExpressionDocument{
-		FieldID:          string(e.FieldID),
+		FieldKey:         e.FieldKey,
 		Operator:         string(e.Operator),
 		Value:            e.Value,
 		JoinWithPrevious: (*string)(e.JoinWithPrevious),
@@ -394,7 +395,7 @@ func toRuleExpressionDocument(e *domain.RuleExpression) *ruleExpressionDocument 
 
 func fromRuleExpressionDocument(e *ruleExpressionDocument) *domain.RuleExpression {
 	return domain.HydrateRuleExpression(
-		domain.FieldID(e.FieldID),
+		e.FieldKey,
 		domain.ExprOperator(e.Operator),
 		e.Value,
 		(*domain.JoinOperator)(e.JoinWithPrevious),

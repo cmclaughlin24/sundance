@@ -132,20 +132,51 @@ definitions:
           $ref: '#/definitions/SectionResponse'
         type: array
     type: object
+  RuleExpressionRequest:
+    properties:
+      fieldKey:
+        type: string
+      joinWithPrevious:
+        type: string
+      operator:
+        type: string
+      position:
+        minimum: 0
+        type: number
+      value: {}
+    required:
+    - fieldKey
+    - operator
+    type: object
+  RuleExpressionResponse:
+    properties:
+      fieldKey:
+        type: string
+      joinWithPrevious:
+        type: string
+      operator:
+        type: string
+      position:
+        type: number
+      value: {}
+    type: object
   RuleRequest:
     properties:
-      expression:
-        type: string
+      expressions:
+        items:
+          $ref: '#/definitions/RuleExpressionRequest'
+        type: array
       type:
         type: string
     required:
-    - expression
     - type
     type: object
   RuleResponse:
     properties:
-      expression:
-        type: string
+      expressions:
+        items:
+          $ref: '#/definitions/RuleExpressionResponse'
+        type: array
       id:
         type: string
       type:

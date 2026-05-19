@@ -88,8 +88,10 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 
 func (s *submissionJobsService) validate(ctx context.Context, version *domain.Version, submission *domain.Submission) error {
 	evalCtx := make(ports.RuleEvaluationContext, len(submission.Values))
-	for _, fv := range submission.Values {
-		evalCtx[string(fv.FieldID)] = fv.Value
+	for _, field := range version.FlatFields() {
+		if val, ok := submission.GetFieldValue(field.ID); ok {
+			evalCtx[field.Key] = val.Value
+		}
 	}
 
 pageLoop:

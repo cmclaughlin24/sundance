@@ -89,6 +89,18 @@ func HydrateVersion(
 	}
 }
 
+func (v *Version) FlatFields() []*Field {
+	var fields []*Field
+
+	for _, page := range v.pages {
+		for _, section := range page.GetSections() {
+			fields = append(fields, section.GetFields()...)
+		}
+	}
+
+	return fields
+}
+
 func (v *Version) GetPages() []*Page {
 	return v.pages
 }

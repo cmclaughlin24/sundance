@@ -28,7 +28,7 @@ var (
 )
 
 type RuleExpression struct {
-	FieldID          FieldID
+	FieldKey         string
 	Operator         ExprOperator
 	Value            any
 	JoinWithPrevious *JoinOperator
@@ -36,7 +36,7 @@ type RuleExpression struct {
 }
 
 func NewRuleExpression(
-	fieldID FieldID,
+	fieldID string,
 	operator ExprOperator,
 	value any,
 	joinWithPrevious *JoinOperator,
@@ -51,7 +51,7 @@ func NewRuleExpression(
 	}
 
 	return &RuleExpression{
-		FieldID:          fieldID,
+		FieldKey:         fieldID,
 		Operator:         operator,
 		Value:            value,
 		JoinWithPrevious: joinWithPrevious,
@@ -62,14 +62,14 @@ func NewRuleExpression(
 }
 
 func HydrateRuleExpression(
-	fieldID FieldID,
+	fieldID string,
 	operator ExprOperator,
 	value any,
 	joinWithPrevious *JoinOperator,
 	position float32,
 ) *RuleExpression {
 	return &RuleExpression{
-		FieldID:          fieldID,
+		FieldKey:         fieldID,
 		Operator:         operator,
 		Value:            value,
 		JoinWithPrevious: joinWithPrevious,
