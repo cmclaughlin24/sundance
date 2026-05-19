@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/services/tenants/internal/core/ports"
 )
 
 type clientOptions struct {

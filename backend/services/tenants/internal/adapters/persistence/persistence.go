@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/database"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/persistence/inmemory"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/persistence/mongodb"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/pkg/database"
+	"sundance/backend/services/tenants/internal/adapters/persistence/inmemory"
+	"sundance/backend/services/tenants/internal/adapters/persistence/mongodb"
+	"sundance/backend/services/tenants/internal/core/ports"
 )
 
 type PersistenceDriver string

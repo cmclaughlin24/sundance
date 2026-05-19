@@ -5,8 +5,8 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/services/tenants/internal/core/domain"
+	"sundance/backend/services/tenants/internal/core/ports"
 )
 
 var (

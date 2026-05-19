@@ -4,11 +4,11 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest/dto"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/pkg/common/httputil"
+	"sundance/backend/services/tenants/internal/adapters/rest/dto"
+	"sundance/backend/services/tenants/internal/core"
+	"sundance/backend/services/tenants/internal/core/domain"
+	"sundance/backend/services/tenants/internal/core/ports"
 	"github.com/go-chi/chi/v5"
 )
 

@@ -3,7 +3,7 @@ package authenticators
 import (
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/auth"
+	"sundance/backend/pkg/auth"
 )
 
 type PlaceholderClaims struct {

@@ -4,11 +4,11 @@ import (
 	"context"
 	"time"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/worker"
-	"github.com/cmclaughlin24/sundance/backend/pkg/worker/elector"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/pkg/worker"
+	"sundance/backend/pkg/worker/elector"
+	"sundance/backend/services/tenants/internal/core"
+	"sundance/backend/services/tenants/internal/core/domain"
+	"sundance/backend/services/tenants/internal/core/ports"
 )
 
 type dataSourceJob struct {

@@ -3,7 +3,7 @@ package strategies
 import (
 	"fmt"
 
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/domain"
 )
 
 func checkValueRequired[T comparable](attr domain.FieldAttributes, value any) (T, error) {

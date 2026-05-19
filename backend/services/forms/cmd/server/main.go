@@ -11,16 +11,16 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/cache"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/logger"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/evaluators"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/persistence"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/rest"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/workers"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/services"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/strategies"
+	"sundance/backend/pkg/cache"
+	"sundance/backend/pkg/common"
+	"sundance/backend/pkg/common/logger"
+	"sundance/backend/services/forms/internal/adapters/evaluators"
+	"sundance/backend/services/forms/internal/adapters/persistence"
+	"sundance/backend/services/forms/internal/adapters/rest"
+	"sundance/backend/services/forms/internal/adapters/workers"
+	"sundance/backend/services/forms/internal/core"
+	"sundance/backend/services/forms/internal/core/services"
+	"sundance/backend/services/forms/internal/core/strategies"
 )
 
 type settings struct {

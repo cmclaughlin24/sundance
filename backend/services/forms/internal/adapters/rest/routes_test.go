@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/rest"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
+	"sundance/backend/services/forms/internal/adapters/rest"
+	"sundance/backend/services/forms/internal/core"
 	"github.com/go-chi/chi/v5"
 )
 

@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/auth"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/adapters/rest/dto"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/pkg/auth"
+	"sundance/backend/pkg/common/httputil"
+	"sundance/backend/services/forms/internal/adapters/rest/dto"
+	"sundance/backend/services/forms/internal/core"
+	"sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/ports"
 	"github.com/go-chi/chi/v5"
 )
 

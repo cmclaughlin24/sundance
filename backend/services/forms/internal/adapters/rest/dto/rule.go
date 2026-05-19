@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
+import "sundance/backend/services/forms/internal/core/domain"
 
 type RuleRequest struct {
 	Type        string                   `json:"type" validate:"required"`

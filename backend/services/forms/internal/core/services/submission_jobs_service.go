@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/ports"
 )
 
 var (

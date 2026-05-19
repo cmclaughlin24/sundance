@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/domain"
 )
 
 type Services struct {

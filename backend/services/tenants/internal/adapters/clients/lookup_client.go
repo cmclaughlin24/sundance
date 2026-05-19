@@ -5,9 +5,9 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/pkg/common/httputil"
+	"sundance/backend/services/tenants/internal/core/domain"
+	"sundance/backend/services/tenants/internal/core/ports"
 )
 
 type LookupClient struct {

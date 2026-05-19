@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
+	"sundance/backend/pkg/common"
+	"sundance/backend/pkg/common/validate"
 )
 
 type contextKey string

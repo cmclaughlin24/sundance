@@ -11,17 +11,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/cache"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/logger"
-	"github.com/cmclaughlin24/sundance/backend/pkg/worker"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/clients"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/persistence"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/workers"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/services"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/strategies"
+	"sundance/backend/pkg/cache"
+	"sundance/backend/pkg/common"
+	"sundance/backend/pkg/common/logger"
+	"sundance/backend/pkg/worker"
+	"sundance/backend/services/tenants/internal/adapters/clients"
+	"sundance/backend/services/tenants/internal/adapters/persistence"
+	"sundance/backend/services/tenants/internal/adapters/rest"
+	"sundance/backend/services/tenants/internal/adapters/workers"
+	"sundance/backend/services/tenants/internal/core"
+	"sundance/backend/services/tenants/internal/core/services"
+	"sundance/backend/services/tenants/internal/core/strategies"
 )
 
 type settings struct {

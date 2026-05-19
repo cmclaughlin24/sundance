@@ -6,9 +6,9 @@ import (
 	"slices"
 	"sync"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/pkg/common"
+	"sundance/backend/services/tenants/internal/core/domain"
+	"sundance/backend/services/tenants/internal/core/ports"
 )
 
 type inMemoryDataSourceRepository struct {

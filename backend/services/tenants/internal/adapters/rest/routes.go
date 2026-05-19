@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"regexp"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/adapters/rest/docs"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core"
+	"sundance/backend/pkg/common/httputil"
+	"sundance/backend/services/tenants/internal/adapters/rest/docs"
+	"sundance/backend/services/tenants/internal/core"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v3"

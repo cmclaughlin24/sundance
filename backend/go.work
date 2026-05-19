@@ -1,0 +1,11 @@
+go 1.26.2
+
+use (
+	./pkg/auth
+	./pkg/cache
+	./pkg/common
+	./pkg/database
+	./pkg/worker
+	./services/forms
+	./services/tenants
+)

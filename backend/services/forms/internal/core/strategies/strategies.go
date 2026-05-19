@@ -3,9 +3,9 @@ package strategies
 import (
 	"log/slog"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/stratreg"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/pkg/common/stratreg"
+	"sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/ports"
 )
 
 type strategyOptions struct {

@@ -3,7 +3,7 @@ package services
 import (
 	"log/slog"
 
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/services/forms/internal/core/ports"
 )
 
 type serviceOptions struct {

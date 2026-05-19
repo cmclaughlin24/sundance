@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/domain"
 )
 
 type PageRequest struct {

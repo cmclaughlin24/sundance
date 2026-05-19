@@ -4,9 +4,9 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/cache"
-	"github.com/cmclaughlin24/sundance/backend/pkg/worker/elector"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/pkg/cache"
+	"sundance/backend/pkg/worker/elector"
+	"sundance/backend/services/tenants/internal/core/ports"
 )
 
 type Cache interface {

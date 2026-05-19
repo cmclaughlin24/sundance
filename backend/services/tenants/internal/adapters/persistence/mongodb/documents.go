@@ -3,8 +3,8 @@ package mongodb
 import (
 	"time"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/stratreg"
-	"github.com/cmclaughlin24/sundance/backend/services/tenants/internal/core/domain"
+	"sundance/backend/pkg/common/stratreg"
+	"sundance/backend/services/tenants/internal/core/domain"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 

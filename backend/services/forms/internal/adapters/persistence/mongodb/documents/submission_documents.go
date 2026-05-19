@@ -3,7 +3,7 @@ package documents
 import (
 	"time"
 
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/domain"
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 

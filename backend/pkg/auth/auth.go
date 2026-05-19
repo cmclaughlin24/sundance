@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"reflect"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/httputil"
+	"sundance/backend/pkg/common/httputil"
 )
 
 type Authenticator = func(*http.Request) (Claims, error)

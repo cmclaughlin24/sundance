@@ -5,10 +5,10 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common"
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/domain"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/pkg/common"
+	"sundance/backend/pkg/common/validate"
+	"sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/ports"
 )
 
 type submissionsService struct {

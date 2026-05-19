@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/worker/elector"
+	"sundance/backend/pkg/worker/elector"
 )
 
 var (

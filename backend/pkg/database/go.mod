@@ -1,11 +1,8 @@
-module github.com/cmclaughlin24/sundance/backend/pkg/database
+module sundance/backend/pkg/database
 
 go 1.26.2
 
-require (
-	github.com/cmclaughlin24/sundance/backend/pkg/common v0.0.0-20260424024005-5a1710a74665
-	go.mongodb.org/mongo-driver/v2 v2.5.1
-)
+require go.mongodb.org/mongo-driver/v2 v2.5.1
 
 require (
 	github.com/klauspost/compress v1.17.6 // indirect

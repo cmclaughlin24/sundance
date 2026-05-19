@@ -5,7 +5,7 @@ import (
 	"slices"
 	"time"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/common/validate"
+	"sundance/backend/pkg/common/validate"
 )
 
 type SubmissionID string

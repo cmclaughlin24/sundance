@@ -3,8 +3,8 @@ package mongodb
 import (
 	"log/slog"
 
-	"github.com/cmclaughlin24/sundance/backend/pkg/database"
-	"github.com/cmclaughlin24/sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/pkg/database"
+	"sundance/backend/services/forms/internal/core/ports"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
