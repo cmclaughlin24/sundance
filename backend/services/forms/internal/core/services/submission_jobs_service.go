@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"sundance/backend/pkg/database"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
 )
@@ -21,6 +22,7 @@ type ruleGetter interface {
 type submissionJobsService struct {
 	logger                   *slog.Logger
 	evaluator                ports.RuleEvaluator
+	database                 database.Database
 	versionRepository        ports.VersionRepository
 	submissionRepository     ports.SubmissionsRepository
 	fieldValidatorStrategies ports.FieldValidatorRegistry
@@ -35,6 +37,7 @@ func NewSubmissionJobsService(
 	return &submissionJobsService{
 		logger:                   logger,
 		evaluator:                evaluator,
+		database:                 repository.Database,
 		versionRepository:        repository.Versions,
 		submissionRepository:     repository.Submissions,
 		fieldValidatorStrategies: strategies.FieldValidator,
@@ -73,13 +76,34 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 		return err
 	}
 
+	// FIXME: If the version is draft status, the submission should be marked as rejected so it will not be re-processed.
 	if version.Status == domain.VersionStatusDraft {
-		s.logger.WarnContext(ctx, "failed to process submission job; invalid status", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "version_status", version.Status)
+		s.logger.WarnContext(ctx, "skipping submission job; invalid status", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "version_status", version.Status)
 		return ErrVersionStatus
 	}
 
 	if err := s.validate(ctx, version, submission); err != nil {
-		// TODO: Decide how to handle errors based on type.
+		return err
+	}
+
+	txCtx, err := s.database.BeginTx(ctx)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to begin transaction", "submission_id", submission.ID, "error", err)
+		return err
+	}
+
+	defer s.database.RollbackTx(txCtx)
+
+	_, err = s.submissionRepository.Upsert(txCtx, submission)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to upsert submission", "submission_id", submission.ID, "error", err)
+		return err
+	}
+
+	// TODO: Publish submission to external sources.
+
+	if err := s.database.CommitTx(txCtx); err != nil {
+		s.logger.ErrorContext(ctx, "failed to commit transaction", "submission_id", submission.ID, "error", err)
 		return err
 	}
 
