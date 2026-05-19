@@ -163,10 +163,12 @@ func (s *submissionJobsService) validateField(ctx context.Context, field *domain
 	return nil
 }
 
-func (s submissionJobsService) shouldValidate(ctx context.Context, getter ruleGetter, evalCtx ports.RuleEvaluationContext) (bool, error) {
+func (s *submissionJobsService) shouldValidate(ctx context.Context, getter ruleGetter, evalCtx ports.RuleEvaluationContext) (bool, error) {
 	rule := getter.GetRule(domain.RuleTypeVisible)
+
 	if rule == nil {
 		return true, nil
 	}
+
 	return s.evaluator.Evaluate(ctx, rule, evalCtx)
 }

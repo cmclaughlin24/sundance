@@ -187,15 +187,3 @@ func NewReplaySubmissionCommand(tenantID string, id domain.SubmissionID) *Replay
 		ID:       id,
 	}
 }
-
-type ProcessSubmissionJobCommand struct {
-	ID domain.SubmissionID `validate:"required"`
-}
-
-func NewProcessSubmissionJobCommand(id domain.SubmissionID) *ProcessSubmissionJobCommand {
-	return &ProcessSubmissionJobCommand{id}
-}
-
-func (c *ProcessSubmissionJobCommand) Validate() error {
-	return validate.ValidateStruct(c)
-}

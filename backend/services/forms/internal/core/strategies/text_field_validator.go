@@ -38,12 +38,16 @@ func (s *TextFieldValidatorStrategy) Validate(ctx context.Context, field domain.
 		return nil
 	}
 
+	if val == "" && attr.GetIsRequired() {
+		return newValidationErr(field.Key, ErrFieldRequired)
+	}
+
 	if attr.MinLength != nil && len(val) < *attr.MinLength {
-		return fmt.Errorf("")
+		return newValidationErr(field.Key, fmt.Errorf("min length"))
 	}
 
 	if attr.MaxLength != nil && len(val) > *attr.MaxLength {
-		return fmt.Errorf("")
+		return newValidationErr(field.Key, fmt.Errorf("max length"))
 	}
 
 	if attr.Pattern != "" {
@@ -51,8 +55,9 @@ func (s *TextFieldValidatorStrategy) Validate(ctx context.Context, field domain.
 
 		if err != nil {
 			s.logger.WarnContext(ctx, "cannot validate pattern; failed to compile regex", "field_id", field.ID, "error", err, "pattern", attr.Pattern)
+			return newValidationErr(field.Key, err)
 		} else if ok := pattern.Match([]byte(val)); !ok {
-			return fmt.Errorf("")
+			return newValidationErr(field.Key, fmt.Errorf("does not match pattern %s", attr.Pattern))
 		}
 	}
 

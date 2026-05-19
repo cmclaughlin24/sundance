@@ -14,6 +14,7 @@ import (
 	"sundance/backend/pkg/cache"
 	"sundance/backend/pkg/common"
 	"sundance/backend/pkg/common/logger"
+	"sundance/backend/pkg/worker"
 	"sundance/backend/services/forms/internal/adapters/evaluators"
 	"sundance/backend/services/forms/internal/adapters/persistence"
 	"sundance/backend/services/forms/internal/adapters/rest"
@@ -44,7 +45,7 @@ func main() {
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: logger.LogLevelToLevel(settings.LogLevel),
 	})
-	l := slog.New(&logger.RequestContextHandler{Handler: handler})
+	l := slog.New(&worker.WorkerContextHandler{Handler: &logger.RequestContextHandler{Handler: handler}})
 
 	r, err := persistence.Bootstrap(settings.Persistence, l)
 	if err != nil {

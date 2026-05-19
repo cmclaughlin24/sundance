@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"fmt"
 	"slices"
 
 	"sundance/backend/pkg/common/validate"
@@ -11,6 +12,11 @@ type PageID string
 
 var (
 	ErrInvalidPage = errors.New("invalid page")
+	ErrInvalidPageRule = errors.New("invalid page rule type")
+
+	pageRuleTypes = map[RuleType]bool {
+		RuleTypeVisible: true,	
+	}
 )
 
 type Page struct {
@@ -92,4 +98,14 @@ func (p *Page) ReplaceSections(section ...*Section) error {
 	}
 
 	return nil
+}
+
+func (p *Page) SetRules(rules ...*Rule) error {
+	for _, rule := range rules {
+		if allow, ok := pageRuleTypes[rule.Type]; !allow || !ok {
+			return fmt.Errorf("rule type %s not supported; %w", rule.Type, ErrInvalidPageRule)
+		}
+	}
+
+	return p.withRules.SetRules(rules...)
 }

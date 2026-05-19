@@ -27,7 +27,7 @@ func (s *DateFieldValidatorStrategy) Validate(ctx context.Context, field domain.
 
 	_, err = checkValueRequired[string](attr, fv.Value)
 	if err != nil {
-		return err
+		return newValidationErr(field.Key, err)
 	}
 
 	if fv.Value == nil {

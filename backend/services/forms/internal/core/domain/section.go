@@ -2,6 +2,7 @@ package domain
 
 import (
 	"errors"
+	"fmt"
 	"slices"
 
 	"sundance/backend/pkg/common/validate"
@@ -10,7 +11,12 @@ import (
 type SectionID string
 
 var (
-	ErrInvalidSection = errors.New("invalid section")
+	ErrInvalidSection     = errors.New("invalid section")
+	ErrInvalidSectionRule = errors.New("invalid section rule type")
+
+	sectionRuleTypes = map[RuleType]bool{
+		RuleTypeVisible: true,
+	}
 )
 
 type Section struct {
@@ -92,4 +98,14 @@ func (s *Section) ReplaceFields(fields ...*Field) error {
 	}
 
 	return nil
+}
+
+func (s *Section) SetRules(rules ...*Rule) error {
+	for _, rule := range rules {
+		if allow, ok := sectionRuleTypes[rule.Type]; !allow || !ok {
+			return fmt.Errorf("rule type %s not supported; %w", rule.Type, ErrInvalidSectionRule)
+		}
+	}
+
+	return s.withRules.SetRules(rules...)
 }

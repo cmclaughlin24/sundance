@@ -28,7 +28,7 @@ func (s *NumberFieldValidatorStrategy) Validate(ctx context.Context, field domai
 
 	val, err := checkValueRequired[float64](attr, fv.Value)
 	if err != nil {
-		return err
+		return newValidationErr(field.Key, err)
 	}
 
 	if fv.Value == nil {
@@ -36,11 +36,11 @@ func (s *NumberFieldValidatorStrategy) Validate(ctx context.Context, field domai
 	}
 
 	if attr.Min != nil && val < *attr.Min {
-		return fmt.Errorf("")
+		return newValidationErr(field.Key, fmt.Errorf("min value"))
 	}
 
 	if attr.Max != nil && val > *attr.Max {
-		return fmt.Errorf("")
+		return newValidationErr(field.Key, fmt.Errorf("max value"))
 	}
 
 	return nil
