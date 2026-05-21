@@ -280,11 +280,93 @@ func TestTenantsService_Update(t *testing.T) {
 
 func TestTenantsService_Delete(t *testing.T) {
 	tests := []struct {
-		name    string
-		id      domain.TenantID
-		wantErr error
+		name         string
+		id           domain.TenantID
+		beginTxErr   error
+		tenantExists bool
+		existsErr    error
+		deleteErr    error
+		deleteAllErr error
+		commitErr    error
+		wantErr      bool
 	}{
-		// TODO: Add test cases.
+		{
+			"should delete a tenant",
+			"star-fox-64",
+			nil,
+			true,
+			nil,
+			nil,
+			nil,
+			nil,
+			false,
+		},
+		{
+			"should yield an error when the transaction fails to begin",
+			"star-fox-adventures",
+			errors.New("begin tx error"),
+			false,
+			nil,
+			nil,
+			nil,
+			nil,
+			true,
+		},
+		{
+			"should yield an error when the existence check fails",
+			"star-fox-assault",
+			nil,
+			false,
+			errors.New("exists error"),
+			nil,
+			nil,
+			nil,
+			true,
+		},
+		{
+			"should yield an ErrNotFound when the tenant does not exist",
+			"star-fox-command",
+			nil,
+			false,
+			nil,
+			nil,
+			nil,
+			nil,
+			true,
+		},
+		{
+			"should yield an error when the tenant delete fails",
+			"star-fox-zero",
+			nil,
+			true,
+			nil,
+			errors.New("delete error"),
+			nil,
+			nil,
+			true,
+		},
+		{
+			"should yield an error when the data sources delete fails",
+			"star-fox-2",
+			nil,
+			true,
+			nil,
+			nil,
+			errors.New("delete all error"),
+			nil,
+			true,
+		},
+		{
+			"should yield an error when the commit fails",
+			"star-fox-guard",
+			nil,
+			true,
+			nil,
+			nil,
+			nil,
+			errors.New("commit error"),
+			true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -294,20 +376,29 @@ func TestTenantsService_Delete(t *testing.T) {
 				logger: logger,
 				database: &mockDatabase{
 					beginTxFn: func(ctx context.Context) (context.Context, error) {
+						if tt.beginTxErr != nil {
+							return ctx, tt.beginTxErr
+						}
 						return ctx, nil
 					},
-					rollbackTxfn: func(ctx context.Context) error {
+					rollbackTxfn: func(_ context.Context) error {
 						return nil
+					},
+					commitTxFn: func(_ context.Context) error {
+						return tt.commitErr
 					},
 				},
 				tenantsRepository: &mockTenantsRepository{
+					existsFn: func(_ context.Context, _ domain.TenantID) (bool, error) {
+						return tt.tenantExists, tt.existsErr
+					},
 					deleteFn: func(_ context.Context, _ domain.TenantID) error {
-						return tt.wantErr
+						return tt.deleteErr
 					},
 				},
 				dataSourcesRepository: &mockDataSourcesRepository{
 					deleteAllFn: func(_ context.Context, _ domain.TenantID) error {
-						return nil
+						return tt.deleteAllErr
 					},
 				},
 			}
@@ -316,8 +407,15 @@ func TestTenantsService_Delete(t *testing.T) {
 			gotErr := s.Delete(context.Background(), tt.id)
 
 			// Assert.
-			if tt.wantErr != gotErr {
-				t.Errorf("expected error %v but got %v", tt.wantErr, gotErr)
+			if tt.wantErr {
+				if gotErr == nil {
+					t.Errorf("expected error but got nil")
+				}
+				return
+			}
+
+			if gotErr != nil {
+				t.Errorf("expected no error but got %v", gotErr)
 				return
 			}
 		})

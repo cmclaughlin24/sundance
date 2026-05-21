@@ -316,6 +316,224 @@ func TestDataSourcesService_Create(t *testing.T) {
 	}
 }
 
+func TestDataSourcesService_Update(t *testing.T) {
+	validDS := &domain.DataSource{
+		ID:       "ds-1",
+		TenantID: "tenant-1",
+		Name:     "F-Zero Tracks",
+		Type:     domain.DataSourceTypeStatic,
+		Attributes: domain.StaticDataSourceAttributes{
+			Data: []*domain.Lookup{
+				{Value: "mute-city", Label: "Mute City"},
+			},
+		},
+	}
+
+	tests := []struct {
+		name         string
+		command      *ports.UpdateDataSourceCommand
+		tenantExists bool
+		findDs       *domain.DataSource
+		findErr      error
+		upsertErr    error
+		want         *domain.DataSource
+		wantErr      error
+	}{
+		{
+			"should update a data source",
+			ports.NewUpdateDataSourceCommand(
+				"tenant-1",
+				"ds-1",
+				"F-Zero Pilots",
+				"F-Zero X on the Nintendo 64 expanded the roster to 30 playable pilots",
+				domain.DataSourceTypeStatic,
+				domain.StaticDataSourceAttributes{
+					Data: []*domain.Lookup{
+						{Value: "captain-falcon", Label: "Captain Falcon"},
+						{Value: "samurai-goroh", Label: "Samurai Goroh"},
+					},
+				},
+			),
+			true,
+			validDS,
+			nil,
+			nil,
+			&domain.DataSource{TenantID: "tenant-1", Name: "F-Zero Pilots", Description: "F-Zero X on the Nintendo 64 expanded the roster to 30 playable pilots"},
+			nil,
+		},
+		{
+			"should yield an error when the command is invalid",
+			ports.NewUpdateDataSourceCommand("", "", "", "", "", nil),
+			true,
+			nil,
+			nil,
+			nil,
+			nil,
+			errors.New("validation error"),
+		},
+		{
+			"should yield an ErrNotFound when the tenant does not exist",
+			ports.NewUpdateDataSourceCommand(
+				"tenant-1",
+				"ds-1",
+				"F-Zero Cups",
+				"F-Zero Maximum Velocity was a launch title for the Game Boy Advance in 2001",
+				domain.DataSourceTypeStatic,
+				domain.StaticDataSourceAttributes{
+					Data: []*domain.Lookup{
+						{Value: "knight-league", Label: "Knight League"},
+					},
+				},
+			),
+			false,
+			nil,
+			nil,
+			nil,
+			nil,
+			common.ErrNotFound,
+		},
+		{
+			"should yield an ErrNotFound when the data source does not exist",
+			ports.NewUpdateDataSourceCommand(
+				"tenant-1",
+				"ds-1",
+				"F-Zero Tracks",
+				"The original F-Zero was released in 1990",
+				domain.DataSourceTypeStatic,
+				domain.StaticDataSourceAttributes{
+					Data: []*domain.Lookup{
+						{Value: "mute-city", Label: "Mute City"},
+					},
+				},
+			),
+			true,
+			nil,
+			common.ErrNotFound,
+			nil,
+			nil,
+			common.ErrNotFound,
+		},
+		{
+			"should yield an error when the repository returns an error on find",
+			ports.NewUpdateDataSourceCommand(
+				"tenant-1",
+				"ds-1",
+				"F-Zero Tracks",
+				"The original F-Zero was released in 1990",
+				domain.DataSourceTypeStatic,
+				domain.StaticDataSourceAttributes{
+					Data: []*domain.Lookup{
+						{Value: "mute-city", Label: "Mute City"},
+					},
+				},
+			),
+			true,
+			nil,
+			errors.New("repository error"),
+			nil,
+			nil,
+			errors.New("repository error"),
+		},
+		{
+			"should yield an error when there is a domain invariant violation",
+			ports.NewUpdateDataSourceCommand(
+				"tenant-1",
+				"ds-1",
+				"F-Zero Machines",
+				"F-Zero GX was co-developed by Sega's Amusement Vision",
+				"invalid",
+				domain.StaticDataSourceAttributes{
+					Data: []*domain.Lookup{
+						{Value: "blue-falcon", Label: "Blue Falcon"},
+					},
+				},
+			),
+			true,
+			validDS,
+			nil,
+			nil,
+			nil,
+			domain.ErrInvalidSourceType,
+		},
+		{
+			"should yield an error when the repository fails to persist",
+			ports.NewUpdateDataSourceCommand(
+				"tenant-1",
+				"ds-1",
+				"F-Zero Tracks",
+				"The original F-Zero was released in 1990",
+				domain.DataSourceTypeStatic,
+				domain.StaticDataSourceAttributes{
+					Data: []*domain.Lookup{
+						{Value: "mute-city", Label: "Mute City"},
+					},
+				},
+			),
+			true,
+			validDS,
+			nil,
+			errors.New("repository error"),
+			nil,
+			errors.New("repository error"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange.
+			s := dataSourcesService{
+				logger: logger,
+				tenantsRepository: &mockTenantsRepository{
+					existsFn: func(_ context.Context, _ domain.TenantID) (bool, error) {
+						return tt.tenantExists, nil
+					},
+				},
+				dataSourcesRepository: &mockDataSourcesRepository{
+					findByIdFn: func(_ context.Context, _ domain.TenantID, _ domain.DataSourceID) (*domain.DataSource, error) {
+						if tt.findErr != nil {
+							return nil, tt.findErr
+						}
+						// Return a copy so each test case gets a fresh instance.
+						cpy := *tt.findDs
+						return &cpy, nil
+					},
+					upsertFn: func(_ context.Context, ds *domain.DataSource) (*domain.DataSource, error) {
+						if tt.upsertErr != nil {
+							return nil, tt.upsertErr
+						}
+						return ds, nil
+					},
+				},
+			}
+
+			// Act.
+			got, gotErr := s.Update(context.Background(), tt.command)
+
+			// Assert.
+			if tt.wantErr != nil {
+				if gotErr == nil {
+					t.Errorf("expected error but got nil")
+				}
+				return
+			}
+
+			if gotErr != nil {
+				t.Errorf("expected no error but got %v", gotErr)
+				return
+			}
+
+			if got == nil {
+				t.Errorf("expected data source but got nil")
+				return
+			}
+
+			if tt.want.TenantID != got.TenantID || tt.want.Name != got.Name || tt.want.Description != got.Description {
+				t.Errorf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
+
 func TestDataSourcesService_Delete(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -415,17 +633,145 @@ func TestDataSourcesService_Delete(t *testing.T) {
 }
 
 func TestDataSourcesService_Lookup(t *testing.T) {
+	lookups := []*domain.Lookup{
+		{Value: "mute-city", Label: "Mute City"},
+		{Value: "big-blue", Label: "Big Blue"},
+	}
+
+	staticDS := &domain.DataSource{
+		ID:       "ds-1",
+		TenantID: "tenant-1",
+		Name:     "F-Zero Tracks",
+		Type:     domain.DataSourceTypeStatic,
+		Attributes: domain.StaticDataSourceAttributes{
+			Data: lookups,
+		},
+	}
+
 	tests := []struct {
-		name    string
-		query   *ports.GetDataSourceLookupsQuery
-		want    []*domain.Lookup
-		wantErr error
+		name      string
+		query     *ports.GetDataSourceLookupsQuery
+		findDs    *domain.DataSource
+		findErr   error
+		registry  ports.LookupStrategyRegistry
+		lookupErr error
+		want      []*domain.Lookup
+		wantErr   bool
 	}{
-		// TODO: Add test cases.
+		{
+			"should yield lookups",
+			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1"),
+			staticDS,
+			nil,
+			ports.LookupStrategyRegistry{
+				domain.DataSourceTypeStatic: &mockLookupStrategy{
+					lookupFn: func(_ context.Context, _ *domain.DataSource) ([]*domain.Lookup, error) {
+						return lookups, nil
+					},
+				},
+			},
+			nil,
+			lookups,
+			false,
+		},
+		{
+			"should yield an error when the query is invalid",
+			ports.NewGetDataSourceLookupsQuery("", ""),
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			true,
+		},
+		{
+			"should yield an ErrNotFound when the data source does not exist",
+			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1"),
+			nil,
+			common.ErrNotFound,
+			nil,
+			nil,
+			nil,
+			true,
+		},
+		{
+			"should yield an error when the repository returns an error on find",
+			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1"),
+			nil,
+			errors.New("repository error"),
+			nil,
+			nil,
+			nil,
+			true,
+		},
+		{
+			"should yield an error when the lookup strategy is not found",
+			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1"),
+			staticDS,
+			nil,
+			ports.LookupStrategyRegistry{},
+			nil,
+			nil,
+			true,
+		},
+		{
+			"should yield an error when the lookup execution fails",
+			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1"),
+			staticDS,
+			nil,
+			ports.LookupStrategyRegistry{
+				domain.DataSourceTypeStatic: &mockLookupStrategy{
+					lookupFn: func(_ context.Context, _ *domain.DataSource) ([]*domain.Lookup, error) {
+						return nil, errors.New("lookup error")
+					},
+				},
+			},
+			nil,
+			nil,
+			true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Arrange.
+			s := dataSourcesService{
+				logger: logger,
+				dataSourcesRepository: &mockDataSourcesRepository{
+					findByIdFn: func(_ context.Context, _ domain.TenantID, _ domain.DataSourceID) (*domain.DataSource, error) {
+						return tt.findDs, tt.findErr
+					},
+				},
+				lookupStrategies: tt.registry,
+			}
+
+			// Act.
+			got, gotErr := s.Lookup(context.Background(), tt.query)
+
+			// Assert.
+			if tt.wantErr {
+				if gotErr == nil {
+					t.Errorf("expected error but got nil")
+				}
+				return
+			}
+
+			if gotErr != nil {
+				t.Errorf("expected no error but got %v", gotErr)
+				return
+			}
+
+			if len(tt.want) != len(got) {
+				t.Errorf("expected %d lookups but got %d", len(tt.want), len(got))
+				return
+			}
+
+			for idx, want := range tt.want {
+				if want.Value != got[idx].Value || want.Label != got[idx].Label {
+					t.Errorf("expected %v but got %v", want, got[idx])
+					break
+				}
+			}
 		})
 	}
 }

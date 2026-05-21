@@ -25,6 +25,5 @@ func (s *ScheduledLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSou
 		return nil, err
 	}
 
-	// TODO: Determine if making data lazy-loaded would make sense.
 	return attr.Data, nil
 }

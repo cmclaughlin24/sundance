@@ -102,3 +102,19 @@ func (r *mockDataSourcesRepository) Delete(ctx context.Context, tenantID domain.
 func (r *mockDataSourcesRepository) DeleteAll(ctx context.Context, tenantID domain.TenantID) error {
 	return r.deleteAllFn(ctx, tenantID)
 }
+
+type mockLookupClient struct {
+	fetchLookupsFn func(context.Context, string, string, map[string]string) ([]*domain.Lookup, error)
+}
+
+func (c *mockLookupClient) FetchLookups(ctx context.Context, method, url string, headers map[string]string) ([]*domain.Lookup, error) {
+	return c.fetchLookupsFn(ctx, method, url, headers)
+}
+
+type mockLookupStrategy struct {
+	lookupFn func(context.Context, *domain.DataSource) ([]*domain.Lookup, error)
+}
+
+func (s *mockLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSource) ([]*domain.Lookup, error) {
+	return s.lookupFn(ctx, ds)
+}
