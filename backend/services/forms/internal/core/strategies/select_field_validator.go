@@ -19,7 +19,7 @@ func NewSelectFieldValidatorStrategy(logger *slog.Logger) ports.FieldValidatorSt
 }
 
 func (s *SelectFieldValidatorStrategy) Validate(ctx context.Context, field domain.Field, fv domain.SubmissionFieldValue) error {
-	_, err := domain.GetFieldAttributes[domain.SelectFieldAttributes](field.Attributes)
+	_, err := domain.GetFieldAttributes[*domain.SelectFieldAttributes](field.Attributes)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "field_id", field.ID, "field_type", field.Type, "error", err)
 		return err

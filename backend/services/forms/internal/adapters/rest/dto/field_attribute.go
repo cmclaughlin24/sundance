@@ -17,19 +17,19 @@ type attributeParser func([]byte) (domain.FieldAttributes, error)
 
 var attributeParsers = stratreg.New[domain.FieldType, attributeParser]().
 	Set(domain.FieldTypeText, func(data []byte) (domain.FieldAttributes, error) {
-		return parseAttributes[domain.TextFieldAttributes](data)
+		return parseAttributes[*domain.TextFieldAttributes](data)
 	}).
 	Set(domain.FieldTypeNumber, func(data []byte) (domain.FieldAttributes, error) {
-		return parseAttributes[domain.NumberFieldAttributes](data)
+		return parseAttributes[*domain.NumberFieldAttributes](data)
 	}).
 	Set(domain.FieldTypeCheckbox, func(data []byte) (domain.FieldAttributes, error) {
-		return parseAttributes[domain.CheckboxFieldAttributes](data)
+		return parseAttributes[*domain.CheckboxFieldAttributes](data)
 	}).
 	Set(domain.FieldTypeSelect, func(data []byte) (domain.FieldAttributes, error) {
-		return parseAttributes[domain.SelectFieldAttributes](data)
+		return parseAttributes[*domain.SelectFieldAttributes](data)
 	}).
 	Set(domain.FieldTypeDate, func(data []byte) (domain.FieldAttributes, error) {
-		return parseAttributes[domain.DateFieldAttributes](data)
+		return parseAttributes[*domain.DateFieldAttributes](data)
 	})
 
 func attributesFromRequest(fieldType domain.FieldType, raw any) (domain.FieldAttributes, error) {
@@ -107,7 +107,7 @@ func fieldAttributesToResponse(attr domain.FieldAttributes) any {
 	}
 
 	switch t := attr.(type) {
-	case domain.TextFieldAttributes:
+	case *domain.TextFieldAttributes:
 		return textFieldAttributesResponse{
 			baseFieldAttributeResponse: base,
 			MinLength:                  t.MinLength,
@@ -115,26 +115,26 @@ func fieldAttributesToResponse(attr domain.FieldAttributes) any {
 			Pattern:                    t.Pattern,
 			Placeholder:                t.Placeholder,
 		}
-	case domain.NumberFieldAttributes:
+	case *domain.NumberFieldAttributes:
 		return numberFieldAttributesResponse{
 			baseFieldAttributeResponse: base,
 			Min:                        t.Min,
 			Max:                        t.Max,
 			Step:                       t.Step,
 		}
-	case domain.SelectFieldAttributes:
+	case *domain.SelectFieldAttributes:
 		return selectFieldAttributesResponse{
 			baseFieldAttributeResponse: base,
 			Multiple:                   t.Multiple,
 			MinSelected:                t.MinSelected,
 			MaxSelected:                t.MaxSelected,
 		}
-	case domain.CheckboxFieldAttributes:
+	case *domain.CheckboxFieldAttributes:
 		return checkboxFieldAttributesResponse{
 			baseFieldAttributeResponse: base,
 			IsCheckedByDefault:         t.IsCheckedByDefault,
 		}
-	case domain.DateFieldAttributes:
+	case *domain.DateFieldAttributes:
 		return dateFieldAttributesResponse{
 			baseFieldAttributeResponse: base,
 			MinDate:                    t.MinDate,

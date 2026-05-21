@@ -8,6 +8,7 @@ var (
 
 type FieldAttributes interface {
 	GetIsRequired() bool
+	SetIsRequired(bool)
 	GetIsReadOnly() bool
 }
 
@@ -22,6 +23,10 @@ func (a BaseFieldAttributes) GetIsRequired() bool {
 
 func (a BaseFieldAttributes) GetIsReadOnly() bool {
 	return a.IsReadOnly
+}
+
+func (a *BaseFieldAttributes) SetIsRequired(required bool) {
+	a.IsRequired = required
 }
 
 type TextFieldAttributes struct {

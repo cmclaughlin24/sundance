@@ -19,7 +19,7 @@ func NewDateFieldValidatorStrategy(logger *slog.Logger) ports.FieldValidatorStra
 }
 
 func (s *DateFieldValidatorStrategy) Validate(ctx context.Context, field domain.Field, fv domain.SubmissionFieldValue) error {
-	attr, err := domain.GetFieldAttributes[domain.DateFieldAttributes](field.Attributes)
+	attr, err := domain.GetFieldAttributes[*domain.DateFieldAttributes](field.Attributes)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "field_id", field.ID, "field_type", field.Type, "error", err)
 		return err

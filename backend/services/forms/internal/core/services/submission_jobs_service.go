@@ -9,6 +9,7 @@ import (
 	"sundance/backend/pkg/database"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/services/forms/internal/core/strategies"
 )
 
 var (
@@ -79,6 +80,13 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 		return nil
 	}
 
+	err = s.validate(ctx, submission)
+	s.recordAttempt(ctx, submission, err)
+
+	return nil
+}
+
+func (s *submissionJobsService) validate(ctx context.Context, submission *domain.Submission) error {
 	version, err := s.versionRepository.FindByID(ctx, submission.FormID, submission.VersionID)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to retrieve version for submission job", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "error", err)
@@ -87,40 +95,9 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 
 	if version.Status == domain.VersionStatusDraft {
 		s.logger.WarnContext(ctx, "skipping submission job; invalid status", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "version_status", version.Status)
-		submission.Reject(ErrVersionStatus)
-	} else {
-		if err := s.validate(ctx, version, submission); err != nil {
-			// FIXME: If an error occurred update the submission's status based on the type of error that occurred. otherwise
-		} else {
-			submission.Accept()
-		}
+		return ErrVersionStatus
 	}
 
-	txCtx, err := s.database.BeginTx(ctx)
-	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to begin transaction", "submission_id", submission.ID, "error", err)
-		return err
-	}
-
-	defer s.database.RollbackTx(txCtx)
-
-	_, err = s.submissionRepository.Upsert(txCtx, submission)
-	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to upsert submission", "submission_id", submission.ID, "error", err)
-		return err
-	}
-
-	// TODO: Publish submission to external sources.
-
-	if err := s.database.CommitTx(txCtx); err != nil {
-		s.logger.ErrorContext(ctx, "failed to commit transaction", "submission_id", submission.ID, "error", err)
-		return err
-	}
-
-	return nil
-}
-
-func (s *submissionJobsService) validate(ctx context.Context, version *domain.Version, submission *domain.Submission) error {
 	evalCtx := make(ports.RuleEvaluationContext, len(submission.Values))
 	for _, field := range version.FlatFields() {
 		if val, ok := submission.GetFieldValue(field.ID); ok {
@@ -164,6 +141,15 @@ pageLoop:
 					continue fieldLoop
 				}
 
+				required, err := s.isRequired(ctx, field, evalCtx)
+				if err != nil {
+					return err
+				}
+
+				if required != nil {
+					field.Attributes.SetIsRequired(*required)
+				}
+
 				if err := s.validateField(ctx, field, submission); err != nil {
 					return err
 				}
@@ -197,12 +183,57 @@ func (s *submissionJobsService) validateField(ctx context.Context, field *domain
 	return nil
 }
 
-func (s *submissionJobsService) shouldValidate(ctx context.Context, getter ruleGetter, evalCtx ports.RuleEvaluationContext) (bool, error) {
-	rule := getter.GetRule(domain.RuleTypeVisible)
+func (s *submissionJobsService) isRequired(ctx context.Context, rg ruleGetter, evalCtx ports.RuleEvaluationContext) (*bool, error) {
+	rule := rg.GetRule(domain.RuleTypeRequired)
+	if rule == nil {
+		return nil, nil
+	}
+
+	result, err := s.evaluator.Evaluate(ctx, rule, evalCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func (s *submissionJobsService) shouldValidate(ctx context.Context, rg ruleGetter, evalCtx ports.RuleEvaluationContext) (bool, error) {
+	rule := rg.GetRule(domain.RuleTypeVisible)
 
 	if rule == nil {
 		return true, nil
 	}
 
 	return s.evaluator.Evaluate(ctx, rule, evalCtx)
+}
+
+func (s *submissionJobsService) recordAttempt(ctx context.Context, submission *domain.Submission, err error) error {
+	if err == nil {
+		submission.Accept()
+	} else if errors.Is(err, ErrVersionStatus) || errors.Is(err, strategies.ErrFieldValidation) {
+		submission.Reject(err)
+	} else {
+		submission.Fail(err)
+	}
+
+	txCtx, err := s.database.BeginTx(ctx)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to begin transaction", "submission_id", submission.ID, "error", err)
+		return err
+	}
+
+	defer s.database.RollbackTx(txCtx)
+
+	_, err = s.submissionRepository.Upsert(txCtx, submission)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to upsert submission", "submission_id", submission.ID, "error", err)
+		return err
+	}
+
+	if err := s.database.CommitTx(txCtx); err != nil {
+		s.logger.ErrorContext(ctx, "failed to commit transaction", "submission_id", submission.ID, "error", err)
+		return err
+	}
+
+	return nil
 }

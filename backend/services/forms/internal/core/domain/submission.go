@@ -113,6 +113,11 @@ func (s *Submission) Accept() {
 	s.UpdatedAt = Now()
 }
 
+func (s *Submission) Fail(err error) {
+	s.Status = SubmissionStatusRejected
+	s.UpdatedAt = Now()
+}
+
 func (s *Submission) Reject(err error) {
 	s.Status = SubmissionStatusRejected
 	s.UpdatedAt = Now()

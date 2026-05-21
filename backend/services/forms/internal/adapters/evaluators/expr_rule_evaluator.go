@@ -15,7 +15,6 @@ import (
 var (
 	ErrInvalidExpression       = errors.New("invalid expression")
 	ErrInvalidExpressionOutput = errors.New("invalid expression output")
-	ErrUnknownJoinOperator     = errors.New("unknown expression join operator")
 )
 
 type ExprRuleEvaluator struct{}
@@ -77,7 +76,7 @@ func joinOperator(re *domain.RuleExpression) (string, error) {
 	case domain.JoinOperatorOr:
 		operator = "||"
 	default:
-		return "", ErrUnknownJoinOperator
+		return "", domain.ErrInvalidJoinOperator
 	}
 
 	return fmt.Sprintf(" %s ", operator), nil

@@ -407,19 +407,19 @@ type attributeParser func(bson.Raw) (domain.FieldAttributes, error)
 
 var attributeParserStrategies = stratreg.New[domain.FieldType, attributeParser]().
 	Set(domain.FieldTypeText, func(raw bson.Raw) (domain.FieldAttributes, error) {
-		return parseFieldAttributes[domain.TextFieldAttributes](raw)
+		return parseFieldAttributes[*domain.TextFieldAttributes](raw)
 	}).
 	Set(domain.FieldTypeNumber, func(raw bson.Raw) (domain.FieldAttributes, error) {
-		return parseFieldAttributes[domain.NumberFieldAttributes](raw)
+		return parseFieldAttributes[*domain.NumberFieldAttributes](raw)
 	}).
 	Set(domain.FieldTypeSelect, func(raw bson.Raw) (domain.FieldAttributes, error) {
-		return parseFieldAttributes[domain.SelectFieldAttributes](raw)
+		return parseFieldAttributes[*domain.SelectFieldAttributes](raw)
 	}).
 	Set(domain.FieldTypeCheckbox, func(raw bson.Raw) (domain.FieldAttributes, error) {
-		return parseFieldAttributes[domain.CheckboxFieldAttributes](raw)
+		return parseFieldAttributes[*domain.CheckboxFieldAttributes](raw)
 	}).
 	Set(domain.FieldTypeDate, func(raw bson.Raw) (domain.FieldAttributes, error) {
-		return parseFieldAttributes[domain.DateFieldAttributes](raw)
+		return parseFieldAttributes[*domain.DateFieldAttributes](raw)
 	})
 
 func unmarshalFieldAttributes(fieldType domain.FieldType, raw bson.Raw) (domain.FieldAttributes, error) {

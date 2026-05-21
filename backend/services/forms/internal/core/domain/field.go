@@ -87,15 +87,15 @@ var isValidFieldType = validate.NewTypeValidator([]FieldType{
 
 func isValidFieldAttributes(fieldType FieldType, attr FieldAttributes) bool {
 	switch attr.(type) {
-	case TextFieldAttributes:
+	case *TextFieldAttributes:
 		return fieldType == FieldTypeText
-	case NumberFieldAttributes:
+	case *NumberFieldAttributes:
 		return fieldType == FieldTypeNumber
-	case SelectFieldAttributes:
+	case *SelectFieldAttributes:
 		return fieldType == FieldTypeSelect
-	case CheckboxFieldAttributes:
+	case *CheckboxFieldAttributes:
 		return fieldType == FieldTypeCheckbox
-	case DateFieldAttributes:
+	case *DateFieldAttributes:
 		return fieldType == FieldTypeDate
 	default:
 		return false

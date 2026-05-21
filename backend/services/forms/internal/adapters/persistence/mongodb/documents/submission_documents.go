@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"sundance/backend/services/forms/internal/core/domain"
-	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type SubmissionDocument struct {
@@ -83,22 +82,16 @@ type submissionAttemptDocument struct {
 	ID           string    `bson:"_id"`
 	Attempt      int       `bson:"attempt"`
 	Result       string    `bson:"result"`
-	ErrorDetails bson.Raw  `bson:"error_details"`
+	ErrorDetails any       `bson:"error_details"`
 	CreatedAt    time.Time `bson:"created_at"`
 }
 
 func toSubmissionAttemptDocument(att *domain.SubmissionAttempt) (*submissionAttemptDocument, error) {
-	details, err := bson.Marshal(att.ErrorDetails)
-
-	if err != nil {
-		return nil, err
-	}
-
 	return &submissionAttemptDocument{
 		ID:           string(att.ID),
 		Attempt:      att.Attempt,
 		Result:       att.Result,
-		ErrorDetails: details,
+		ErrorDetails: att.ErrorDetails,
 		CreatedAt:    att.CreatedAt,
 	}, nil
 }
