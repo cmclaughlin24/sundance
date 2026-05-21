@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"sundance/backend/pkg/common/stratreg"
 	"sundance/backend/services/forms/internal/core/domain"
@@ -17,43 +18,54 @@ var (
 	ErrInvalidExpressionOutput = errors.New("invalid expression output")
 )
 
-type ExprRuleEvaluator struct{}
+type ExprRuleEvaluator struct {
+	logger *slog.Logger
+}
+
+func NewExprRuleEvaluator(logger *slog.Logger) *ExprRuleEvaluator {
+	return &ExprRuleEvaluator{logger}
+}
 
 func (e *ExprRuleEvaluator) Evaluate(ctx context.Context, r *domain.Rule, evalCtx ports.RuleEvaluationContext) (bool, error) {
-	stmt, err := e.statement(r)
+	stmt, err := e.statement(ctx, r)
 	if err != nil {
 		return false, err
 	}
 
 	program, err := expr.Compile(stmt, expr.AsBool())
 	if err != nil {
+		e.logger.WarnContext(ctx, "expression compilation failed", "statement", stmt, "error", err)
 		return false, ErrInvalidExpression
 	}
 
 	output, err := expr.Run(program, evalCtx)
 	if err != nil {
+		e.logger.ErrorContext(ctx, "expression execution failed", "statement", stmt, "error", err)
 		return false, err
 	}
 
 	result, ok := output.(bool)
 	if !ok {
+		e.logger.WarnContext(ctx, "expression output type mismatch", "statement", stmt)
 		return false, ErrInvalidExpressionOutput
 	}
 
 	return result, nil
 }
 
-func (e *ExprRuleEvaluator) statement(r *domain.Rule) (string, error) {
+func (e *ExprRuleEvaluator) statement(ctx context.Context, r *domain.Rule) (string, error) {
 	stmt := ""
 
 	for _, re := range r.GetExpressions() {
 		statementFn, err := exprRegistry.Get(re.Operator)
 		if err != nil {
+			e.logger.WarnContext(ctx, "invalid expression operator", "operator", re.Operator)
 			return "", domain.ErrInvalidExprOperator
 		}
 
 		join, err := joinOperator(re)
 		if err != nil {
+			e.logger.WarnContext(ctx, "invalid join operator", "operator", *re.JoinWithPrevious)
 			return "", domain.ErrInvalidJoinOperator
 		}
 

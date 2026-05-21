@@ -772,5 +772,7 @@ func isBadRequest(err error) bool {
 		errors.Is(err, domain.ErrInvalidForm) ||
 		errors.Is(err, domain.ErrFormHasActiveVersion) ||
 		errors.Is(err, domain.ErrInvalidPage) ||
-		errors.Is(err, domain.ErrInvalidSection)
+		errors.Is(err, domain.ErrInvalidSection) ||
+		errors.Is(err, domain.ErrInvalidExprOperator) ||
+		errors.Is(err, domain.ErrInvalidJoinOperator)
 }

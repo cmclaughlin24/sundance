@@ -81,7 +81,12 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 	}
 
 	err = s.validate(ctx, submission)
-	s.recordAttempt(ctx, submission, err)
+
+	if err := s.recordAttempt(ctx, submission, err); err != nil {
+		return err
+	}
+
+	s.logger.InfoContext(ctx, "submission job recorded", "submission_id", submission.ID, "status", submission.Status)
 
 	return nil
 }
@@ -170,6 +175,7 @@ func (s *submissionJobsService) validateField(ctx context.Context, field *domain
 	value, ok := submission.GetFieldValue(field.ID)
 	if !ok {
 		if field.Attributes.GetIsRequired() {
+			s.logger.WarnContext(ctx, "submission validation failed; required field missing", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "field_id", field.ID, "field_key", field.Key)
 			return fmt.Errorf("field id=%s key=%s is required", field.ID, field.Key)
 		}
 
