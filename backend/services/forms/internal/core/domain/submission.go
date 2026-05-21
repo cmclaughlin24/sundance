@@ -114,7 +114,7 @@ func (s *Submission) Accept() {
 }
 
 func (s *Submission) Fail(err error) {
-	s.Status = SubmissionStatusRejected
+	s.Status = SubmissionStatusFailed
 	s.UpdatedAt = Now()
 }
 

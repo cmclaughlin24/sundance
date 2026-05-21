@@ -187,3 +187,7 @@ func NewReplaySubmissionCommand(tenantID string, id domain.SubmissionID) *Replay
 		ID:       id,
 	}
 }
+
+func (c *ReplaySubmissionCommand) Validate() error {
+	return validate.ValidateStruct(c)
+}
