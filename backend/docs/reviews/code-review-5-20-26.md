@@ -12,6 +12,10 @@
 
 5. ~~`ReplaySubmissionCommand` missing `Validate()` method~~ (Forms, P3) -- `Validate()` method added for consistency with other command structs. *(Committed. New issue found and fixed this cycle.)*
 
+6. ~~`ExprRuleEvaluator` logging swallows original compile error~~ (Forms, P3) -- Compile error now wrapped with sentinel. *(Committed. New issue found and fixed this cycle.)*
+
+7. ~~Test coverage gaps (Tenants)~~ (Tenants, P3) -- Comprehensive test coverage added across domain, service, and strategy layers. Domain tests: `tenant_test.go` (231 lines) covering `NewTenant`, `HydrateTenant`, `Update`; `data_source_test.go` (431 lines) covering `NewDataSource`, `HydrateDataSource`, `Update`. Service tests: `tenants_service_test.go` expanded with delete tests; `data_sources_service_test.go` expanded with lookup, update, and delete tests; new `data_source_jobs_service_test.go` (205 lines). Strategy tests: `scheduled_lookup_test.go`, `static_lookup_test.go`, `webhook_lookup_test.go`. All previously empty delete and lookup test cases now implemented. *(Committed. Partially resolves 5/10 #10.)*
+
 ---
 
 ## Will Not Fix
@@ -34,7 +38,7 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 2. **Field validator strategies: select and checkbox remain stubs** (`select_field_validator.go:28`, `checkbox_field_validator.go:28`) -- Both return `nil` without performing any validation. Date has `checkValueRequired` but no date-specific validation (TODO at `date_field_validator.go:37`). *(Carried from 5/19 #4, P3.)*
 
-3. **`FindJobs` Limit not honored** (`inmemory/submissions_repository.go:87-106`, `mongodb/submissions_repository.go:71-86`) -- `FindSubmissionsFilter.Limit` field exists but neither the in-memory nor MongoDB `FindJobs` implementations apply it. All matching submissions are returned regardless of limit. Not critical for a background worker but could cause unbounded result sets. *(P3.)*
+3. **`FindJobs` Limit not applied at repository level** (`inmemory/submissions_repository.go`, `mongodb/submissions_repository.go`) -- `FindSubmissionsFilter.Limit` is now passed by the service layer (`Find` passes `query.Limit` to the filter), but neither the in-memory nor MongoDB `FindJobs` repository implementations apply the limit. All matching submissions are returned regardless. Not critical for a background worker but could cause unbounded result sets. *(P3.)*
 
 ---
 
@@ -52,7 +56,7 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Architectural
 
-6. **Test coverage gaps** -- No domain-layer, service-layer, or repository-layer tests exist in the forms service. Zero test files in entire `pkg/` directory. Tenants service has service-layer tests but delete and lookup test cases are empty (TODO). *(Carried from 5/10 #10, P3.)*
+6. **Test coverage gaps** -- No domain-layer, service-layer, or repository-layer tests exist in the forms service. Zero test files in entire `pkg/` directory. Tenants `data_source_attributes_test.go` `RefreshData` test remains empty (TODO). *(Narrowed from 5/10 #10 — tenants domain/service/strategy tests now comprehensive. P3.)*
 
 7. **No domain events** for cross-service communication. *(Carried from 5/10 #11, P3.)*
 
@@ -69,7 +73,7 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 | **P3** | 3 | `FindJobs` Limit not honored | Forms |
 | **P3** | 4 | `Find()` no pagination | Tenants |
 | **P3** | 5 | `Lookup` no validation | Tenants |
-| **P3** | 6 | Test coverage gaps | All |
+| **P3** | 6 | Test coverage gaps (forms, pkg/) | Forms, pkg/ |
 | **P3** | 7 | No domain events | All |
 | **P3** | 8 | No real authentication | All |
 
@@ -79,8 +83,8 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 | Service | Rating | Assessment |
 |---------|--------|------------|
-| **Forms** | **9/10 -- Production-Ready** | Submission processing pipeline is now complete end-to-end: `Process` fetches the submission, guards against non-pending status, evaluates visibility rules via `ExprRuleEvaluator`, dynamically evaluates required rules via `isRequired()`, validates visible fields via strategy-pattern validators, and records the outcome via `recordAttempt()` with tripartite error handling (Accept/Reject/Fail) and transactional persistence. `Fail()` correctly sets `SubmissionStatusFailed` for retry semantics. `validate()` extracted as a clean helper. Rule evaluation now influences both visibility and required-field semantics. Core form/version CRUD with lifecycle management remains solid. Remaining P2 gap: `SubmissionAttempt` records are never created despite the domain model existing. Handler tests exist but no service/domain/repository tests. |
-| **Tenants** | **8/10 -- Production-Ready** | No changes since 5/15 (package rename only). Fully functional including background job processing pipeline, leader election, and data source strategies. Service-layer tests exist (delete and lookup cases are TODO). Only P3 gaps remain (pagination and `Lookup` validation). |
+| **Forms** | **9/10 -- Production-Ready** | Submission processing pipeline is now complete end-to-end: `Process` fetches the submission, guards against non-pending status, evaluates visibility rules via `ExprRuleEvaluator`, dynamically evaluates required rules via `isRequired()`, validates visible fields via strategy-pattern validators, and records the outcome via `recordAttempt()` with tripartite error handling (Accept/Reject/Fail) and transactional persistence. `Fail()` correctly sets `SubmissionStatusFailed` for retry semantics. `validate()` extracted as a clean helper. Rule evaluation now influences both visibility and required-field semantics. `ExprRuleEvaluator` now uses constructor injection for logging with contextual log output for compilation, execution, and type mismatch errors. `Find` validates queries before repository calls. Core form/version CRUD with lifecycle management remains solid. Remaining P2 gap: `SubmissionAttempt` records are never created despite the domain model existing. Handler tests exist but no service/domain/repository tests. |
+| **Tenants** | **9/10 -- Production-Ready** | Comprehensive test coverage added across domain, service, and strategy layers. Domain tests cover `Tenant` and `DataSource` constructors, hydration, and update methods with edge cases. Service tests cover all three services (tenants CRUD + delete, data sources CRUD + lookup + update + delete, data source jobs). Strategy tests cover all three lookup strategies (static, scheduled, webhook). All previously empty delete and lookup test cases now implemented. Only `RefreshData` test remains empty (TODO). Fully functional including background job processing pipeline, leader election, and data source strategies. Only P3 gaps remain (pagination and `Lookup` validation). |
 | **pkg/** | **8/10 -- Production-Ready** | No changes since 5/15 (package rename only). All previously identified bugs and architectural issues resolved. Only remaining gap: zero test coverage. |
 
 ---
@@ -101,17 +105,23 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 - **`joinOperator` uses sentinel error** (committed) -- Default case in the `joinOperator` switch now returns `domain.ErrInvalidJoinOperator` instead of `fmt.Errorf("")`.
 
+- **Submission jobs logging improved** (committed) -- `ExprRuleEvaluator` now accepts `*slog.Logger` via `NewExprRuleEvaluator(logger)` constructor (was bare struct). Added contextual logging for expression compilation failure, execution failure, and output type mismatch. `statement` method now takes `ctx` for contextual logging. `Find` now validates the query via `query.Validate()` before calling the repository. Info log added after `recordAttempt` with submission ID and resulting status.
+
+- **Tenants domain unit tests** (committed) -- `tenant_test.go` (231 lines) covering `NewTenant`, `HydrateTenant`, `Update` with validation edge cases. `data_source_test.go` (431 lines) covering `NewDataSource`, `HydrateDataSource`, `Update` with type validation and attribute handling. `data_source_attributes_test.go` scaffolded (`RefreshData` test empty/TODO).
+
+- **Tenants service and strategy unit tests** (committed) -- `tenants_service_test.go` expanded (+116 lines) with complete delete test cases covering transaction lifecycle, existence checks, cascading data source deletion, and commit/rollback paths. `data_sources_service_test.go` expanded (+356 lines) with lookup, update, and delete tests. New `data_source_jobs_service_test.go` (205 lines) testing the job processing pipeline. Strategy tests added: `scheduled_lookup_test.go` (74 lines), `static_lookup_test.go` (74 lines), `webhook_lookup_test.go` (107 lines). Test mocks added for repositories, strategies, and lookup clients.
+
 ### Current State
 
-**8 remaining issues** (5 resolved from 5/19; 2 newly introduced; 1 new carry). 0 P0, 0 P1, 1 P2, 7 P3.
+**8 remaining issues** (7 resolved from 5/19 including same-cycle fixes; 1 newly introduced; 0 moved to Will Not Fix). 0 P0, 0 P1, 1 P2, 7 P3.
 
-**Forms Service** at 9/10 (up from 8/10). The submission processing pipeline is now feature-complete: rule evaluation drives both visibility and required-field semantics, field validation is strategy-based with descriptive errors, and processing outcomes are persisted transactionally with correct status transitions. `Fail()` correctly distinguishes infrastructure errors from validation rejections. The sole remaining P2 is that `SubmissionAttempt` records are never created — the domain model, struct field, and persistence mapper all exist but are unused. `Reject(err)` and `Fail(err)` accept error parameters that are never stored.
+**Forms Service** at 9/10 (up from 8/10). The submission processing pipeline is now feature-complete: rule evaluation drives both visibility and required-field semantics, field validation is strategy-based with descriptive errors, and processing outcomes are persisted transactionally with correct status transitions. `Fail()` correctly distinguishes infrastructure errors from validation rejections. `ExprRuleEvaluator` now has constructor-injected logging with contextual output. `Find` validates queries before repository calls. The sole remaining P2 is that `SubmissionAttempt` records are never created — the domain model, struct field, and persistence mapper all exist but are unused. `Reject(err)` and `Fail(err)` accept error parameters that are never stored.
 
-**Tenants Service** at 8/10. No changes.
+**Tenants Service** at 9/10 (up from 8/10). Comprehensive test coverage added: domain tests for `Tenant` and `DataSource` (constructors, hydration, update with edge cases), service tests for all three services (complete CRUD + lifecycle paths with transaction/error edge cases), strategy tests for all three lookup strategies. All previously empty delete and lookup test cases now implemented. Only `RefreshData` test remains empty (TODO).
 
 **pkg/** at 8/10. No changes.
 
-**Hexagonal Architecture** -- The `recordAttempt()` method correctly lives in the service layer, orchestrating domain method calls (`Accept`/`Reject`/`Fail`) and infrastructure concerns (transaction management) without leaking adapter details. The `SetIsRequired` addition to the `FieldAttributes` interface maintains the port boundary — adapters implement the interface, the service consumes it. The `isRequired()` method reuses the existing `RuleEvaluator` port for required-rule evaluation, avoiding duplication.
+**Hexagonal Architecture** -- The `recordAttempt()` method correctly lives in the service layer, orchestrating domain method calls (`Accept`/`Reject`/`Fail`) and infrastructure concerns (transaction management) without leaking adapter details. The `SetIsRequired` addition to the `FieldAttributes` interface maintains the port boundary — adapters implement the interface, the service consumes it. The `isRequired()` method reuses the existing `RuleEvaluator` port for required-rule evaluation, avoiding duplication. `ExprRuleEvaluator` constructor injection (`NewExprRuleEvaluator(logger)`) follows the adapter initialization pattern established across both services.
 
 **DDD** -- The submission lifecycle is now modeled through explicit domain methods: `Accept()`, `Reject(err)`, `Fail(err)`, and `Reset()`. Status transitions are owned by the aggregate. The `isRequired()` evaluation correctly treats required rules as a domain concern resolved at processing time, not at definition time. The gap is that `SubmissionAttempt` — a value object designed to record processing outcomes — is defined but never populated, making it dead code in the domain model.
 
@@ -121,6 +131,6 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 1. **Create `SubmissionAttempt` records in `recordAttempt()`** (P2 — store attempt number, result, and error details; make `Reject(err)`/`Fail(err)` error parameters meaningful)
 2. **Implement select/checkbox/date field validators** (P3 — stubs silently accept invalid data)
-3. **Add test coverage** (P3 — zero tests in `pkg/`, no service/domain tests in forms)
+3. **Add test coverage for forms service and pkg/** (P3 — zero tests in `pkg/`, no service/domain tests in forms; tenants now comprehensive)
 4. **Apply `FindJobs` limit in both repository implementations** (P3 — unbounded result sets)
 5. **Add pagination to tenants `Find()`** (P3 — unbounded result sets)

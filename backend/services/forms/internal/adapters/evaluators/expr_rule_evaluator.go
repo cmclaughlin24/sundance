@@ -35,7 +35,7 @@ func (e *ExprRuleEvaluator) Evaluate(ctx context.Context, r *domain.Rule, evalCt
 	program, err := expr.Compile(stmt, expr.AsBool())
 	if err != nil {
 		e.logger.WarnContext(ctx, "expression compilation failed", "statement", stmt, "error", err)
-		return false, ErrInvalidExpression
+		return false, fmt.Errorf("%w: %w", ErrInvalidExpression, err)
 	}
 
 	output, err := expr.Run(program, evalCtx)
