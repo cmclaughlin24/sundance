@@ -61,16 +61,17 @@ func (r *mongoDBDataSourcesRepository) FindByID(ctx context.Context, tenantID do
 func (r *mongoDBDataSourcesRepository) FindJobs(ctx context.Context, filters *ports.FindDataSourceJobsFilter) ([]*domain.DataSource, error) {
 	opts := options.Find()
 
-	if filters.Limit > 0 {
-		opts.SetLimit(int64(filters.Limit))
+	if filters.Take > 0 {
+		opts.SetLimit(int64(filters.Take))
 	}
 
 	docs, err := r.base.Find(ctx, bson.M{
 		"type": bson.M{"$in": filters.Types},
+		"attributes.attempts": bson.M{"$lte": filters.RetryLimit},
 		"$or": []bson.M{
-			{"attributes.expirationDate": bson.M{"$exists": false}},
-			{"attributes.expirationDate": bson.M{"$type": "null"}},
-			{"attributes.expirationDate": bson.M{"$lte": filters.ExpiredAtOrBefore}},
+			{"attributes.expirationdate": bson.M{"$exists": false}},
+			{"attributes.expirationdate": bson.M{"$type": "null"}},
+			{"attributes.expirationdate": bson.M{"$lte": filters.ExpiredAtOrBefore}},
 		},
 	}, opts)
 

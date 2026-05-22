@@ -274,6 +274,86 @@ func TestHydrateDataSource(t *testing.T) {
 	}
 }
 
+func TestDataSource_UpdateAttributes(t *testing.T) {
+	now := time.Now()
+
+	newScheduledDS := func() *domain.DataSource {
+		return domain.HydrateDataSource(
+			"ds-1", "tenant-1", "Unova Pokedex", "156 new Pokemon introduced in Generation V",
+			domain.DataSourceTypeScheduled,
+			domain.ScheduledDataSourceAttributes{
+				URL:           "https://example.com/unova",
+				Method:        "GET",
+				Headers:       map[string]string{"Authorization": "Bearer token"},
+				IntervalHours: 24,
+			},
+			now, time.Time{},
+		)
+	}
+
+	tests := []struct {
+		name    string
+		ds      *domain.DataSource
+		attr    domain.DataSourceAttributes
+		wantErr error
+	}{
+		{
+			"should update attributes for a scheduled data source",
+			newScheduledDS(),
+			domain.ScheduledDataSourceAttributes{
+				URL:           "https://example.com/unova",
+				Method:        "GET",
+				Headers:       map[string]string{"Authorization": "Bearer token"},
+				IntervalHours: 12,
+				Attempts:      1,
+			},
+			nil,
+		},
+		{
+			"should yield an error when the attributes do not match the type",
+			newScheduledDS(),
+			domain.StaticDataSourceAttributes{
+				Data: []*domain.Lookup{
+					{Value: "pikachu", Label: "Pikachu"},
+				},
+			},
+			domain.ErrInvalidSourceTypeAttributes,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Act.
+			gotErr := tt.ds.UpdateAttributes(tt.attr)
+
+			// Assert.
+			if tt.wantErr != nil {
+				if gotErr == nil {
+					t.Errorf("expected error but got nil")
+					return
+				}
+				if !errors.Is(gotErr, tt.wantErr) {
+					t.Errorf("expected %v but got %v", tt.wantErr, gotErr)
+				}
+				return
+			}
+
+			if gotErr != nil {
+				t.Errorf("expected no error but got %v", gotErr)
+				return
+			}
+
+			if tt.ds.Attributes == nil {
+				t.Errorf("expected attributes to be updated")
+			}
+
+			if tt.ds.UpdatedAt.IsZero() {
+				t.Errorf("expected non-zero UpdatedAt")
+			}
+		})
+	}
+}
+
 func TestDataSource_Update(t *testing.T) {
 	now := time.Now()
 

@@ -112,6 +112,17 @@ func (ds *DataSource) Update(name, description string, sourceType DataSourceType
 	return nil
 }
 
+func (ds *DataSource) UpdateAttributes(attr DataSourceAttributes) error {
+	if !isValidAttributeType(ds.Type, attr) {
+		return ErrInvalidSourceTypeAttributes
+	}
+
+	ds.Attributes = attr
+	ds.UpdatedAt = Now()
+
+	return nil
+}
+
 var isValidSourceType = validate.NewTypeValidator([]DataSourceType{
 	DataSourceTypeStatic,
 	DataSourceTypeScheduled,

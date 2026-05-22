@@ -8,6 +8,7 @@ import (
 
 type FindDataSourceJobsFilter struct {
 	Types             []domain.DataSourceType
-	Limit             int
+	Take             int
 	ExpiredAtOrBefore time.Time
+	RetryLimit        int
 }

@@ -9,5 +9,5 @@ type FormFilters struct {
 type FindSubmissionsFilter struct {
 	TenantID string
 	Statuses []domain.SubmissionStatus
-	Limit    int
+	Take    int
 }

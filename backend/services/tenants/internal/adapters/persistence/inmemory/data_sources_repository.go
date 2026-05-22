@@ -72,7 +72,7 @@ func (r *inMemoryDataSourceRepository) FindJobs(ctx context.Context, filters *po
 
 		result = append(result, ds)
 
-		if filters.Limit > 0 && len(result) >= filters.Limit {
+		if filters.Take > 0 && len(result) >= filters.Take {
 			break
 		}
 	}

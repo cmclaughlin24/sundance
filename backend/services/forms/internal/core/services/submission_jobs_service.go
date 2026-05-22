@@ -54,7 +54,7 @@ func (s *submissionJobsService) Find(ctx context.Context, query *ports.FindSubmi
 	}
 
 	ids, err := s.submissionRepository.FindJobs(ctx, &ports.FindSubmissionsFilter{
-		Limit:    query.Limit,
+		Take:    query.Take,
 		Statuses: []domain.SubmissionStatus{domain.SubmissionStatusPending},
 	})
 

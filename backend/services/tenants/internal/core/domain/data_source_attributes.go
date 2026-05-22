@@ -30,11 +30,17 @@ type ScheduledDataSourceAttributes struct {
 	Headers        map[string]string
 	IntervalHours  float64
 	ExpirationDate time.Time
+	Attempts     int
+}
+
+func (attr *ScheduledDataSourceAttributes) RecordAttempt() {
+	attr.Attempts += 1
 }
 
 func (attr *ScheduledDataSourceAttributes) RefreshData(data []*Lookup) {
 	attr.Data = data
 	attr.ExpirationDate = Now().Add(time.Duration(attr.IntervalHours * float64(time.Hour)))
+	attr.Attempts = 0
 }
 
 type WebhookDataSourceAttributes struct {

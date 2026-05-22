@@ -53,11 +53,12 @@ func (q *GetDataSourceLookupsQuery) Validate() error {
 }
 
 type FindDataSourceJobsQuery struct {
-	Limit int `validate:"min=0"`
+	Take       int `validate:"min=0"`
+	RetryLimit int `validate:"min=0"`
 }
 
-func NewFindDataSourceJobsQuery(limit int) *FindDataSourceJobsQuery {
-	return &FindDataSourceJobsQuery{limit}
+func NewFindDataSourceJobsQuery(take int, retryLimit int) *FindDataSourceJobsQuery {
+	return &FindDataSourceJobsQuery{Take: take, RetryLimit: retryLimit}
 }
 
 func (q *FindDataSourceJobsQuery) Validate() error {

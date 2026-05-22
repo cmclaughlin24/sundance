@@ -46,6 +46,7 @@ func TestScheduledDataSourceAttributes_RefreshData(t *testing.T) {
 					{Value: "squirtle", Label: "Squirtle"},
 				},
 				IntervalHours: tt.intervalHours,
+				Attempts:      3,
 			}
 
 			// Act.
@@ -70,6 +71,46 @@ func TestScheduledDataSourceAttributes_RefreshData(t *testing.T) {
 
 			if !attr.ExpirationDate.After(now) {
 				t.Errorf("expected ExpirationDate to be after %v but got %v", now, attr.ExpirationDate)
+			}
+
+			if attr.Attempts != 0 {
+				t.Errorf("expected Attempts to be reset to 0 but got %d", attr.Attempts)
+			}
+		})
+	}
+}
+
+func TestScheduledDataSourceAttributes_RecordAttempt(t *testing.T) {
+	tests := []struct {
+		name            string
+		initialAttempts int
+		wantAttempts    int
+	}{
+		{
+			"should increment attempts from zero",
+			0,
+			1,
+		},
+		{
+			"should increment attempts from existing value",
+			2,
+			3,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange.
+			attr := domain.ScheduledDataSourceAttributes{
+				Attempts: tt.initialAttempts,
+			}
+
+			// Act.
+			attr.RecordAttempt()
+
+			// Assert.
+			if attr.Attempts != tt.wantAttempts {
+				t.Errorf("expected Attempts %d but got %d", tt.wantAttempts, attr.Attempts)
 			}
 		})
 	}

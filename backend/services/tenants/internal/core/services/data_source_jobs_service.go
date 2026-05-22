@@ -32,8 +32,9 @@ func (s *dataSourcesJobService) Find(ctx context.Context, query *ports.FindDataS
 
 	sources, err := s.repository.FindJobs(ctx, &ports.FindDataSourceJobsFilter{
 		Types:             []domain.DataSourceType{domain.DataSourceTypeScheduled},
-		Limit:             query.Limit,
+		Take:              query.Take,
 		ExpiredAtOrBefore: Now(),
+		RetryLimit:        query.RetryLimit,
 	})
 
 	if err != nil {
@@ -61,11 +62,13 @@ func (s *dataSourcesJobService) Process(ctx context.Context, command *ports.Proc
 
 	lookups, err := s.client.FetchLookups(ctx, attr.Method, attr.URL, attr.Headers)
 	if err != nil {
-		return err
+		attr.RecordAttempt()
+		s.logger.ErrorContext(ctx, "failed to fetch lookups for data source", "data_source_id", ds.ID, "error", err, "attempts", attr.Attempts)
+	} else {
+		attr.RefreshData(lookups)
 	}
 
-	attr.RefreshData(lookups)
-	ds.Attributes = attr
+	ds.UpdateAttributes(attr)
 
 	if _, err := s.repository.Upsert(ctx, ds); err != nil {
 		return err

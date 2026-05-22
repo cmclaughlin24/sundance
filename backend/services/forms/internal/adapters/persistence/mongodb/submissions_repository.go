@@ -51,8 +51,8 @@ func (r *mongoDBSubmissionsRepository) Find(ctx context.Context, filter *ports.F
 	f := newSubmissionFilter(filter)
 	opts := options.Find()
 
-	if filter.Limit > 0 {
-		opts.SetLimit(int64(filter.Limit))
+	if filter.Take > 0 {
+		opts.SetLimit(int64(filter.Take))
 	}
 
 	docs, err := r.base.Find(ctx, f, opts)

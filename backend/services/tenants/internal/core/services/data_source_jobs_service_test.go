@@ -17,7 +17,7 @@ func Test_dataSourcesJobService_Find(t *testing.T) {
 	}{
 		{
 			"should yield a list of data sources",
-			ports.NewFindDataSourceJobsQuery(0),
+			ports.NewFindDataSourceJobsQuery(0, 1),
 			[]*domain.DataSource{
 				{TenantID: "tenant-1", Name: "Source 1"},
 				{TenantID: "tenant-1", Name: "Source 2"},
@@ -26,19 +26,19 @@ func Test_dataSourcesJobService_Find(t *testing.T) {
 		},
 		{
 			"should yield an empty list of data sources",
-			ports.NewFindDataSourceJobsQuery(0),
+			ports.NewFindDataSourceJobsQuery(0, 1),
 			[]*domain.DataSource{},
 			nil,
 		},
 		{
 			"should yield an error when the repository returns an error",
-			ports.NewFindDataSourceJobsQuery(0),
+			ports.NewFindDataSourceJobsQuery(0, 1),
 			nil,
 			errors.New("repository error"),
 		},
 		{
 			"should yield an error when the query is invalid",
-			ports.NewFindDataSourceJobsQuery(-1),
+			ports.NewFindDataSourceJobsQuery(-1, 1),
 			nil,
 			errors.New("validation error"),
 		},
@@ -143,13 +143,13 @@ func Test_dataSourcesJobService_Process(t *testing.T) {
 			true,
 		},
 		{
-			"should yield an error when fetching lookups fails",
+			"should record an attempt when fetching lookups fails",
 			ports.NewProcessDataSourceJobCommand(scheduledDS),
 			func(_ context.Context, _, _ string, _ map[string]string) ([]*domain.Lookup, error) {
 				return nil, errors.New("fetch error")
 			},
 			nil,
-			true,
+			false,
 		},
 		{
 			"should yield an error when the repository fails to persist",
