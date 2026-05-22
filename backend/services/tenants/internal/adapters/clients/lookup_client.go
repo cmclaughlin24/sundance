@@ -10,12 +10,16 @@ import (
 	"sundance/backend/services/tenants/internal/core/ports"
 )
 
+type httpClient interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
 type LookupClient struct {
-	client *http.Client
+	client httpClient
 	logger *slog.Logger
 }
 
-func NewLookupClient(client *http.Client, logger *slog.Logger) ports.LookupClient {
+func NewLookupClient(client httpClient, logger *slog.Logger) ports.LookupClient {
 	return &LookupClient{
 		client: client,
 		logger: logger,
