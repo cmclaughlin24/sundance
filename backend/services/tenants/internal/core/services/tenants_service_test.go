@@ -52,7 +52,7 @@ func TestTenantsService_Find(t *testing.T) {
 			got, gotErr := s.Find(context.Background())
 
 			// Assert.
-			if tt.wantErr != gotErr {
+			if !errors.Is(tt.wantErr, gotErr) {
 				t.Errorf("expected error %v but got %v", tt.wantErr, gotErr)
 				return
 			}
@@ -115,7 +115,7 @@ func TestTenantsService_FindByID(t *testing.T) {
 			got, gotErr := s.FindByID(context.Background(), tt.id)
 
 			// Assert.
-			if tt.wantErr != gotErr {
+			if !errors.Is(tt.wantErr, gotErr) {
 				t.Errorf("expected error %v but got %v", tt.wantErr, gotErr)
 				return
 			}

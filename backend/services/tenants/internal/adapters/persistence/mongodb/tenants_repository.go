@@ -5,19 +5,21 @@ import (
 	"log/slog"
 
 	"sundance/backend/pkg/database"
+	"sundance/backend/services/tenants/internal/adapters/persistence/mongodb/documents"
 	"sundance/backend/services/tenants/internal/core/domain"
 	"sundance/backend/services/tenants/internal/core/ports"
+
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
 type mongoDBTenantsRepository struct {
-	base *database.MongoDBRepository[tenantDocument]
+	base *database.MongoDBRepository[documents.TenantDocument]
 }
 
 func newMongoDBTenantsRepository(db *mongo.Database, logger *slog.Logger) ports.TenantsRepository {
-	base := database.NewMongoDBRepository[tenantDocument](
+	base := database.NewMongoDBRepository[documents.TenantDocument](
 		db.Collection("tenants"),
 		logger,
 	)
@@ -26,16 +28,16 @@ func newMongoDBTenantsRepository(db *mongo.Database, logger *slog.Logger) ports.
 }
 
 func (r *mongoDBTenantsRepository) Find(ctx context.Context) ([]*domain.Tenant, error) {
-	documents, err := r.base.Find(ctx, bson.M{})
+	docs, err := r.base.Find(ctx, bson.M{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	tenants := make([]*domain.Tenant, 0, len(documents))
+	tenants := make([]*domain.Tenant, 0, len(docs))
 
-	for _, document := range documents {
-		tenants = append(tenants, fromTenantDocument(&document))
+	for _, document := range docs {
+		tenants = append(tenants, documents.FromTenantDocument(&document))
 	}
 
 	return tenants, nil
@@ -48,7 +50,7 @@ func (r *mongoDBTenantsRepository) FindByID(ctx context.Context, id domain.Tenan
 		return nil, err
 	}
 
-	return fromTenantDocument(&result), nil
+	return documents.FromTenantDocument(&result), nil
 }
 
 func (r *mongoDBTenantsRepository) Exists(ctx context.Context, id domain.TenantID) (bool, error) {
@@ -58,12 +60,12 @@ func (r *mongoDBTenantsRepository) Exists(ctx context.Context, id domain.TenantI
 func (r *mongoDBTenantsRepository) Upsert(ctx context.Context, t *domain.Tenant) (*domain.Tenant, error) {
 	r.base.Logger().DebugContext(ctx, "upsert tenant", "tenant_id", t.ID)
 
-	doc := toTenantDocument(t)
+	doc := documents.ToTenantDocument(t)
 	filter := bson.M{"_id": doc.ID}
 	update := bson.M{"$set": doc}
 	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
-	var result tenantDocument
+	var result documents.TenantDocument
 	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
 		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
 	})
@@ -73,7 +75,7 @@ func (r *mongoDBTenantsRepository) Upsert(ctx context.Context, t *domain.Tenant)
 		return nil, err
 	}
 
-	return fromTenantDocument(&result), nil
+	return documents.FromTenantDocument(&result), nil
 }
 
 func (r *mongoDBTenantsRepository) Delete(ctx context.Context, id domain.TenantID) error {

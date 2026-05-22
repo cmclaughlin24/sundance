@@ -1,42 +1,15 @@
-package mongodb
+package documents
 
 import (
 	"time"
 
 	"sundance/backend/pkg/common/stratreg"
 	"sundance/backend/services/tenants/internal/core/domain"
+
 	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
-type tenantDocument struct {
-	ID          string    `bson:"_id"`
-	Name        string    `bson:"name"`
-	Description string    `bson:"description"`
-	CreatedAt   time.Time `bson:"created_at"`
-	UpdatedAt   time.Time `bson:"updated_at"`
-}
-
-func toTenantDocument(t *domain.Tenant) *tenantDocument {
-	return &tenantDocument{
-		ID:          string(t.ID),
-		Name:        t.Name,
-		Description: t.Description,
-		CreatedAt:   t.CreatedAt,
-		UpdatedAt:   t.UpdatedAt,
-	}
-}
-
-func fromTenantDocument(t *tenantDocument) *domain.Tenant {
-	return domain.HydrateTenant(
-		domain.TenantID(t.ID),
-		t.Name,
-		t.Description,
-		t.CreatedAt,
-		t.UpdatedAt,
-	)
-}
-
-type dataSourceDocument struct {
+type DataSourceDocument struct {
 	ID          string    `bson:"_id"`
 	TenantID    string    `bson:"tenant_id"`
 	Name        string    `bson:"name"`
@@ -47,14 +20,14 @@ type dataSourceDocument struct {
 	UpdatedAt   time.Time `bson:"updated_at"`
 }
 
-func toDataSourceDocument(ds *domain.DataSource) (*dataSourceDocument, error) {
+func ToDataSourceDocument(ds *domain.DataSource) (*DataSourceDocument, error) {
 	attr, err := bson.Marshal(ds.Attributes)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &dataSourceDocument{
+	return &DataSourceDocument{
 		ID:          string(ds.ID),
 		TenantID:    string(ds.TenantID),
 		Name:        ds.Name,
@@ -66,7 +39,7 @@ func toDataSourceDocument(ds *domain.DataSource) (*dataSourceDocument, error) {
 	}, nil
 }
 
-func fromDataSourceDocument(ds *dataSourceDocument) (*domain.DataSource, error) {
+func FromDataSourceDocument(ds *DataSourceDocument) (*domain.DataSource, error) {
 	sourceType := domain.DataSourceType(ds.Type)
 	attr, err := unmarshalDataSourceAttributes(sourceType, ds.Attributes)
 
