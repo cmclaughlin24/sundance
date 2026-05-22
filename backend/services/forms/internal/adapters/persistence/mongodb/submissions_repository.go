@@ -49,8 +49,13 @@ func (r *mongoDBSubmissionsRepository) migrate(ctx context.Context) error {
 
 func (r *mongoDBSubmissionsRepository) Find(ctx context.Context, filter *ports.FindSubmissionsFilter) ([]*domain.Submission, error) {
 	f := newSubmissionFilter(filter)
+	opts := options.Find()
 
-	docs, err := r.base.Find(ctx, f)
+	if filter.Limit > 0 {
+		opts.SetLimit(int64(filter.Limit))
+	}
+
+	docs, err := r.base.Find(ctx, f, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -156,6 +161,7 @@ func newSubmissionFilter(filter *ports.FindSubmissionsFilter) bson.M {
 	if len(filter.Statuses) > 0 {
 		f["status"] = bson.M{"$in": filter.Statuses}
 	}
+
 
 	return f
 }

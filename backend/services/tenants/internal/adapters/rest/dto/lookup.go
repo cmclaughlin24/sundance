@@ -9,7 +9,7 @@ type LookupResponse struct {
 	Label string `json:"label"`
 }
 
-func LookupToResponse(lookup *domain.Lookup) *LookupResponse {
+func lookupToResponse(lookup *domain.Lookup) *LookupResponse {
 	return &LookupResponse{
 		Value: lookup.Value,
 		Label: lookup.Label,
@@ -20,7 +20,7 @@ func LookupsToResponse(lookups []*domain.Lookup) []*LookupResponse {
 	dtos := make([]*LookupResponse, 0, len(lookups))
 
 	for _, lookup := range lookups {
-		dtos = append(dtos, LookupToResponse(lookup))
+		dtos = append(dtos, lookupToResponse(lookup))
 	}
 
 	return dtos
