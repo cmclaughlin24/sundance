@@ -63,9 +63,7 @@ func (w *Worker[J]) Start(ctx context.Context) {
 	w.logger.DebugContext(wctx, "worker started")
 
 	go func() {
-
 		for {
-
 			select {
 			case w.WorkerPool <- w.JobChannel:
 			case <-wctx.Done():

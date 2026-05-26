@@ -185,7 +185,7 @@ func (bw *BackgroundWorker[J]) onLeader(ctx context.Context) {
 	ticker := time.NewTicker(bw.interval)
 	defer ticker.Stop()
 
-	pool := make(chan chan J)
+	pool := make(chan chan J, bw.size)
 	defer close(pool)
 
 	for range bw.size {
