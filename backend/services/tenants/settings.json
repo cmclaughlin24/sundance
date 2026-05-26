@@ -15,5 +15,10 @@
       "port": 6379
     }
   },
-  "log_level": "debug"
+  "log_level": "debug",
+  "worker": {
+    "interval": 1,
+    "pool_size": 10,
+    "retry_limit": 5
+  }
 }

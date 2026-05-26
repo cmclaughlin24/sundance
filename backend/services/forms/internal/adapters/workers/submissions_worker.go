@@ -27,12 +27,14 @@ func (j *submissionJob) Process(ctx context.Context) error {
 	return j.service.Process(ctx, j.id)
 }
 
-func NewSubmissionsBackgroundWorker(app *core.Application) (*worker.BackgroundWorker[*submissionJob], error) {
-	bw, err := worker.NewBackgroundWorker[*submissionJob](
-		worker.BgWithInterval[*submissionJob](1*time.Minute),
+func newSubmissionsBackgroundWorker(app *core.Application, opts ...func(*WorkerOptions)) (*worker.BackgroundWorker[*submissionJob], error) {
+	options := newWorkerOptions(opts...)
+
+	bw, err := worker.NewBackgroundWorker(
+		worker.BgWithInterval[*submissionJob](time.Duration(options.Interval)*time.Minute),
 		worker.BgWithLogger[*submissionJob](app.Logger),
-		worker.BgWithSize[*submissionJob](5),
-		worker.BgWithFetchJobsFn[*submissionJob](newSubmissionWorkFn(app)),
+		worker.BgWithSize[*submissionJob](options.PoolSize),
+		worker.BgWithFetchJobsFn(newSubmissionWorkFn(app)),
 		worker.BgWithElector[*submissionJob](elector.NewCacheElector(
 			elector.CacheElectorWithKey("service:forms:elector"),
 			elector.CacheElectorWithLocker(app.Cache),

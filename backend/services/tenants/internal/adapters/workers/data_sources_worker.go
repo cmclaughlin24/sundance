@@ -27,12 +27,14 @@ func (j *dataSourceJob) Process(ctx context.Context) error {
 	return j.service.Process(ctx, ports.NewProcessDataSourceJobCommand(j.ds))
 }
 
-func NewDataSourcesBackgroundWorker(app *core.Application) (*worker.BackgroundWorker[*dataSourceJob], error) {
-	bw, err := worker.NewBackgroundWorker[*dataSourceJob](
-		worker.BgWithInterval[*dataSourceJob](1*time.Minute),
+func newDataSourcesBackgroundWorker(app *core.Application, opts ...func(*WorkerOptions)) (*worker.BackgroundWorker[*dataSourceJob], error) {
+	options := newWorkerOptions(opts...)
+
+	bw, err := worker.NewBackgroundWorker(
+		worker.BgWithInterval[*dataSourceJob](time.Duration(options.Interval)*time.Minute),
 		worker.BgWithLogger[*dataSourceJob](app.Logger),
-		worker.BgWithSize[*dataSourceJob](5),
-		worker.BgWithFetchJobsFn[*dataSourceJob](newDataSourceWorkFn(app)),
+		worker.BgWithSize[*dataSourceJob](options.PoolSize),
+		worker.BgWithFetchJobsFn(newDataSourceWorkFn(app, options.RetryLimit)),
 		worker.BgWithElector[*dataSourceJob](elector.NewCacheElector(
 			elector.CacheElectorWithKey("service:tenants:elector"),
 			elector.CacheElectorWithLocker(app.Cache),
@@ -48,9 +50,9 @@ func NewDataSourcesBackgroundWorker(app *core.Application) (*worker.BackgroundWo
 	return bw, nil
 }
 
-func newDataSourceWorkFn(app *core.Application) worker.FetchJobsFn[*dataSourceJob] {
+func newDataSourceWorkFn(app *core.Application, retryLimit int) worker.FetchJobsFn[*dataSourceJob] {
 	return func(ctx context.Context) ([]*dataSourceJob, error) {
-		dataSources, err := app.Services.DataSourceJobs.Find(ctx, ports.NewFindDataSourceJobsQuery(0, 1))
+		dataSources, err := app.Services.DataSourceJobs.Find(ctx, ports.NewFindDataSourceJobsQuery(0, retryLimit))
 
 		if err != nil {
 			return nil, err

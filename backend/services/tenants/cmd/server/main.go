@@ -30,6 +30,7 @@ type settings struct {
 	Cache       cache.CacheSettings             `json:"cache"`
 	LogLevel    string                          `json:"log_level"`
 	Host        string                          `json:"host"`
+	Worker      workers.WorkerOptions          `json:"worker"`
 }
 
 func main() {
@@ -85,13 +86,13 @@ func main() {
 		}
 	}()
 
-	dsw, err := workers.NewDataSourcesBackgroundWorker(app)
+	start, err := workers.Bootstrap(app, settings.Worker)
 	if err != nil {
 		panic(err)
 	}
-	dswCtx, dswCancel := context.WithCancel(context.Background())
-	defer dswCancel()
-	go dsw.Start(dswCtx)
+	wCtx, wCancel := context.WithCancel(context.Background())
+	defer wCancel()
+	start(wCtx)
 
 	signalChan := make(chan os.Signal, 1)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
