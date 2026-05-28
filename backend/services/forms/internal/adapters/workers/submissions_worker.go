@@ -2,29 +2,67 @@ package workers
 
 import (
 	"context"
+	"errors"
+	"log/slog"
 	"time"
 
+	"sundance/backend/pkg/common/stratreg"
 	"sundance/backend/pkg/worker"
 	"sundance/backend/pkg/worker/elector"
 	"sundance/backend/services/forms/internal/core"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/services/forms/internal/core/services"
+	"sundance/backend/services/forms/internal/core/strategies"
 )
+
+type submissionJobOptions struct {
+	retryLimit int
+	backoff    time.Duration
+}
 
 type submissionJob struct {
 	id      domain.SubmissionID
 	service ports.SubmissionJobsService
+	logger  *slog.Logger
+	options submissionJobOptions
 }
 
-func newSubmissionJob(service ports.SubmissionJobsService, id domain.SubmissionID) *submissionJob {
+func newSubmissionJob(service ports.SubmissionJobsService, logger *slog.Logger, id domain.SubmissionID, options submissionJobOptions) *submissionJob {
 	return &submissionJob{
 		id:      id,
+		logger:  logger,
 		service: service,
+		options: options,
 	}
 }
 
 func (j *submissionJob) Process(ctx context.Context) error {
-	return j.service.Process(ctx, j.id)
+	backoff := j.options.backoff
+
+	for attempt := 1; attempt <= j.options.retryLimit; attempt++ {
+		err := j.service.Process(ctx, j.id)
+
+		if err == nil {
+			break
+		}
+
+		if !isRetryableError(err) {
+			j.logger.WarnContext(ctx, "stopped due to non-retryable error", "submission_id", j.id, "attempt", attempt, "error", err)
+			break
+		}
+
+		if attempt == j.options.retryLimit {
+			j.logger.WarnContext(ctx, "retry limit reached", "submission_id", j.id, "attempt", attempt, "error", err)
+			break
+		}
+
+		j.logger.WarnContext(ctx, "retrying submission job", "submission_id", j.id, "attempt", attempt, "error", err)
+		time.Sleep(backoff)
+		backoff *= 2
+	}
+
+	return nil
 }
 
 func newSubmissionsBackgroundWorker(app *core.Application, opts ...func(*WorkerOptions)) (*worker.BackgroundWorker[*submissionJob], error) {
@@ -34,7 +72,10 @@ func newSubmissionsBackgroundWorker(app *core.Application, opts ...func(*WorkerO
 		worker.BgWithInterval[*submissionJob](time.Duration(options.Interval)*time.Minute),
 		worker.BgWithLogger[*submissionJob](app.Logger),
 		worker.BgWithSize[*submissionJob](options.PoolSize),
-		worker.BgWithFetchJobsFn(newSubmissionWorkFn(app)),
+		worker.BgWithFetchJobsFn(newSubmissionWorkFn(app, submissionJobOptions{
+			retryLimit: options.RetryLimit,
+			backoff:    time.Second,
+		})),
 		worker.BgWithElector[*submissionJob](elector.NewCacheElector(
 			elector.CacheElectorWithKey("service:forms:elector"),
 			elector.CacheElectorWithLocker(app.Cache),
@@ -50,7 +91,7 @@ func newSubmissionsBackgroundWorker(app *core.Application, opts ...func(*WorkerO
 	return bw, nil
 }
 
-func newSubmissionWorkFn(app *core.Application) worker.FetchJobsFn[*submissionJob] {
+func newSubmissionWorkFn(app *core.Application, options submissionJobOptions) worker.FetchJobsFn[*submissionJob] {
 	return func(ctx context.Context) ([]*submissionJob, error) {
 		ids, err := app.Services.SubmissionJobs.Find(ctx, ports.NewFindSubmissionJobsQuery(0))
 
@@ -60,9 +101,22 @@ func newSubmissionWorkFn(app *core.Application) worker.FetchJobsFn[*submissionJo
 
 		jobs := make([]*submissionJob, 0, len(ids))
 		for _, id := range ids {
-			jobs = append(jobs, newSubmissionJob(app.Services.SubmissionJobs, id))
+			jobs = append(jobs, newSubmissionJob(
+				app.Services.SubmissionJobs,
+				app.Logger,
+				id,
+				options,
+			))
 		}
 
 		return jobs, nil
 	}
+}
+
+func isRetryableError(err error) bool {
+	return !errors.Is(err, strategies.ErrFieldValidation) &&
+		!errors.Is(err, strategies.ErrFieldRequired) &&
+		!errors.Is(err, strategies.ErrFieldTypeValue) &&
+		!errors.Is(err, services.ErrVersionStatus) &&
+		!errors.Is(err, stratreg.ErrStrategyNotFound)
 }

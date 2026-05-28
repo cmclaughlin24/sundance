@@ -54,7 +54,7 @@ func (s *submissionJobsService) Find(ctx context.Context, query *ports.FindSubmi
 	}
 
 	ids, err := s.submissionRepository.FindJobs(ctx, &ports.FindSubmissionsFilter{
-		Take:    query.Take,
+		Take:     query.Take,
 		Statuses: []domain.SubmissionStatus{domain.SubmissionStatusPending},
 	})
 
@@ -75,7 +75,7 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 		return err
 	}
 
-	if submission.Status != domain.SubmissionStatusPending {
+	if submission.Status == domain.SubmissionStatusAccepted || submission.Status == domain.SubmissionStatusRejected {
 		s.logger.WarnContext(ctx, "skipping submission job; invalid status", "submission_id", submission.ID, "status", submission.Status)
 		return nil
 	}
@@ -88,7 +88,7 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 
 	s.logger.InfoContext(ctx, "submission job recorded", "submission_id", submission.ID, "status", submission.Status)
 
-	return nil
+	return err
 }
 
 func (s *submissionJobsService) validate(ctx context.Context, submission *domain.Submission) error {
@@ -216,7 +216,7 @@ func (s *submissionJobsService) shouldValidate(ctx context.Context, rg ruleGette
 func (s *submissionJobsService) recordAttempt(ctx context.Context, submission *domain.Submission, err error) error {
 	if err == nil {
 		submission.Accept()
-	} else if errors.Is(err, ErrVersionStatus) || errors.Is(err, strategies.ErrFieldValidation) {
+	} else if shouldReject(err) {
 		submission.Reject(err)
 	} else {
 		submission.Fail(err)
@@ -242,4 +242,11 @@ func (s *submissionJobsService) recordAttempt(ctx context.Context, submission *d
 	}
 
 	return nil
+}
+
+func shouldReject(err error) bool {
+	return errors.Is(err, ErrVersionStatus) ||
+		errors.Is(err, strategies.ErrFieldValidation) ||
+		errors.Is(err, strategies.ErrFieldRequired) ||
+		errors.Is(err, strategies.ErrFieldTypeValue)
 }

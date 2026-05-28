@@ -30,7 +30,7 @@ type settings struct {
 	Cache       cache.CacheSettings             `json:"cache"`
 	LogLevel    string                          `json:"log_level"`
 	Host        string                          `json:"host"`
-	Worker      workers.WorkerOptions          `json:"worker"`
+	Worker      workers.WorkerOptions           `json:"worker"`
 }
 
 func main() {
