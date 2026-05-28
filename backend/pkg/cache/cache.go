@@ -14,7 +14,7 @@ import (
 type CacheType string
 
 const (
-	CacheTypeInMemory CacheType = "inmemory"
+	CacheTypeInMemory CacheType = "in-memory"
 	CacheTypeRedis    CacheType = "redis"
 )
 

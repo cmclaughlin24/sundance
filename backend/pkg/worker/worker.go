@@ -2,16 +2,21 @@ package worker
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-// Creates a new random UUID and returns it as a string.
-func NewID() string {
-	return uuid.NewString()
-}
+var (
+	// Package declaration for the current time function. Allows for easier testing by enabling the injection of a
+	// mock time function.
+	Now = time.Now
+
+	// Creates a new random UUID and returns it as a string.
+	NewID = uuid.NewString
+)
 
 type WorkerID string
 
@@ -73,12 +78,14 @@ func (w *Worker[J]) Start(ctx context.Context) {
 
 			select {
 			case job := <-w.JobChannel:
+				start := Now()
 				jctx, cancel := w.setJobTimeout(wctx)
 
 				if err := w.process(jctx, job); err != nil {
 					w.logger.ErrorContext(jctx, "failed to process job", "error", err)
 				}
 
+				w.logger.InfoContext(jctx, "job processed", "duration", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
 				cancel()
 			case <-wctx.Done():
 				w.logger.DebugContext(wctx, "worker stopping")

@@ -66,8 +66,8 @@ func (r *mongoDBDataSourcesRepository) FindJobs(ctx context.Context, filters *po
 	}
 
 	docs, err := r.base.Find(ctx, bson.M{
-		"type": bson.M{"$in": filters.Types},
-		"attributes.attempts": bson.M{"$lte": filters.RetryLimit},
+		"type":                bson.M{"$in": filters.Types},
+		"attributes.attempts": bson.M{"$lt": filters.RetryLimit},
 		"$or": []bson.M{
 			{"attributes.expirationdate": bson.M{"$exists": false}},
 			{"attributes.expirationdate": bson.M{"$type": "null"}},
