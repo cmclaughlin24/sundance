@@ -6,7 +6,6 @@ import (
 	"log/slog"
 
 	"sundance/backend/pkg/common"
-	"sundance/backend/pkg/common/validate"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
 )
@@ -26,7 +25,7 @@ func NewSubmissionsService(logger *slog.Logger, repository *ports.Repository) po
 func (s *submissionsService) Find(ctx context.Context, query *ports.FindSubmissionsQuery) ([]*domain.Submission, error) {
 	s.logger.DebugContext(ctx, "listing submissions", "tenant_id", query.TenantID)
 
-	if err := validate.ValidateStruct(query); err != nil {
+	if err := query.Validate(); err != nil {
 		s.logger.WarnContext(ctx, "submission listing failed; invalid query", "tenant_id", query.TenantID, "error", err)
 		return nil, err
 	}
@@ -45,7 +44,7 @@ func (s *submissionsService) Find(ctx context.Context, query *ports.FindSubmissi
 func (s *submissionsService) FindByID(ctx context.Context, query *ports.FindSubmissionByIDQuery[domain.SubmissionID]) (*domain.Submission, error) {
 	s.logger.DebugContext(ctx, "finding submission", "tenant_id", query.TenantID, "submission_id", query.ID)
 
-	if err := validate.ValidateStruct(query); err != nil {
+	if err := query.Validate(); err != nil {
 		s.logger.WarnContext(ctx, "submission find failed; invalid query", "tenant_id", query.TenantID, "submission_id", query.ID, "error", err)
 		return nil, err
 	}
@@ -67,7 +66,7 @@ func (s *submissionsService) FindByID(ctx context.Context, query *ports.FindSubm
 func (s *submissionsService) FindByReferenceID(ctx context.Context, query *ports.FindSubmissionByIDQuery[domain.ReferenceID]) (*domain.Submission, error) {
 	s.logger.DebugContext(ctx, "finding submission by reference", "tenant_id", query.TenantID, "reference_id", query.ID)
 
-	if err := validate.ValidateStruct(query); err != nil {
+	if err := query.Validate(); err != nil {
 		s.logger.WarnContext(ctx, "submission find failed; invalid query", "tenant_id", query.TenantID, "reference_id", query.ID, "error", err)
 		return nil, err
 	}
@@ -89,7 +88,7 @@ func (s *submissionsService) FindByReferenceID(ctx context.Context, query *ports
 func (s *submissionsService) Create(ctx context.Context, command *ports.CreateSubmissionCommand) (*domain.Submission, error) {
 	s.logger.DebugContext(ctx, "creating submission", "tenant_id", command.TenantID)
 
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		s.logger.WarnContext(ctx, "submission creation failed; invalid command", "tenant_id", command.TenantID, "error", err)
 		return nil, err
 	}
@@ -131,7 +130,7 @@ func (s *submissionsService) Create(ctx context.Context, command *ports.CreateSu
 func (s *submissionsService) Replay(ctx context.Context, command *ports.ReplaySubmissionCommand) error {
 	s.logger.DebugContext(ctx, "replaying submission", "tenant_id", command.TenantID, "submission_id", command.ID)
 
-	if err := validate.ValidateStruct(command); err != nil {
+	if err := command.Validate(); err != nil {
 		s.logger.WarnContext(ctx, "submission replay failed; invalid command", "tenant_id", command.TenantID, "submission_id", command.ID, "error", err)
 		return err
 	}

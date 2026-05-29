@@ -36,6 +36,12 @@
 
 17. ~~Canonical tag scaffold: `CanonicalTagID` dropped in constructors~~ (`canonical_tag_version.go`) -- Both `NewCanonicalTagVersion` and `HydrateCanonicalTagVersion` now assign `CanonicalTagID` from their parameter. *(Committed `9a2f985e`.)*
 
+18. ~~Inconsistent `Validate()` on submission commands/queries~~ (`ports/commands.go`, `ports/query.go`) -- `CreateSubmissionCommand`, `FindSubmissionsQuery`, and `FindSubmissionByIDQuery[T]` now expose `Validate()` matching the rest of the commands/queries. `submissionsService` consumes them via the method, eliminating the prior direct `validate.ValidateStruct` calls and removing the `validate` import. *(Unstaged.)*
+
+19. ~~`formsService.hasActiveVersion` returns `true, err` on match path~~ (`forms_service.go:384`) -- Match-path return corrected from `return true, err` to `return true, nil`. *(Unstaged.)*
+
+20. ~~`FindJobs` `Take` limit not applied at repository level~~ (`inmemory/submissions_repository.go`, `mongodb/submissions_repository.go`) -- In-memory `Find` and `FindJobs` now truncate to `filter.Take` after collection. MongoDB `FindJobs` builds `options.Find().SetLimit(int64(filter.Take))` and passes it through to `r.base.Find(ctx, f, opts)`. *(Unstaged.)*
+
 ---
 
 ## Will Not Fix
@@ -64,15 +70,9 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 3. **Field validator strategies: select and checkbox remain stubs** (`select_field_validator.go:28`, `checkbox_field_validator.go:28`) -- Both return `nil` without performing any validation. Date has `checkValueRequired` but no date-specific validation (TODO at `date_field_validator.go:37`). *(Carried from 5/20 #2, P3.)*
 
-4. **`FindJobs` `Take` limit not applied at repository level** (`inmemory/submissions_repository.go:87-106`, `mongodb/submissions_repository.go:76-91`) -- `FindSubmissionsFilter.Take` is passed by the service layer, but neither the in-memory nor MongoDB `FindJobs` implementations apply the limit. The mongo implementation also has a leftover TODO about projecting only the `_id` field. *(Carried from 5/20 #3, P3.)*
-
 #### Architectural
 
-5. **Duplicate error classification across service and worker** (`services/submission_jobs_service.go:247-252`, `adapters/workers/submissions_worker.go:116-122`) -- `shouldReject` (service: terminal-vs-retryable for status transition) and `isRetryableError` (worker: continue-vs-stop the retry loop) reference overlapping error sets via mirrored predicates with inverted polarity. The two are aligned by accident today and drift would be silent. Specifically: `isRetryableError` classifies `stratreg.ErrStrategyNotFound` as non-retryable but `shouldReject` does not include it, so an unknown field type today produces a `Failed` submission (suggesting retryability) for what is semantically a permanent error. Recommend a single `strategies.Classify(err) Disposition` (or similar) consumed by both call sites. *(New, P3.)*
-
-6. **Inconsistent command/query `Validate()` methods** (`ports/commands.go:155-177`, `ports/query.go:75-97`) -- `CreateSubmissionCommand`, `FindSubmissionsQuery`, and `FindSubmissionByIDQuery` are missing the `Validate()` method that the rest of the commands/queries expose. `submissionsService` validates these via direct `validate.ValidateStruct(command)` calls, but the API surface is inconsistent. *(New, P3.)*
-
-7. **`formsService.hasActiveVersion` returns `true, err` on match path** (`forms_service.go:384`) -- Inside the loop, the success-case return is `return true, err` where `err` is nil at that point. Reads as a bug and should be `return true, nil`. *(New, P3.)*
+4. **Duplicate error classification across service and worker** (`services/submission_jobs_service.go:247-252`, `adapters/workers/submissions_worker.go:116-122`) -- `shouldReject` (service: terminal-vs-retryable for status transition) and `isRetryableError` (worker: continue-vs-stop the retry loop) reference overlapping error sets via mirrored predicates with inverted polarity. The two are aligned by accident today and drift would be silent. Specifically: `isRetryableError` classifies `stratreg.ErrStrategyNotFound` as non-retryable but `shouldReject` does not include it, so an unknown field type today produces a `Failed` submission (suggesting retryability) for what is semantically a permanent error. Recommend a single `strategies.Classify(err) Disposition` (or similar) consumed by both call sites. *(New, P3.)*
 
 ---
 
@@ -80,9 +80,9 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Missing Functionality
 
-8. **`Find()` has no pagination or filtering** (`tenants_service.go:30-40`) -- *(Carried from 5/20 #4, P3.)*
+5. **`Find()` has no pagination or filtering** (`tenants_service.go:30-40`) -- *(Carried from 5/20 #4, P3.)*
 
-9. **`Lookup` value object has no validation** (`lookup.go`) -- *(Carried from 5/20 #5, P3.)*
+6. **`Lookup` value object has no validation** (`lookup.go`) -- *(Carried from 5/20 #5, P3.)*
 
 ---
 
@@ -90,15 +90,15 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 #### Bugs
 
-10. **`defer close(pool)` race on shutdown** (`pkg/worker/background_worker.go:188-194`) -- `onLeader` creates the pool, spawns worker goroutines inside it (`w.Start(ctx)` at line 193), and defers `close(pool)`. On context cancellation or failover, `onLeader` returns and the deferred `close(pool)` runs. The worker goroutines still send to `pool` via `w.WorkerPool <- w.JobChannel:` and observe `wctx.Done()` independently; if a worker reaches the send case after the channel is closed, it panics on a closed channel. The existing `sync.WaitGroup` in `Start` synchronizes `onLeader` (registered via `wg.Go` at line 144) but does not track the worker goroutines, so `close(pool)` runs without waiting for workers to observe the cancellation. Suggest dropping `defer close(pool)` (let GC reclaim) or adding a second WaitGroup inside `onLeader` to wait on worker exits. *(New, P2.)*
+7. **`defer close(pool)` race on shutdown** (`pkg/worker/background_worker.go:188-194`) -- `onLeader` creates the pool, spawns worker goroutines inside it (`w.Start(ctx)` at line 193), and defers `close(pool)`. On context cancellation or failover, `onLeader` returns and the deferred `close(pool)` runs. The worker goroutines still send to `pool` via `w.WorkerPool <- w.JobChannel:` and observe `wctx.Done()` independently; if a worker reaches the send case after the channel is closed, it panics on a closed channel. The existing `sync.WaitGroup` in `Start` synchronizes `onLeader` (registered via `wg.Go` at line 144) but does not track the worker goroutines, so `close(pool)` runs without waiting for workers to observe the cancellation. Suggest dropping `defer close(pool)` (let GC reclaim) or adding a second WaitGroup inside `onLeader` to wait on worker exits. *(New, P2.)*
 
 #### Architectural
 
-11. **Test coverage gaps (forms, `pkg/`)** -- No domain/service/strategy/repository tests in the forms service; zero test files in `pkg/`. Tenants service is now well-covered (22 test files). *(Carried from 5/20 #6, P3.)*
+8. **Test coverage gaps (forms, `pkg/`)** -- No domain/service/strategy/repository tests in the forms service; zero test files in `pkg/`. Tenants service is now well-covered (22 test files). *(Carried from 5/20 #6, P3.)*
 
-12. **No domain events** for cross-service communication. *(Carried from 5/20 #7, P3.)*
+9. **No domain events** for cross-service communication. *(Carried from 5/20 #7, P3.)*
 
-13. **No real authentication** -- All services use `PlaceholderAuthenticator`. *(Carried from 5/20 #8, P3.)*
+10. **No real authentication** -- All services use `PlaceholderAuthenticator`. *(Carried from 5/20 #8, P3.)*
 
 ---
 
@@ -108,17 +108,14 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 |----------|---|-------|------------|
 | **P2** | 1 | No `SubmissionAttempt` created; error params unused | Forms |
 | **P2** | 2 | Canonical tag scaffold: unconstrained status/type, no validate tags | Forms |
-| **P2** | 10 | `defer close(pool)` shutdown race | pkg/worker |
+| **P2** | 7 | `defer close(pool)` shutdown race | pkg/worker |
 | **P3** | 3 | Select/checkbox validator stubs, date partial | Forms |
-| **P3** | 4 | `FindJobs` `Take` not honored | Forms |
-| **P3** | 5 | Duplicate error classification (service vs worker) | Forms |
-| **P3** | 6 | Inconsistent `Validate()` on submission commands/queries | Forms |
-| **P3** | 7 | `hasActiveVersion` returns `true, err` instead of `true, nil` | Forms |
-| **P3** | 8 | Tenants `Find()` no pagination | Tenants |
-| **P3** | 9 | `Lookup` no validation | Tenants |
-| **P3** | 11 | Test coverage gaps (forms, pkg/) | Forms, pkg/ |
-| **P3** | 12 | No domain events | All |
-| **P3** | 13 | Placeholder authentication only | All |
+| **P3** | 4 | Duplicate error classification (service vs worker) | Forms |
+| **P3** | 5 | Tenants `Find()` no pagination | Tenants |
+| **P3** | 6 | `Lookup` no validation | Tenants |
+| **P3** | 8 | Test coverage gaps (forms, pkg/) | Forms, pkg/ |
+| **P3** | 9 | No domain events | All |
+| **P3** | 10 | Placeholder authentication only | All |
 
 ---
 
@@ -150,9 +147,11 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 - **Bug fixes discovered during review** (committed) -- `ExprRuleEvaluator.statement` accumulator (compound rules now correctly accumulate the expression string across iterations); commented-out canonical tag routes removed; worker duration log now uses native int with `duration_ms` key; gofmt fix on `Attempts` indentation; `getReferenceIDPathValue` colocated with the submission handler that uses it; `HydrateCaonicalTagVersion` typo corrected; `CanonicalTagID` now assigned in both canonical tag version constructors.
 
+- **Submission command/query `Validate()` consistency, `hasActiveVersion` fix, and `FindJobs` `Take`** (unstaged) -- `CreateSubmissionCommand`, `FindSubmissionsQuery`, and `FindSubmissionByIDQuery[T]` now expose `Validate()` matching the other commands/queries. `submissionsService` consumes them via the method, dropping the direct `validate.ValidateStruct` calls and the package import. `formsService.hasActiveVersion` match-path now returns `true, nil` instead of `true, err`. In-memory `Find`/`FindJobs` truncate to `filter.Take`; mongo `FindJobs` builds `options.Find().SetLimit(...)` and passes it through to `r.base.Find(ctx, f, opts)`.
+
 ### Current State
 
-**13 remaining issues** (3 P2, 10 P3). 0 P0, 0 P1. Multiple issues resolved this cycle across the committed work and the same-cycle bug-fix commit (`9a2f985e`).
+**10 remaining issues** (3 P2, 7 P3). 0 P0, 0 P1. Multiple issues resolved this cycle across the committed work, the same-cycle bug-fix commit (`9a2f985e`), and unstaged follow-up consolidating submission command/query `Validate()` methods, correcting the `hasActiveVersion` return, and applying the `FindJobs` `Take` limit in both repository implementations.
 
 **Forms Service at 8.5/10** (down 0.5 from 9/10). Net-positive cycle: the retry pipeline is a real production-readiness improvement and the `FormVersion` rename clarifies the model. The evaluator accumulator fix restores compound-rule correctness. However, the canonical tag scaffold introduces correctness debt — harmless today but loaded for the slice's eventual wiring — and the `SubmissionAttempt` audit trail remains absent precisely when the new retry loop makes it most useful.
 
@@ -172,6 +171,6 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 2. **Finish the canonical tag domain before wiring the slice** (P2) -- add status/type constants + `isValid*` predicate + `NewTypeValidator`, add `validate:"required"` struct tags on `CanonicalTag` and `CanonicalTagVersion`. Cheap now, expensive after the first persisted record.
 3. **Fix the worker pool shutdown race** (P2) -- drop `defer close(pool)`, or track worker goroutines in a WaitGroup that `onLeader` waits on before closing.
 4. **Implement select/checkbox/date field validators** (P3) -- stubs silently accept invalid data.
-5. **Apply `FindJobs` `Take` limit in both repository implementations** (P3) -- prevents unbounded result sets and removes the leftover mongo TODO.
-6. **Consolidate error classification** (P3) -- single `Classify(err) Disposition` consumed by both `recordAttempt` and `isRetryableError` to prevent drift.
-7. **Backfill tests for forms domain/service/strategies and `pkg/`** (P3) -- narrows the largest remaining test gap.
+5. **Consolidate error classification** (P3) -- single `Classify(err) Disposition` consumed by both `recordAttempt` and `isRetryableError` to prevent drift.
+6. **Backfill tests for forms domain/service/strategies and `pkg/`** (P3) -- narrows the largest remaining test gap.
+7. **Add pagination to tenants `Find()` and validation to `Lookup`** (P3) -- closes the remaining unbounded-result and unvalidated-value-object gaps in tenants.

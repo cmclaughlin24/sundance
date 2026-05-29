@@ -381,7 +381,7 @@ func (s *formsService) hasActiveVersion(ctx context.Context, id domain.FormID) (
 
 	for _, v := range versions {
 		if v.Status == domain.FormVersionStatusActive {
-			return true, err
+			return true, nil
 		}
 	}
 

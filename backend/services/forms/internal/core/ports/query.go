@@ -82,6 +82,10 @@ func NewFindSubmissionsQuery(tenantID string) *FindSubmissionsQuery {
 	}
 }
 
+func (q *FindSubmissionsQuery) Validate() error {
+	return validate.ValidateStruct(q)
+}
+
 type FindSubmissionByIDQuery[T any] struct {
 	TenantID string `validate:"required"`
 	ID       T      `validate:"required"`
@@ -94,6 +98,10 @@ func NewFindSubmissionByIDQuery[T any](tenantID string, id T) *FindSubmissionByI
 	}
 
 	return query
+}
+
+func (q *FindSubmissionByIDQuery[T]) Validate() error {
+	return validate.ValidateStruct(q)
 }
 
 type FindSubmissionJobsQuery struct {

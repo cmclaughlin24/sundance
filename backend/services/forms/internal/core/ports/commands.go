@@ -176,6 +176,10 @@ func NewCreateSubmissionCommand(
 	}
 }
 
+func (c *CreateSubmissionCommand) Validate() error {
+	return validate.ValidateStruct(c)
+}
+
 type ReplaySubmissionCommand struct {
 	TenantID string              `validate:"required"`
 	ID       domain.SubmissionID `validate:"required"`

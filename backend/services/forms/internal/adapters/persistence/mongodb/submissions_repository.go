@@ -8,6 +8,7 @@ import (
 	"sundance/backend/services/forms/internal/adapters/persistence/mongodb/documents"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
+
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -75,9 +76,14 @@ func (r *mongoDBSubmissionsRepository) Find(ctx context.Context, filter *ports.F
 
 func (r *mongoDBSubmissionsRepository) FindJobs(ctx context.Context, filter *ports.FindSubmissionsFilter) ([]domain.SubmissionID, error) {
 	f := newSubmissionFilter(filter)
+	opts := options.Find()
+
+	if filter.Take > 0 {
+		opts.SetLimit(int64(filter.Take))
+	}
 
 	// TODO: Time permiting this query could be optimized by using the collection to query for only thi IDs.
-	docs, err := r.base.Find(ctx, f)
+	docs, err := r.base.Find(ctx, f, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +167,6 @@ func newSubmissionFilter(filter *ports.FindSubmissionsFilter) bson.M {
 	if len(filter.Statuses) > 0 {
 		f["status"] = bson.M{"$in": filter.Statuses}
 	}
-
 
 	return f
 }

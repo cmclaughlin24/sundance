@@ -42,6 +42,10 @@ func (r *InMemorySubmissionsRepository) Find(ctx context.Context, filter *ports.
 		submissions = append(submissions, submission)
 	}
 
+	if filter != nil && filter.Take > 0 && len(submissions) > filter.Take {
+		submissions = submissions[:filter.Take]
+	}
+
 	return submissions, nil
 }
 
@@ -100,6 +104,10 @@ func (r *InMemorySubmissionsRepository) FindJobs(ctx context.Context, filter *po
 		}
 
 		ids = append(ids, submission.ID)
+	}
+
+	if filter != nil && filter.Take > 0 && len(ids) > filter.Take {
+		ids = ids[:filter.Take]
 	}
 
 	return ids, nil
