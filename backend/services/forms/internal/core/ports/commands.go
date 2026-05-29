@@ -65,19 +65,19 @@ func (c *RemoveFormCommand) Validate() error {
 	return validate.ValidateStruct(c)
 }
 
-type baseVersionCommand struct {
+type baseFormVersionCommand struct {
 	TenantID string        `validate:"required"`
 	FormID   domain.FormID `validate:"required"`
 }
 
-type CreateVersionCommand struct {
-	baseVersionCommand
+type CreateFormVersionCommand struct {
+	baseFormVersionCommand
 	Pages []*domain.Page
 }
 
-func NewCreateVersionCommand(tenantID string, formID domain.FormID, pages []*domain.Page) *CreateVersionCommand {
-	return &CreateVersionCommand{
-		baseVersionCommand: baseVersionCommand{
+func NewCreateFormVersionCommand(tenantID string, formID domain.FormID, pages []*domain.Page) *CreateFormVersionCommand {
+	return &CreateFormVersionCommand{
+		baseFormVersionCommand: baseFormVersionCommand{
 			TenantID: tenantID,
 			FormID:   formID,
 		},
@@ -85,19 +85,19 @@ func NewCreateVersionCommand(tenantID string, formID domain.FormID, pages []*dom
 	}
 }
 
-func (c *CreateVersionCommand) Validate() error {
+func (c *CreateFormVersionCommand) Validate() error {
 	return validate.ValidateStruct(c)
 }
 
-type UpdateVersionCommand struct {
-	baseVersionCommand
-	VersionID domain.VersionID `validate:"required"`
+type UpdateFormVersionCommand struct {
+	baseFormVersionCommand
+	VersionID domain.FormVersionID `validate:"required"`
 	Pages     []*domain.Page
 }
 
-func NewUpdateVersionCommand(tenantID string, id domain.VersionID, formID domain.FormID, pages []*domain.Page) *UpdateVersionCommand {
-	return &UpdateVersionCommand{
-		baseVersionCommand: baseVersionCommand{
+func NewUpdateFormVersionCommand(tenantID string, id domain.FormVersionID, formID domain.FormID, pages []*domain.Page) *UpdateFormVersionCommand {
+	return &UpdateFormVersionCommand{
+		baseFormVersionCommand: baseFormVersionCommand{
 			TenantID: tenantID,
 			FormID:   formID,
 		},
@@ -106,19 +106,19 @@ func NewUpdateVersionCommand(tenantID string, id domain.VersionID, formID domain
 	}
 }
 
-func (c *UpdateVersionCommand) Validate() error {
+func (c *UpdateFormVersionCommand) Validate() error {
 	return validate.ValidateStruct(c)
 }
 
-type PublishVersionCommand struct {
-	baseVersionCommand
-	VersionID domain.VersionID `validate:"required"`
+type PublishFormVersionCommand struct {
+	baseFormVersionCommand
+	VersionID domain.FormVersionID `validate:"required"`
 	UserID    string           `validate:"required"`
 }
 
-func NewPublishVersionCommand(tenantID string, formID domain.FormID, versionID domain.VersionID, userID string) *PublishVersionCommand {
-	return &PublishVersionCommand{
-		baseVersionCommand: baseVersionCommand{
+func NewPublishFormVersionCommand(tenantID string, formID domain.FormID, versionID domain.FormVersionID, userID string) *PublishFormVersionCommand {
+	return &PublishFormVersionCommand{
+		baseFormVersionCommand: baseFormVersionCommand{
 			TenantID: tenantID,
 			FormID:   formID,
 		},
@@ -127,19 +127,19 @@ func NewPublishVersionCommand(tenantID string, formID domain.FormID, versionID d
 	}
 }
 
-func (c *PublishVersionCommand) Validate() error {
+func (c *PublishFormVersionCommand) Validate() error {
 	return validate.ValidateStruct(c)
 }
 
-type RetireVersionCommand struct {
-	baseVersionCommand
-	VersionID domain.VersionID `validate:"required"`
+type RetireFormVersionCommand struct {
+	baseFormVersionCommand
+	VersionID domain.FormVersionID `validate:"required"`
 	UserID    string           `validate:"required"`
 }
 
-func NewRetireVersionCommand(tenantID string, formID domain.FormID, versionID domain.VersionID, userID string) *RetireVersionCommand {
-	return &RetireVersionCommand{
-		baseVersionCommand: baseVersionCommand{
+func NewRetireFormVersionCommand(tenantID string, formID domain.FormID, versionID domain.FormVersionID, userID string) *RetireFormVersionCommand {
+	return &RetireFormVersionCommand{
+		baseFormVersionCommand: baseFormVersionCommand{
 			TenantID: tenantID,
 			FormID:   formID,
 		},
@@ -148,14 +148,14 @@ func NewRetireVersionCommand(tenantID string, formID domain.FormID, versionID do
 	}
 }
 
-func (c *RetireVersionCommand) Validate() error {
+func (c *RetireFormVersionCommand) Validate() error {
 	return validate.ValidateStruct(c)
 }
 
 type CreateSubmissionCommand struct {
 	TenantID      string                         `validate:"required"`
 	FormID        domain.FormID                  `validate:"required"`
-	VersionID     domain.VersionID               `validate:"required"`
+	VersionID     domain.FormVersionID               `validate:"required"`
 	IdempotencyID domain.IdempotencyID           `validate:"required"`
 	Values        []*domain.SubmissionFieldValue `validate:"required,min=1"`
 }
@@ -163,7 +163,7 @@ type CreateSubmissionCommand struct {
 func NewCreateSubmissionCommand(
 	tenantID string,
 	formID domain.FormID,
-	versionID domain.VersionID,
+	versionID domain.FormVersionID,
 	idempotencyID domain.IdempotencyID,
 	values []*domain.SubmissionFieldValue,
 ) *CreateSubmissionCommand {

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type VersionDocument struct {
+type FormVersionDocument struct {
 	ID          string          `bson:"_id"`
 	FormID      string          `bson:"form_id"`
 	Version     int             `bson:"version"`
@@ -19,7 +19,7 @@ type VersionDocument struct {
 	Pages       []*PageDocument `bson:"pages"`
 }
 
-func ToVersionDocument(v *domain.Version) (*VersionDocument, error) {
+func ToFormVersionDocument(v *domain.FormVersion) (*FormVersionDocument, error) {
 	pages := v.GetPages()
 	pageDocs := make([]*PageDocument, 0, len(pages))
 
@@ -33,7 +33,7 @@ func ToVersionDocument(v *domain.Version) (*VersionDocument, error) {
 		pageDocs = append(pageDocs, doc)
 	}
 
-	return &VersionDocument{
+	return &FormVersionDocument{
 		ID:          string(v.ID),
 		FormID:      string(v.FormID),
 		Version:     v.Version,
@@ -48,12 +48,12 @@ func ToVersionDocument(v *domain.Version) (*VersionDocument, error) {
 	}, nil
 }
 
-func FromVersionDocument(v *VersionDocument) (*domain.Version, error) {
-	version := domain.HydrateVersion(
-		domain.VersionID(v.ID),
+func FromFormVersionDocument(v *FormVersionDocument) (*domain.FormVersion, error) {
+	version := domain.HydrateFormVersion(
+		domain.FormVersionID(v.ID),
 		domain.FormID(v.FormID),
 		v.Version,
-		domain.VersionStatus(v.Status),
+		domain.FormVersionStatus(v.Status),
 		v.PublishedBy,
 		v.PublishedAt,
 		v.RetiredBy,

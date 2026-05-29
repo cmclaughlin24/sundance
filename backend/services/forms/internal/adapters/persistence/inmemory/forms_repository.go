@@ -10,20 +10,20 @@ import (
 	"sundance/backend/services/forms/internal/core/ports"
 )
 
-type InMemoryFormsRepository struct {
+type inMemoryFormsRepository struct {
 	mu     sync.RWMutex
 	forms  map[string]*domain.Form
 	logger *slog.Logger
 }
 
-func NewInMemoryFormsRepository(logger *slog.Logger) ports.FormsRepository {
-	return &InMemoryFormsRepository{
+func newInMemoryFormsRepository(logger *slog.Logger) ports.FormsRepository {
+	return &inMemoryFormsRepository{
 		forms:  make(map[string]*domain.Form),
 		logger: logger,
 	}
 }
 
-func (r *InMemoryFormsRepository) Find(ctx context.Context, f *ports.FormFilters) ([]*domain.Form, error) {
+func (r *inMemoryFormsRepository) Find(ctx context.Context, f *ports.FormFilters) ([]*domain.Form, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -39,7 +39,7 @@ func (r *InMemoryFormsRepository) Find(ctx context.Context, f *ports.FormFilters
 	return forms, nil
 }
 
-func (r *InMemoryFormsRepository) FindByID(ctx context.Context, id domain.FormID) (*domain.Form, error) {
+func (r *inMemoryFormsRepository) FindByID(ctx context.Context, id domain.FormID) (*domain.Form, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -52,7 +52,7 @@ func (r *InMemoryFormsRepository) FindByID(ctx context.Context, id domain.FormID
 	return form, nil
 }
 
-func (r *InMemoryFormsRepository) Upsert(ctx context.Context, form *domain.Form) (*domain.Form, error) {
+func (r *inMemoryFormsRepository) Upsert(ctx context.Context, form *domain.Form) (*domain.Form, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -61,7 +61,7 @@ func (r *InMemoryFormsRepository) Upsert(ctx context.Context, form *domain.Form)
 	return form, nil
 }
 
-func (r *InMemoryFormsRepository) Delete(ctx context.Context, id domain.FormID) error {
+func (r *inMemoryFormsRepository) Delete(ctx context.Context, id domain.FormID) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

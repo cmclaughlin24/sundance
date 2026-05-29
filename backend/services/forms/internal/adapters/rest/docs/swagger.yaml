@@ -15,17 +15,17 @@ definitions:
       message:
         type: string
     type: object
+  APIResponse-FormVersionResponse:
+    properties:
+      data:
+        $ref: '#/definitions/FormVersionResponse'
+      message:
+        type: string
+    type: object
   APIResponse-SubmissionResponse:
     properties:
       data:
         $ref: '#/definitions/SubmissionResponse'
-      message:
-        type: string
-    type: object
-  APIResponse-VersionResponse:
-    properties:
-      data:
-        $ref: '#/definitions/VersionResponse'
       message:
         type: string
     type: object
@@ -89,6 +89,43 @@ definitions:
       updatedAt:
         type: string
     type: object
+  FormVersionResponse:
+    properties:
+      createdAt:
+        type: string
+      formId:
+        type: string
+      id:
+        type: string
+      pages:
+        items:
+          $ref: '#/definitions/PageResponse'
+        type: array
+      publishedAt:
+        type: string
+      publishedById:
+        type: string
+      retiredAt:
+        type: string
+      retiredById:
+        type: string
+      status:
+        $ref: '#/definitions/FormVersionStatus'
+      updatedAt:
+        type: string
+      version:
+        type: integer
+    type: object
+  FormVersionStatus:
+    enum:
+    - draft
+    - active
+    - retired
+    type: string
+    x-enum-varnames:
+    - FormVersionStatusDraft
+    - FormVersionStatusActive
+    - FormVersionStatusRetired
   PageRequest:
     properties:
       key:
@@ -286,11 +323,13 @@ definitions:
     - pending
     - accepted
     - rejected
+    - failed
     type: string
     x-enum-varnames:
     - SubmissionStatusPending
     - SubmissionStatusAccepted
     - SubmissionStatusRejected
+    - SubmissionStatusFailed
   UpsertFormRequest:
     properties:
       description:
@@ -302,50 +341,13 @@ definitions:
     required:
     - name
     type: object
-  UpsertVersionRequest:
+  UpsertFormVersionRequest:
     properties:
       pages:
         items:
           $ref: '#/definitions/PageRequest'
         type: array
     type: object
-  VersionResponse:
-    properties:
-      createdAt:
-        type: string
-      formId:
-        type: string
-      id:
-        type: string
-      pages:
-        items:
-          $ref: '#/definitions/PageResponse'
-        type: array
-      publishedAt:
-        type: string
-      publishedById:
-        type: string
-      retiredAt:
-        type: string
-      retiredById:
-        type: string
-      status:
-        $ref: '#/definitions/VersionStatus'
-      updatedAt:
-        type: string
-      version:
-        type: integer
-    type: object
-  VersionStatus:
-    enum:
-    - draft
-    - active
-    - retired
-    type: string
-    x-enum-varnames:
-    - VersionStatusDraft
-    - VersionStatusActive
-    - VersionStatusRetired
 info:
   contact: {}
 paths:
@@ -540,7 +542,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/VersionResponse'
+              $ref: '#/definitions/FormVersionResponse'
             type: array
         "500":
           description: Internal Server Error
@@ -570,14 +572,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/UpsertVersionRequest'
+          $ref: '#/definitions/UpsertFormVersionRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/APIResponse-VersionResponse'
+            $ref: '#/definitions/APIResponse-FormVersionResponse'
         "400":
           description: Bad Request
           schema:
@@ -615,7 +617,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/VersionResponse'
+            $ref: '#/definitions/FormVersionResponse'
         "404":
           description: Not Found
           schema:
@@ -653,14 +655,14 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/UpsertVersionRequest'
+          $ref: '#/definitions/UpsertFormVersionRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/APIResponse-VersionResponse'
+            $ref: '#/definitions/APIResponse-FormVersionResponse'
         "400":
           description: Bad Request
           schema:
@@ -704,7 +706,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/APIResponse-VersionResponse'
+            $ref: '#/definitions/APIResponse-FormVersionResponse'
         "400":
           description: Bad Request
           schema:
@@ -748,7 +750,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/APIResponse-VersionResponse'
+            $ref: '#/definitions/APIResponse-FormVersionResponse'
         "400":
           description: Bad Request
           schema:

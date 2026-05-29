@@ -18,12 +18,12 @@ type FormsService interface {
 	Create(context.Context, *CreateFormCommand) (*domain.Form, error)
 	Update(context.Context, *UpdateFormCommand) (*domain.Form, error)
 	Delete(context.Context, *RemoveFormCommand) error
-	FindVersions(context.Context, *FindVersionsQuery) ([]*domain.Version, error)
-	FindVersion(context.Context, *FindVersionByIDQuery) (*domain.Version, error)
-	CreateVersion(context.Context, *CreateVersionCommand) (*domain.Version, error)
-	UpdateVersion(context.Context, *UpdateVersionCommand) (*domain.Version, error)
-	PublishVersion(context.Context, *PublishVersionCommand) (*domain.Version, error)
-	RetireVersion(context.Context, *RetireVersionCommand) (*domain.Version, error)
+	FindVersions(context.Context, *FindFormVersionsQuery) ([]*domain.FormVersion, error)
+	FindVersion(context.Context, *FindFormVersionByIDQuery) (*domain.FormVersion, error)
+	CreateVersion(context.Context, *CreateFormVersionCommand) (*domain.FormVersion, error)
+	UpdateVersion(context.Context, *UpdateFormVersionCommand) (*domain.FormVersion, error)
+	PublishVersion(context.Context, *PublishFormVersionCommand) (*domain.FormVersion, error)
+	RetireVersion(context.Context, *RetireFormVersionCommand) (*domain.FormVersion, error)
 }
 
 type SubmissionsService interface {

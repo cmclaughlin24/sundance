@@ -8,16 +8,16 @@ import (
 	"sundance/backend/pkg/common/validate"
 )
 
-type VersionStatus string
+type FormVersionStatus string
 
 const (
-	VersionStatusDraft   VersionStatus = "draft"
-	VersionStatusActive  VersionStatus = "active"
-	VersionStatusRetired VersionStatus = "retired"
+	FormVersionStatusDraft   FormVersionStatus = "draft"
+	FormVersionStatusActive  FormVersionStatus = "active"
+	FormVersionStatusRetired FormVersionStatus = "retired"
 )
 
 var (
-	ErrInvalidVersion       = errors.New("invalid version")
+	ErrInvalidVersion       = errors.New("invalid form version")
 	ErrInvalidVersionStatus = errors.New("invalid version status")
 	ErrVersionLocked        = errors.New("version is locked")
 	ErrDuplicateVersion     = errors.New("duplicate version")
@@ -25,13 +25,13 @@ var (
 	ErrRetiredByRequired    = errors.New("retiredBy is required")
 )
 
-type VersionID string
+type FormVersionID string
 
-type Version struct {
-	ID          VersionID
-	FormID      FormID        `validate:"required"`
-	Version     int           `validate:"required,min=1"`
-	Status      VersionStatus `validate:"required"`
+type FormVersion struct {
+	ID          FormVersionID
+	FormID      FormID            `validate:"required"`
+	Version     int               `validate:"required,min=1"`
+	Status      FormVersionStatus `validate:"required"`
 	PublishedBy string
 	PublishedAt time.Time
 	RetiredBy   string
@@ -41,13 +41,13 @@ type Version struct {
 	pages       PositionElements[*Page]
 }
 
-func NewVersion(formID FormID, version int, status VersionStatus) (*Version, error) {
-	if !isValidVersionStatus(status) {
+func NewFormVersion(formID FormID, version int, status FormVersionStatus) (*FormVersion, error) {
+	if !isValidFormVersionStatus(status) {
 		return nil, ErrInvalidVersionStatus
 	}
 
-	v := &Version{
-		ID:        VersionID(NewID()),
+	v := &FormVersion{
+		ID:        FormVersionID(NewID()),
 		FormID:    formID,
 		Version:   version,
 		Status:    status,
@@ -62,19 +62,19 @@ func NewVersion(formID FormID, version int, status VersionStatus) (*Version, err
 	return v, nil
 }
 
-func HydrateVersion(
-	id VersionID,
+func HydrateFormVersion(
+	id FormVersionID,
 	formID FormID,
 	version int,
-	status VersionStatus,
+	status FormVersionStatus,
 	publishedBy string,
 	publishedAt time.Time,
 	retiredBy string,
 	retiredAt,
 	createdAt,
 	updatedAt time.Time,
-) *Version {
-	return &Version{
+) *FormVersion {
+	return &FormVersion{
 		ID:          id,
 		FormID:      formID,
 		Version:     version,
@@ -89,7 +89,7 @@ func HydrateVersion(
 	}
 }
 
-func (v *Version) FlatFields() []*Field {
+func (v *FormVersion) FlatFields() []*Field {
 	var fields []*Field
 
 	for _, page := range v.pages {
@@ -101,11 +101,11 @@ func (v *Version) FlatFields() []*Field {
 	return fields
 }
 
-func (v *Version) GetPages() []*Page {
+func (v *FormVersion) GetPages() []*Page {
 	return v.pages
 }
 
-func (v *Version) AddPages(pages ...*Page) error {
+func (v *FormVersion) AddPages(pages ...*Page) error {
 	if v == nil {
 		return ErrInvalidVersion
 	}
@@ -123,12 +123,12 @@ func (v *Version) AddPages(pages ...*Page) error {
 	return nil
 }
 
-func (v *Version) ReplacePages(pages ...*Page) error {
+func (v *FormVersion) ReplacePages(pages ...*Page) error {
 	if v == nil {
 		return ErrInvalidVersion
 	}
 
-	if v.Status != VersionStatusDraft {
+	if v.Status != FormVersionStatusDraft {
 		return ErrVersionLocked
 	}
 
@@ -145,12 +145,12 @@ func (v *Version) ReplacePages(pages ...*Page) error {
 	return nil
 }
 
-func (v *Version) Publish(publishedBy string) error {
+func (v *FormVersion) Publish(publishedBy string) error {
 	if v == nil {
 		return ErrInvalidVersion
 	}
 
-	if v.Status != VersionStatusDraft {
+	if v.Status != FormVersionStatusDraft {
 		return ErrVersionLocked
 	}
 
@@ -159,7 +159,7 @@ func (v *Version) Publish(publishedBy string) error {
 	}
 
 	now := Now()
-	v.Status = VersionStatusActive
+	v.Status = FormVersionStatusActive
 	v.PublishedBy = publishedBy
 	v.PublishedAt = now
 	v.UpdatedAt = now
@@ -167,12 +167,12 @@ func (v *Version) Publish(publishedBy string) error {
 	return nil
 }
 
-func (v *Version) Retire(retiredBy string) error {
+func (v *FormVersion) Retire(retiredBy string) error {
 	if v == nil {
 		return ErrInvalidVersion
 	}
 
-	if v.Status != VersionStatusActive {
+	if v.Status != FormVersionStatusActive {
 		return ErrVersionLocked
 	}
 
@@ -181,7 +181,7 @@ func (v *Version) Retire(retiredBy string) error {
 	}
 
 	now := Now()
-	v.Status = VersionStatusRetired
+	v.Status = FormVersionStatusRetired
 	v.RetiredBy = retiredBy
 	v.RetiredAt = now
 	v.UpdatedAt = now
@@ -189,8 +189,8 @@ func (v *Version) Retire(retiredBy string) error {
 	return nil
 }
 
-var isValidVersionStatus = validate.NewTypeValidator([]VersionStatus{
-	VersionStatusDraft,
-	VersionStatusActive,
-	VersionStatusRetired,
+var isValidFormVersionStatus = validate.NewTypeValidator([]FormVersionStatus{
+	FormVersionStatusDraft,
+	FormVersionStatusActive,
+	FormVersionStatusRetired,
 })

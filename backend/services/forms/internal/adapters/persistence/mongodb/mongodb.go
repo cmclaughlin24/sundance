@@ -16,7 +16,7 @@ func Bootstrap(client *mongo.Client, logger *slog.Logger, databaseName string) (
 		return nil, err
 	}
 
-	versions, err := newMongoDBVersionsRepository(db, logger)
+	versions, err := newMongoDBFormVersionsRepository(db, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -29,7 +29,7 @@ func Bootstrap(client *mongo.Client, logger *slog.Logger, databaseName string) (
 	return &ports.Repository{
 		Database:    database.NewMongoDBDatabase(client, db, logger),
 		Forms:       forms,
-		Versions:    versions,
+		FormVersions:    versions,
 		Submissions: submissions,
 	}, nil
 }

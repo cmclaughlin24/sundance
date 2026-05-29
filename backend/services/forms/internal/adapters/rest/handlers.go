@@ -240,19 +240,19 @@ func (h *handlers) deleteForm(w http.ResponseWriter, r *http.Request) {
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
-// @success		200 {array} dto.VersionResponse
+// @success		200 {array} dto.FormVersionResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId}/versions [get]
-func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
+func (h *handlers) getFormVersions(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
-	query := ports.NewFindVersionsQuery(tenantID, formID)
-	resultChan := make(chan result[[]*domain.Version], 1)
+	query := ports.NewFindFormVersionsQuery(tenantID, formID)
+	resultChan := make(chan result[[]*domain.FormVersion], 1)
 
 	go func() {
 		defer close(resultChan)
 		versions, err := h.app.Services.Forms.FindVersions(r.Context(), query)
-		resultChan <- result[[]*domain.Version]{versions, err}
+		resultChan <- result[[]*domain.FormVersion]{versions, err}
 	}()
 
 	select {
@@ -265,9 +265,9 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]*dto.VersionResponse, 0, len(res.data))
+		dtos := make([]*dto.FormVersionResponse, 0, len(res.data))
 		for _, v := range res.data {
-			dtos = append(dtos, dto.VersionToResponse(v))
+			dtos = append(dtos, dto.FormVersionToResponse(v))
 		}
 
 		httputil.SendJSONResponse(w, http.StatusOK, dtos)
@@ -281,21 +281,21 @@ func (h *handlers) getVersions(w http.ResponseWriter, r *http.Request) {
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
 // @param		versionId path string true "Version ID"
-// @success		200 {object} dto.VersionResponse
+// @success		200 {object} dto.FormVersionResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId}/versions/{versionId} [get]
-func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
+func (h *handlers) getFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
-	query := ports.NewFindVersionByIDQuery(tenantID, formID, versionID)
-	resultChan := make(chan result[*domain.Version], 1)
+	query := ports.NewFindFormVersionByIDQuery(tenantID, formID, versionID)
+	resultChan := make(chan result[*domain.FormVersion], 1)
 
 	go func() {
 		defer close(resultChan)
 		version, err := h.app.Services.Forms.FindVersion(r.Context(), query)
-		resultChan <- result[*domain.Version]{version, err}
+		resultChan <- result[*domain.FormVersion]{version, err}
 	}()
 
 	select {
@@ -308,7 +308,7 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJSONResponse(w, http.StatusOK, dto.VersionToResponse(res.data))
+		httputil.SendJSONResponse(w, http.StatusOK, dto.FormVersionToResponse(res.data))
 	}
 }
 
@@ -319,16 +319,16 @@ func (h *handlers) getVersion(w http.ResponseWriter, r *http.Request) {
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
-// @param		body body dto.UpsertVersionRequest true "Create Version"
-// @success		201 {object} httputil.APIResponse[dto.VersionResponse]
+// @param		body body dto.UpsertFormVersionRequest true "Create Version"
+// @success		201 {object} httputil.APIResponse[dto.FormVersionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId}/versions [post]
-func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
+func (h *handlers) createFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 
-	var body dto.UpsertVersionRequest
+	var body dto.UpsertFormVersionRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
 		h.sendErrorResponse(w, err)
@@ -341,13 +341,13 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resultChan := make(chan result[*domain.Version], 1)
-	command := ports.NewCreateVersionCommand(tenantID, formID, pages)
+	resultChan := make(chan result[*domain.FormVersion], 1)
+	command := ports.NewCreateFormVersionCommand(tenantID, formID, pages)
 
 	go func() {
 		defer close(resultChan)
 		version, err := h.app.Services.Forms.CreateVersion(r.Context(), command)
-		resultChan <- result[*domain.Version]{version, err}
+		resultChan <- result[*domain.FormVersion]{version, err}
 	}()
 
 	select {
@@ -360,9 +360,9 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[*dto.VersionResponse]{
+		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[*dto.FormVersionResponse]{
 			Message: "Successfully created!",
-			Data:    dto.VersionToResponse(res.data),
+			Data:    dto.FormVersionToResponse(res.data),
 		})
 	}
 }
@@ -375,18 +375,18 @@ func (h *handlers) createVersion(w http.ResponseWriter, r *http.Request) {
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
 // @param		versionId path string true "Version ID"
-// @param		body body dto.UpsertVersionRequest true "Update Version"
-// @success		200 {object} httputil.APIResponse[dto.VersionResponse]
+// @param		body body dto.UpsertFormVersionRequest true "Update Version"
+// @success		200 {object} httputil.APIResponse[dto.FormVersionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId}/versions/{versionId} [put]
-func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
+func (h *handlers) updateFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
 
-	var body dto.UpsertVersionRequest
+	var body dto.UpsertFormVersionRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
 		h.sendErrorResponse(w, err)
@@ -399,13 +399,13 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resultChan := make(chan result[*domain.Version], 1)
-	command := ports.NewUpdateVersionCommand(tenantID, versionID, formID, pages)
+	resultChan := make(chan result[*domain.FormVersion], 1)
+	command := ports.NewUpdateFormVersionCommand(tenantID, versionID, formID, pages)
 
 	go func() {
 		defer close(resultChan)
 		version, err := h.app.Services.Forms.UpdateVersion(r.Context(), command)
-		resultChan <- result[*domain.Version]{version, err}
+		resultChan <- result[*domain.FormVersion]{version, err}
 	}()
 
 	select {
@@ -418,9 +418,9 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[*dto.VersionResponse]{
+		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[*dto.FormVersionResponse]{
 			Message: "Successfully updated!",
-			Data:    dto.VersionToResponse(res.data),
+			Data:    dto.FormVersionToResponse(res.data),
 		})
 	}
 }
@@ -433,23 +433,23 @@ func (h *handlers) updateVersion(w http.ResponseWriter, r *http.Request) {
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
 // @param		versionId path string true "Version ID"
-// @success		200 {object} httputil.APIResponse[dto.VersionResponse]
+// @success		200 {object} httputil.APIResponse[dto.FormVersionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId}/versions/{versionId}/publish [post]
-func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
+func (h *handlers) publishFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
 	claims := auth.GetClaimsFromContext(r.Context())
-	resultChan := make(chan result[*domain.Version], 1)
-	command := ports.NewPublishVersionCommand(tenantID, formID, versionID, claims.GetSubject())
+	resultChan := make(chan result[*domain.FormVersion], 1)
+	command := ports.NewPublishFormVersionCommand(tenantID, formID, versionID, claims.GetSubject())
 
 	go func() {
 		defer close(resultChan)
 		version, err := h.app.Services.Forms.PublishVersion(r.Context(), command)
-		resultChan <- result[*domain.Version]{version, err}
+		resultChan <- result[*domain.FormVersion]{version, err}
 	}()
 
 	select {
@@ -464,7 +464,7 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 
 		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[any]{
 			Message: "Successfully published!",
-			Data:    dto.VersionToResponse(res.data),
+			Data:    dto.FormVersionToResponse(res.data),
 		})
 	}
 }
@@ -477,23 +477,23 @@ func (h *handlers) publishVersion(w http.ResponseWriter, r *http.Request) {
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
 // @param		versionId path string true "Version ID"
-// @success		200 {object} httputil.APIResponse[dto.VersionResponse]
+// @success		200 {object} httputil.APIResponse[dto.FormVersionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId}/versions/{versionId}/retire [post]
-func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
+func (h *handlers) retireFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
-	resultChan := make(chan result[*domain.Version], 1)
+	resultChan := make(chan result[*domain.FormVersion], 1)
 	claims := auth.GetClaimsFromContext(r.Context())
-	command := ports.NewRetireVersionCommand(tenantID, formID, versionID, claims.GetSubject())
+	command := ports.NewRetireFormVersionCommand(tenantID, formID, versionID, claims.GetSubject())
 
 	go func() {
 		defer close(resultChan)
 		version, err := h.app.Services.Forms.RetireVersion(r.Context(), command)
-		resultChan <- result[*domain.Version]{version, err}
+		resultChan <- result[*domain.FormVersion]{version, err}
 	}()
 
 	select {
@@ -508,7 +508,7 @@ func (h *handlers) retireVersion(w http.ResponseWriter, r *http.Request) {
 
 		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[any]{
 			Message: "Successfully retired!",
-			Data:    dto.VersionToResponse(res.data),
+			Data:    dto.FormVersionToResponse(res.data),
 		})
 	}
 }
@@ -617,7 +617,7 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 	command := ports.NewCreateSubmissionCommand(
 		tenantID,
 		domain.FormID(body.FormID),
-		domain.VersionID(body.VersionID),
+		domain.FormVersionID(body.VersionID),
 		domain.IdempotencyID(idempotencyID),
 		values,
 	)
@@ -738,9 +738,9 @@ func (h *handlers) getReferenceIDPathValue(r *http.Request) domain.ReferenceID {
 	return domain.ReferenceID(id)
 }
 
-func (h *handlers) getVersionIDPathValue(r *http.Request) domain.VersionID {
+func (h *handlers) getVersionIDPathValue(r *http.Request) domain.FormVersionID {
 	id := chi.URLParam(r, "versionId")
-	return domain.VersionID(id)
+	return domain.FormVersionID(id)
 }
 
 func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {

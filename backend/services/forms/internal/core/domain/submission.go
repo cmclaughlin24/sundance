@@ -31,7 +31,7 @@ type Submission struct {
 	ID            SubmissionID
 	TenantID      string    `validate:"required"`
 	FormID        FormID    `validate:"required"`
-	VersionID     VersionID `validate:"required"`
+	VersionID     FormVersionID `validate:"required"`
 	ReferenceID   ReferenceID
 	IdempotencyID IdempotencyID `validate:"required"`
 	Status        SubmissionStatus
@@ -44,7 +44,7 @@ type Submission struct {
 func NewSubmission(
 	tenantID string,
 	formID FormID,
-	versionID VersionID,
+	versionID FormVersionID,
 	idempotencyID IdempotencyID,
 	values []*SubmissionFieldValue,
 ) (*Submission, error) {
@@ -72,7 +72,7 @@ func HydrateSubmission(
 	id SubmissionID,
 	tenantID string,
 	formID FormID,
-	versionID VersionID,
+	versionID FormVersionID,
 	referenceID ReferenceID,
 	idempotencyID IdempotencyID,
 	status SubmissionStatus,

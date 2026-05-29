@@ -293,7 +293,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/VersionResponse"
+                                "$ref": "#/definitions/FormVersionResponse"
                             }
                         }
                     },
@@ -338,7 +338,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/UpsertVersionRequest"
+                            "$ref": "#/definitions/UpsertFormVersionRequest"
                         }
                     }
                 ],
@@ -346,7 +346,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/APIResponse-VersionResponse"
+                            "$ref": "#/definitions/APIResponse-FormVersionResponse"
                         }
                     },
                     "400": {
@@ -403,7 +403,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/VersionResponse"
+                            "$ref": "#/definitions/FormVersionResponse"
                         }
                     },
                     "404": {
@@ -460,7 +460,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/UpsertVersionRequest"
+                            "$ref": "#/definitions/UpsertFormVersionRequest"
                         }
                     }
                 ],
@@ -468,7 +468,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/APIResponse-VersionResponse"
+                            "$ref": "#/definitions/APIResponse-FormVersionResponse"
                         }
                     },
                     "400": {
@@ -532,7 +532,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/APIResponse-VersionResponse"
+                            "$ref": "#/definitions/APIResponse-FormVersionResponse"
                         }
                     },
                     "400": {
@@ -596,7 +596,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/APIResponse-VersionResponse"
+                            "$ref": "#/definitions/APIResponse-FormVersionResponse"
                         }
                     },
                     "400": {
@@ -901,22 +901,22 @@
                 }
             }
         },
-        "APIResponse-SubmissionResponse": {
+        "APIResponse-FormVersionResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/SubmissionResponse"
+                    "$ref": "#/definitions/FormVersionResponse"
                 },
                 "message": {
                     "type": "string"
                 }
             }
         },
-        "APIResponse-VersionResponse": {
+        "APIResponse-SubmissionResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/VersionResponse"
+                    "$ref": "#/definitions/SubmissionResponse"
                 },
                 "message": {
                     "type": "string"
@@ -1010,6 +1010,60 @@
                     "type": "string"
                 }
             }
+        },
+        "FormVersionResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "formId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "pages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PageResponse"
+                    }
+                },
+                "publishedAt": {
+                    "type": "string"
+                },
+                "publishedById": {
+                    "type": "string"
+                },
+                "retiredAt": {
+                    "type": "string"
+                },
+                "retiredById": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/FormVersionStatus"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "FormVersionStatus": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "active",
+                "retired"
+            ],
+            "x-enum-varnames": [
+                "FormVersionStatusDraft",
+                "FormVersionStatusActive",
+                "FormVersionStatusRetired"
+            ]
         },
         "PageRequest": {
             "type": "object",
@@ -1299,12 +1353,14 @@
             "enum": [
                 "pending",
                 "accepted",
-                "rejected"
+                "rejected",
+                "failed"
             ],
             "x-enum-varnames": [
                 "SubmissionStatusPending",
                 "SubmissionStatusAccepted",
-                "SubmissionStatusRejected"
+                "SubmissionStatusRejected",
+                "SubmissionStatusFailed"
             ]
         },
         "UpsertFormRequest": {
@@ -1323,7 +1379,7 @@
                 }
             }
         },
-        "UpsertVersionRequest": {
+        "UpsertFormVersionRequest": {
             "type": "object",
             "properties": {
                 "pages": {
@@ -1333,60 +1389,6 @@
                     }
                 }
             }
-        },
-        "VersionResponse": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "formId": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "pages": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/PageResponse"
-                    }
-                },
-                "publishedAt": {
-                    "type": "string"
-                },
-                "publishedById": {
-                    "type": "string"
-                },
-                "retiredAt": {
-                    "type": "string"
-                },
-                "retiredById": {
-                    "type": "string"
-                },
-                "status": {
-                    "$ref": "#/definitions/VersionStatus"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "integer"
-                }
-            }
-        },
-        "VersionStatus": {
-            "type": "string",
-            "enum": [
-                "draft",
-                "active",
-                "retired"
-            ],
-            "x-enum-varnames": [
-                "VersionStatusDraft",
-                "VersionStatusActive",
-                "VersionStatusRetired"
-            ]
         }
     }
 }

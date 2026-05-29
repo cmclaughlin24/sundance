@@ -40,14 +40,14 @@ func NewRoutes(app *core.Application, host string) http.Handler {
 				formRoutes.Delete("/", h.deleteForm)
 
 				formRoutes.Route("/versions", func(versionsRoutes chi.Router) {
-					versionsRoutes.Get("/", h.getVersions)
-					versionsRoutes.Post("/", h.createVersion)
+					versionsRoutes.Get("/", h.getFormVersions)
+					versionsRoutes.Post("/", h.createFormVersion)
 
 					versionsRoutes.Route("/{versionId}", func(versionRoutes chi.Router) {
-						versionRoutes.Get("/", h.getVersion)
-						versionRoutes.Put("/", h.updateVersion)
-						versionRoutes.Post("/publish", h.publishVersion)
-						versionRoutes.Post("/retire", h.retireVersion)
+						versionRoutes.Get("/", h.getFormVersion)
+						versionRoutes.Put("/", h.updateFormVersion)
+						versionRoutes.Post("/publish", h.publishFormVersion)
+						versionRoutes.Post("/retire", h.retireFormVersion)
 					})
 				})
 			})
@@ -66,6 +66,20 @@ func NewRoutes(app *core.Application, host string) http.Handler {
 				submissionRoutes.Get("/status", h.getSubmissionStatus)
 			})
 		})
+
+		// routes.Route("/canonical-tag", func(tagsRoutes chi.Router) {
+		// 	tagsRoutes.Get("/", h.getCanonicalTags)
+		// 	tagsRoutes.Post("/", h.createCanonicalTag)
+		//
+		// 	tagsRoutes.Route("/{tagId}", func(tagRoute chi.Router) {
+		// 		tagRoute.Get("/", h.getCanonicalTag)
+		//
+		// 		tagRoute.Route("/versions", func(versionsRoutes chi.Router) {
+		// 			versionsRoutes.Get("/", h.getCanonicalTagVersions)
+		// 			versionsRoutes.Post("/", h.createCanonicalTagVersion)
+		// 		})
+		// 	})
+		// })
 	})
 
 	re := regexp.MustCompile(`https?://`)

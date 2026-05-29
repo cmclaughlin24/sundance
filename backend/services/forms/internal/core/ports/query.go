@@ -36,12 +36,12 @@ func (q *FindFormsByIDQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 
-type FindVersionsQuery struct {
+type FindFormVersionsQuery struct {
 	FindFormsByIDQuery
 }
 
-func NewFindVersionsQuery(tenantID string, formID domain.FormID) *FindVersionsQuery {
-	return &FindVersionsQuery{
+func NewFindFormVersionsQuery(tenantID string, formID domain.FormID) *FindFormVersionsQuery {
+	return &FindFormVersionsQuery{
 		FindFormsByIDQuery{
 			TenantID: tenantID,
 			FormID:   formID,
@@ -49,17 +49,17 @@ func NewFindVersionsQuery(tenantID string, formID domain.FormID) *FindVersionsQu
 	}
 }
 
-func (q *FindVersionsQuery) Validate() error {
+func (q *FindFormVersionsQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 
-type FindVersionByIDQuery struct {
+type FindFormVersionByIDQuery struct {
 	FindFormsByIDQuery
-	VersionID domain.VersionID `validate:"required"`
+	VersionID domain.FormVersionID `validate:"required"`
 }
 
-func NewFindVersionByIDQuery(tenantID string, formID domain.FormID, versionID domain.VersionID) *FindVersionByIDQuery {
-	return &FindVersionByIDQuery{
+func NewFindFormVersionByIDQuery(tenantID string, formID domain.FormID, versionID domain.FormVersionID) *FindFormVersionByIDQuery {
+	return &FindFormVersionByIDQuery{
 		FindFormsByIDQuery: FindFormsByIDQuery{
 			TenantID: tenantID,
 			FormID:   formID,
@@ -68,7 +68,7 @@ func NewFindVersionByIDQuery(tenantID string, formID domain.FormID, versionID do
 	}
 }
 
-func (q *FindVersionByIDQuery) Validate() error {
+func (q *FindFormVersionByIDQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 

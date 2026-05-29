@@ -369,34 +369,34 @@ func Test_handlers_deleteForm(t *testing.T) {
 	}
 }
 
-func Test_handlers_getVersions(t *testing.T) {
+func Test_handlers_getFormVersions(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.FindVersionsQuery) ([]*domain.Version, error)
+		fn         func(context.Context, *ports.FindFormVersionsQuery) ([]*domain.FormVersion, error)
 		statusCode int
 		count      int
 	}{
 		{
 			"should yield OK if the request is successful with results",
-			func(ctx context.Context, query *ports.FindVersionsQuery) ([]*domain.Version, error) {
-				v1, _ := domain.NewVersion("form-1", 1, domain.VersionStatusDraft)
-				v2, _ := domain.NewVersion("form-1", 2, domain.VersionStatusActive)
-				return []*domain.Version{v1, v2}, nil
+			func(ctx context.Context, query *ports.FindFormVersionsQuery) ([]*domain.FormVersion, error) {
+				v1, _ := domain.NewFormVersion("form-1", 1, domain.FormVersionStatusDraft)
+				v2, _ := domain.NewFormVersion("form-1", 2, domain.FormVersionStatusActive)
+				return []*domain.FormVersion{v1, v2}, nil
 			},
 			http.StatusOK,
 			2,
 		},
 		{
 			"should yield OK if the request is successful with empty results",
-			func(ctx context.Context, query *ports.FindVersionsQuery) ([]*domain.Version, error) {
-				return []*domain.Version{}, nil
+			func(ctx context.Context, query *ports.FindFormVersionsQuery) ([]*domain.FormVersion, error) {
+				return []*domain.FormVersion{}, nil
 			},
 			http.StatusOK,
 			0,
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, query *ports.FindVersionsQuery) ([]*domain.Version, error) {
+			func(ctx context.Context, query *ports.FindFormVersionsQuery) ([]*domain.FormVersion, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -415,7 +415,7 @@ func Test_handlers_getVersions(t *testing.T) {
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.getVersions)
+			handler := http.HandlerFunc(h.getFormVersions)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -443,17 +443,17 @@ func Test_handlers_getVersions(t *testing.T) {
 	}
 }
 
-func Test_handlers_getVersion(t *testing.T) {
+func Test_handlers_getFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.FindVersionByIDQuery) (*domain.Version, error)
+		fn         func(context.Context, *ports.FindFormVersionByIDQuery) (*domain.FormVersion, error)
 		statusCode int
 		versionId  string
 	}{
 		{
 			"should yield OK if the request is successful",
-			func(ctx context.Context, query *ports.FindVersionByIDQuery) (*domain.Version, error) {
-				v, _ := domain.NewVersion(query.FormID, 1, domain.VersionStatusDraft)
+			func(ctx context.Context, query *ports.FindFormVersionByIDQuery) (*domain.FormVersion, error) {
+				v, _ := domain.NewFormVersion(query.FormID, 1, domain.FormVersionStatusDraft)
 				return v, nil
 			},
 			http.StatusOK,
@@ -461,7 +461,7 @@ func Test_handlers_getVersion(t *testing.T) {
 		},
 		{
 			"should yield NOT FOUND if the resource is not found",
-			func(ctx context.Context, query *ports.FindVersionByIDQuery) (*domain.Version, error) {
+			func(ctx context.Context, query *ports.FindFormVersionByIDQuery) (*domain.FormVersion, error) {
 				return nil, common.ErrNotFound
 			},
 			http.StatusNotFound,
@@ -469,7 +469,7 @@ func Test_handlers_getVersion(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, query *ports.FindVersionByIDQuery) (*domain.Version, error) {
+			func(ctx context.Context, query *ports.FindFormVersionByIDQuery) (*domain.FormVersion, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -489,7 +489,7 @@ func Test_handlers_getVersion(t *testing.T) {
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.getVersion)
+			handler := http.HandlerFunc(h.getFormVersion)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -504,21 +504,21 @@ func Test_handlers_getVersion(t *testing.T) {
 	}
 }
 
-func Test_handlers_createVersion(t *testing.T) {
+func Test_handlers_createFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.CreateVersionCommand) (*domain.Version, error)
+		fn         func(context.Context, *ports.CreateFormVersionCommand) (*domain.FormVersion, error)
 		statusCode int
-		body       dto.UpsertVersionRequest
+		body       dto.UpsertFormVersionRequest
 	}{
 		{
 			"should yield CREATED if the request is successful",
-			func(ctx context.Context, command *ports.CreateVersionCommand) (*domain.Version, error) {
-				v, _ := domain.NewVersion(command.FormID, 1, domain.VersionStatusDraft)
+			func(ctx context.Context, command *ports.CreateFormVersionCommand) (*domain.FormVersion, error) {
+				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusDraft)
 				return v, nil
 			},
 			http.StatusCreated,
-			dto.UpsertVersionRequest{
+			dto.UpsertFormVersionRequest{
 				Pages: []dto.PageRequest{
 					{Key: "p1", Name: "Hyrule Field", Position: 0, Sections: []dto.SectionRequest{}, Rules: []dto.RuleRequest{}},
 				},
@@ -526,11 +526,11 @@ func Test_handlers_createVersion(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command *ports.CreateVersionCommand) (*domain.Version, error) {
+			func(ctx context.Context, command *ports.CreateFormVersionCommand) (*domain.FormVersion, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
-			dto.UpsertVersionRequest{
+			dto.UpsertFormVersionRequest{
 				Pages: []dto.PageRequest{
 					{Key: "p1", Name: "Hyrule Field", Position: 0, Sections: []dto.SectionRequest{}, Rules: []dto.RuleRequest{}},
 				},
@@ -550,7 +550,7 @@ func Test_handlers_createVersion(t *testing.T) {
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.createVersion)
+			handler := http.HandlerFunc(h.createFormVersion)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -565,21 +565,21 @@ func Test_handlers_createVersion(t *testing.T) {
 	}
 }
 
-func Test_handlers_updateVersion(t *testing.T) {
+func Test_handlers_updateFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.UpdateVersionCommand) (*domain.Version, error)
+		fn         func(context.Context, *ports.UpdateFormVersionCommand) (*domain.FormVersion, error)
 		statusCode int
-		body       dto.UpsertVersionRequest
+		body       dto.UpsertFormVersionRequest
 	}{
 		{
 			"should yield OK if the request is successful",
-			func(ctx context.Context, command *ports.UpdateVersionCommand) (*domain.Version, error) {
-				v, _ := domain.NewVersion(command.FormID, 1, domain.VersionStatusDraft)
+			func(ctx context.Context, command *ports.UpdateFormVersionCommand) (*domain.FormVersion, error) {
+				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusDraft)
 				return v, nil
 			},
 			http.StatusOK,
-			dto.UpsertVersionRequest{
+			dto.UpsertFormVersionRequest{
 				Pages: []dto.PageRequest{
 					{Key: "p1", Name: "Hyrule Field", Position: 0, Sections: []dto.SectionRequest{}, Rules: []dto.RuleRequest{}},
 				},
@@ -587,11 +587,11 @@ func Test_handlers_updateVersion(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command *ports.UpdateVersionCommand) (*domain.Version, error) {
+			func(ctx context.Context, command *ports.UpdateFormVersionCommand) (*domain.FormVersion, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
-			dto.UpsertVersionRequest{
+			dto.UpsertFormVersionRequest{
 				Pages: []dto.PageRequest{
 					{Key: "p1", Name: "Hyrule Field", Position: 0, Sections: []dto.SectionRequest{}, Rules: []dto.RuleRequest{}},
 				},
@@ -612,7 +612,7 @@ func Test_handlers_updateVersion(t *testing.T) {
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.updateVersion)
+			handler := http.HandlerFunc(h.updateFormVersion)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -627,23 +627,23 @@ func Test_handlers_updateVersion(t *testing.T) {
 	}
 }
 
-func Test_handlers_publishVersion(t *testing.T) {
+func Test_handlers_publishFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.PublishVersionCommand) (*domain.Version, error)
+		fn         func(context.Context, *ports.PublishFormVersionCommand) (*domain.FormVersion, error)
 		statusCode int
 	}{
 		{
 			"should yield OK if the request is successful",
-			func(ctx context.Context, command *ports.PublishVersionCommand) (*domain.Version, error) {
-				v, _ := domain.NewVersion(command.FormID, 1, domain.VersionStatusActive)
+			func(ctx context.Context, command *ports.PublishFormVersionCommand) (*domain.FormVersion, error) {
+				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusActive)
 				return v, nil
 			},
 			http.StatusOK,
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command *ports.PublishVersionCommand) (*domain.Version, error) {
+			func(ctx context.Context, command *ports.PublishFormVersionCommand) (*domain.FormVersion, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -663,7 +663,7 @@ func Test_handlers_publishVersion(t *testing.T) {
 			ctx = auth.SetClaimsContext(ctx, &mockClaims{subject: "user-1"})
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.publishVersion)
+			handler := http.HandlerFunc(h.publishFormVersion)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -678,23 +678,23 @@ func Test_handlers_publishVersion(t *testing.T) {
 	}
 }
 
-func Test_handlers_retireVersion(t *testing.T) {
+func Test_handlers_retireFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.RetireVersionCommand) (*domain.Version, error)
+		fn         func(context.Context, *ports.RetireFormVersionCommand) (*domain.FormVersion, error)
 		statusCode int
 	}{
 		{
 			"should yield OK if the request is successful",
-			func(ctx context.Context, command *ports.RetireVersionCommand) (*domain.Version, error) {
-				v, _ := domain.NewVersion(command.FormID, 1, domain.VersionStatusRetired)
+			func(ctx context.Context, command *ports.RetireFormVersionCommand) (*domain.FormVersion, error) {
+				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusRetired)
 				return v, nil
 			},
 			http.StatusOK,
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command *ports.RetireVersionCommand) (*domain.Version, error) {
+			func(ctx context.Context, command *ports.RetireFormVersionCommand) (*domain.FormVersion, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -714,7 +714,7 @@ func Test_handlers_retireVersion(t *testing.T) {
 			ctx = auth.SetClaimsContext(ctx, &mockClaims{subject: "user-1"})
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.retireVersion)
+			handler := http.HandlerFunc(h.retireFormVersion)
 
 			// Act.
 			handler.ServeHTTP(rr, req)

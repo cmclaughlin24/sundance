@@ -24,7 +24,7 @@ type submissionJobsService struct {
 	logger                   *slog.Logger
 	evaluator                ports.RuleEvaluator
 	database                 database.Database
-	versionRepository        ports.VersionRepository
+	versionRepository        ports.FormVersionRepository
 	submissionRepository     ports.SubmissionsRepository
 	fieldValidatorStrategies ports.FieldValidatorRegistry
 }
@@ -39,7 +39,7 @@ func NewSubmissionJobsService(
 		logger:                   logger,
 		evaluator:                evaluator,
 		database:                 repository.Database,
-		versionRepository:        repository.Versions,
+		versionRepository:        repository.FormVersions,
 		submissionRepository:     repository.Submissions,
 		fieldValidatorStrategies: strategies.FieldValidator,
 	}
@@ -98,7 +98,7 @@ func (s *submissionJobsService) validate(ctx context.Context, submission *domain
 		return err
 	}
 
-	if version.Status == domain.VersionStatusDraft {
+	if version.Status == domain.FormVersionStatusDraft {
 		s.logger.WarnContext(ctx, "skipping submission job; invalid status", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "version_status", version.Status)
 		return ErrVersionStatus
 	}

@@ -21,7 +21,7 @@ type SubmissionResponse struct {
 	ID          domain.SubmissionID       `json:"id"`
 	TenantID    string                    `json:"tenantId"`
 	FormID      domain.FormID             `json:"formId"`
-	VersionID   domain.VersionID          `json:"versionId"`
+	VersionID   domain.FormVersionID          `json:"versionId"`
 	ReferenceID domain.ReferenceID        `json:"referenceId"`
 	Status      domain.SubmissionStatus   `json:"status"`
 	Values      []SubmissionFieldValueDto `json:"values"`

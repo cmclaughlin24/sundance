@@ -6,15 +6,15 @@ import (
 	"sundance/backend/services/forms/internal/core/domain"
 )
 
-type UpsertVersionRequest struct {
+type UpsertFormVersionRequest struct {
 	Pages []PageRequest `json:"pages" validate:"dive"`
 }
 
-type VersionResponse struct {
-	ID            domain.VersionID     `json:"id"`
+type FormVersionResponse struct {
+	ID            domain.FormVersionID     `json:"id"`
 	FormID        domain.FormID        `json:"formId"`
 	Version       int                  `json:"version"`
-	Status        domain.VersionStatus `json:"status"`
+	Status        domain.FormVersionStatus `json:"status"`
 	PublishedByID string               `json:"publishedById"`
 	PublishedAt   time.Time            `json:"publishedAt"`
 	RetiredByID   string               `json:"retiredById"`
@@ -24,7 +24,7 @@ type VersionResponse struct {
 	Pages         []*PageResponse      `json:"pages"`
 }
 
-func VersionToResponse(version *domain.Version) *VersionResponse {
+func FormVersionToResponse(version *domain.FormVersion) *FormVersionResponse {
 	if version == nil {
 		return nil
 	}
@@ -36,7 +36,7 @@ func VersionToResponse(version *domain.Version) *VersionResponse {
 		dtos = append(dtos, PageToResponse(p))
 	}
 
-	return &VersionResponse{
+	return &FormVersionResponse{
 		ID:            version.ID,
 		FormID:        version.FormID,
 		Version:       version.Version,

@@ -10,30 +10,30 @@ import (
 	"sundance/backend/services/forms/internal/core/ports"
 )
 
-type InMemoryVersionsRepository struct {
+type inMemoryFormVersionsRepository struct {
 	mu       sync.RWMutex
-	versions map[string]map[string]*domain.Version
+	versions map[string]map[string]*domain.FormVersion
 	logger   *slog.Logger
 }
 
-func NewInMemoryVersionsRepository(logger *slog.Logger) ports.VersionRepository {
-	return &InMemoryVersionsRepository{
-		versions: make(map[string]map[string]*domain.Version),
+func newInMemoryFormVersionsRepository(logger *slog.Logger) ports.FormVersionRepository {
+	return &inMemoryFormVersionsRepository{
+		versions: make(map[string]map[string]*domain.FormVersion),
 		logger:   logger,
 	}
 }
 
-func (r *InMemoryVersionsRepository) Find(ctx context.Context, formID domain.FormID) ([]*domain.Version, error) {
+func (r *inMemoryFormVersionsRepository) Find(ctx context.Context, formID domain.FormID) ([]*domain.FormVersion, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	formVersions, ok := r.versions[string(formID)]
 
 	if !ok {
-		return make([]*domain.Version, 0), nil
+		return make([]*domain.FormVersion, 0), nil
 	}
 
-	versions := make([]*domain.Version, 0, len(formVersions))
+	versions := make([]*domain.FormVersion, 0, len(formVersions))
 
 	for _, version := range formVersions {
 		versions = append(versions, version)
@@ -42,7 +42,7 @@ func (r *InMemoryVersionsRepository) Find(ctx context.Context, formID domain.For
 	return versions, nil
 }
 
-func (r *InMemoryVersionsRepository) FindByID(ctx context.Context, formID domain.FormID, versionID domain.VersionID) (*domain.Version, error) {
+func (r *inMemoryFormVersionsRepository) FindByID(ctx context.Context, formID domain.FormID, versionID domain.FormVersionID) (*domain.FormVersion, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -61,7 +61,7 @@ func (r *InMemoryVersionsRepository) FindByID(ctx context.Context, formID domain
 	return version, nil
 }
 
-func (r *InMemoryVersionsRepository) FindNextVersionNumber(ctx context.Context, formID domain.FormID) (int, error) {
+func (r *inMemoryFormVersionsRepository) FindNextVersionNumber(ctx context.Context, formID domain.FormID) (int, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -81,14 +81,14 @@ func (r *InMemoryVersionsRepository) FindNextVersionNumber(ctx context.Context, 
 	return maxVersion + 1, nil
 }
 
-func (r *InMemoryVersionsRepository) Upsert(ctx context.Context, version *domain.Version) (*domain.Version, error) {
+func (r *inMemoryFormVersionsRepository) Upsert(ctx context.Context, version *domain.FormVersion) (*domain.FormVersion, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	formVersions, ok := r.versions[string(version.FormID)]
 
 	if !ok {
-		formVersions = make(map[string]*domain.Version)
+		formVersions = make(map[string]*domain.FormVersion)
 		r.versions[string(version.FormID)] = formVersions
 	}
 

@@ -304,7 +304,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/VersionResponse"
+                                "$ref": "#/definitions/FormVersionResponse"
                             }
                         }
                     },
@@ -349,7 +349,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/UpsertVersionRequest"
+                            "$ref": "#/definitions/UpsertFormVersionRequest"
                         }
                     }
                 ],
@@ -357,7 +357,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/APIResponse-VersionResponse"
+                            "$ref": "#/definitions/APIResponse-FormVersionResponse"
                         }
                     },
                     "400": {
@@ -414,7 +414,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/VersionResponse"
+                            "$ref": "#/definitions/FormVersionResponse"
                         }
                     },
                     "404": {
@@ -471,7 +471,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/UpsertVersionRequest"
+                            "$ref": "#/definitions/UpsertFormVersionRequest"
                         }
                     }
                 ],
@@ -479,7 +479,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/APIResponse-VersionResponse"
+                            "$ref": "#/definitions/APIResponse-FormVersionResponse"
                         }
                     },
                     "400": {
@@ -543,7 +543,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/APIResponse-VersionResponse"
+                            "$ref": "#/definitions/APIResponse-FormVersionResponse"
                         }
                     },
                     "400": {
@@ -607,7 +607,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/APIResponse-VersionResponse"
+                            "$ref": "#/definitions/APIResponse-FormVersionResponse"
                         }
                     },
                     "400": {
@@ -912,22 +912,22 @@ const docTemplate = `{
                 }
             }
         },
-        "APIResponse-SubmissionResponse": {
+        "APIResponse-FormVersionResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/SubmissionResponse"
+                    "$ref": "#/definitions/FormVersionResponse"
                 },
                 "message": {
                     "type": "string"
                 }
             }
         },
-        "APIResponse-VersionResponse": {
+        "APIResponse-SubmissionResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/VersionResponse"
+                    "$ref": "#/definitions/SubmissionResponse"
                 },
                 "message": {
                     "type": "string"
@@ -1021,6 +1021,60 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "FormVersionResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "formId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "pages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/PageResponse"
+                    }
+                },
+                "publishedAt": {
+                    "type": "string"
+                },
+                "publishedById": {
+                    "type": "string"
+                },
+                "retiredAt": {
+                    "type": "string"
+                },
+                "retiredById": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/FormVersionStatus"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "FormVersionStatus": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "active",
+                "retired"
+            ],
+            "x-enum-varnames": [
+                "FormVersionStatusDraft",
+                "FormVersionStatusActive",
+                "FormVersionStatusRetired"
+            ]
         },
         "PageRequest": {
             "type": "object",
@@ -1310,12 +1364,14 @@ const docTemplate = `{
             "enum": [
                 "pending",
                 "accepted",
-                "rejected"
+                "rejected",
+                "failed"
             ],
             "x-enum-varnames": [
                 "SubmissionStatusPending",
                 "SubmissionStatusAccepted",
-                "SubmissionStatusRejected"
+                "SubmissionStatusRejected",
+                "SubmissionStatusFailed"
             ]
         },
         "UpsertFormRequest": {
@@ -1334,7 +1390,7 @@ const docTemplate = `{
                 }
             }
         },
-        "UpsertVersionRequest": {
+        "UpsertFormVersionRequest": {
             "type": "object",
             "properties": {
                 "pages": {
@@ -1344,60 +1400,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "VersionResponse": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "formId": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "pages": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/PageResponse"
-                    }
-                },
-                "publishedAt": {
-                    "type": "string"
-                },
-                "publishedById": {
-                    "type": "string"
-                },
-                "retiredAt": {
-                    "type": "string"
-                },
-                "retiredById": {
-                    "type": "string"
-                },
-                "status": {
-                    "$ref": "#/definitions/VersionStatus"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "integer"
-                }
-            }
-        },
-        "VersionStatus": {
-            "type": "string",
-            "enum": [
-                "draft",
-                "active",
-                "retired"
-            ],
-            "x-enum-varnames": [
-                "VersionStatusDraft",
-                "VersionStatusActive",
-                "VersionStatusRetired"
-            ]
         }
     }
 }`

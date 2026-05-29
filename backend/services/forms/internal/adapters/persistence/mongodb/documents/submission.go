@@ -66,7 +66,7 @@ func FromSubmissionDocument(s *SubmissionDocument) (*domain.Submission, error) {
 		domain.SubmissionID(s.ID),
 		s.TenantID,
 		domain.FormID(s.FormID),
-		domain.VersionID(s.VersionID),
+		domain.FormVersionID(s.VersionID),
 		domain.ReferenceID(s.ReferenceID),
 		domain.IdempotencyID(s.IdempotencyID),
 		domain.SubmissionStatus(s.Status),

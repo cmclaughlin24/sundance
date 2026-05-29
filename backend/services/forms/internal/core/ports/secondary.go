@@ -11,7 +11,7 @@ import (
 type Repository struct {
 	Database    database.Database
 	Forms       FormsRepository
-	Versions    VersionRepository
+	FormVersions    FormVersionRepository
 	Submissions SubmissionsRepository
 }
 
@@ -22,11 +22,11 @@ type FormsRepository interface {
 	Delete(context.Context, domain.FormID) error
 }
 
-type VersionRepository interface {
-	Find(context.Context, domain.FormID) ([]*domain.Version, error)
-	FindByID(context.Context, domain.FormID, domain.VersionID) (*domain.Version, error)
+type FormVersionRepository interface {
+	Find(context.Context, domain.FormID) ([]*domain.FormVersion, error)
+	FindByID(context.Context, domain.FormID, domain.FormVersionID) (*domain.FormVersion, error)
 	FindNextVersionNumber(context.Context, domain.FormID) (int, error)
-	Upsert(context.Context, *domain.Version) (*domain.Version, error)
+	Upsert(context.Context, *domain.FormVersion) (*domain.FormVersion, error)
 }
 
 type SubmissionsRepository interface {
