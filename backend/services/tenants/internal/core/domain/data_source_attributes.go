@@ -30,7 +30,7 @@ type ScheduledDataSourceAttributes struct {
 	Headers        map[string]string
 	IntervalHours  float64
 	ExpirationDate time.Time
-	Attempts     int
+	Attempts       int
 }
 
 func (attr *ScheduledDataSourceAttributes) RecordAttempt() {

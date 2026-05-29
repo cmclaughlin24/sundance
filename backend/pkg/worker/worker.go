@@ -2,7 +2,6 @@ package worker
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"time"
 
@@ -85,7 +84,7 @@ func (w *Worker[J]) Start(ctx context.Context) {
 					w.logger.ErrorContext(jctx, "failed to process job", "error", err)
 				}
 
-				w.logger.InfoContext(jctx, "job processed", "duration", fmt.Sprintf("%d", time.Since(start).Milliseconds()))
+				w.logger.InfoContext(jctx, "job processed", "duration_ms", time.Since(start).Milliseconds())
 				cancel()
 			case <-wctx.Done():
 				w.logger.DebugContext(wctx, "worker stopping")

@@ -225,3 +225,8 @@ func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 }
+
+func (h *handlers) getReferenceIDPathValue(r *http.Request) domain.ReferenceID {
+	id := chi.URLParam(r, "referenceId")
+	return domain.ReferenceID(id)
+}

@@ -7,8 +7,6 @@ import (
 	"sundance/backend/pkg/common/httputil"
 	"sundance/backend/services/forms/internal/core"
 	"sundance/backend/services/forms/internal/core/domain"
-
-	"github.com/go-chi/chi/v5"
 )
 
 type result[T any] struct {
@@ -25,12 +23,6 @@ func newHandlers(app *core.Application) *handlers {
 		app: app,
 	}
 }
-
-func (h *handlers) getReferenceIDPathValue(r *http.Request) domain.ReferenceID {
-	id := chi.URLParam(r, "referenceId")
-	return domain.ReferenceID(id)
-}
-
 
 func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 	switch {

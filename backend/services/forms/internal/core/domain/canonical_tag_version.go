@@ -20,10 +20,11 @@ type CanonicalTagVersion struct {
 
 func NewCanonicalTagVersion(canonicalTagID CanonicalTagID, version int, tagType CanonicalTagType) (*CanonicalTagVersion, error) {
 	ctv := &CanonicalTagVersion{
-		ID:        CanonicalTagVersionID(NewID()),
-		Version:   version,
-		Type:      tagType,
-		CreatedAt: Now(),
+		ID:             CanonicalTagVersionID(NewID()),
+		CanonicalTagID: canonicalTagID,
+		Version:        version,
+		Type:           tagType,
+		CreatedAt:      Now(),
 	}
 
 	if err := validate.ValidateStruct(ctv); err != nil {
@@ -33,12 +34,13 @@ func NewCanonicalTagVersion(canonicalTagID CanonicalTagID, version int, tagType 
 	return ctv, nil
 }
 
-func HydrateCaonicalTagVersion(id CanonicalTagVersionID, canonicalTagID CanonicalTagID, version int, tagType CanonicalTagType, createdAt, retiredAt time.Time) *CanonicalTagVersion {
+func HydrateCanonicalTagVersion(id CanonicalTagVersionID, canonicalTagID CanonicalTagID, version int, tagType CanonicalTagType, createdAt, retiredAt time.Time) *CanonicalTagVersion {
 	return &CanonicalTagVersion{
-		ID:        id,
-		Version:   version,
-		Type:      tagType,
-		CreatedAt: createdAt,
-		RetiredAt: retiredAt,
+		ID:             id,
+		CanonicalTagID: canonicalTagID,
+		Version:        version,
+		Type:           tagType,
+		CreatedAt:      createdAt,
+		RetiredAt:      retiredAt,
 	}
 }

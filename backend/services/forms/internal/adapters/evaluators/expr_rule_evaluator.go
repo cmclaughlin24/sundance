@@ -69,7 +69,7 @@ func (e *ExprRuleEvaluator) statement(ctx context.Context, r *domain.Rule) (stri
 			return "", domain.ErrInvalidJoinOperator
 		}
 
-		stmt = join + statementFn(re)
+		stmt = stmt + join + statementFn(re)
 	}
 
 	return stmt, nil
