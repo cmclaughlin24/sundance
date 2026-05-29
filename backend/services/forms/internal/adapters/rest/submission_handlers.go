@@ -1,0 +1,227 @@
+package rest
+
+import (
+	"fmt"
+	"net/http"
+	"sundance/backend/pkg/common/httputil"
+	"sundance/backend/services/forms/internal/adapters/rest/dto"
+	"sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/ports"
+
+	"github.com/go-chi/chi/v5"
+)
+
+// @summary		Get all Submissions
+// @tags		Submissions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @success		200 {array} dto.SubmissionResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/submissions [get]
+func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
+	tenantID := httputil.TenantFromContext(r.Context())
+	query := ports.NewFindSubmissionsQuery(tenantID)
+	resultChan := make(chan result[[]*domain.Submission], 1)
+
+	go func() {
+		defer close(resultChan)
+		submissions, err := h.app.Services.Submissions.Find(r.Context(), query)
+		resultChan <- result[[]*domain.Submission]{submissions, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		dtos := make([]*dto.SubmissionResponse, 0, len(res.data))
+		for _, submission := range res.data {
+			dtos = append(dtos, dto.SubmissionToResponse(submission))
+		}
+
+		httputil.SendJSONResponse(w, http.StatusOK, dtos)
+	}
+}
+
+// @summary		Get a submission by reference ID
+// @tags		Submissions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		referenceId path string true "Reference ID"
+// @success		200 {object} dto.SubmissionResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/submissions/by-reference/{referenceId} [get]
+func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Request) {
+	tenantID := httputil.TenantFromContext(r.Context())
+	referenceID := h.getReferenceIDPathValue(r)
+	query := ports.NewFindSubmissionByIDQuery(tenantID, referenceID)
+	resultChan := make(chan result[*domain.Submission], 1)
+
+	go func() {
+		defer close(resultChan)
+		submission, err := h.app.Services.Submissions.FindByReferenceID(r.Context(), query)
+		resultChan <- result[*domain.Submission]{submission, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusOK, dto.SubmissionToResponse(res.data))
+	}
+}
+
+// @summary		Create a submission
+// @description	Accepts a form submission for asynchronous processing. An Idempotency-Key header is required to prevent duplicate submissions.
+// @tags		Submissions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		Idempotency-Key header string true "Idempotency Key"
+// @param		body body dto.SubmissionRequest true "Create Submission"
+// @success		202 {object} httputil.APIResponse[dto.SubmissionResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/submissions [post]
+func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
+	var body dto.SubmissionRequest
+	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
+		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
+		h.sendErrorResponse(w, err)
+		return
+	}
+
+	values := make([]*domain.SubmissionFieldValue, 0, len(body.Values))
+	for _, fv := range body.Values {
+		values = append(values, domain.NewSubmissionFieldValue(fv.FieldID, fv.Value))
+	}
+
+	tenantID := httputil.TenantFromContext(r.Context())
+	idempotencyID := httputil.IdempotencyFromContext(r.Context())
+	command := ports.NewCreateSubmissionCommand(
+		tenantID,
+		domain.FormID(body.FormID),
+		domain.FormVersionID(body.VersionID),
+		domain.IdempotencyID(idempotencyID),
+		values,
+	)
+	resultChan := make(chan result[*domain.Submission], 1)
+
+	go func() {
+		defer close(resultChan)
+		submission, err := h.app.Services.Submissions.Create(r.Context(), command)
+		resultChan <- result[*domain.Submission]{data: submission, err: err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusAccepted, httputil.APIResponse[*dto.SubmissionResponse]{
+			Message: "Accepted!",
+			Data:    dto.SubmissionToResponse(res.data),
+		})
+	}
+}
+
+// @summary		Get a submission status
+// @tags		Submissions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		referenceId path string true "Reference ID"
+// @success		200 {object} object{status=string}
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/submissions/by-reference/{referenceId}/status [get]
+func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {
+	tenantID := httputil.TenantFromContext(r.Context())
+	referenceID := h.getReferenceIDPathValue(r)
+	query := ports.NewFindSubmissionByIDQuery(tenantID, referenceID)
+	resultChan := make(chan result[*domain.Submission], 1)
+
+	go func() {
+		defer close(resultChan)
+		submission, err := h.app.Services.Submissions.FindByReferenceID(r.Context(), query)
+		resultChan <- result[*domain.Submission]{submission, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusOK, struct {
+			Status string `json:"status"`
+		}{
+			Status: string(res.data.Status),
+		})
+	}
+}
+
+// @summary		Replay a submission
+// @description	Re-publishes the submission event for reprocessing by downstream consumers.
+// @tags		Submissions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		submissionId path string true "Submission ID"
+// @success		202 {object} httputil.APIResponse[dto.SubmissionResponse]
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/submissions/{submissionId}/replay [post]
+func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request) {
+	tenantID := httputil.TenantFromContext(r.Context())
+	id := chi.URLParam(r, "submissionId")
+	command := ports.NewReplaySubmissionCommand(
+		tenantID,
+		domain.SubmissionID(id),
+	)
+	resultChan := make(chan result[any])
+
+	go func() {
+		defer close(resultChan)
+		err := h.app.Services.Submissions.Replay(r.Context(), command)
+		resultChan <- result[any]{data: nil, err: err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusAccepted, httputil.APIResponse[*dto.SubmissionResponse]{
+			Message: fmt.Sprintf("Successfully replayed submission %s", id),
+		})
+	}
+}
