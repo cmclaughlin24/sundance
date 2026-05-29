@@ -279,7 +279,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Versions"
+                    "Forms"
                 ],
                 "summary": "Get all versions",
                 "parameters": [
@@ -325,7 +325,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Versions"
+                    "Forms"
                 ],
                 "summary": "Create a version",
                 "parameters": [
@@ -384,7 +384,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Versions"
+                    "Forms"
                 ],
                 "summary": "Get a version by ID",
                 "parameters": [
@@ -440,7 +440,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Versions"
+                    "Forms"
                 ],
                 "summary": "Update a version",
                 "parameters": [
@@ -513,7 +513,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Versions"
+                    "Forms"
                 ],
                 "summary": "Publish a version",
                 "parameters": [
@@ -577,7 +577,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Versions"
+                    "Forms"
                 ],
                 "summary": "Retire a version",
                 "parameters": [

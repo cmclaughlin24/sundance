@@ -217,7 +217,7 @@ func (h *handlers) deleteForm(w http.ResponseWriter, r *http.Request) {
 }
 
 // @summary		Get all versions
-// @tags		Versions
+// @tags		Forms
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
@@ -257,7 +257,7 @@ func (h *handlers) getFormVersions(w http.ResponseWriter, r *http.Request) {
 }
 
 // @summary		Get a version by ID
-// @tags		Versions
+// @tags		Forms
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
@@ -296,7 +296,7 @@ func (h *handlers) getFormVersion(w http.ResponseWriter, r *http.Request) {
 
 // @summary		Create a version
 // @description	The pages field defines the structure of the form version including sections, fields, and validation rules.
-// @tags		Versions
+// @tags		Forms
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
@@ -351,7 +351,7 @@ func (h *handlers) createFormVersion(w http.ResponseWriter, r *http.Request) {
 
 // @summary		Update a version
 // @description	Only draft versions can be updated. Published or retired versions are locked.
-// @tags		Versions
+// @tags		Forms
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
@@ -409,7 +409,7 @@ func (h *handlers) updateFormVersion(w http.ResponseWriter, r *http.Request) {
 
 // @summary		Publish a version
 // @description	Transitions a draft version to published status. Only one version per form can be published at a time.
-// @tags		Versions
+// @tags		Forms
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
@@ -453,7 +453,7 @@ func (h *handlers) publishFormVersion(w http.ResponseWriter, r *http.Request) {
 
 // @summary		Retire a version
 // @description	Transitions a published version to retired status, making it no longer active.
-// @tags		Versions
+// @tags		Forms
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"

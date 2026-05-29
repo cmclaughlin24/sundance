@@ -268,7 +268,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Versions"
+                    "Forms"
                 ],
                 "summary": "Get all versions",
                 "parameters": [
@@ -314,7 +314,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Versions"
+                    "Forms"
                 ],
                 "summary": "Create a version",
                 "parameters": [
@@ -373,7 +373,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Versions"
+                    "Forms"
                 ],
                 "summary": "Get a version by ID",
                 "parameters": [
@@ -429,7 +429,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Versions"
+                    "Forms"
                 ],
                 "summary": "Update a version",
                 "parameters": [
@@ -502,7 +502,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Versions"
+                    "Forms"
                 ],
                 "summary": "Publish a version",
                 "parameters": [
@@ -566,7 +566,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Versions"
+                    "Forms"
                 ],
                 "summary": "Retire a version",
                 "parameters": [

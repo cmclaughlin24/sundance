@@ -550,7 +550,7 @@ paths:
             $ref: '#/definitions/APIErrorResponse'
       summary: Get all versions
       tags:
-      - Versions
+      - Forms
     post:
       consumes:
       - application/json
@@ -590,7 +590,7 @@ paths:
             $ref: '#/definitions/APIErrorResponse'
       summary: Create a version
       tags:
-      - Versions
+      - Forms
   /forms/{formId}/versions/{versionId}:
     get:
       consumes:
@@ -628,7 +628,7 @@ paths:
             $ref: '#/definitions/APIErrorResponse'
       summary: Get a version by ID
       tags:
-      - Versions
+      - Forms
     put:
       consumes:
       - application/json
@@ -677,7 +677,7 @@ paths:
             $ref: '#/definitions/APIErrorResponse'
       summary: Update a version
       tags:
-      - Versions
+      - Forms
   /forms/{formId}/versions/{versionId}/publish:
     post:
       consumes:
@@ -721,7 +721,7 @@ paths:
             $ref: '#/definitions/APIErrorResponse'
       summary: Publish a version
       tags:
-      - Versions
+      - Forms
   /forms/{formId}/versions/{versionId}/retire:
     post:
       consumes:
@@ -765,7 +765,7 @@ paths:
             $ref: '#/definitions/APIErrorResponse'
       summary: Retire a version
       tags:
-      - Versions
+      - Forms
   /submissions:
     get:
       consumes:
