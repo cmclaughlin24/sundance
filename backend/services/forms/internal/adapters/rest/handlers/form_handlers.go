@@ -1,4 +1,4 @@
-package rest
+package handlers
 
 import (
 	"net/http"
@@ -19,7 +19,7 @@ import (
 // @success		200 {array} dto.FormResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms [get]
-func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetForms(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	query := ports.NewFindFormsQuery(tenantID)
 	resultChan := make(chan result[[]*domain.Form], 1)
@@ -59,7 +59,7 @@ func (h *handlers) getForms(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId} [get]
-func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetForm(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	query := ports.NewFindFormsByIDQuery(tenantID, formID)
@@ -95,7 +95,7 @@ func (h *handlers) getForm(w http.ResponseWriter, r *http.Request) {
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms [post]
-func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) CreateForm(w http.ResponseWriter, r *http.Request) {
 	var body dto.UpsertFormRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
@@ -142,7 +142,7 @@ func (h *handlers) createForm(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId} [put]
-func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) UpdateForm(w http.ResponseWriter, r *http.Request) {
 	var body dto.UpsertFormRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
@@ -190,7 +190,7 @@ func (h *handlers) updateForm(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId} [delete]
-func (h *handlers) deleteForm(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) DeleteForm(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	command := ports.NewRemoveFormCommand(tenantID, formID)
@@ -225,7 +225,7 @@ func (h *handlers) deleteForm(w http.ResponseWriter, r *http.Request) {
 // @success		200 {array} dto.FormVersionResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId}/versions [get]
-func (h *handlers) getFormVersions(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetFormVersions(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	query := ports.NewFindFormVersionsQuery(tenantID, formID)
@@ -267,7 +267,7 @@ func (h *handlers) getFormVersions(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId}/versions/{versionId} [get]
-func (h *handlers) getFormVersion(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
@@ -306,7 +306,7 @@ func (h *handlers) getFormVersion(w http.ResponseWriter, r *http.Request) {
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId}/versions [post]
-func (h *handlers) createFormVersion(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) CreateFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 
@@ -363,7 +363,7 @@ func (h *handlers) createFormVersion(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId}/versions/{versionId} [put]
-func (h *handlers) updateFormVersion(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) UpdateFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
@@ -420,7 +420,7 @@ func (h *handlers) updateFormVersion(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId}/versions/{versionId}/publish [post]
-func (h *handlers) publishFormVersion(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) PublishFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
@@ -464,7 +464,7 @@ func (h *handlers) publishFormVersion(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/forms/{formId}/versions/{versionId}/retire [post]
-func (h *handlers) retireFormVersion(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) RetireFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
@@ -495,12 +495,12 @@ func (h *handlers) retireFormVersion(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) getFormIDPathValue(r *http.Request) domain.FormID {
+func (h *Handlers) getFormIDPathValue(r *http.Request) domain.FormID {
 	id := chi.URLParam(r, "formId")
 	return domain.FormID(id)
 }
 
-func (h *handlers) getVersionIDPathValue(r *http.Request) domain.FormVersionID {
+func (h *Handlers) getVersionIDPathValue(r *http.Request) domain.FormVersionID {
 	id := chi.URLParam(r, "versionId")
 	return domain.FormVersionID(id)
 }

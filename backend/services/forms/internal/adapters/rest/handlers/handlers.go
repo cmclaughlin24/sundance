@@ -1,4 +1,4 @@
-package rest
+package handlers
 
 import (
 	"errors"
@@ -14,17 +14,17 @@ type result[T any] struct {
 	err  error
 }
 
-type handlers struct {
+type Handlers struct {
 	app *core.Application
 }
 
-func newHandlers(app *core.Application) *handlers {
-	return &handlers{
+func NewHandlers(app *core.Application) *Handlers {
+	return &Handlers{
 		app: app,
 	}
 }
 
-func (h *handlers) sendErrorResponse(w http.ResponseWriter, err error) {
+func (h *Handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 	switch {
 	case isBadRequest(err):
 		httputil.SendJSONResponse(w, http.StatusBadRequest, httputil.APIErrorResponse{

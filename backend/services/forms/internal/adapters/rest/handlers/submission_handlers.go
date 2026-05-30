@@ -1,4 +1,4 @@
-package rest
+package handlers
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ import (
 // @success		200 {array} dto.SubmissionResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/submissions [get]
-func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetSubmissions(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	query := ports.NewFindSubmissionsQuery(tenantID)
 	resultChan := make(chan result[[]*domain.Submission], 1)
@@ -59,7 +59,7 @@ func (h *handlers) getSubmissions(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/submissions/by-reference/{referenceId} [get]
-func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetSubmissionByReferenceID(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	referenceID := h.getReferenceIDPathValue(r)
 	query := ports.NewFindSubmissionByIDQuery(tenantID, referenceID)
@@ -97,7 +97,7 @@ func (h *handlers) getSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/submissions [post]
-func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 	var body dto.SubmissionRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
@@ -154,7 +154,7 @@ func (h *handlers) createSubmission(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/submissions/by-reference/{referenceId}/status [get]
-func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) GetSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	referenceID := h.getReferenceIDPathValue(r)
 	query := ports.NewFindSubmissionByIDQuery(tenantID, referenceID)
@@ -195,7 +195,7 @@ func (h *handlers) getSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/submissions/{submissionId}/replay [post]
-func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request) {
+func (h *Handlers) ReplaySubmission(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	id := chi.URLParam(r, "submissionId")
 	command := ports.NewReplaySubmissionCommand(
@@ -226,7 +226,7 @@ func (h *handlers) replaySubmission(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *handlers) getReferenceIDPathValue(r *http.Request) domain.ReferenceID {
+func (h *Handlers) getReferenceIDPathValue(r *http.Request) domain.ReferenceID {
 	id := chi.URLParam(r, "referenceId")
 	return domain.ReferenceID(id)
 }

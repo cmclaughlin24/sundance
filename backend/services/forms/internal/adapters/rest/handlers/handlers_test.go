@@ -1,4 +1,4 @@
-package rest
+package handlers
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 	"sundance/backend/services/forms/internal/core/ports"
 )
 
-func newTestHandlers(services *ports.Services) *handlers {
+func newTestHandlers(services *ports.Services) *Handlers {
 	var buf bytes.Buffer
 
 	app := &core.Application{
@@ -19,7 +19,7 @@ func newTestHandlers(services *ports.Services) *handlers {
 		Logger:   slog.New(slog.NewTextHandler(&buf, nil)),
 	}
 
-	return newHandlers(app)
+	return NewHandlers(app)
 }
 
 func Test_isBadRequest(t *testing.T) {

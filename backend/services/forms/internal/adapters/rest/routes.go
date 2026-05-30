@@ -9,7 +9,9 @@ import (
 	"sundance/backend/pkg/auth/authenticators"
 	"sundance/backend/pkg/common/httputil"
 	"sundance/backend/services/forms/internal/adapters/rest/docs"
+	"sundance/backend/services/forms/internal/adapters/rest/handlers"
 	"sundance/backend/services/forms/internal/core"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v3"
@@ -17,7 +19,7 @@ import (
 )
 
 func NewRoutes(app *core.Application, host string) http.Handler {
-	h := newHandlers(app)
+	h := handlers.NewHandlers(app)
 	mux := chi.NewRouter()
 	placeholderAuthenticator := authenticators.NewPlaceholderAuthenticator("placeholder") // TODO: Remove for a proper authentication implementation.
 
@@ -31,39 +33,39 @@ func NewRoutes(app *core.Application, host string) http.Handler {
 		routes.Use(auth.NewMiddleware(placeholderAuthenticator))
 
 		routes.Route("/forms", func(formsRoutes chi.Router) {
-			formsRoutes.Get("/", h.getForms)
-			formsRoutes.Post("/", h.createForm)
+			formsRoutes.Get("/", h.GetForms)
+			formsRoutes.Post("/", h.CreateForm)
 
 			formsRoutes.Route("/{formId}", func(formRoutes chi.Router) {
-				formRoutes.Get("/", h.getForm)
-				formRoutes.Put("/", h.updateForm)
-				formRoutes.Delete("/", h.deleteForm)
+				formRoutes.Get("/", h.GetForm)
+				formRoutes.Put("/", h.UpdateForm)
+				formRoutes.Delete("/", h.DeleteForm)
 
 				formRoutes.Route("/versions", func(versionsRoutes chi.Router) {
-					versionsRoutes.Get("/", h.getFormVersions)
-					versionsRoutes.Post("/", h.createFormVersion)
+					versionsRoutes.Get("/", h.GetFormVersions)
+					versionsRoutes.Post("/", h.CreateFormVersion)
 
 					versionsRoutes.Route("/{versionId}", func(versionRoutes chi.Router) {
-						versionRoutes.Get("/", h.getFormVersion)
-						versionRoutes.Put("/", h.updateFormVersion)
-						versionRoutes.Post("/publish", h.publishFormVersion)
-						versionRoutes.Post("/retire", h.retireFormVersion)
+						versionRoutes.Get("/", h.GetFormVersion)
+						versionRoutes.Put("/", h.UpdateFormVersion)
+						versionRoutes.Post("/publish", h.PublishFormVersion)
+						versionRoutes.Post("/retire", h.RetireFormVersion)
 					})
 				})
 			})
 		})
 
 		routes.Route("/submissions", func(submissionsRoutes chi.Router) {
-			submissionsRoutes.Get("/", h.getSubmissions)
-			submissionsRoutes.With(httputil.IdempotencyMiddleware).Post("/", h.createSubmission)
+			submissionsRoutes.Get("/", h.GetSubmissions)
+			submissionsRoutes.With(httputil.IdempotencyMiddleware).Post("/", h.CreateSubmission)
 
 			submissionsRoutes.Route("/{submissionId}", func(submissionRoutes chi.Router) {
-				submissionRoutes.Post("/replay", h.replaySubmission)
+				submissionRoutes.Post("/replay", h.ReplaySubmission)
 			})
 
 			submissionsRoutes.Route("/by-reference/{referenceId}", func(submissionRoutes chi.Router) {
-				submissionRoutes.Get("/", h.getSubmissionByReferenceID)
-				submissionRoutes.Get("/status", h.getSubmissionStatus)
+				submissionRoutes.Get("/", h.GetSubmissionByReferenceID)
+				submissionRoutes.Get("/status", h.GetSubmissionStatus)
 			})
 		})
 	})

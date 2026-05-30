@@ -1,4 +1,4 @@
-package rest
+package handlers
 
 import (
 	"bytes"
@@ -19,7 +19,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func Test_handlers_getForms(t *testing.T) {
+func Test_handlers_GetForms(t *testing.T) {
 	tests := []struct {
 		name       string
 		fn         func(context.Context, *ports.FindFormsQuery) ([]*domain.Form, error)
@@ -64,7 +64,7 @@ func Test_handlers_getForms(t *testing.T) {
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(ctx)
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.getForms)
+			handler := http.HandlerFunc(h.GetForms)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -92,7 +92,7 @@ func Test_handlers_getForms(t *testing.T) {
 	}
 }
 
-func Test_handlers_getForm(t *testing.T) {
+func Test_handlers_GetForm(t *testing.T) {
 	tests := []struct {
 		name       string
 		fn         func(context.Context, *ports.FindFormsByIDQuery) (*domain.Form, error)
@@ -140,7 +140,7 @@ func Test_handlers_getForm(t *testing.T) {
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.getForm)
+			handler := http.HandlerFunc(h.GetForm)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -168,7 +168,7 @@ func Test_handlers_getForm(t *testing.T) {
 	}
 }
 
-func Test_handlers_createForm(t *testing.T) {
+func Test_handlers_CreateForm(t *testing.T) {
 	tests := []struct {
 		name       string
 		fn         func(context.Context, *ports.CreateFormCommand) (*domain.Form, error)
@@ -211,7 +211,7 @@ func Test_handlers_createForm(t *testing.T) {
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(ctx)
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.createForm)
+			handler := http.HandlerFunc(h.CreateForm)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -230,7 +230,7 @@ func Test_handlers_createForm(t *testing.T) {
 	}
 }
 
-func Test_handlers_updateForm(t *testing.T) {
+func Test_handlers_UpdateForm(t *testing.T) {
 	tests := []struct {
 		name       string
 		fn         func(context.Context, *ports.UpdateFormCommand) (*domain.Form, error)
@@ -279,7 +279,7 @@ func Test_handlers_updateForm(t *testing.T) {
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.updateForm)
+			handler := http.HandlerFunc(h.UpdateForm)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -298,7 +298,7 @@ func Test_handlers_updateForm(t *testing.T) {
 	}
 }
 
-func Test_handlers_deleteForm(t *testing.T) {
+func Test_handlers_DeleteForm(t *testing.T) {
 	tests := []struct {
 		name       string
 		fn         func(context.Context, *ports.RemoveFormCommand) error
@@ -342,7 +342,7 @@ func Test_handlers_deleteForm(t *testing.T) {
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.deleteForm)
+			handler := http.HandlerFunc(h.DeleteForm)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -357,7 +357,7 @@ func Test_handlers_deleteForm(t *testing.T) {
 	}
 }
 
-func Test_handlers_getFormVersions(t *testing.T) {
+func Test_handlers_GetFormVersions(t *testing.T) {
 	tests := []struct {
 		name       string
 		fn         func(context.Context, *ports.FindFormVersionsQuery) ([]*domain.FormVersion, error)
@@ -403,7 +403,7 @@ func Test_handlers_getFormVersions(t *testing.T) {
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.getFormVersions)
+			handler := http.HandlerFunc(h.GetFormVersions)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -431,7 +431,7 @@ func Test_handlers_getFormVersions(t *testing.T) {
 	}
 }
 
-func Test_handlers_getFormVersion(t *testing.T) {
+func Test_handlers_GetFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
 		fn         func(context.Context, *ports.FindFormVersionByIDQuery) (*domain.FormVersion, error)
@@ -477,7 +477,7 @@ func Test_handlers_getFormVersion(t *testing.T) {
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.getFormVersion)
+			handler := http.HandlerFunc(h.GetFormVersion)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -492,7 +492,7 @@ func Test_handlers_getFormVersion(t *testing.T) {
 	}
 }
 
-func Test_handlers_createFormVersion(t *testing.T) {
+func Test_handlers_CreateFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
 		fn         func(context.Context, *ports.CreateFormVersionCommand) (*domain.FormVersion, error)
@@ -538,7 +538,7 @@ func Test_handlers_createFormVersion(t *testing.T) {
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.createFormVersion)
+			handler := http.HandlerFunc(h.CreateFormVersion)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -553,7 +553,7 @@ func Test_handlers_createFormVersion(t *testing.T) {
 	}
 }
 
-func Test_handlers_updateFormVersion(t *testing.T) {
+func Test_handlers_UpdateFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
 		fn         func(context.Context, *ports.UpdateFormVersionCommand) (*domain.FormVersion, error)
@@ -600,7 +600,7 @@ func Test_handlers_updateFormVersion(t *testing.T) {
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.updateFormVersion)
+			handler := http.HandlerFunc(h.UpdateFormVersion)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -615,7 +615,7 @@ func Test_handlers_updateFormVersion(t *testing.T) {
 	}
 }
 
-func Test_handlers_publishFormVersion(t *testing.T) {
+func Test_handlers_PublishFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
 		fn         func(context.Context, *ports.PublishFormVersionCommand) (*domain.FormVersion, error)
@@ -651,7 +651,7 @@ func Test_handlers_publishFormVersion(t *testing.T) {
 			ctx = auth.SetClaimsContext(ctx, &mockClaims{subject: "user-1"})
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.publishFormVersion)
+			handler := http.HandlerFunc(h.PublishFormVersion)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
@@ -666,7 +666,7 @@ func Test_handlers_publishFormVersion(t *testing.T) {
 	}
 }
 
-func Test_handlers_retireFormVersion(t *testing.T) {
+func Test_handlers_RetireFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
 		fn         func(context.Context, *ports.RetireFormVersionCommand) (*domain.FormVersion, error)
@@ -702,7 +702,7 @@ func Test_handlers_retireFormVersion(t *testing.T) {
 			ctx = auth.SetClaimsContext(ctx, &mockClaims{subject: "user-1"})
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
-			handler := http.HandlerFunc(h.retireFormVersion)
+			handler := http.HandlerFunc(h.RetireFormVersion)
 
 			// Act.
 			handler.ServeHTTP(rr, req)
