@@ -16,7 +16,7 @@ type Cache interface {
 
 type Application struct {
 	Logger     *slog.Logger
-	API   *ports.API
+	API        *ports.API
 	Cache      Cache
 	repository *ports.Repository
 }

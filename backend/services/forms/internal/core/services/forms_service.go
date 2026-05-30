@@ -46,22 +46,22 @@ func (s *formsService) Find(ctx context.Context, query *ports.FindFormsQuery) ([
 	return forms, nil
 }
 
-func (s *formsService) FindByID(ctx context.Context, query *ports.FindFormsByIDQuery) (*domain.Form, error) {
-	s.logger.DebugContext(ctx, "finding form", "tenant_id", query.TenantID, "form_id", query.FormID)
+func (s *formsService) FindByID(ctx context.Context, query *ports.FindFormByIDQuery) (*domain.Form, error) {
+	s.logger.DebugContext(ctx, "finding form", "tenant_id", query.TenantID, "form_id", query.ID)
 
 	if err := query.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "form find failed; invalid query", "tenant_id", query.TenantID, "form_id", query.FormID, "error", err)
+		s.logger.WarnContext(ctx, "form find failed; invalid query", "tenant_id", query.TenantID, "form_id", query.ID, "error", err)
 		return nil, err
 	}
 
-	form, err := s.formsRepository.FindByID(ctx, query.FormID)
+	form, err := s.formsRepository.FindByID(ctx, query.ID)
 	if err != nil {
-		s.logFindFormByIDError(ctx, err, query.FormID)
+		s.logFindFormByIDError(ctx, err, query.ID)
 		return nil, err
 	}
 
 	if form.TenantID != query.TenantID {
-		s.logger.WarnContext(ctx, "unauthorized form access", "tenant_id", query.TenantID, "form_id", query.FormID)
+		s.logger.WarnContext(ctx, "unauthorized form access", "tenant_id", query.TenantID, "form_id", query.ID)
 		return nil, common.ErrUnauthorized
 	}
 
@@ -159,20 +159,20 @@ func (s *formsService) Delete(ctx context.Context, command *ports.RemoveFormComm
 }
 
 func (s *formsService) FindVersions(ctx context.Context, query *ports.FindFormVersionsQuery) ([]*domain.FormVersion, error) {
-	s.logger.DebugContext(ctx, "listing versions", "tenant_id", query.TenantID, "form_id", query.FormID)
+	s.logger.DebugContext(ctx, "listing versions", "tenant_id", query.TenantID, "form_id", query.ID)
 
 	if err := query.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "version listing failed; invalid query", "tenant_id", query.TenantID, "form_id", query.FormID, "error", err)
+		s.logger.WarnContext(ctx, "version listing failed; invalid query", "tenant_id", query.TenantID, "form_id", query.ID, "error", err)
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, query.TenantID, query.FormID); err != nil {
+	if err := s.isValidAccess(ctx, query.TenantID, query.ID); err != nil {
 		return nil, err
 	}
 
-	versions, err := s.versionsRepository.Find(ctx, query.FormID)
+	versions, err := s.versionsRepository.Find(ctx, query.ID)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to retrieve versions", "tenant_id", query.TenantID, "form_id", query.FormID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to retrieve versions", "tenant_id", query.TenantID, "form_id", query.ID, "error", err)
 		return nil, err
 	}
 
@@ -180,20 +180,20 @@ func (s *formsService) FindVersions(ctx context.Context, query *ports.FindFormVe
 }
 
 func (s *formsService) FindVersion(ctx context.Context, query *ports.FindFormVersionByIDQuery) (*domain.FormVersion, error) {
-	s.logger.DebugContext(ctx, "finding version", "tenant_id", query.TenantID, "form_id", query.FormID, "version_id", query.VersionID)
+	s.logger.DebugContext(ctx, "finding version", "tenant_id", query.TenantID, "form_id", query.ID, "version_id", query.VersionID)
 
 	if err := query.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "version find failed; invalid query", "tenant_id", query.TenantID, "form_id", query.FormID, "version_id", query.VersionID, "error", err)
+		s.logger.WarnContext(ctx, "version find failed; invalid query", "tenant_id", query.TenantID, "form_id", query.ID, "version_id", query.VersionID, "error", err)
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, query.TenantID, query.FormID); err != nil {
+	if err := s.isValidAccess(ctx, query.TenantID, query.ID); err != nil {
 		return nil, err
 	}
 
-	version, err := s.versionsRepository.FindByID(ctx, query.FormID, query.VersionID)
+	version, err := s.versionsRepository.FindByID(ctx, query.ID, query.VersionID)
 	if err != nil {
-		s.logFindVersionByIDError(ctx, err, query.FormID, query.VersionID)
+		s.logFindVersionByIDError(ctx, err, query.ID, query.VersionID)
 		return nil, err
 	}
 

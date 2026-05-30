@@ -5,6 +5,24 @@ import (
 	"sundance/backend/services/forms/internal/core/domain"
 )
 
+type CreateCanonicalTagCommand struct {
+	TenantID    string `validate:"required"`
+	Key         string `validate:"required,nowhitespace"`
+	DisplayName string `validate:"required"`
+}
+
+func NewCreateCanonicalTagCommand(tenantID, key, displayName string) CreateCanonicalTagCommand {
+	return CreateCanonicalTagCommand{
+		TenantID:    tenantID,
+		Key:         key,
+		DisplayName: displayName,
+	}
+}
+
+func (c CreateCanonicalTagCommand) Validate() error {
+	return validate.ValidateStruct(c)
+}
+
 type baseFormCommand struct {
 	TenantID    string `validate:"required"`
 	Name        string `validate:"required,max=75"`
@@ -113,7 +131,7 @@ func (c *UpdateFormVersionCommand) Validate() error {
 type PublishFormVersionCommand struct {
 	baseFormVersionCommand
 	VersionID domain.FormVersionID `validate:"required"`
-	UserID    string           `validate:"required"`
+	UserID    string               `validate:"required"`
 }
 
 func NewPublishFormVersionCommand(tenantID string, formID domain.FormID, versionID domain.FormVersionID, userID string) *PublishFormVersionCommand {
@@ -134,7 +152,7 @@ func (c *PublishFormVersionCommand) Validate() error {
 type RetireFormVersionCommand struct {
 	baseFormVersionCommand
 	VersionID domain.FormVersionID `validate:"required"`
-	UserID    string           `validate:"required"`
+	UserID    string               `validate:"required"`
 }
 
 func NewRetireFormVersionCommand(tenantID string, formID domain.FormID, versionID domain.FormVersionID, userID string) *RetireFormVersionCommand {
@@ -155,7 +173,7 @@ func (c *RetireFormVersionCommand) Validate() error {
 type CreateSubmissionCommand struct {
 	TenantID      string                         `validate:"required"`
 	FormID        domain.FormID                  `validate:"required"`
-	VersionID     domain.FormVersionID               `validate:"required"`
+	VersionID     domain.FormVersionID           `validate:"required"`
 	IdempotencyID domain.IdempotencyID           `validate:"required"`
 	Values        []*domain.SubmissionFieldValue `validate:"required,min=1"`
 }

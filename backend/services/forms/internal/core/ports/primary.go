@@ -14,22 +14,22 @@ type API struct {
 }
 
 type CanonicalTagAPI interface {
-	Find(context.Context) ([]*domain.CanonicalTag, error)
-	FindById(context.Context) (*domain.CanonicalTag, error)
-	Create(context.Context, any) (*domain.CanonicalTag, error)
+	Find(context.Context, FindCanonicalTagsQuery) ([]*domain.CanonicalTag, error)
+	FindById(context.Context, FindByIDQuery[domain.CanonicalTagID]) (*domain.CanonicalTag, error)
+	Create(context.Context, CreateCanonicalTagCommand) (*domain.CanonicalTag, error)
 	Delete(context.Context, any) error
-	FindVersions(context.Context, any) error
-	FindVersion(context.Context, any) error
-	CreateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
-	UpdateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
-	PublishVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
-	DeprecateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
-	RetireVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	// FindVersions(context.Context, any) error
+	// FindVersion(context.Context, any) error
+	// CreateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	// UpdateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	// PublishVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	// DeprecateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	// RetireVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
 }
 
 type FormsAPI interface {
 	Find(context.Context, *FindFormsQuery) ([]*domain.Form, error)
-	FindByID(context.Context, *FindFormsByIDQuery) (*domain.Form, error)
+	FindByID(context.Context, *FindFormByIDQuery) (*domain.Form, error)
 	Create(context.Context, *CreateFormCommand) (*domain.Form, error)
 	Update(context.Context, *UpdateFormCommand) (*domain.Form, error)
 	Delete(context.Context, *RemoveFormCommand) error

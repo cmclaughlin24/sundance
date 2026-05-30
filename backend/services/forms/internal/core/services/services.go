@@ -20,6 +20,7 @@ func Bootstrap(opts ...func(*serviceOptions)) *ports.API {
 	}
 
 	return &ports.API{
+		CanonicalTags:  NewCanonicalTagService(so.logger, so.repository),
 		Forms:          NewFormsService(so.logger, so.repository),
 		Submissions:    NewSubmissionsService(so.logger, so.repository),
 		SubmissionJobs: NewSubmissionJobsService(so.logger, so.evaluator, so.repository, so.strategies),

@@ -9,10 +9,18 @@ import (
 )
 
 type Repository struct {
-	Database    database.Database
-	Forms       FormsRepository
-	FormVersions    FormVersionRepository
-	Submissions SubmissionsRepository
+	Database      database.Database
+	CanonicalTags CanonicalTagRepository
+	Forms         FormsRepository
+	FormVersions  FormVersionRepository
+	Submissions   SubmissionsRepository
+}
+
+type CanonicalTagRepository interface{
+	Find(context.Context, CanonicalTagFilters) ([]*domain.CanonicalTag, error)
+	FindByID(context.Context, domain.CanonicalTagID) (*domain.CanonicalTag, error)
+	Upsert(context.Context, *domain.CanonicalTag) (*domain.CanonicalTag, error)
+	Delete(context.Context, domain.CanonicalTagID) error
 }
 
 type FormsRepository interface {

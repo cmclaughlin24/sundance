@@ -51,7 +51,7 @@ func HydrateCanonicalTagVersion(
 	version int,
 	tagType CanonicalTagType,
 	status CanonicalTagStatus,
-	createdAt, 
+	createdAt,
 	retiredAt time.Time,
 ) *CanonicalTagVersion {
 	return &CanonicalTagVersion{

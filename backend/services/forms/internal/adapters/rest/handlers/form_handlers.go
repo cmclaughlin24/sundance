@@ -62,7 +62,7 @@ func (h *Handlers) GetForms(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) GetForm(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
-	query := ports.NewFindFormsByIDQuery(tenantID, formID)
+	query := ports.NewFindFormByIDQuery(tenantID, formID)
 	resultChan := make(chan result[*domain.Form], 1)
 
 	go func() {

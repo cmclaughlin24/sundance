@@ -5,6 +5,36 @@ import (
 	"sundance/backend/services/forms/internal/core/domain"
 )
 
+type FindByIDQuery[T comparable] struct {
+	TenantID string `validate:"required"`
+	ID       T      `validate:"required"`
+}
+
+func NewFindByIDQuery[T comparable](tenantID string, id T) FindByIDQuery[T] {
+	return FindByIDQuery[T]{
+		TenantID: tenantID,
+		ID:       id,
+	}
+}
+
+func (q FindByIDQuery[T]) Validate() error {
+	return validate.ValidateStruct(q)
+}
+
+type FindCanonicalTagsQuery struct {
+	TenantID string `validate:"required"`
+}
+
+func NewCanonicalTagsQuery(tenantID string) FindCanonicalTagsQuery {
+	return FindCanonicalTagsQuery{
+		TenantID: tenantID,
+	}
+}
+
+func (q FindCanonicalTagsQuery) Validate() error {
+	return validate.ValidateStruct(q)
+}
+
 type FindFormsQuery struct {
 	// TODO: Add pagination support through embedded struct.
 	TenantID string `validate:"required"`
@@ -20,31 +50,24 @@ func (q *FindFormsQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 
-type FindFormsByIDQuery struct {
-	TenantID string        `validate:"required"`
-	FormID   domain.FormID `validate:"required"`
-}
+type FindFormByIDQuery = FindByIDQuery[domain.FormID]
 
-func NewFindFormsByIDQuery(tenantID string, formID domain.FormID) *FindFormsByIDQuery {
-	return &FindFormsByIDQuery{
+func NewFindFormByIDQuery(tenantID string, formID domain.FormID) *FindFormByIDQuery {
+	return &FindFormByIDQuery{
 		TenantID: tenantID,
-		FormID:   formID,
+		ID:   formID,
 	}
 }
 
-func (q *FindFormsByIDQuery) Validate() error {
-	return validate.ValidateStruct(q)
-}
-
 type FindFormVersionsQuery struct {
-	FindFormsByIDQuery
+	FindFormByIDQuery
 }
 
 func NewFindFormVersionsQuery(tenantID string, formID domain.FormID) *FindFormVersionsQuery {
 	return &FindFormVersionsQuery{
-		FindFormsByIDQuery{
+		FindFormByIDQuery{
 			TenantID: tenantID,
-			FormID:   formID,
+			ID:   formID,
 		},
 	}
 }
@@ -54,15 +77,15 @@ func (q *FindFormVersionsQuery) Validate() error {
 }
 
 type FindFormVersionByIDQuery struct {
-	FindFormsByIDQuery
+	FindFormByIDQuery
 	VersionID domain.FormVersionID `validate:"required"`
 }
 
 func NewFindFormVersionByIDQuery(tenantID string, formID domain.FormID, versionID domain.FormVersionID) *FindFormVersionByIDQuery {
 	return &FindFormVersionByIDQuery{
-		FindFormsByIDQuery: FindFormsByIDQuery{
+		FindFormByIDQuery: FindFormByIDQuery{
 			TenantID: tenantID,
-			FormID:   formID,
+			ID:   formID,
 		},
 		VersionID: versionID,
 	}
@@ -86,22 +109,15 @@ func (q *FindSubmissionsQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 
-type FindSubmissionByIDQuery[T any] struct {
-	TenantID string `validate:"required"`
-	ID       T      `validate:"required"`
-}
+type FindSubmissionByIDQuery[T comparable] = FindByIDQuery[T]
 
-func NewFindSubmissionByIDQuery[T any](tenantID string, id T) *FindSubmissionByIDQuery[T] {
+func NewFindSubmissionByIDQuery[T comparable](tenantID string, id T) *FindSubmissionByIDQuery[T] {
 	query := &FindSubmissionByIDQuery[T]{
 		TenantID: tenantID,
 		ID:       id,
 	}
 
 	return query
-}
-
-func (q *FindSubmissionByIDQuery[T]) Validate() error {
-	return validate.ValidateStruct(q)
 }
 
 type FindSubmissionJobsQuery struct {
@@ -115,4 +131,3 @@ func NewFindSubmissionJobsQuery(take int) *FindSubmissionJobsQuery {
 func (q *FindSubmissionJobsQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
-

@@ -95,15 +95,15 @@ func Test_handlers_GetForms(t *testing.T) {
 func Test_handlers_GetForm(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.FindFormsByIDQuery) (*domain.Form, error)
+		fn         func(context.Context, *ports.FindFormByIDQuery) (*domain.Form, error)
 		statusCode int
 		id         string
 	}{
 		{
 			"should yield OK if the request is successful",
-			func(ctx context.Context, query *ports.FindFormsByIDQuery) (*domain.Form, error) {
+			func(ctx context.Context, query *ports.FindFormByIDQuery) (*domain.Form, error) {
 				return &domain.Form{
-					ID:       query.FormID,
+					ID:       query.ID,
 					TenantID: query.TenantID,
 					Name:     "Ocarina of Time",
 				}, nil
@@ -113,7 +113,7 @@ func Test_handlers_GetForm(t *testing.T) {
 		},
 		{
 			"should yield NOT FOUND if the resource is not found",
-			func(ctx context.Context, query *ports.FindFormsByIDQuery) (*domain.Form, error) {
+			func(ctx context.Context, query *ports.FindFormByIDQuery) (*domain.Form, error) {
 				return nil, common.ErrNotFound
 			},
 			http.StatusNotFound,
@@ -121,7 +121,7 @@ func Test_handlers_GetForm(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, query *ports.FindFormsByIDQuery) (*domain.Form, error) {
+			func(ctx context.Context, query *ports.FindFormByIDQuery) (*domain.Form, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -441,7 +441,7 @@ func Test_handlers_GetFormVersion(t *testing.T) {
 		{
 			"should yield OK if the request is successful",
 			func(ctx context.Context, query *ports.FindFormVersionByIDQuery) (*domain.FormVersion, error) {
-				v, _ := domain.NewFormVersion(query.FormID, 1, domain.FormVersionStatusDraft)
+				v, _ := domain.NewFormVersion(query.ID, 1, domain.FormVersionStatusDraft)
 				return v, nil
 			},
 			http.StatusOK,

@@ -36,11 +36,11 @@
 
 17. ~~Canonical tag scaffold: `CanonicalTagID` dropped in constructors~~ (`canonical_tag_version.go`) -- Both `NewCanonicalTagVersion` and `HydrateCanonicalTagVersion` now assign `CanonicalTagID` from their parameter. *(Committed `9a2f985e`.)*
 
-18. ~~Inconsistent `Validate()` on submission commands/queries~~ (`ports/commands.go`, `ports/query.go`) -- `CreateSubmissionCommand`, `FindSubmissionsQuery`, and `FindSubmissionByIDQuery[T]` now expose `Validate()` matching the rest of the commands/queries. `submissionsService` consumes them via the method, eliminating the prior direct `validate.ValidateStruct` calls and removing the `validate` import. *(Unstaged.)*
+18. ~~Inconsistent `Validate()` on submission commands/queries~~ (`ports/commands.go`, `ports/query.go`) -- `CreateSubmissionCommand`, `FindSubmissionsQuery`, and `FindSubmissionByIDQuery[T]` now expose `Validate()` matching the rest of the commands/queries. `submissionsService` consumes them via the method, eliminating the prior direct `validate.ValidateStruct` calls and removing the `validate` import. *(Committed `c80ee0fc`.)*
 
-19. ~~`formsService.hasActiveVersion` returns `true, err` on match path~~ (`forms_service.go:384`) -- Match-path return corrected from `return true, err` to `return true, nil`. *(Unstaged.)*
+19. ~~`formsService.hasActiveVersion` returns `true, err` on match path~~ (`forms_service.go:384`) -- Match-path return corrected from `return true, err` to `return true, nil`. *(Committed `c80ee0fc`.)*
 
-20. ~~`FindJobs` `Take` limit not applied at repository level~~ (`inmemory/submissions_repository.go`, `mongodb/submissions_repository.go`) -- In-memory `Find` and `FindJobs` now truncate to `filter.Take` after collection. MongoDB `FindJobs` builds `options.Find().SetLimit(int64(filter.Take))` and passes it through to `r.base.Find(ctx, f, opts)`. *(Unstaged.)*
+20. ~~`FindJobs` `Take` limit not applied at repository level~~ (`inmemory/submissions_repository.go`, `mongodb/submissions_repository.go`) -- In-memory `Find` and `FindJobs` now truncate to `filter.Take` after collection. MongoDB `FindJobs` builds `options.Find().SetLimit(int64(filter.Take))` and passes it through to `r.base.Find(ctx, f, opts)`. *(Committed `c80ee0fc`.)*
 
 ---
 
@@ -60,11 +60,11 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 1. **No `SubmissionAttempt` ever created** (`submission_jobs_service.go:216-245`) -- `recordAttempt` transitions status (`Accept`/`Reject`/`Fail`) and persists the submission but never appends a `SubmissionAttempt` record. The domain type (`submission_attempt.go`), the `Submission.Attempts` field, the mongo document mapper, and `NewSubmissionAttempt` constructor all exist as dead code. `Reject(err error)` and `Fail(err error)` accept an `err` parameter but never store it — once attempts are created, the error should land in `SubmissionAttempt.ErrorDetails`. With the retry loop now in place, operators have no way to see how many attempts a `Failed` submission consumed or what specific error caused each one. *(Carried from 5/20 #1, P2.)*
 
-2. **Canonical tag scaffold: unconstrained status/type and missing `validate` tags** (`canonical_tag.go`, `canonical_tag_version.go`) -- Two issues remain in the in-progress canonical tag domain after the recent fixes:
-   - `CanonicalTagStatus` and `CanonicalTagType` are unconstrained string aliases. No constants, no `isValid*` predicate, no `validate.NewTypeValidator`. Diverges from the established pattern (`FormVersionStatus`, `RuleType`, `DataSourceType`, `SubmissionStatus`). Any string is accepted.
-   - `CanonicalTag` and `CanonicalTagVersion` carry no `validate:"required"` struct tags despite both `NewCanonicalTag` and `NewCanonicalTagVersion` calling `validate.ValidateStruct(...)`. The validation calls are no-ops. Compare to `Submission`, `DataSource`, `Form`, `FormVersion`, etc., which tag their required fields.
+2. **Canonical tag scaffold: `CanonicalTagType` unconstrained, no status validator predicate, missing `validate` struct tags** (`canonical_tag.go`, `canonical_tag_version.go`) -- Two items remain in the in-progress canonical tag domain after the recent commits:
+   - `CanonicalTagStatus` now has constants (`Draft`/`Active`/`Deprecated`/`Retired`) and `NewCanonicalTagVersion` defaults to `Draft`, but neither `CanonicalTagStatus` nor `CanonicalTagType` has an `isValid*` predicate / `validate.NewTypeValidator` matching the pattern used by `FormVersionStatus`, `RuleType`, `DataSourceType`, and `SubmissionStatus`. `CanonicalTagType` additionally has no constants defined at all.
+   - `CanonicalTag` and `CanonicalTagVersion` still carry no `validate:"required"` struct tags despite both `NewCanonicalTag` and `NewCanonicalTagVersion` calling `validate.ValidateStruct(...)`. The validation calls are no-ops. Compare to `Submission`, `DataSource`, `Form`, `FormVersion`, etc., which tag their required fields.
 
-   The slice is still dead code (no ports/services/repos/DTOs/routes), so this isn't blocking production today, but the moment the slice is wired the domain will accept arbitrary status/type strings and skip validation on empty fields. *(New, P2.)*
+   The slice is still dead code at the service/repository layer, so this isn't blocking production today, but the moment the slice is wired the domain will accept arbitrary type strings and skip validation on empty fields. The `CanonicalTagAPI` port shape is a known in-development concern and is excluded from this review. *(New, P2.)*
 
 #### Missing Functionality
 
@@ -107,7 +107,7 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 | Priority | # | Issue | Service(s) |
 |----------|---|-------|------------|
 | **P2** | 1 | No `SubmissionAttempt` created; error params unused | Forms |
-| **P2** | 2 | Canonical tag scaffold: unconstrained status/type, no validate tags | Forms |
+| **P2** | 2 | Canonical tag scaffold: type unconstrained, no status validator predicate, no validate tags | Forms |
 | **P2** | 7 | `defer close(pool)` shutdown race | pkg/worker |
 | **P3** | 3 | Select/checkbox validator stubs, date partial | Forms |
 | **P3** | 4 | Duplicate error classification (service vs worker) | Forms |
@@ -147,11 +147,13 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 
 - **Bug fixes discovered during review** (committed) -- `ExprRuleEvaluator.statement` accumulator (compound rules now correctly accumulate the expression string across iterations); commented-out canonical tag routes removed; worker duration log now uses native int with `duration_ms` key; gofmt fix on `Attempts` indentation; `getReferenceIDPathValue` colocated with the submission handler that uses it; `HydrateCaonicalTagVersion` typo corrected; `CanonicalTagID` now assigned in both canonical tag version constructors.
 
-- **Submission command/query `Validate()` consistency, `hasActiveVersion` fix, and `FindJobs` `Take`** (unstaged) -- `CreateSubmissionCommand`, `FindSubmissionsQuery`, and `FindSubmissionByIDQuery[T]` now expose `Validate()` matching the other commands/queries. `submissionsService` consumes them via the method, dropping the direct `validate.ValidateStruct` calls and the package import. `formsService.hasActiveVersion` match-path now returns `true, nil` instead of `true, err`. In-memory `Find`/`FindJobs` truncate to `filter.Take`; mongo `FindJobs` builds `options.Find().SetLimit(...)` and passes it through to `r.base.Find(ctx, f, opts)`.
+- **Submission command/query `Validate()` consistency, `hasActiveVersion` fix, and `FindJobs` `Take`** (committed `c80ee0fc`) -- `CreateSubmissionCommand`, `FindSubmissionsQuery`, and `FindSubmissionByIDQuery[T]` now expose `Validate()` matching the other commands/queries. `submissionsService` consumes them via the method, dropping the direct `validate.ValidateStruct` calls and the package import. `formsService.hasActiveVersion` match-path now returns `true, nil` instead of `true, err`. In-memory `Find`/`FindJobs` truncate to `filter.Take`; mongo `FindJobs` builds `options.Find().SetLimit(...)` and passes it through to `r.base.Find(ctx, f, opts)`.
+
+- **Canonical tag status lifecycle progressed** -- `CanonicalTagStatus` constants added (`Draft`, `Active`, `Deprecated`, `Retired`); `Status` field moved from `CanonicalTag` to `CanonicalTagVersion` so the lifecycle lives on the version aggregate (parallel to `FormVersion`). `NewCanonicalTagVersion` defaults to `Draft`; `HydrateCanonicalTagVersion` now accepts and assigns `Status`.
 
 ### Current State
 
-**10 remaining issues** (3 P2, 7 P3). 0 P0, 0 P1. Multiple issues resolved this cycle across the committed work, the same-cycle bug-fix commit (`9a2f985e`), and unstaged follow-up consolidating submission command/query `Validate()` methods, correcting the `hasActiveVersion` return, and applying the `FindJobs` `Take` limit in both repository implementations.
+**10 remaining issues** (3 P2, 7 P3). 0 P0, 0 P1. Multiple issues resolved this cycle across the committed work, the same-cycle bug-fix commits (`9a2f985e` and `c80ee0fc`), consolidating submission command/query `Validate()` methods, correcting the `hasActiveVersion` return, and applying the `FindJobs` `Take` limit in both repository implementations. Subsequent commits to the canonical tag scaffold added `CanonicalTagStatus` constants (`Draft`/`Active`/`Deprecated`/`Retired`), defaulted new versions to `Draft`, moved `Status` to the version aggregate, and hydrated `Status` through `HydrateCanonicalTagVersion` — narrowing the remaining canonical tag work to type/status validators and `validate` struct tags.
 
 **Forms Service at 8.5/10** (down 0.5 from 9/10). Net-positive cycle: the retry pipeline is a real production-readiness improvement and the `FormVersion` rename clarifies the model. The evaluator accumulator fix restores compound-rule correctness. However, the canonical tag scaffold introduces correctness debt — harmless today but loaded for the slice's eventual wiring — and the `SubmissionAttempt` audit trail remains absent precisely when the new retry loop makes it most useful.
 
@@ -168,7 +170,7 @@ See [5/10 review](code-review-5-10-26.md) for the full Will Not Fix list.
 ### Highest-Impact Improvements
 
 1. **Wire `SubmissionAttempt` into `recordAttempt()`** (P2) -- append a `NewSubmissionAttempt(attempt, result, errorDetails)` to `submission.Attempts` before persisting; store the `err` that `Reject`/`Fail` currently discard. With the retry loop in place, this gives operators a complete history of how each submission was processed.
-2. **Finish the canonical tag domain before wiring the slice** (P2) -- add status/type constants + `isValid*` predicate + `NewTypeValidator`, add `validate:"required"` struct tags on `CanonicalTag` and `CanonicalTagVersion`. Cheap now, expensive after the first persisted record.
+2. **Finish the canonical tag domain before wiring the slice** (P2) -- add `CanonicalTagType` constants + `isValid*` predicates + `NewTypeValidator` for both `CanonicalTagStatus` and `CanonicalTagType`, and add `validate:"required"` struct tags on `CanonicalTag` and `CanonicalTagVersion`. Cheap now, expensive after the first persisted record.
 3. **Fix the worker pool shutdown race** (P2) -- drop `defer close(pool)`, or track worker goroutines in a WaitGroup that `onLeader` waits on before closing.
 4. **Implement select/checkbox/date field validators** (P3) -- stubs silently accept invalid data.
 5. **Consolidate error classification** (P3) -- single `Classify(err) Disposition` consumed by both `recordAttempt` and `isRetryableError` to prevent drift.
