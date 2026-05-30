@@ -14,7 +14,7 @@ type dataSourcesJobService struct {
 	client     ports.LookupClient
 }
 
-func NewDataSourcesJobService(logger *slog.Logger, repository *ports.Repository, clients *ports.Clients) ports.DataSourceJobsService {
+func NewDataSourcesJobService(logger *slog.Logger, repository *ports.Repository, clients *ports.Clients) ports.DataSourceJobsAPI {
 	return &dataSourcesJobService{
 		logger:     logger,
 		repository: repository.DataSources,

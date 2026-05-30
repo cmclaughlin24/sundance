@@ -12,19 +12,19 @@ import (
 )
 
 type dataSourceJob struct {
-	ds      *domain.DataSource
-	service ports.DataSourceJobsService
+	ds  *domain.DataSource
+	api ports.DataSourceJobsAPI
 }
 
-func newDataSourceJob(service ports.DataSourceJobsService, ds *domain.DataSource) *dataSourceJob {
+func newDataSourceJob(api ports.DataSourceJobsAPI, ds *domain.DataSource) *dataSourceJob {
 	return &dataSourceJob{
-		ds:      ds,
-		service: service,
+		ds:  ds,
+		api: api,
 	}
 }
 
 func (j *dataSourceJob) Process(ctx context.Context) error {
-	return j.service.Process(ctx, ports.NewProcessDataSourceJobCommand(j.ds))
+	return j.api.Process(ctx, ports.NewProcessDataSourceJobCommand(j.ds))
 }
 
 func newDataSourcesBackgroundWorker(app *core.Application, opts ...func(*WorkerOptions)) (*worker.BackgroundWorker[*dataSourceJob], error) {
@@ -52,7 +52,7 @@ func newDataSourcesBackgroundWorker(app *core.Application, opts ...func(*WorkerO
 
 func newDataSourceWorkFn(app *core.Application, retryLimit int) worker.FetchJobsFn[*dataSourceJob] {
 	return func(ctx context.Context) ([]*dataSourceJob, error) {
-		dataSources, err := app.Services.DataSourceJobs.Find(ctx, ports.NewFindDataSourceJobsQuery(0, retryLimit))
+		dataSources, err := app.API.DataSourceJobs.Find(ctx, ports.NewFindDataSourceJobsQuery(0, retryLimit))
 
 		if err != nil {
 			return nil, err
@@ -61,7 +61,7 @@ func newDataSourceWorkFn(app *core.Application, retryLimit int) worker.FetchJobs
 		jobs := make([]*dataSourceJob, 0, len(dataSources))
 		for _, ds := range dataSources {
 			jobs = append(jobs, newDataSourceJob(
-				app.Services.DataSourceJobs,
+				app.API.DataSourceJobs,
 				ds,
 			))
 		}

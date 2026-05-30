@@ -26,7 +26,7 @@ func (h *Handlers) GetSubmissions(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		submissions, err := h.app.Services.Submissions.Find(r.Context(), query)
+		submissions, err := h.app.API.Submissions.Find(r.Context(), query)
 		resultChan <- result[[]*domain.Submission]{submissions, err}
 	}()
 
@@ -67,7 +67,7 @@ func (h *Handlers) GetSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 
 	go func() {
 		defer close(resultChan)
-		submission, err := h.app.Services.Submissions.FindByReferenceID(r.Context(), query)
+		submission, err := h.app.API.Submissions.FindByReferenceID(r.Context(), query)
 		resultChan <- result[*domain.Submission]{submission, err}
 	}()
 
@@ -123,7 +123,7 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		submission, err := h.app.Services.Submissions.Create(r.Context(), command)
+		submission, err := h.app.API.Submissions.Create(r.Context(), command)
 		resultChan <- result[*domain.Submission]{data: submission, err: err}
 	}()
 
@@ -162,7 +162,7 @@ func (h *Handlers) GetSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		submission, err := h.app.Services.Submissions.FindByReferenceID(r.Context(), query)
+		submission, err := h.app.API.Submissions.FindByReferenceID(r.Context(), query)
 		resultChan <- result[*domain.Submission]{submission, err}
 	}()
 
@@ -206,7 +206,7 @@ func (h *Handlers) ReplaySubmission(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		err := h.app.Services.Submissions.Replay(r.Context(), command)
+		err := h.app.API.Submissions.Replay(r.Context(), command)
 		resultChan <- result[any]{data: nil, err: err}
 	}()
 

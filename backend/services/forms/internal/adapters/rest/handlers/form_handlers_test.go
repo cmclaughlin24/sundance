@@ -58,7 +58,7 @@ func Test_handlers_GetForms(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{Forms: &mockFormsService{findFn: tt.fn}}
+			s := &ports.API{Forms: &mockFormsService{findFn: tt.fn}}
 			h := newTestHandlers(s)
 			req, _ := http.NewRequest(http.MethodGet, "/api/v1/forms", nil)
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
@@ -132,7 +132,7 @@ func Test_handlers_GetForm(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{Forms: &mockFormsService{findByIDFn: tt.fn}}
+			s := &ports.API{Forms: &mockFormsService{findByIDFn: tt.fn}}
 			h := newTestHandlers(s)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("formId", tt.id)
@@ -204,7 +204,7 @@ func Test_handlers_CreateForm(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{Forms: &mockFormsService{createFn: tt.fn}}
+			s := &ports.API{Forms: &mockFormsService{createFn: tt.fn}}
 			h := newTestHandlers(s)
 			body, _ := json.Marshal(tt.body)
 			req, _ := http.NewRequest(http.MethodPost, "/api/v1/forms", bytes.NewReader(body))
@@ -270,7 +270,7 @@ func Test_handlers_UpdateForm(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{Forms: &mockFormsService{updateFn: tt.fn}}
+			s := &ports.API{Forms: &mockFormsService{updateFn: tt.fn}}
 			h := newTestHandlers(s)
 			body, _ := json.Marshal(tt.body)
 			rctx := chi.NewRouteContext()
@@ -334,7 +334,7 @@ func Test_handlers_DeleteForm(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{Forms: &mockFormsService{deleteFn: tt.fn}}
+			s := &ports.API{Forms: &mockFormsService{deleteFn: tt.fn}}
 			h := newTestHandlers(s)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("formId", tt.id)
@@ -395,7 +395,7 @@ func Test_handlers_GetFormVersions(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{Forms: &mockFormsService{findVersionsFn: tt.fn}}
+			s := &ports.API{Forms: &mockFormsService{findVersionsFn: tt.fn}}
 			h := newTestHandlers(s)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("formId", "form-1")
@@ -468,7 +468,7 @@ func Test_handlers_GetFormVersion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{Forms: &mockFormsService{findVersionFn: tt.fn}}
+			s := &ports.API{Forms: &mockFormsService{findVersionFn: tt.fn}}
 			h := newTestHandlers(s)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("formId", "form-1")
@@ -529,7 +529,7 @@ func Test_handlers_CreateFormVersion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{Forms: &mockFormsService{createVersionFn: tt.fn}}
+			s := &ports.API{Forms: &mockFormsService{createVersionFn: tt.fn}}
 			h := newTestHandlers(s)
 			body, _ := json.Marshal(tt.body)
 			rctx := chi.NewRouteContext()
@@ -590,7 +590,7 @@ func Test_handlers_UpdateFormVersion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{Forms: &mockFormsService{updateVersionFn: tt.fn}}
+			s := &ports.API{Forms: &mockFormsService{updateVersionFn: tt.fn}}
 			h := newTestHandlers(s)
 			body, _ := json.Marshal(tt.body)
 			rctx := chi.NewRouteContext()
@@ -641,7 +641,7 @@ func Test_handlers_PublishFormVersion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{Forms: &mockFormsService{publishVersionFn: tt.fn}}
+			s := &ports.API{Forms: &mockFormsService{publishVersionFn: tt.fn}}
 			h := newTestHandlers(s)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("formId", "form-1")
@@ -692,7 +692,7 @@ func Test_handlers_RetireFormVersion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{Forms: &mockFormsService{retireVersionFn: tt.fn}}
+			s := &ports.API{Forms: &mockFormsService{retireVersionFn: tt.fn}}
 			h := newTestHandlers(s)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("formId", "form-1")

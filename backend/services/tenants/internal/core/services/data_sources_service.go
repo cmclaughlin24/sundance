@@ -17,7 +17,7 @@ type dataSourcesService struct {
 	lookupStrategies      ports.LookupStrategyRegistry
 }
 
-func NewDataSourcesService(logger *slog.Logger, repository *ports.Repository, strategies *ports.Strategies) ports.DataSourcesService {
+func NewDataSourcesService(logger *slog.Logger, repository *ports.Repository, strategies *ports.Strategies) ports.DataSourcesAPI {
 	return &dataSourcesService{
 		logger:                logger,
 		dataSourcesRepository: repository.DataSources,

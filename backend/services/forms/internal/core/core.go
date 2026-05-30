@@ -16,7 +16,7 @@ type Cache interface {
 
 type Application struct {
 	Logger     *slog.Logger
-	Services   *ports.Services
+	API   *ports.API
 	Cache      Cache
 	repository *ports.Repository
 }
@@ -48,9 +48,9 @@ func WithRepository(repository *ports.Repository) func(*Application) {
 	}
 }
 
-func WithServices(services *ports.Services) func(*Application) {
+func WithAPI(api *ports.API) func(*Application) {
 	return func(a *Application) {
-		a.Services = services
+		a.API = api
 	}
 }
 

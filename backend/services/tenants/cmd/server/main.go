@@ -64,7 +64,7 @@ func main() {
 	c := clients.Bootstrap(clients.WithLogger(l), clients.WithHTTPClient(&http.Client{Timeout: 10 * time.Second}))
 	st := strategies.Bootstrap(strategies.WithLogger(l), strategies.WithClients(c))
 	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithStrategies(st), services.WithClients(c))
-	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s), core.WithCache(cm.(core.Cache)))
+	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithAPI(s), core.WithCache(cm.(core.Cache)))
 
 	defer app.Close(context.Background())
 	mux := rest.NewRoutes(app, settings.Host)

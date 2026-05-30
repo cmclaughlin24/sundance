@@ -15,7 +15,7 @@ type submissionsService struct {
 	repository ports.SubmissionsRepository
 }
 
-func NewSubmissionsService(logger *slog.Logger, repository *ports.Repository) ports.SubmissionsService {
+func NewSubmissionsService(logger *slog.Logger, repository *ports.Repository) ports.SubmissionsAPI {
 	return &submissionsService{
 		logger:     logger,
 		repository: repository.Submissions,

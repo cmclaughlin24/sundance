@@ -23,16 +23,16 @@ type submissionJobOptions struct {
 
 type submissionJob struct {
 	id      domain.SubmissionID
-	service ports.SubmissionJobsService
+	api     ports.SubmissionJobsAPI
 	logger  *slog.Logger
 	options submissionJobOptions
 }
 
-func newSubmissionJob(service ports.SubmissionJobsService, logger *slog.Logger, id domain.SubmissionID, options submissionJobOptions) *submissionJob {
+func newSubmissionJob(api ports.SubmissionJobsAPI, logger *slog.Logger, id domain.SubmissionID, options submissionJobOptions) *submissionJob {
 	return &submissionJob{
 		id:      id,
 		logger:  logger,
-		service: service,
+		api:     api,
 		options: options,
 	}
 }
@@ -41,7 +41,7 @@ func (j *submissionJob) Process(ctx context.Context) error {
 	backoff := j.options.backoff
 
 	for attempt := 1; attempt <= j.options.retryLimit; attempt++ {
-		err := j.service.Process(ctx, j.id)
+		err := j.api.Process(ctx, j.id)
 
 		if err == nil {
 			break
@@ -93,7 +93,7 @@ func newSubmissionsBackgroundWorker(app *core.Application, opts ...func(*WorkerO
 
 func newSubmissionWorkFn(app *core.Application, options submissionJobOptions) worker.FetchJobsFn[*submissionJob] {
 	return func(ctx context.Context) ([]*submissionJob, error) {
-		ids, err := app.Services.SubmissionJobs.Find(ctx, ports.NewFindSubmissionJobsQuery(0))
+		ids, err := app.API.SubmissionJobs.Find(ctx, ports.NewFindSubmissionJobsQuery(0))
 
 		if err != nil {
 			return nil, err
@@ -102,7 +102,7 @@ func newSubmissionWorkFn(app *core.Application, options submissionJobOptions) wo
 		jobs := make([]*submissionJob, 0, len(ids))
 		for _, id := range ids {
 			jobs = append(jobs, newSubmissionJob(
-				app.Services.SubmissionJobs,
+				app.API.SubmissionJobs,
 				app.Logger,
 				id,
 				options,

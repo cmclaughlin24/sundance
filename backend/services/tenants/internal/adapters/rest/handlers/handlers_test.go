@@ -12,12 +12,12 @@ import (
 	"sundance/backend/services/tenants/internal/core/ports"
 )
 
-func newTestHandlers(services *ports.Services) *Handlers {
+func newTestHandlers(api *ports.API) *Handlers {
 	var buf bytes.Buffer
 
 	app := &core.Application{
-		Services: services,
-		Logger:   slog.New(slog.NewTextHandler(&buf, nil)),
+		API:    api,
+		Logger: slog.New(slog.NewTextHandler(&buf, nil)),
 	}
 
 	return NewHandlers(app)

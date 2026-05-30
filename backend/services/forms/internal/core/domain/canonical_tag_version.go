@@ -9,11 +9,21 @@ type CanonicalTagVersionID string
 
 type CanonicalTagType string
 
+type CanonicalTagStatus string
+
+const (
+	CanonicalTagStatusDraft      CanonicalTagStatus = "draft"
+	CanonicalTagStatusActive     CanonicalTagStatus = "active"
+	CanonicalTagStatusDeprecated CanonicalTagStatus = "deprecated"
+	CanonicalTagStatusRetired    CanonicalTagStatus = "retired"
+)
+
 type CanonicalTagVersion struct {
 	ID             CanonicalTagVersionID
 	CanonicalTagID CanonicalTagID
 	Version        int
 	Type           CanonicalTagType
+	Status         CanonicalTagStatus
 	CreatedAt      time.Time
 	RetiredAt      time.Time
 }
@@ -23,6 +33,7 @@ func NewCanonicalTagVersion(canonicalTagID CanonicalTagID, version int, tagType 
 		ID:             CanonicalTagVersionID(NewID()),
 		CanonicalTagID: canonicalTagID,
 		Version:        version,
+		Status:         CanonicalTagStatusDraft,
 		Type:           tagType,
 		CreatedAt:      Now(),
 	}
@@ -34,12 +45,21 @@ func NewCanonicalTagVersion(canonicalTagID CanonicalTagID, version int, tagType 
 	return ctv, nil
 }
 
-func HydrateCanonicalTagVersion(id CanonicalTagVersionID, canonicalTagID CanonicalTagID, version int, tagType CanonicalTagType, createdAt, retiredAt time.Time) *CanonicalTagVersion {
+func HydrateCanonicalTagVersion(
+	id CanonicalTagVersionID,
+	canonicalTagID CanonicalTagID,
+	version int,
+	tagType CanonicalTagType,
+	status CanonicalTagStatus,
+	createdAt, 
+	retiredAt time.Time,
+) *CanonicalTagVersion {
 	return &CanonicalTagVersion{
 		ID:             id,
 		CanonicalTagID: canonicalTagID,
 		Version:        version,
 		Type:           tagType,
+		Status:         status,
 		CreatedAt:      createdAt,
 		RetiredAt:      retiredAt,
 	}

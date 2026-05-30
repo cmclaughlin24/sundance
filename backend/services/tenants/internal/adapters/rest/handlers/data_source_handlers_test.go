@@ -56,7 +56,7 @@ func Test_handlers_GetDataSources(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{DataSources: &mockDataSourcesService{findFn: tt.fn}}
+			s := &ports.API{DataSources: &mockDataSourcesService{findFn: tt.fn}}
 			h := newTestHandlers(s)
 			req, _ := http.NewRequest(http.MethodGet, "/api/v1/data-sources", nil)
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
@@ -130,7 +130,7 @@ func Test_handlers_GetDataSource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{DataSources: &mockDataSourcesService{findByIdFn: tt.fn}}
+			s := &ports.API{DataSources: &mockDataSourcesService{findByIdFn: tt.fn}}
 			h := newTestHandlers(s)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("dataSourceId", tt.id)
@@ -217,7 +217,7 @@ func Test_handlers_CreateDataSource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{DataSources: &mockDataSourcesService{createFn: tt.fn}}
+			s := &ports.API{DataSources: &mockDataSourcesService{createFn: tt.fn}}
 			h := newTestHandlers(s)
 			body, _ := json.Marshal(tt.body)
 			req, _ := http.NewRequest(http.MethodPost, "/api/v1/data-sources", bytes.NewReader(body))
@@ -298,7 +298,7 @@ func Test_handlers_UpdateDataSource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{DataSources: &mockDataSourcesService{updateFn: tt.fn}}
+			s := &ports.API{DataSources: &mockDataSourcesService{updateFn: tt.fn}}
 			h := newTestHandlers(s)
 			body, _ := json.Marshal(tt.body)
 			rctx := chi.NewRouteContext()
@@ -362,7 +362,7 @@ func Test_handlers_DeleteDataSource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{DataSources: &mockDataSourcesService{deleteFn: tt.fn}}
+			s := &ports.API{DataSources: &mockDataSourcesService{deleteFn: tt.fn}}
 			h := newTestHandlers(s)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("dataSourceId", tt.id)
@@ -428,7 +428,7 @@ func Test_handlers_GetLookups(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.Services{DataSources: &mockDataSourcesService{lookupFn: tt.fn}}
+			s := &ports.API{DataSources: &mockDataSourcesService{lookupFn: tt.fn}}
 			h := newTestHandlers(s)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("dataSourceId", tt.id)

@@ -34,7 +34,7 @@ func NewSubmissionJobsService(
 	evaluator ports.RuleEvaluator,
 	repository *ports.Repository,
 	strategies *ports.Strategies,
-) ports.SubmissionJobsService {
+) ports.SubmissionJobsAPI {
 	return &submissionJobsService{
 		logger:                   logger,
 		evaluator:                evaluator,

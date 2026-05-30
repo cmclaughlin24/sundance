@@ -64,7 +64,7 @@ func main() {
 	ev := evaluators.NewExprRuleEvaluator(l)
 	st := strategies.Bootstrap(strategies.WithLogger(l))
 	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithStrategies(st), services.WithRuleEvaluator(ev))
-	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithServices(s), core.WithCache(cm.(core.Cache)))
+	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithAPI(s), core.WithCache(cm.(core.Cache)))
 
 	defer app.Close(context.Background())
 	mux := rest.NewRoutes(app, settings.Host)

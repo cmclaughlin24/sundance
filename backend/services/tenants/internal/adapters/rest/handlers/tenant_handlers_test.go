@@ -54,7 +54,7 @@ func Test_handlers_GetTenants(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &ports.Services{Tenants: &mockTenantsService{findFn: tt.fn}}
+			s := &ports.API{Tenants: &mockTenantsService{findFn: tt.fn}}
 			h := newTestHandlers(s)
 			req, _ := http.NewRequest(http.MethodGet, "/api/v1/tenants", nil)
 			rr := httptest.NewRecorder()
@@ -124,7 +124,7 @@ func Test_handlers_GetTenant(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &ports.Services{Tenants: &mockTenantsService{findByIdFn: tt.fn}}
+			s := &ports.API{Tenants: &mockTenantsService{findByIdFn: tt.fn}}
 			h := newTestHandlers(s)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("tenantId", tt.id)
@@ -193,7 +193,7 @@ func Test_handlers_CreateTenant(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &ports.Services{Tenants: &mockTenantsService{createFn: tt.fn}}
+			s := &ports.API{Tenants: &mockTenantsService{createFn: tt.fn}}
 			h := newTestHandlers(s)
 			body, _ := json.Marshal(tt.body)
 			req, _ := http.NewRequest(http.MethodGet, "/api/v1/tenants", bytes.NewReader(body))
@@ -256,7 +256,7 @@ func Test_handlers_UpdateTenant(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &ports.Services{Tenants: &mockTenantsService{updateFn: tt.fn}}
+			s := &ports.API{Tenants: &mockTenantsService{updateFn: tt.fn}}
 			h := newTestHandlers(s)
 			body, _ := json.Marshal(tt.body)
 			rctx := chi.NewRouteContext()
@@ -318,7 +318,7 @@ func Test_handlers_DeleteTenant(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &ports.Services{Tenants: &mockTenantsService{deleteFn: tt.fn}}
+			s := &ports.API{Tenants: &mockTenantsService{deleteFn: tt.fn}}
 			h := newTestHandlers(s)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("tenantId", tt.id)

@@ -22,7 +22,7 @@ func (h *Handlers) GetTenants(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		tenants, err := h.app.Services.Tenants.Find(r.Context())
+		tenants, err := h.app.API.Tenants.Find(r.Context())
 		resultChan <- result[[]*domain.Tenant]{tenants, err}
 	}()
 
@@ -60,7 +60,7 @@ func (h *Handlers) GetTenant(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		tenant, err := h.app.Services.Tenants.FindByID(r.Context(), tenantID)
+		tenant, err := h.app.API.Tenants.FindByID(r.Context(), tenantID)
 		resultChan <- result[*domain.Tenant]{tenant, err}
 	}()
 
@@ -100,7 +100,7 @@ func (h *Handlers) CreateTenant(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		tenant, err := h.app.Services.Tenants.Create(r.Context(), command)
+		tenant, err := h.app.API.Tenants.Create(r.Context(), command)
 		resultChan <- result[*domain.Tenant]{tenant, err}
 	}()
 
@@ -147,7 +147,7 @@ func (h *Handlers) UpdateTenant(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		tenant, err := h.app.Services.Tenants.Update(r.Context(), command)
+		tenant, err := h.app.API.Tenants.Update(r.Context(), command)
 		resultChan <- result[*domain.Tenant]{tenant, err}
 	}()
 
@@ -184,7 +184,7 @@ func (h *Handlers) DeleteTenant(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		err := h.app.Services.Tenants.Delete(r.Context(), tenantID)
+		err := h.app.API.Tenants.Delete(r.Context(), tenantID)
 		resultChan <- result[any]{nil, err}
 	}()
 

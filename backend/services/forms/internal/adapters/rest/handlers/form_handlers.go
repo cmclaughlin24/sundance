@@ -26,7 +26,7 @@ func (h *Handlers) GetForms(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		forms, err := h.app.Services.Forms.Find(r.Context(), query)
+		forms, err := h.app.API.Forms.Find(r.Context(), query)
 		resultChan <- result[[]*domain.Form]{forms, err}
 	}()
 
@@ -67,7 +67,7 @@ func (h *Handlers) GetForm(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		form, err := h.app.Services.Forms.FindByID(r.Context(), query)
+		form, err := h.app.API.Forms.FindByID(r.Context(), query)
 		resultChan <- result[*domain.Form]{form, err}
 	}()
 
@@ -109,7 +109,7 @@ func (h *Handlers) CreateForm(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		form, err := h.app.Services.Forms.Create(r.Context(), command)
+		form, err := h.app.API.Forms.Create(r.Context(), command)
 		resultChan <- result[*domain.Form]{form, err}
 	}()
 
@@ -157,7 +157,7 @@ func (h *Handlers) UpdateForm(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		form, err := h.app.Services.Forms.Update(r.Context(), command)
+		form, err := h.app.API.Forms.Update(r.Context(), command)
 		resultChan <- result[*domain.Form]{form, err}
 	}()
 
@@ -198,7 +198,7 @@ func (h *Handlers) DeleteForm(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		err := h.app.Services.Forms.Delete(r.Context(), command)
+		err := h.app.API.Forms.Delete(r.Context(), command)
 		resultChan <- result[any]{nil, err}
 	}()
 
@@ -233,7 +233,7 @@ func (h *Handlers) GetFormVersions(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		versions, err := h.app.Services.Forms.FindVersions(r.Context(), query)
+		versions, err := h.app.API.Forms.FindVersions(r.Context(), query)
 		resultChan <- result[[]*domain.FormVersion]{versions, err}
 	}()
 
@@ -276,7 +276,7 @@ func (h *Handlers) GetFormVersion(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		version, err := h.app.Services.Forms.FindVersion(r.Context(), query)
+		version, err := h.app.API.Forms.FindVersion(r.Context(), query)
 		resultChan <- result[*domain.FormVersion]{version, err}
 	}()
 
@@ -328,7 +328,7 @@ func (h *Handlers) CreateFormVersion(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		version, err := h.app.Services.Forms.CreateVersion(r.Context(), command)
+		version, err := h.app.API.Forms.CreateVersion(r.Context(), command)
 		resultChan <- result[*domain.FormVersion]{version, err}
 	}()
 
@@ -386,7 +386,7 @@ func (h *Handlers) UpdateFormVersion(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		version, err := h.app.Services.Forms.UpdateVersion(r.Context(), command)
+		version, err := h.app.API.Forms.UpdateVersion(r.Context(), command)
 		resultChan <- result[*domain.FormVersion]{version, err}
 	}()
 
@@ -430,7 +430,7 @@ func (h *Handlers) PublishFormVersion(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		version, err := h.app.Services.Forms.PublishVersion(r.Context(), command)
+		version, err := h.app.API.Forms.PublishVersion(r.Context(), command)
 		resultChan <- result[*domain.FormVersion]{version, err}
 	}()
 
@@ -474,7 +474,7 @@ func (h *Handlers) RetireFormVersion(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		version, err := h.app.Services.Forms.RetireVersion(r.Context(), command)
+		version, err := h.app.API.Forms.RetireVersion(r.Context(), command)
 		resultChan <- result[*domain.FormVersion]{version, err}
 	}()
 

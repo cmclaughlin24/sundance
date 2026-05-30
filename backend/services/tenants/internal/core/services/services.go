@@ -18,13 +18,13 @@ type serviceOptions struct {
 	clients    *ports.Clients
 }
 
-func Bootstrap(opts ...func(*serviceOptions)) *ports.Services {
+func Bootstrap(opts ...func(*serviceOptions)) *ports.API {
 	var so serviceOptions
 	for _, opt := range opts {
 		opt(&so)
 	}
 
-	return &ports.Services{
+	return &ports.API{
 		Tenants:        NewTenantsService(so.logger, so.repository),
 		DataSources:    NewDataSourcesService(so.logger, so.repository, so.strategies),
 		DataSourceJobs: NewDataSourcesJobService(so.logger, so.repository, so.clients),

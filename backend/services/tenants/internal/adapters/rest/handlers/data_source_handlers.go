@@ -25,7 +25,7 @@ func (h *Handlers) GetDataSources(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		sources, err := h.app.Services.DataSources.Find(r.Context(), query)
+		sources, err := h.app.API.DataSources.Find(r.Context(), query)
 		resultChan <- result[[]*domain.DataSource]{sources, err}
 	}()
 
@@ -66,7 +66,7 @@ func (h *Handlers) GetDataSource(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		source, err := h.app.Services.DataSources.FindByID(r.Context(), query)
+		source, err := h.app.API.DataSources.FindByID(r.Context(), query)
 		resultChan <- result[*domain.DataSource]{source, err}
 	}()
 
@@ -122,7 +122,7 @@ func (h *Handlers) CreateDataSource(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		tenant, err := h.app.Services.DataSources.Create(r.Context(), command)
+		tenant, err := h.app.API.DataSources.Create(r.Context(), command)
 		resultChan <- result[*domain.DataSource]{tenant, err}
 	}()
 
@@ -184,7 +184,7 @@ func (h *Handlers) UpdateDataSource(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		tenant, err := h.app.Services.DataSources.Update(r.Context(), command)
+		tenant, err := h.app.API.DataSources.Update(r.Context(), command)
 		resultChan <- result[*domain.DataSource]{tenant, err}
 	}()
 
@@ -223,7 +223,7 @@ func (h *Handlers) DeleteDataSource(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		err := h.app.Services.DataSources.Delete(r.Context(), command)
+		err := h.app.API.DataSources.Delete(r.Context(), command)
 		resultChan <- result[any]{nil, err}
 	}()
 
@@ -260,7 +260,7 @@ func (h *Handlers) GetLookups(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		lookups, err := h.app.Services.DataSources.Lookup(r.Context(), command)
+		lookups, err := h.app.API.DataSources.Lookup(r.Context(), command)
 		resultChan <- result[[]*domain.Lookup]{lookups, err}
 	}()
 

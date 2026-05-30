@@ -6,13 +6,28 @@ import (
 	"sundance/backend/services/forms/internal/core/domain"
 )
 
-type Services struct {
-	Forms          FormsService
-	Submissions    SubmissionsService
-	SubmissionJobs SubmissionJobsService
+type API struct {
+	CanonicalTags  CanonicalTagAPI
+	Forms          FormsAPI
+	Submissions    SubmissionsAPI
+	SubmissionJobs SubmissionJobsAPI
 }
 
-type FormsService interface {
+type CanonicalTagAPI interface {
+	Find(context.Context) ([]*domain.CanonicalTag, error)
+	FindById(context.Context) (*domain.CanonicalTag, error)
+	Create(context.Context, any) (*domain.CanonicalTag, error)
+	Delete(context.Context, any) error
+	FindVersions(context.Context, any) error
+	FindVersion(context.Context, any) error
+	CreateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	UpdateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	PublishVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	DeprecateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	RetireVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+}
+
+type FormsAPI interface {
 	Find(context.Context, *FindFormsQuery) ([]*domain.Form, error)
 	FindByID(context.Context, *FindFormsByIDQuery) (*domain.Form, error)
 	Create(context.Context, *CreateFormCommand) (*domain.Form, error)
@@ -26,7 +41,7 @@ type FormsService interface {
 	RetireVersion(context.Context, *RetireFormVersionCommand) (*domain.FormVersion, error)
 }
 
-type SubmissionsService interface {
+type SubmissionsAPI interface {
 	Find(context.Context, *FindSubmissionsQuery) ([]*domain.Submission, error)
 	FindByID(context.Context, *FindSubmissionByIDQuery[domain.SubmissionID]) (*domain.Submission, error)
 	FindByReferenceID(context.Context, *FindSubmissionByIDQuery[domain.ReferenceID]) (*domain.Submission, error)
@@ -34,7 +49,7 @@ type SubmissionsService interface {
 	Replay(context.Context, *ReplaySubmissionCommand) error
 }
 
-type SubmissionJobsService interface {
+type SubmissionJobsAPI interface {
 	Find(context.Context, *FindSubmissionJobsQuery) ([]domain.SubmissionID, error)
 	Process(context.Context, domain.SubmissionID) error
 }
