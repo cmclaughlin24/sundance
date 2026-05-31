@@ -6,7 +6,7 @@ import (
 )
 
 type UpsertTagVersionRequest struct {
-	Type string `json:"required"`
+	Type string `json:"type" validate:"required"`
 }
 
 type TagVersionResponse struct {

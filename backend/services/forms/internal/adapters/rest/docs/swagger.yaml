@@ -36,6 +36,13 @@ definitions:
       message:
         type: string
     type: object
+  APIResponse-TagVersionResponse:
+    properties:
+      data:
+        $ref: '#/definitions/TagVersionResponse'
+      message:
+        type: string
+    type: object
   CreateTagRequest:
     properties:
       displayName:
@@ -357,6 +364,35 @@ definitions:
       updatedAt:
         type: string
     type: object
+  TagStatus:
+    enum:
+    - draft
+    - active
+    - deprecated
+    - retired
+    type: string
+    x-enum-varnames:
+    - TagStatusDraft
+    - TagStatusActive
+    - TagStatusDeprecated
+    - TagStatusRetired
+  TagVersionResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      retiredAt:
+        type: string
+      status:
+        $ref: '#/definitions/TagStatus'
+      tagId:
+        type: string
+      type:
+        type: string
+      version:
+        type: integer
+    type: object
   UpdateTagRequest:
     properties:
       displayName:
@@ -379,6 +415,13 @@ definitions:
         items:
           $ref: '#/definitions/PageRequest'
         type: array
+    type: object
+  UpsertTagVersionRequest:
+    properties:
+      type:
+        type: string
+    required:
+    - type
     type: object
 info:
   contact: {}
@@ -1145,6 +1188,124 @@ paths:
           schema:
             $ref: '#/definitions/APIErrorResponse'
       summary: Update a tag
+      tags:
+      - Tags
+  /tags/{tagId}/versions:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Tag ID
+        in: path
+        name: tagId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/TagVersionResponse'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Get all tag versions
+      tags:
+      - Tags
+    post:
+      consumes:
+      - application/json
+      description: Creates a new draft version for the tag. Versions follow a draft
+        → active → deprecated → retired lifecycle and define the data type associated
+        with the tag.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Tag ID
+        in: path
+        name: tagId
+        required: true
+        type: string
+      - description: Create Tag Version
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/UpsertTagVersionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/APIResponse-TagVersionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Create a tag version
+      tags:
+      - Tags
+  /tags/{tagId}/versions/{versionId}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Tag ID
+        in: path
+        name: tagId
+        required: true
+        type: string
+      - description: Version ID
+        in: path
+        name: versionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/TagVersionResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Get a tag version by ID
       tags:
       - Tags
 swagger: "2.0"

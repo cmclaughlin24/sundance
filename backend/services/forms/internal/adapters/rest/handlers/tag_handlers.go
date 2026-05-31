@@ -218,6 +218,16 @@ func (h *Handlers) DeleteTag(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Get all tag versions
+// @tags		Tags
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		tagId path string true "Tag ID"
+// @success		200 {array} dto.TagVersionResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/tags/{tagId}/versions [get]
 func (h *Handlers) GetTagVersions(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
@@ -249,9 +259,33 @@ func (h *Handlers) GetTagVersions(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Get a tag version by ID
+// @tags		Tags
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		tagId path string true "Tag ID"
+// @param		versionId path string true "Version ID"
+// @success		200 {object} dto.TagVersionResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/tags/{tagId}/versions/{versionId} [get]
 func (h *Handlers) GetTagVersion(w http.ResponseWriter, r *http.Request) {
 }
 
+// @summary		Create a tag version
+// @description	Creates a new draft version for the tag. Versions follow a draft → active → deprecated → retired lifecycle and define the data type associated with the tag.
+// @tags		Tags
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		tagId path string true "Tag ID"
+// @param		body body dto.UpsertTagVersionRequest true "Create Tag Version"
+// @success		201 {object} httputil.APIResponse[dto.TagVersionResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/tags/{tagId}/versions [post]
 func (h *Handlers) CreateTagVersion(w http.ResponseWriter, r *http.Request) {
 }
 

@@ -1136,6 +1136,180 @@
                     }
                 }
             }
+        },
+        "/tags/{tagId}/versions": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Get all tag versions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/TagVersionResponse"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new draft version for the tag. Versions follow a draft → active → deprecated → retired lifecycle and define the data type associated with the tag.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Create a tag version",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create Tag Version",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpsertTagVersionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/APIResponse-TagVersionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tags/{tagId}/versions/{versionId}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Get a tag version by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "versionId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/TagVersionResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1191,6 +1365,17 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/TagResponse"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "APIResponse-TagVersionResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/TagVersionResponse"
                 },
                 "message": {
                     "type": "string"
@@ -1668,6 +1853,47 @@
                 }
             }
         },
+        "TagStatus": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "active",
+                "deprecated",
+                "retired"
+            ],
+            "x-enum-varnames": [
+                "TagStatusDraft",
+                "TagStatusActive",
+                "TagStatusDeprecated",
+                "TagStatusRetired"
+            ]
+        },
+        "TagVersionResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "retiredAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/TagStatus"
+                },
+                "tagId": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
         "UpdateTagRequest": {
             "type": "object",
             "properties": {
@@ -1700,6 +1926,17 @@
                     "items": {
                         "$ref": "#/definitions/PageRequest"
                     }
+                }
+            }
+        },
+        "UpsertTagVersionRequest": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string"
                 }
             }
         }
