@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type CanonicalTagDocument struct {
+type TagDocument struct {
 	ID          string    `bson:"_id"`
 	TenantID    string    `bson:"tenant_id"`
 	Key         string    `bson:"key"`
@@ -14,8 +14,8 @@ type CanonicalTagDocument struct {
 	UpdatedAt   time.Time `wson:"updated_at"`
 }
 
-func ToCanonicalTagDocument(d *domain.CanonicalTag) CanonicalTagDocument {
-	return CanonicalTagDocument{
+func ToTagDocument(d *domain.Tag) TagDocument {
+	return TagDocument{
 		ID:          string(d.ID),
 		TenantID:    d.TenantID,
 		Key:         d.Key,
@@ -25,9 +25,9 @@ func ToCanonicalTagDocument(d *domain.CanonicalTag) CanonicalTagDocument {
 	}
 }
 
-func FromCanonicalTagDocument(d CanonicalTagDocument) *domain.CanonicalTag {
-	return domain.HydrateCanonicalTag(
-		domain.CanonicalTagID(d.ID),
+func FromTagDocument(d TagDocument) *domain.Tag {
+	return domain.HydrateTag(
+		domain.TagID(d.ID),
 		d.TenantID,
 		d.Key,
 		d.DisplayName,

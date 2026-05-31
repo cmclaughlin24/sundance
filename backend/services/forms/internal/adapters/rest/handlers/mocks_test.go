@@ -9,10 +9,10 @@ import (
 
 type mockFormsService struct {
 	findFn           func(context.Context, *ports.FindFormsQuery) ([]*domain.Form, error)
-	findByIDFn       func(context.Context, *ports.FindFormByIDQuery) (*domain.Form, error)
+	findByIDFn       func(context.Context, ports.FindByIDQuery[domain.FormID]) (*domain.Form, error)
 	createFn         func(context.Context, *ports.CreateFormCommand) (*domain.Form, error)
 	updateFn         func(context.Context, *ports.UpdateFormCommand) (*domain.Form, error)
-	deleteFn         func(context.Context, *ports.RemoveFormCommand) error
+	deleteFn         func(context.Context, *ports.DeleteCommand[domain.FormID]) error
 	findVersionsFn   func(context.Context, *ports.FindFormVersionsQuery) ([]*domain.FormVersion, error)
 	findVersionFn    func(context.Context, *ports.FindFormVersionByIDQuery) (*domain.FormVersion, error)
 	createVersionFn  func(context.Context, *ports.CreateFormVersionCommand) (*domain.FormVersion, error)
@@ -25,7 +25,7 @@ func (s *mockFormsService) Find(ctx context.Context, query *ports.FindFormsQuery
 	return s.findFn(ctx, query)
 }
 
-func (s *mockFormsService) FindByID(ctx context.Context, query *ports.FindFormByIDQuery) (*domain.Form, error) {
+func (s *mockFormsService) FindByID(ctx context.Context, query ports.FindByIDQuery[domain.FormID]) (*domain.Form, error) {
 	return s.findByIDFn(ctx, query)
 }
 
@@ -37,7 +37,7 @@ func (s *mockFormsService) Update(ctx context.Context, command *ports.UpdateForm
 	return s.updateFn(ctx, command)
 }
 
-func (s *mockFormsService) Delete(ctx context.Context, command *ports.RemoveFormCommand) error {
+func (s *mockFormsService) Delete(ctx context.Context, command *ports.DeleteCommand[domain.FormID]) error {
 	return s.deleteFn(ctx, command)
 }
 

@@ -26,12 +26,12 @@ var (
 )
 
 type mongoDBCanonicalTagsRespository struct {
-	base *database.MongoDBRepository[documents.CanonicalTagDocument]
+	base *database.MongoDBRepository[documents.TagDocument]
 }
 
-func newMongoDBCanonicalTagsRepository(db *mongo.Database, logger *slog.Logger) (ports.CanonicalTagRepository, error) {
-	base := database.NewMongoDBRepository[documents.CanonicalTagDocument](
-		db.Collection("canonical_tags"),
+func newMongoDBCanonicalTagsRepository(db *mongo.Database, logger *slog.Logger) (ports.TagsRepository, error) {
+	base := database.NewMongoDBRepository[documents.TagDocument](
+		db.Collection("tags"),
 		logger,
 	)
 	repository := &mongoDBCanonicalTagsRespository{base}
@@ -48,7 +48,7 @@ func (r *mongoDBCanonicalTagsRespository) migrate(ctx context.Context) error {
 	return err
 }
 
-func (r *mongoDBCanonicalTagsRespository) Find(ctx context.Context, ctf ports.CanonicalTagFilters) ([]*domain.CanonicalTag, error) {
+func (r *mongoDBCanonicalTagsRespository) Find(ctx context.Context, ctf ports.TagFilters) ([]*domain.Tag, error) {
 	filter := bson.M{}
 
 	if ctf.TenantID != "" {
@@ -61,33 +61,33 @@ func (r *mongoDBCanonicalTagsRespository) Find(ctx context.Context, ctf ports.Ca
 		return nil, err
 	}
 
-	tags := make([]*domain.CanonicalTag, 0, len(docs))
+	tags := make([]*domain.Tag, 0, len(docs))
 	for _, document := range docs {
-		tags = append(tags, documents.FromCanonicalTagDocument(document))
+		tags = append(tags, documents.FromTagDocument(document))
 	}
 
 	return tags, nil
 }
 
-func (r *mongoDBCanonicalTagsRespository) FindByID(ctx context.Context, id domain.CanonicalTagID) (*domain.CanonicalTag, error) {
+func (r *mongoDBCanonicalTagsRespository) FindByID(ctx context.Context, id domain.TagID) (*domain.Tag, error) {
 	doc, err := r.base.FindOne(ctx, bson.M{"_id": id})
 
 	if err != nil {
 		return nil, err
 	}
 
-	return documents.FromCanonicalTagDocument(doc), nil
+	return documents.FromTagDocument(doc), nil
 }
 
-func (r *mongoDBCanonicalTagsRespository) Upsert(ctx context.Context, t *domain.CanonicalTag) (*domain.CanonicalTag, error) {
+func (r *mongoDBCanonicalTagsRespository) Upsert(ctx context.Context, t *domain.Tag) (*domain.Tag, error) {
 	r.base.Logger().DebugContext(ctx, "upsert canonical tag", "canonical_tag_id", t.ID)
 
-	doc := documents.ToCanonicalTagDocument(t)
+	doc := documents.ToTagDocument(t)
 	filter := bson.M{"_id": doc.ID}
 	update := bson.M{"$set": doc}
 	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
-	var result documents.CanonicalTagDocument
+	var result documents.TagDocument
 	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
 		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
 	})
@@ -97,9 +97,9 @@ func (r *mongoDBCanonicalTagsRespository) Upsert(ctx context.Context, t *domain.
 		return nil, err
 	}
 
-	return documents.FromCanonicalTagDocument(result), nil
+	return documents.FromTagDocument(result), nil
 }
 
-func (r *mongoDBCanonicalTagsRespository) Delete(ctx context.Context, id domain.CanonicalTagID) error {
+func (r *mongoDBCanonicalTagsRespository) Delete(ctx context.Context, id domain.TagID) error {
 	return r.base.Delete(ctx, bson.M{"_id": id})
 }

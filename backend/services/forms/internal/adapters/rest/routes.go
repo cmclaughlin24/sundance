@@ -32,17 +32,6 @@ func NewRoutes(app *core.Application, host string) http.Handler {
 		routes.Use(httputil.NewTenantMiddleware("X-Tenant-ID"))
 		routes.Use(auth.NewMiddleware(placeholderAuthenticator))
 
-		routes.Route("/canonical-tags", func(tagsRoutes chi.Router) {
-			tagsRoutes.Get("/", h.GetCanonicalTags)
-			tagsRoutes.Post("/", h.CreateCanonicalTag)
-
-			tagsRoutes.Route("/{tagId}", func(tagRoutes chi.Router) {
-				tagRoutes.Get("/", h.GetCanonicalTag)
-				tagRoutes.Put("/", h.UpdateCanonicalTag)
-				tagRoutes.Delete("/", h.DeleteCanonicalTag)
-			})
-		})
-
 		routes.Route("/forms", func(formsRoutes chi.Router) {
 			formsRoutes.Get("/", h.GetForms)
 			formsRoutes.Post("/", h.CreateForm)
@@ -79,12 +68,36 @@ func NewRoutes(app *core.Application, host string) http.Handler {
 				submissionRoutes.Get("/status", h.GetSubmissionStatus)
 			})
 		})
+
+		routes.Route("/tags", func(tagsRoutes chi.Router) {
+			tagsRoutes.Get("/", h.GetTags)
+			tagsRoutes.Post("/", h.CreateTag)
+
+			tagsRoutes.Route("/{tagId}", func(tagRoutes chi.Router) {
+				tagRoutes.Get("/", h.GetTag)
+				tagRoutes.Put("/", h.UpdateTag)
+				tagRoutes.Delete("/", h.DeleteTag)
+
+				tagRoutes.Route("/version", func(versionsRoutes chi.Router) {
+					versionsRoutes.Get("/", h.GetTagVersions)
+					versionsRoutes.Post("/", h.CreateTagVersion)
+
+					versionsRoutes.Route("/{versionId}", func(versionRoutes chi.Router) {
+						versionsRoutes.Get("/", h.GetTagVersion)
+						versionsRoutes.Put("/", h.UpdateTagVersion)
+						versionsRoutes.Put("/deprecate", h.DeprecateTagVersion)
+						versionsRoutes.Put("/publish", h.PublishTagVersion)
+						versionsRoutes.Put("/retire", h.RetireTagVersion)
+					})
+				})
+			})
+		})
 	})
 
 	re := regexp.MustCompile(`https?://`)
 	docs.SwaggerInfo.Host = re.ReplaceAllString(host, "")
 	docs.SwaggerInfo.Title = "Form Builder SaaS | Forms Service"
-	docs.SwaggerInfo.Description = "The Forms Service manages form definitions and their versioned schemas for the Form Builder SaaS platform. It provides CRUD operations for forms and versions, where versions define the structure of a form (pages, sections, fields, and validation rules) and follow a lifecycle of draft, published, and retired statuses."
+	docs.SwaggerInfo.Description = "The Forms Service is the system of record for form definitions, submissions, and tags in the Form Builder SaaS platform. **Forms** are composed of versioned schemas (pages, sections, fields, and validation rules) that follow a draft → published → retired lifecycle. **Submissions** are accepted asynchronously against a published form version, deduplicated via an idempotency key, and queryable by reference ID. **Tags** are tenant-scoped, stable identifiers used to attach semantic meaning to form fields and preserve historical associations across schema changes."
 	docs.SwaggerInfo.Version = "1.0.0"
 	docs.SwaggerInfo.BasePath = "/api/v1"
 

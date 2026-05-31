@@ -10,24 +10,24 @@ import (
 	"sundance/backend/services/forms/internal/core/ports"
 )
 
-type inMemoryCanonicalTagRepository struct {
+type inMemoryTagRepository struct {
 	mu     sync.RWMutex
-	tags   map[string]*domain.CanonicalTag
+	tags   map[string]*domain.Tag
 	logger *slog.Logger
 }
 
-func newInMemoryCanonicalTagRepository(logger *slog.Logger) ports.CanonicalTagRepository {
-	return &inMemoryCanonicalTagRepository{
-		tags:   make(map[string]*domain.CanonicalTag),
+func newInMemoryTagRepository(logger *slog.Logger) ports.TagsRepository {
+	return &inMemoryTagRepository{
+		tags:   make(map[string]*domain.Tag),
 		logger: logger,
 	}
 }
 
-func (r *inMemoryCanonicalTagRepository) Find(ctx context.Context, filters ports.CanonicalTagFilters) ([]*domain.CanonicalTag, error) {
+func (r *inMemoryTagRepository) Find(ctx context.Context, filters ports.TagFilters) ([]*domain.Tag, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	tags := make([]*domain.CanonicalTag, 0, len(r.tags))
+	tags := make([]*domain.Tag, 0, len(r.tags))
 
 	for _, tag := range r.tags {
 		if filters.TenantID != "" && tag.TenantID != filters.TenantID {
@@ -39,7 +39,7 @@ func (r *inMemoryCanonicalTagRepository) Find(ctx context.Context, filters ports
 	return tags, nil
 }
 
-func (r *inMemoryCanonicalTagRepository) FindByID(ctx context.Context, id domain.CanonicalTagID) (*domain.CanonicalTag, error) {
+func (r *inMemoryTagRepository) FindByID(ctx context.Context, id domain.TagID) (*domain.Tag, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -52,7 +52,7 @@ func (r *inMemoryCanonicalTagRepository) FindByID(ctx context.Context, id domain
 	return tag, nil
 }
 
-func (r *inMemoryCanonicalTagRepository) Upsert(ctx context.Context, tag *domain.CanonicalTag) (*domain.CanonicalTag, error) {
+func (r *inMemoryTagRepository) Upsert(ctx context.Context, tag *domain.Tag) (*domain.Tag, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -61,7 +61,7 @@ func (r *inMemoryCanonicalTagRepository) Upsert(ctx context.Context, tag *domain
 	return tag, nil
 }
 
-func (r *inMemoryCanonicalTagRepository) Delete(ctx context.Context, id domain.CanonicalTagID) error {
+func (r *inMemoryTagRepository) Delete(ctx context.Context, id domain.TagID) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

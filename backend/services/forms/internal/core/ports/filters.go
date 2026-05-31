@@ -2,7 +2,7 @@ package ports
 
 import "sundance/backend/services/forms/internal/core/domain"
 
-type CanonicalTagFilters struct {
+type TagFilters struct {
 	TenantID string
 }
 

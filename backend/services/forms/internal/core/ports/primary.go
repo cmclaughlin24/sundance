@@ -7,20 +7,20 @@ import (
 )
 
 type API struct {
-	CanonicalTags  CanonicalTagAPI
+	Tags           TagsAPI
 	Forms          FormsAPI
 	Submissions    SubmissionsAPI
 	SubmissionJobs SubmissionJobsAPI
 }
 
-type CanonicalTagAPI interface {
-	Find(context.Context, FindCanonicalTagsQuery) ([]*domain.CanonicalTag, error)
-	FindById(context.Context, FindByIDQuery[domain.CanonicalTagID]) (*domain.CanonicalTag, error)
-	Create(context.Context, CreateCanonicalTagCommand) (*domain.CanonicalTag, error)
-	Update(context.Context, UpdateCanonicalTagCommand) (*domain.CanonicalTag, error)
-	Delete(context.Context, DeleteCommand[domain.CanonicalTagID]) error
-	// FindVersions(context.Context, any) error
-	// FindVersion(context.Context, any) error
+type TagsAPI interface {
+	Find(context.Context, FindTagsQuery) ([]*domain.Tag, error)
+	FindById(context.Context, FindByIDQuery[domain.TagID]) (*domain.Tag, error)
+	Create(context.Context, CreateTagCommand) (*domain.Tag, error)
+	Update(context.Context, UpdateTagCommand) (*domain.Tag, error)
+	Delete(context.Context, DeleteCommand[domain.TagID]) error
+	FindVersions(context.Context, FindCanonicalTagVersionQuery) ([]*domain.TagVersion, error)
+	FindVersion(context.Context, FindCanonicalTagVersionQuery) (*domain.TagVersion, error)
 	// CreateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
 	// UpdateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
 	// PublishVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
@@ -30,7 +30,7 @@ type CanonicalTagAPI interface {
 
 type FormsAPI interface {
 	Find(context.Context, *FindFormsQuery) ([]*domain.Form, error)
-	FindByID(context.Context, *FindFormByIDQuery) (*domain.Form, error)
+	FindByID(context.Context, FindByIDQuery[domain.FormID]) (*domain.Form, error)
 	Create(context.Context, *CreateFormCommand) (*domain.Form, error)
 	Update(context.Context, *UpdateFormCommand) (*domain.Form, error)
 	Delete(context.Context, *DeleteCommand[domain.FormID]) error

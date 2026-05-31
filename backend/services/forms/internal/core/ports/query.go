@@ -21,17 +21,53 @@ func (q FindByIDQuery[T]) Validate() error {
 	return validate.ValidateStruct(q)
 }
 
-type FindCanonicalTagsQuery struct {
+type FindTagsQuery struct {
 	TenantID string `validate:"required"`
 }
 
-func NewCanonicalTagsQuery(tenantID string) FindCanonicalTagsQuery {
-	return FindCanonicalTagsQuery{
+func NewTagsQuery(tenantID string) FindTagsQuery {
+	return FindTagsQuery{
 		TenantID: tenantID,
 	}
 }
 
-func (q FindCanonicalTagsQuery) Validate() error {
+func (q FindTagsQuery) Validate() error {
+	return validate.ValidateStruct(q)
+}
+
+type FindTagVersionsQuery struct {
+	FindByIDQuery[domain.TagID]
+}
+
+func NewFindTagVersionsQuery(tenantID string, tagID domain.TagID) FindTagVersionsQuery {
+	return FindTagVersionsQuery{
+		FindByIDQuery[domain.TagID]{
+			TenantID: tenantID,
+			ID:       tagID,
+		},
+	}
+}
+
+func (q FindTagVersionsQuery) Validate() error {
+	return validate.ValidateStruct(q)
+}
+
+type FindCanonicalTagVersionQuery struct {
+	VersionID domain.TagVersionID `validate:"required"`
+	FindByIDQuery[domain.TagID]
+}
+
+func NewFindCanonicalTagVersionQuery(tenantID string, tagID domain.TagID, versionID domain.TagVersionID) FindCanonicalTagVersionQuery {
+	return FindCanonicalTagVersionQuery{
+		versionID,
+		FindByIDQuery[domain.TagID]{
+			TenantID: tenantID,
+			ID:       tagID,
+		},
+	}
+}
+
+func (q FindCanonicalTagVersionQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 
@@ -50,25 +86,15 @@ func (q *FindFormsQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 
-type FindFormByIDQuery = FindByIDQuery[domain.FormID]
-
-func NewFindFormByIDQuery(tenantID string, formID domain.FormID) *FindFormByIDQuery {
-	return &FindFormByIDQuery{
-		TenantID: tenantID,
-		ID:   formID,
-	}
-}
-
 type FindFormVersionsQuery struct {
-	FindFormByIDQuery
+	TenantID string        `validate:"required"`
+	ID       domain.FormID `validate:"required"`
 }
 
 func NewFindFormVersionsQuery(tenantID string, formID domain.FormID) *FindFormVersionsQuery {
 	return &FindFormVersionsQuery{
-		FindFormByIDQuery{
-			TenantID: tenantID,
-			ID:   formID,
-		},
+		TenantID: tenantID,
+		ID:       formID,
 	}
 }
 
@@ -77,16 +103,15 @@ func (q *FindFormVersionsQuery) Validate() error {
 }
 
 type FindFormVersionByIDQuery struct {
-	FindFormByIDQuery
+	TenantID  string               `validate:"required"`
+	ID        domain.FormID        `validate:"required"`
 	VersionID domain.FormVersionID `validate:"required"`
 }
 
 func NewFindFormVersionByIDQuery(tenantID string, formID domain.FormID, versionID domain.FormVersionID) *FindFormVersionByIDQuery {
 	return &FindFormVersionByIDQuery{
-		FindFormByIDQuery: FindFormByIDQuery{
-			TenantID: tenantID,
-			ID:   formID,
-		},
+		TenantID:  tenantID,
+		ID:        formID,
 		VersionID: versionID,
 	}
 }

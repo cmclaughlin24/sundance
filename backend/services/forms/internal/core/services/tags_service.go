@@ -9,19 +9,19 @@ import (
 	"sundance/backend/services/forms/internal/core/ports"
 )
 
-type canonicalTagService struct {
-	logger     *slog.Logger
-	repository ports.CanonicalTagRepository
+type tagsService struct {
+	logger         *slog.Logger
+	tagsRepository ports.TagsRepository
 }
 
-func NewCanonicalTagService(logger *slog.Logger, repository *ports.Repository) ports.CanonicalTagAPI {
-	return &canonicalTagService{
-		logger:     logger,
-		repository: repository.CanonicalTags,
+func NewTagsService(logger *slog.Logger, repository *ports.Repository) ports.TagsAPI {
+	return &tagsService{
+		logger:         logger,
+		tagsRepository: repository.Tags,
 	}
 }
 
-func (s *canonicalTagService) Find(ctx context.Context, query ports.FindCanonicalTagsQuery) ([]*domain.CanonicalTag, error) {
+func (s *tagsService) Find(ctx context.Context, query ports.FindTagsQuery) ([]*domain.Tag, error) {
 	s.logger.DebugContext(ctx, "listing canonical tags", "tenant_id", "")
 
 	if err := query.Validate(); err != nil {
@@ -29,7 +29,7 @@ func (s *canonicalTagService) Find(ctx context.Context, query ports.FindCanonica
 		return nil, err
 	}
 
-	tags, err := s.repository.Find(ctx, ports.CanonicalTagFilters{
+	tags, err := s.tagsRepository.Find(ctx, ports.TagFilters{
 		TenantID: query.TenantID,
 	})
 	if err != nil {
@@ -40,7 +40,7 @@ func (s *canonicalTagService) Find(ctx context.Context, query ports.FindCanonica
 	return tags, nil
 }
 
-func (s *canonicalTagService) FindById(ctx context.Context, query ports.FindByIDQuery[domain.CanonicalTagID]) (*domain.CanonicalTag, error) {
+func (s *tagsService) FindById(ctx context.Context, query ports.FindByIDQuery[domain.TagID]) (*domain.Tag, error) {
 	s.logger.DebugContext(ctx, "finding canonical tag", "tenant_id", query.TenantID, "canonical_tag_id", query.ID)
 
 	if err := query.Validate(); err != nil {
@@ -48,7 +48,7 @@ func (s *canonicalTagService) FindById(ctx context.Context, query ports.FindByID
 		return nil, err
 	}
 
-	tag, err := s.repository.FindByID(ctx, query.ID)
+	tag, err := s.tagsRepository.FindByID(ctx, query.ID)
 	if err != nil {
 		s.logFindByIDError(ctx, err, query.ID)
 		return nil, err
@@ -62,7 +62,7 @@ func (s *canonicalTagService) FindById(ctx context.Context, query ports.FindByID
 	return tag, nil
 }
 
-func (s *canonicalTagService) Create(ctx context.Context, command ports.CreateCanonicalTagCommand) (*domain.CanonicalTag, error) {
+func (s *tagsService) Create(ctx context.Context, command ports.CreateTagCommand) (*domain.Tag, error) {
 	s.logger.DebugContext(ctx, "creating canonical tag", "tenant_id", command.TenantID)
 
 	if err := command.Validate(); err != nil {
@@ -70,13 +70,13 @@ func (s *canonicalTagService) Create(ctx context.Context, command ports.CreateCa
 		return nil, err
 	}
 
-	tag, err := domain.NewCanonicalTag(command.TenantID, command.Key, command.DisplayName)
+	tag, err := domain.NewTag(command.TenantID, command.Key, command.DisplayName)
 	if err != nil {
 		s.logger.WarnContext(ctx, "canonical tag creation failed; domain invariant violation", "tenant_id", command.TenantID, "error", err)
 		return nil, err
 	}
 
-	tag, err = s.repository.Upsert(ctx, tag)
+	tag, err = s.tagsRepository.Upsert(ctx, tag)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to persist canonical tag", "tenant_id", command.TenantID, "error", err)
 		return nil, err
@@ -87,7 +87,7 @@ func (s *canonicalTagService) Create(ctx context.Context, command ports.CreateCa
 	return tag, nil
 }
 
-func (s *canonicalTagService) Update(ctx context.Context, command ports.UpdateCanonicalTagCommand) (*domain.CanonicalTag, error) {
+func (s *tagsService) Update(ctx context.Context, command ports.UpdateTagCommand) (*domain.Tag, error) {
 	s.logger.DebugContext(ctx, "updating canonical tag", "tenant_id", command.TenantID)
 
 	if err := command.Validate(); err != nil {
@@ -95,7 +95,7 @@ func (s *canonicalTagService) Update(ctx context.Context, command ports.UpdateCa
 		return nil, err
 	}
 
-	tag, err := s.repository.FindByID(ctx, command.ID)
+	tag, err := s.tagsRepository.FindByID(ctx, command.ID)
 	if err != nil {
 		s.logFindByIDError(ctx, err, command.ID)
 		return nil, err
@@ -111,7 +111,7 @@ func (s *canonicalTagService) Update(ctx context.Context, command ports.UpdateCa
 		return nil, err
 	}
 
-	tag, err = s.repository.Upsert(ctx, tag)
+	tag, err = s.tagsRepository.Upsert(ctx, tag)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to persist canonical tag", "tenant_id", command.TenantID, "canonical_tag_id", command.ID, "error", err)
 		return nil, err
@@ -122,7 +122,7 @@ func (s *canonicalTagService) Update(ctx context.Context, command ports.UpdateCa
 	return tag, nil
 }
 
-func (s *canonicalTagService) Delete(ctx context.Context, command ports.DeleteCommand[domain.CanonicalTagID]) error {
+func (s *tagsService) Delete(ctx context.Context, command ports.DeleteCommand[domain.TagID]) error {
 	s.logger.DebugContext(ctx, "deleting canonical tag", "tenant_id", command.TenantID, "canonical_tag_id", command.ID)
 
 	if err := command.Validate(); err != nil {
@@ -132,7 +132,7 @@ func (s *canonicalTagService) Delete(ctx context.Context, command ports.DeleteCo
 
 	// FIXME: A canonical tag should not be deletable if it has ever had an active version to ensure audit history can be maintained.
 
-	if err := s.repository.Delete(ctx, command.ID); err != nil {
+	if err := s.tagsRepository.Delete(ctx, command.ID); err != nil {
 		s.logger.ErrorContext(ctx, "failed to delete canonical tag", "tenant_id", command.TenantID, "canonical_tag_id", command.ID, "error", err)
 		return err
 	}
@@ -142,7 +142,32 @@ func (s *canonicalTagService) Delete(ctx context.Context, command ports.DeleteCo
 	return nil
 }
 
-func (s *canonicalTagService) logFindByIDError(ctx context.Context, err error, tagID domain.CanonicalTagID) {
+func (s *tagsService) FindVersions(ctx context.Context, query ports.FindCanonicalTagVersionQuery) ([]*domain.TagVersion, error) {
+	s.logger.DebugContext(ctx, "listing versions", "tenant_id", query.TenantID, "canonical_version_id", query.ID)
+
+	if err := query.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "version listing failed; invalid query", "tenant_id", query.TenantID, "canonical_version_id", query.ID, "error", err)
+		return nil, err
+	}
+
+	if err := s.isValidAccess(ctx, query.TenantID, query.ID); err != nil {
+		return nil, err
+	}
+
+	// versions, err := s.versionsRepository.Find(ctx, query.ID)
+	// if err != nil {
+	// 	s.logger.ErrorContext(ctx, "failed to retrieve versions", "tenant_id", query.TenantID, "canonical_version_id", query.ID, "error", err)
+	// 	return nil, err
+	// }
+
+	return nil, nil
+}
+
+func (s *tagsService) FindVersion(ctx context.Context, query ports.FindCanonicalTagVersionQuery) (*domain.TagVersion, error) {
+	return nil, nil
+}
+
+func (s *tagsService) logFindByIDError(ctx context.Context, err error, tagID domain.TagID) {
 	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "canonical tag not found", "canonical_tag_id", tagID)
 	} else {
@@ -150,8 +175,8 @@ func (s *canonicalTagService) logFindByIDError(ctx context.Context, err error, t
 	}
 }
 
-func (s *canonicalTagService) isValidAccess(ctx context.Context, tenantID string, id domain.CanonicalTagID) error {
-	form, err := s.repository.FindByID(ctx, id)
+func (s *tagsService) isValidAccess(ctx context.Context, tenantID string, id domain.TagID) error {
+	form, err := s.tagsRepository.FindByID(ctx, id)
 
 	if err != nil {
 		s.logFindByIDError(ctx, err, id)

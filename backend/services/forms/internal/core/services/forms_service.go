@@ -46,7 +46,7 @@ func (s *formsService) Find(ctx context.Context, query *ports.FindFormsQuery) ([
 	return forms, nil
 }
 
-func (s *formsService) FindByID(ctx context.Context, query *ports.FindFormByIDQuery) (*domain.Form, error) {
+func (s *formsService) FindByID(ctx context.Context, query ports.FindByIDQuery[domain.FormID]) (*domain.Form, error) {
 	s.logger.DebugContext(ctx, "finding form", "tenant_id", query.TenantID, "form_id", query.ID)
 
 	if err := query.Validate(); err != nil {

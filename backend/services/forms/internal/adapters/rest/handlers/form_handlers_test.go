@@ -95,13 +95,13 @@ func Test_handlers_GetForms(t *testing.T) {
 func Test_handlers_GetForm(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.FindFormByIDQuery) (*domain.Form, error)
+		fn         func(context.Context, ports.FindByIDQuery[domain.FormID]) (*domain.Form, error)
 		statusCode int
 		id         string
 	}{
 		{
 			"should yield OK if the request is successful",
-			func(ctx context.Context, query *ports.FindFormByIDQuery) (*domain.Form, error) {
+			func(ctx context.Context, query ports.FindByIDQuery[domain.FormID]) (*domain.Form, error) {
 				return &domain.Form{
 					ID:       query.ID,
 					TenantID: query.TenantID,
@@ -113,7 +113,7 @@ func Test_handlers_GetForm(t *testing.T) {
 		},
 		{
 			"should yield NOT FOUND if the resource is not found",
-			func(ctx context.Context, query *ports.FindFormByIDQuery) (*domain.Form, error) {
+			func(ctx context.Context, query ports.FindByIDQuery[domain.FormID]) (*domain.Form, error) {
 				return nil, common.ErrNotFound
 			},
 			http.StatusNotFound,
@@ -121,7 +121,7 @@ func Test_handlers_GetForm(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, query *ports.FindFormByIDQuery) (*domain.Form, error) {
+			func(ctx context.Context, query ports.FindByIDQuery[domain.FormID]) (*domain.Form, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -301,13 +301,13 @@ func Test_handlers_UpdateForm(t *testing.T) {
 func Test_handlers_DeleteForm(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.RemoveFormCommand) error
+		fn         func(context.Context, *ports.DeleteCommand[domain.FormID]) error
 		statusCode int
 		id         string
 	}{
 		{
 			"should yield NO CONTENT if the request is successful",
-			func(ctx context.Context, command *ports.RemoveFormCommand) error {
+			func(ctx context.Context, command *ports.DeleteCommand[domain.FormID]) error {
 				return nil
 			},
 			http.StatusNoContent,
@@ -315,7 +315,7 @@ func Test_handlers_DeleteForm(t *testing.T) {
 		},
 		{
 			"should yield NOT FOUND if the resource is not found",
-			func(ctx context.Context, command *ports.RemoveFormCommand) error {
+			func(ctx context.Context, command *ports.DeleteCommand[domain.FormID]) error {
 				return common.ErrNotFound
 			},
 			http.StatusNotFound,
@@ -323,7 +323,7 @@ func Test_handlers_DeleteForm(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command *ports.RemoveFormCommand) error {
+			func(ctx context.Context, command *ports.DeleteCommand[domain.FormID]) error {
 				return errors.New("internal error")
 			},
 			http.StatusInternalServerError,

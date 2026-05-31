@@ -7,13 +7,13 @@ import (
 )
 
 var (
-	ErrInvalidCanonicalTag = errors.New("invalid canonical tag")
+	ErrInvalidCanonicalTag = errors.New("invalid tag")
 )
 
-type CanonicalTagID string
+type TagID string
 
-type CanonicalTag struct {
-	ID          CanonicalTagID
+type Tag struct {
+	ID          TagID
 	TenantID    string
 	Key         string
 	DisplayName string
@@ -21,9 +21,9 @@ type CanonicalTag struct {
 	UpdatedAt   time.Time
 }
 
-func NewCanonicalTag(tenantID, key, displayName string) (*CanonicalTag, error) {
-	ct := &CanonicalTag{
-		ID:          CanonicalTagID(NewID()),
+func NewTag(tenantID, key, displayName string) (*Tag, error) {
+	ct := &Tag{
+		ID:          TagID(NewID()),
 		TenantID:    tenantID,
 		Key:         key,
 		DisplayName: displayName,
@@ -37,8 +37,8 @@ func NewCanonicalTag(tenantID, key, displayName string) (*CanonicalTag, error) {
 	return ct, nil
 }
 
-func HydrateCanonicalTag(id CanonicalTagID, tenantID, key, displayName string, createdAt, updatedAt time.Time) *CanonicalTag {
-	return &CanonicalTag{
+func HydrateTag(id TagID, tenantID, key, displayName string, createdAt, updatedAt time.Time) *Tag {
+	return &Tag{
 		ID:          id,
 		TenantID:    tenantID,
 		Key:         key,
@@ -48,20 +48,20 @@ func HydrateCanonicalTag(id CanonicalTagID, tenantID, key, displayName string, c
 	}
 }
 
-func (ct *CanonicalTag) Update(displayName string) error {
-	if ct == nil {
+func (t *Tag) Update(displayName string) error {
+	if t == nil {
 		return ErrInvalidCanonicalTag
 	}
 
-	cpy := *ct
+	cpy := *t
 	cpy.DisplayName = displayName
 
 	if err := validate.ValidateStruct(cpy); err != nil {
 		return err
 	}
 
-	*ct = cpy
-	ct.UpdatedAt = Now()
+	*t = cpy
+	t.UpdatedAt = Now()
 
 	return nil
 }

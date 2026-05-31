@@ -9,18 +9,25 @@ import (
 )
 
 type Repository struct {
-	Database      database.Database
-	CanonicalTags CanonicalTagRepository
-	Forms         FormsRepository
-	FormVersions  FormVersionRepository
-	Submissions   SubmissionsRepository
+	Database     database.Database
+	Tags         TagsRepository
+	Forms        FormsRepository
+	FormVersions FormVersionRepository
+	Submissions  SubmissionsRepository
 }
 
-type CanonicalTagRepository interface{
-	Find(context.Context, CanonicalTagFilters) ([]*domain.CanonicalTag, error)
-	FindByID(context.Context, domain.CanonicalTagID) (*domain.CanonicalTag, error)
-	Upsert(context.Context, *domain.CanonicalTag) (*domain.CanonicalTag, error)
-	Delete(context.Context, domain.CanonicalTagID) error
+type TagsRepository interface {
+	Find(context.Context, TagFilters) ([]*domain.Tag, error)
+	FindByID(context.Context, domain.TagID) (*domain.Tag, error)
+	Upsert(context.Context, *domain.Tag) (*domain.Tag, error)
+	Delete(context.Context, domain.TagID) error
+}
+
+type TagVersionsRepository interface {
+	Find(context.Context, TagFilters) ([]*domain.Tag, error)
+	FindByID(context.Context, domain.TagID) (*domain.Tag, error)
+	FindNextVersionNumber(context.Context, domain.TagID) (int, error)
+	Upsert(context.Context, *domain.Tag) (*domain.Tag, error)
 }
 
 type FormsRepository interface {

@@ -34,7 +34,7 @@ func Bootstrap(client *mongo.Client, logger *slog.Logger, databaseName string) (
 
 	return &ports.Repository{
 		Database:      database.NewMongoDBDatabase(client, db, logger),
-		CanonicalTags: tags,
+		Tags: tags,
 		Forms:         forms,
 		FormVersions:  versions,
 		Submissions:   submissions,
