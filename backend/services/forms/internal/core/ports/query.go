@@ -52,13 +52,13 @@ func (q FindTagVersionsQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 
-type FindCanonicalTagVersionQuery struct {
+type FindTagVersionQuery struct {
 	VersionID domain.TagVersionID `validate:"required"`
 	FindByIDQuery[domain.TagID]
 }
 
-func NewFindCanonicalTagVersionQuery(tenantID string, tagID domain.TagID, versionID domain.TagVersionID) FindCanonicalTagVersionQuery {
-	return FindCanonicalTagVersionQuery{
+func NewFindTagVersionQuery(tenantID string, tagID domain.TagID, versionID domain.TagVersionID) FindTagVersionQuery {
+	return FindTagVersionQuery{
 		versionID,
 		FindByIDQuery[domain.TagID]{
 			TenantID: tenantID,
@@ -67,7 +67,7 @@ func NewFindCanonicalTagVersionQuery(tenantID string, tagID domain.TagID, versio
 	}
 }
 
-func (q FindCanonicalTagVersionQuery) Validate() error {
+func (q FindTagVersionQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 

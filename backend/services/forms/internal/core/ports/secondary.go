@@ -11,6 +11,7 @@ import (
 type Repository struct {
 	Database     database.Database
 	Tags         TagsRepository
+	TagVersions  TagVersionsRepository
 	Forms        FormsRepository
 	FormVersions FormVersionRepository
 	Submissions  SubmissionsRepository
@@ -24,10 +25,10 @@ type TagsRepository interface {
 }
 
 type TagVersionsRepository interface {
-	Find(context.Context, TagFilters) ([]*domain.Tag, error)
-	FindByID(context.Context, domain.TagID) (*domain.Tag, error)
+	Find(context.Context, TagVersionFilters) ([]*domain.TagVersion, error)
+	FindByID(context.Context, domain.TagVersionID) (*domain.TagVersion, error)
 	FindNextVersionNumber(context.Context, domain.TagID) (int, error)
-	Upsert(context.Context, *domain.Tag) (*domain.Tag, error)
+	Upsert(context.Context, *domain.TagVersion) (*domain.TagVersion, error)
 }
 
 type FormsRepository interface {
@@ -39,7 +40,7 @@ type FormsRepository interface {
 
 type FormVersionRepository interface {
 	Find(context.Context, domain.FormID) ([]*domain.FormVersion, error)
-	FindByID(context.Context, domain.FormID, domain.FormVersionID) (*domain.FormVersion, error)
+	FindByID(context.Context, domain.FormVersionID) (*domain.FormVersion, error)
 	FindNextVersionNumber(context.Context, domain.FormID) (int, error)
 	Upsert(context.Context, *domain.FormVersion) (*domain.FormVersion, error)
 }

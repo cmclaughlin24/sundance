@@ -92,7 +92,7 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 }
 
 func (s *submissionJobsService) validate(ctx context.Context, submission *domain.Submission) error {
-	version, err := s.versionRepository.FindByID(ctx, submission.FormID, submission.VersionID)
+	version, err := s.versionRepository.FindByID(ctx, submission.VersionID)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to retrieve version for submission job", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "error", err)
 		return err

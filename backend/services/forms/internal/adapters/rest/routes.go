@@ -78,16 +78,16 @@ func NewRoutes(app *core.Application, host string) http.Handler {
 				tagRoutes.Put("/", h.UpdateTag)
 				tagRoutes.Delete("/", h.DeleteTag)
 
-				tagRoutes.Route("/version", func(versionsRoutes chi.Router) {
+				tagRoutes.Route("/versions", func(versionsRoutes chi.Router) {
 					versionsRoutes.Get("/", h.GetTagVersions)
 					versionsRoutes.Post("/", h.CreateTagVersion)
 
 					versionsRoutes.Route("/{versionId}", func(versionRoutes chi.Router) {
-						versionsRoutes.Get("/", h.GetTagVersion)
-						versionsRoutes.Put("/", h.UpdateTagVersion)
-						versionsRoutes.Put("/deprecate", h.DeprecateTagVersion)
-						versionsRoutes.Put("/publish", h.PublishTagVersion)
-						versionsRoutes.Put("/retire", h.RetireTagVersion)
+						versionRoutes.Get("/", h.GetTagVersion)
+						versionRoutes.Put("/", h.UpdateTagVersion)
+						versionRoutes.Put("/deprecate", h.DeprecateTagVersion)
+						versionRoutes.Put("/publish", h.PublishTagVersion)
+						versionRoutes.Put("/retire", h.RetireTagVersion)
 					})
 				})
 			})

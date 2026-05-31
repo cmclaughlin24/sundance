@@ -13,21 +13,6 @@ type API struct {
 	SubmissionJobs SubmissionJobsAPI
 }
 
-type TagsAPI interface {
-	Find(context.Context, FindTagsQuery) ([]*domain.Tag, error)
-	FindById(context.Context, FindByIDQuery[domain.TagID]) (*domain.Tag, error)
-	Create(context.Context, CreateTagCommand) (*domain.Tag, error)
-	Update(context.Context, UpdateTagCommand) (*domain.Tag, error)
-	Delete(context.Context, DeleteCommand[domain.TagID]) error
-	FindVersions(context.Context, FindCanonicalTagVersionQuery) ([]*domain.TagVersion, error)
-	FindVersion(context.Context, FindCanonicalTagVersionQuery) (*domain.TagVersion, error)
-	// CreateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
-	// UpdateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
-	// PublishVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
-	// DeprecateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
-	// RetireVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
-}
-
 type FormsAPI interface {
 	Find(context.Context, *FindFormsQuery) ([]*domain.Form, error)
 	FindByID(context.Context, FindByIDQuery[domain.FormID]) (*domain.Form, error)
@@ -53,4 +38,19 @@ type SubmissionsAPI interface {
 type SubmissionJobsAPI interface {
 	Find(context.Context, *FindSubmissionJobsQuery) ([]domain.SubmissionID, error)
 	Process(context.Context, domain.SubmissionID) error
+}
+
+type TagsAPI interface {
+	Find(context.Context, FindTagsQuery) ([]*domain.Tag, error)
+	FindById(context.Context, FindByIDQuery[domain.TagID]) (*domain.Tag, error)
+	Create(context.Context, CreateTagCommand) (*domain.Tag, error)
+	Update(context.Context, UpdateTagCommand) (*domain.Tag, error)
+	Delete(context.Context, DeleteCommand[domain.TagID]) error
+	FindVersions(context.Context, FindTagVersionsQuery) ([]*domain.TagVersion, error)
+	FindVersion(context.Context, FindTagVersionQuery) (*domain.TagVersion, error)
+	// CreateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	// UpdateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	// PublishVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	// DeprecateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	// RetireVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
 }

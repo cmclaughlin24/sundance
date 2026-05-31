@@ -70,8 +70,8 @@ func (r *mongoDBFormVersionsRepository) Find(ctx context.Context, formID domain.
 	return versions, nil
 }
 
-func (r *mongoDBFormVersionsRepository) FindByID(ctx context.Context, formID domain.FormID, versionID domain.FormVersionID) (*domain.FormVersion, error) {
-	document, err := r.base.FindOne(ctx, bson.M{"form_id": formID, "_id": versionID})
+func (r *mongoDBFormVersionsRepository) FindByID(ctx context.Context, versionID domain.FormVersionID) (*domain.FormVersion, error) {
+	document, err := r.base.FindOne(ctx, bson.M{"_id": versionID})
 
 	if err != nil {
 		return nil, err

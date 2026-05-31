@@ -10,14 +10,16 @@ import (
 )
 
 type tagsService struct {
-	logger         *slog.Logger
-	tagsRepository ports.TagsRepository
+	logger             *slog.Logger
+	tagsRepository     ports.TagsRepository
+	versionsRepository ports.TagVersionsRepository
 }
 
 func NewTagsService(logger *slog.Logger, repository *ports.Repository) ports.TagsAPI {
 	return &tagsService{
-		logger:         logger,
-		tagsRepository: repository.Tags,
+		logger:             logger,
+		tagsRepository:     repository.Tags,
+		versionsRepository: repository.TagVersions,
 	}
 }
 
@@ -142,7 +144,7 @@ func (s *tagsService) Delete(ctx context.Context, command ports.DeleteCommand[do
 	return nil
 }
 
-func (s *tagsService) FindVersions(ctx context.Context, query ports.FindCanonicalTagVersionQuery) ([]*domain.TagVersion, error) {
+func (s *tagsService) FindVersions(ctx context.Context, query ports.FindTagVersionsQuery) ([]*domain.TagVersion, error) {
 	s.logger.DebugContext(ctx, "listing versions", "tenant_id", query.TenantID, "canonical_version_id", query.ID)
 
 	if err := query.Validate(); err != nil {
@@ -154,16 +156,18 @@ func (s *tagsService) FindVersions(ctx context.Context, query ports.FindCanonica
 		return nil, err
 	}
 
-	// versions, err := s.versionsRepository.Find(ctx, query.ID)
-	// if err != nil {
-	// 	s.logger.ErrorContext(ctx, "failed to retrieve versions", "tenant_id", query.TenantID, "canonical_version_id", query.ID, "error", err)
-	// 	return nil, err
-	// }
+	versions, err := s.versionsRepository.Find(ctx, ports.TagVersionFilters{
+		TagID: query.ID,
+	})
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to retrieve versions", "tenant_id", query.TenantID, "canonical_version_id", query.ID, "error", err)
+		return nil, err
+	}
 
-	return nil, nil
+	return versions, nil
 }
 
-func (s *tagsService) FindVersion(ctx context.Context, query ports.FindCanonicalTagVersionQuery) (*domain.TagVersion, error) {
+func (s *tagsService) FindVersion(ctx context.Context, query ports.FindTagVersionQuery) (*domain.TagVersion, error) {
 	return nil, nil
 }
 

@@ -1,8 +1,13 @@
 package domain
 
 import (
+	"errors"
 	"sundance/backend/pkg/common/validate"
 	"time"
+)
+
+var (
+	ErrDuplicateTagVersion = errors.New("duplicate tag version")
 )
 
 type TagVersionID string

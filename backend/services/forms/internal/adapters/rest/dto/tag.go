@@ -22,8 +22,8 @@ type TagResponse struct {
 	UpdatedAt   time.Time    `json:"updatedAt"`
 }
 
-func TagToResponse(ct *domain.Tag) *TagResponse {
-	return &TagResponse{
+func TagToResponse(ct *domain.Tag) TagResponse {
+	return TagResponse{
 		ID:          ct.ID,
 		Key:         ct.Key,
 		DisplayName: ct.DisplayName,

@@ -12,17 +12,12 @@ import (
 func Bootstrap(client *mongo.Client, logger *slog.Logger, databaseName string) (*ports.Repository, error) {
 	db := client.Database(databaseName)
 
-	tags, err := newMongoDBCanonicalTagsRepository(db, logger)
-	if err != nil {
-		return nil, err
-	}
-
 	forms, err := newMongoDBFormsRepository(db, logger)
 	if err != nil {
 		return nil, err
 	}
 
-	versions, err := newMongoDBFormVersionsRepository(db, logger)
+	formVersions, err := newMongoDBFormVersionsRepository(db, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -32,11 +27,22 @@ func Bootstrap(client *mongo.Client, logger *slog.Logger, databaseName string) (
 		return nil, err
 	}
 
+	tags, err := newMongoDBTagsRepository(db, logger)
+	if err != nil {
+		return nil, err
+	}
+
+	tagVersions, err := newMongoDBTagVersionsRepository(db, logger)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ports.Repository{
-		Database:      database.NewMongoDBDatabase(client, db, logger),
-		Tags: tags,
-		Forms:         forms,
-		FormVersions:  versions,
-		Submissions:   submissions,
+		Database:     database.NewMongoDBDatabase(client, db, logger),
+		Forms:        forms,
+		FormVersions: formVersions,
+		Submissions:  submissions,
+		Tags:         tags,
+		TagVersions:  tagVersions,
 	}, nil
 }

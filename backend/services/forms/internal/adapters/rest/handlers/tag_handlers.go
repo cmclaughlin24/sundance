@@ -39,7 +39,7 @@ func (h *Handlers) GetTags(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]*dto.TagResponse, 0, len(res.data))
+		dtos := make([]dto.TagResponse, 0, len(res.data))
 		for _, tag := range res.data {
 			dtos = append(dtos, dto.TagToResponse(tag))
 		}
@@ -123,7 +123,7 @@ func (h *Handlers) CreateTag(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[*dto.TagResponse]{
+		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[dto.TagResponse]{
 			Message: "Successfully created!",
 			Data:    dto.TagToResponse(res.data),
 		})
@@ -172,7 +172,7 @@ func (h *Handlers) UpdateTag(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[*dto.TagResponse]{
+		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[dto.TagResponse]{
 			Message: "Successfully updated!",
 			Data:    dto.TagToResponse(res.data),
 		})
@@ -218,13 +218,45 @@ func (h *Handlers) DeleteTag(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handlers) GetTagVersions(w http.ResponseWriter, r *http.Request) {}
+func (h *Handlers) GetTagVersions(w http.ResponseWriter, r *http.Request) {
+	tenantID := httputil.TenantFromContext(r.Context())
+	tagID := h.getTagIDPathValue(r)
+	query := ports.NewFindTagVersionsQuery(tenantID, tagID)
+	resultChan := make(chan result[[]*domain.TagVersion], 1)
 
-func (h *Handlers) GetTagVersion(w http.ResponseWriter, r *http.Request) {}
+	go func() {
+		defer close(resultChan)
+		tags, err := h.app.API.Tags.FindVersions(r.Context(), query)
+		resultChan <- result[[]*domain.TagVersion]{tags, err}
+	}()
 
-func (h *Handlers) CreateTagVersion(w http.ResponseWriter, r *http.Request) {}
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
 
-func (h *Handlers) UpdateTagVersion(w http.ResponseWriter, r *http.Request) {}
+		dtos := make([]dto.TagVersionResponse, 0, len(res.data))
+		for _, version := range res.data {
+			dtos = append(dtos, dto.TagVersionToResponse(version))
+		}
+
+		httputil.SendJSONResponse(w, http.StatusOK, dtos)
+	}
+}
+
+func (h *Handlers) GetTagVersion(w http.ResponseWriter, r *http.Request) {
+}
+
+func (h *Handlers) CreateTagVersion(w http.ResponseWriter, r *http.Request) {
+}
+
+func (h *Handlers) UpdateTagVersion(w http.ResponseWriter, r *http.Request) {
+}
 
 func (h *Handlers) PublishTagVersion(w http.ResponseWriter, r *http.Request) {}
 
@@ -235,4 +267,9 @@ func (h *Handlers) RetireTagVersion(w http.ResponseWriter, r *http.Request) {}
 func (h *Handlers) getTagIDPathValue(r *http.Request) domain.TagID {
 	id := chi.URLParam(r, "tagId")
 	return domain.TagID(id)
+}
+
+func (h *Handlers) getTagVersionIDPathValue(r *http.Request) domain.TagVersionID {
+	id := chi.URLParam(r, "versionId")
+	return domain.TagVersionID(id)
 }

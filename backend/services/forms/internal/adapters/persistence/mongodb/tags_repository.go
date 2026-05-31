@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	canonicalTagIndexes = []mongo.IndexModel{
+	tagIndexes = []mongo.IndexModel{
 		{
 			Keys: bson.D{
 				{Key: "tenant_id", Value: 1},
@@ -25,16 +25,16 @@ var (
 	}
 )
 
-type mongoDBCanonicalTagsRespository struct {
+type mongoDBTagsRespository struct {
 	base *database.MongoDBRepository[documents.TagDocument]
 }
 
-func newMongoDBCanonicalTagsRepository(db *mongo.Database, logger *slog.Logger) (ports.TagsRepository, error) {
+func newMongoDBTagsRepository(db *mongo.Database, logger *slog.Logger) (ports.TagsRepository, error) {
 	base := database.NewMongoDBRepository[documents.TagDocument](
 		db.Collection("tags"),
 		logger,
 	)
-	repository := &mongoDBCanonicalTagsRespository{base}
+	repository := &mongoDBTagsRespository{base}
 
 	if err := repository.migrate(context.Background()); err != nil {
 		return nil, err
@@ -43,12 +43,12 @@ func newMongoDBCanonicalTagsRepository(db *mongo.Database, logger *slog.Logger) 
 	return repository, nil
 }
 
-func (r *mongoDBCanonicalTagsRespository) migrate(ctx context.Context) error {
-	_, err := r.base.Collection().Indexes().CreateMany(ctx, canonicalTagIndexes)
+func (r *mongoDBTagsRespository) migrate(ctx context.Context) error {
+	_, err := r.base.Collection().Indexes().CreateMany(ctx, tagIndexes)
 	return err
 }
 
-func (r *mongoDBCanonicalTagsRespository) Find(ctx context.Context, ctf ports.TagFilters) ([]*domain.Tag, error) {
+func (r *mongoDBTagsRespository) Find(ctx context.Context, ctf ports.TagFilters) ([]*domain.Tag, error) {
 	filter := bson.M{}
 
 	if ctf.TenantID != "" {
@@ -69,7 +69,7 @@ func (r *mongoDBCanonicalTagsRespository) Find(ctx context.Context, ctf ports.Ta
 	return tags, nil
 }
 
-func (r *mongoDBCanonicalTagsRespository) FindByID(ctx context.Context, id domain.TagID) (*domain.Tag, error) {
+func (r *mongoDBTagsRespository) FindByID(ctx context.Context, id domain.TagID) (*domain.Tag, error) {
 	doc, err := r.base.FindOne(ctx, bson.M{"_id": id})
 
 	if err != nil {
@@ -79,7 +79,7 @@ func (r *mongoDBCanonicalTagsRespository) FindByID(ctx context.Context, id domai
 	return documents.FromTagDocument(doc), nil
 }
 
-func (r *mongoDBCanonicalTagsRespository) Upsert(ctx context.Context, t *domain.Tag) (*domain.Tag, error) {
+func (r *mongoDBTagsRespository) Upsert(ctx context.Context, t *domain.Tag) (*domain.Tag, error) {
 	r.base.Logger().DebugContext(ctx, "upsert canonical tag", "canonical_tag_id", t.ID)
 
 	doc := documents.ToTagDocument(t)
@@ -100,6 +100,6 @@ func (r *mongoDBCanonicalTagsRespository) Upsert(ctx context.Context, t *domain.
 	return documents.FromTagDocument(result), nil
 }
 
-func (r *mongoDBCanonicalTagsRespository) Delete(ctx context.Context, id domain.TagID) error {
+func (r *mongoDBTagsRespository) Delete(ctx context.Context, id domain.TagID) error {
 	return r.base.Delete(ctx, bson.M{"_id": id})
 }
