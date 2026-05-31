@@ -63,7 +63,7 @@ func (s *canonicalTagService) FindById(ctx context.Context, query ports.FindByID
 }
 
 func (s *canonicalTagService) Create(ctx context.Context, command ports.CreateCanonicalTagCommand) (*domain.CanonicalTag, error) {
-	s.logger.DebugContext(ctx, "creating canoonical tag", "tenant_id", command.TenantID)
+	s.logger.DebugContext(ctx, "creating canonical tag", "tenant_id", command.TenantID)
 
 	if err := command.Validate(); err != nil {
 		s.logger.WarnContext(ctx, "canonical tag creation failed; invalid command", "tenant_id", command.TenantID, "error", err)
@@ -83,6 +83,41 @@ func (s *canonicalTagService) Create(ctx context.Context, command ports.CreateCa
 	}
 
 	s.logger.InfoContext(ctx, "canonical tag created", "tenant_id", command.TenantID, "canonical_tag_id", tag.ID)
+
+	return tag, nil
+}
+
+func (s *canonicalTagService) Update(ctx context.Context, command ports.UpdateCanonicalTagCommand) (*domain.CanonicalTag, error) {
+	s.logger.DebugContext(ctx, "updating canonical tag", "tenant_id", command.TenantID)
+
+	if err := command.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "canonical tag update failed; invalid command", "tenant_id", command.TenantID, "error", err)
+		return nil, err
+	}
+
+	tag, err := s.repository.FindByID(ctx, command.ID)
+	if err != nil {
+		s.logFindByIDError(ctx, err, command.ID)
+		return nil, err
+	}
+
+	if tag.TenantID != command.TenantID {
+		s.logger.WarnContext(ctx, "unauthorized canonical tag access", "tenant_id", command.TenantID, "canonical_tag_id", command.ID)
+		return nil, common.ErrUnauthorized
+	}
+
+	if err := tag.Update(command.DisplayName); err != nil {
+		s.logger.WarnContext(ctx, "canonical tag update failed; domain invariant violation", "tenant_id", command.TenantID, "canonical_tag_id", command.ID, "error", err)
+		return nil, err
+	}
+
+	tag, err = s.repository.Upsert(ctx, tag)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to persist canonical tag", "tenant_id", command.TenantID, "canonical_tag_id", command.ID, "error", err)
+		return nil, err
+	}
+
+	s.logger.InfoContext(ctx, "canonical tag updated", "tenant_id", command.TenantID, "canonical_tag_id", command.ID)
 
 	return tag, nil
 }

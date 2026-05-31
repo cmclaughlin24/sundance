@@ -38,6 +38,7 @@ func NewRoutes(app *core.Application, host string) http.Handler {
 
 			tagsRoutes.Route("/{tagId}", func(tagRoutes chi.Router) {
 				tagRoutes.Get("/", h.GetCanonicalTag)
+				tagRoutes.Put("/", h.UpdateCanonicalTag)
 				tagRoutes.Delete("/", h.DeleteCanonicalTag)
 			})
 		})

@@ -17,6 +17,7 @@ type CanonicalTagAPI interface {
 	Find(context.Context, FindCanonicalTagsQuery) ([]*domain.CanonicalTag, error)
 	FindById(context.Context, FindByIDQuery[domain.CanonicalTagID]) (*domain.CanonicalTag, error)
 	Create(context.Context, CreateCanonicalTagCommand) (*domain.CanonicalTag, error)
+	Update(context.Context, UpdateCanonicalTagCommand) (*domain.CanonicalTag, error)
 	Delete(context.Context, DeleteCommand[domain.CanonicalTagID]) error
 	// FindVersions(context.Context, any) error
 	// FindVersion(context.Context, any) error

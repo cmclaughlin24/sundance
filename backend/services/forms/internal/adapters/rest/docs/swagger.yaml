@@ -8,6 +8,13 @@ definitions:
       statusCode:
         type: integer
     type: object
+  APIResponse-CanonicalTagResponse:
+    properties:
+      data:
+        $ref: '#/definitions/CanonicalTagResponse'
+      message:
+        type: string
+    type: object
   APIResponse-FormResponse:
     properties:
       data:
@@ -27,6 +34,26 @@ definitions:
       data:
         $ref: '#/definitions/SubmissionResponse'
       message:
+        type: string
+    type: object
+  CanonicalTagResponse:
+    properties:
+      createdAt:
+        type: string
+      displayName:
+        type: string
+      id:
+        type: string
+      key:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  CreateCanonicalTagRequest:
+    properties:
+      displayName:
+        type: string
+      key:
         type: string
     type: object
   FieldRequest:
@@ -330,6 +357,11 @@ definitions:
     - SubmissionStatusAccepted
     - SubmissionStatusRejected
     - SubmissionStatusFailed
+  UpdateCanonicalTagRequest:
+    properties:
+      displayName:
+        type: string
+    type: object
   UpsertFormRequest:
     properties:
       description:
@@ -351,6 +383,185 @@ definitions:
 info:
   contact: {}
 paths:
+  /canonical-tags:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/CanonicalTagResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Get all canonical tags
+      tags:
+      - Canonical Tags
+    post:
+      consumes:
+      - application/json
+      description: Creates a new canonical tag for the tenant. The key must be unique
+        within the tenant and is used as the stable identifier for tag-to-field associations.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Create Canonical Tag
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/CreateCanonicalTagRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/APIResponse-CanonicalTagResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Create a canonical tag
+      tags:
+      - Canonical Tags
+  /canonical-tags/{tagId}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a canonical tag. Deletion is only permitted when a tag
+        version has never been associated with any form field, in order to preserve
+        historical context.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Tag ID
+        in: path
+        name: tagId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Delete a canonical tag
+      tags:
+      - Canonical Tags
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Tag ID
+        in: path
+        name: tagId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/CanonicalTagResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Get a canonical tag by ID
+      tags:
+      - Canonical Tags
+    put:
+      consumes:
+      - application/json
+      description: Updates the display name of a canonical tag. The key is immutable
+        to preserve historical associations.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Tag ID
+        in: path
+        name: tagId
+        required: true
+        type: string
+      - description: Update Canonical Tag
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/UpdateCanonicalTagRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/APIResponse-CanonicalTagResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Update a canonical tag
+      tags:
+      - Canonical Tags
   /forms:
     get:
       consumes:

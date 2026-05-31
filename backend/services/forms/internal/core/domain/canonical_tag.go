@@ -1,8 +1,13 @@
 package domain
 
 import (
+	"errors"
 	"sundance/backend/pkg/common/validate"
 	"time"
+)
+
+var (
+	ErrInvalidCanonicalTag = errors.New("invalid canonical tag")
 )
 
 type CanonicalTagID string
@@ -41,4 +46,22 @@ func HydrateCanonicalTag(id CanonicalTagID, tenantID, key, displayName string, c
 		CreatedAt:   createdAt,
 		UpdatedAt:   updatedAt,
 	}
+}
+
+func (ct *CanonicalTag) Update(displayName string) error {
+	if ct == nil {
+		return ErrInvalidCanonicalTag
+	}
+
+	cpy := *ct
+	cpy.DisplayName = displayName
+
+	if err := validate.ValidateStruct(cpy); err != nil {
+		return err
+	}
+
+	*ct = cpy
+	ct.UpdatedAt = Now()
+
+	return nil
 }

@@ -39,6 +39,24 @@ func (c CreateCanonicalTagCommand) Validate() error {
 	return validate.ValidateStruct(c)
 }
 
+type UpdateCanonicalTagCommand struct {
+	TenantID    string                `validate:"required"`
+	ID          domain.CanonicalTagID `validate:"required"`
+	DisplayName string                `validate:"required"`
+}
+
+func NewUpdateCanonicalTagCommand(tenantID string, id domain.CanonicalTagID, displayName string) UpdateCanonicalTagCommand {
+	return UpdateCanonicalTagCommand{
+		TenantID:    tenantID,
+		ID:          id,
+		DisplayName: displayName,
+	}
+}
+
+func (c UpdateCanonicalTagCommand) Validate() error {
+	return validate.ValidateStruct(c)
+}
+
 type baseFormCommand struct {
 	TenantID    string `validate:"required"`
 	Name        string `validate:"required,max=75"`
