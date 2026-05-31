@@ -11,20 +11,20 @@ import (
 	"sundance/backend/services/forms/internal/core/ports"
 )
 
-type InMemorySubmissionsRepository struct {
+type inMemorySubmissionsRepository struct {
 	mu          sync.RWMutex
 	submissions map[string]*domain.Submission
 	logger      *slog.Logger
 }
 
-func NewInMemorySubmissionsRepository(logger *slog.Logger) ports.SubmissionsRepository {
-	return &InMemorySubmissionsRepository{
+func newInMemorySubmissionsRepository(logger *slog.Logger) ports.SubmissionsRepository {
+	return &inMemorySubmissionsRepository{
 		submissions: make(map[string]*domain.Submission),
 		logger:      logger,
 	}
 }
 
-func (r *InMemorySubmissionsRepository) Find(ctx context.Context, filter *ports.FindSubmissionsFilter) ([]*domain.Submission, error) {
+func (r *inMemorySubmissionsRepository) Find(ctx context.Context, filter *ports.FindSubmissionsFilter) ([]*domain.Submission, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -49,7 +49,7 @@ func (r *InMemorySubmissionsRepository) Find(ctx context.Context, filter *ports.
 	return submissions, nil
 }
 
-func (r *InMemorySubmissionsRepository) FindByID(ctx context.Context, id domain.SubmissionID) (*domain.Submission, error) {
+func (r *inMemorySubmissionsRepository) FindByID(ctx context.Context, id domain.SubmissionID) (*domain.Submission, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -62,7 +62,7 @@ func (r *InMemorySubmissionsRepository) FindByID(ctx context.Context, id domain.
 	return submission, nil
 }
 
-func (r *InMemorySubmissionsRepository) FindByReferenceID(ctx context.Context, referenceID domain.ReferenceID) (*domain.Submission, error) {
+func (r *inMemorySubmissionsRepository) FindByReferenceID(ctx context.Context, referenceID domain.ReferenceID) (*domain.Submission, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -75,7 +75,7 @@ func (r *InMemorySubmissionsRepository) FindByReferenceID(ctx context.Context, r
 	return nil, common.ErrNotFound
 }
 
-func (r *InMemorySubmissionsRepository) FindByIdempotencyID(ctx context.Context, idempotencyID domain.IdempotencyID) (*domain.Submission, error) {
+func (r *inMemorySubmissionsRepository) FindByIdempotencyID(ctx context.Context, idempotencyID domain.IdempotencyID) (*domain.Submission, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -88,7 +88,7 @@ func (r *InMemorySubmissionsRepository) FindByIdempotencyID(ctx context.Context,
 	return nil, common.ErrNotFound
 }
 
-func (r *InMemorySubmissionsRepository) FindJobs(ctx context.Context, filter *ports.FindSubmissionsFilter) ([]domain.SubmissionID, error) {
+func (r *inMemorySubmissionsRepository) FindJobs(ctx context.Context, filter *ports.FindSubmissionsFilter) ([]domain.SubmissionID, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -113,7 +113,7 @@ func (r *InMemorySubmissionsRepository) FindJobs(ctx context.Context, filter *po
 	return ids, nil
 }
 
-func (r *InMemorySubmissionsRepository) Upsert(ctx context.Context, submission *domain.Submission) (*domain.Submission, error) {
+func (r *inMemorySubmissionsRepository) Upsert(ctx context.Context, submission *domain.Submission) (*domain.Submission, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

@@ -128,7 +128,7 @@ func (s *formsService) Update(ctx context.Context, command *ports.UpdateFormComm
 	return form, nil
 }
 
-func (s *formsService) Delete(ctx context.Context, command *ports.RemoveFormCommand) error {
+func (s *formsService) Delete(ctx context.Context, command *ports.DeleteCommand[domain.FormID]) error {
 	s.logger.DebugContext(ctx, "deleting form", "tenant_id", command.TenantID, "form_id", command.ID)
 
 	if err := command.Validate(); err != nil {

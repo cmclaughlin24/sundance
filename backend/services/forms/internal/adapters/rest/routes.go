@@ -32,6 +32,16 @@ func NewRoutes(app *core.Application, host string) http.Handler {
 		routes.Use(httputil.NewTenantMiddleware("X-Tenant-ID"))
 		routes.Use(auth.NewMiddleware(placeholderAuthenticator))
 
+		routes.Route("/canonical-tags", func(tagsRoutes chi.Router) {
+			tagsRoutes.Get("/", h.GetCanonicalTags)
+			tagsRoutes.Post("/", h.CreateCanonicalTag)
+
+			tagsRoutes.Route("/{tagId}", func(tagRoutes chi.Router) {
+				tagRoutes.Get("/", h.GetCanonicalTag)
+				tagRoutes.Delete("/", h.DeleteCanonicalTag)
+			})
+		})
+
 		routes.Route("/forms", func(formsRoutes chi.Router) {
 			formsRoutes.Get("/", h.GetForms)
 			formsRoutes.Post("/", h.CreateForm)

@@ -87,7 +87,23 @@ func (s *canonicalTagService) Create(ctx context.Context, command ports.CreateCa
 	return tag, nil
 }
 
-func (s *canonicalTagService) Delete(ctx context.Context, command any) error {
+func (s *canonicalTagService) Delete(ctx context.Context, command ports.DeleteCommand[domain.CanonicalTagID]) error {
+	s.logger.DebugContext(ctx, "deleting canonical tag", "tenant_id", command.TenantID, "canonical_tag_id", command.ID)
+
+	if err := command.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "canonical tag deletion failed; invalid command", "tenant_id", command.TenantID, "canonical_tag_id", command.ID, "error", err)
+		return err
+	}
+
+	// FIXME: A canonical tag should not be deletable if it has ever had an active version to ensure audit history can be maintained.
+
+	if err := s.repository.Delete(ctx, command.ID); err != nil {
+		s.logger.ErrorContext(ctx, "failed to delete canonical tag", "tenant_id", command.TenantID, "canonical_tag_id", command.ID, "error", err)
+		return err
+	}
+
+	s.logger.InfoContext(ctx, "canonical tag deleted", "tenant_id", command.TenantID, "canonical_tag_id", command.ID)
+
 	return nil
 }
 
@@ -97,4 +113,20 @@ func (s *canonicalTagService) logFindByIDError(ctx context.Context, err error, t
 	} else {
 		s.logger.ErrorContext(ctx, "failed to retrieve canonical tag", "canonical_tag_id", tagID, "error", err)
 	}
+}
+
+func (s *canonicalTagService) isValidAccess(ctx context.Context, tenantID string, id domain.CanonicalTagID) error {
+	form, err := s.repository.FindByID(ctx, id)
+
+	if err != nil {
+		s.logFindByIDError(ctx, err, id)
+		return err
+	}
+
+	if form.TenantID != tenantID {
+		s.logger.WarnContext(ctx, "unauthorized form access", "tenant_id", tenantID, "canonical_tag_id", id)
+		return common.ErrUnauthorized
+	}
+
+	return nil
 }

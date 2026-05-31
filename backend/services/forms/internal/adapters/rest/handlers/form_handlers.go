@@ -193,12 +193,12 @@ func (h *Handlers) UpdateForm(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) DeleteForm(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
-	command := ports.NewRemoveFormCommand(tenantID, formID)
+	command := ports.NewDeleteCommand(tenantID, formID)
 	resultChan := make(chan result[any], 1)
 
 	go func() {
 		defer close(resultChan)
-		err := h.app.API.Forms.Delete(r.Context(), command)
+		err := h.app.API.Forms.Delete(r.Context(), &command)
 		resultChan <- result[any]{nil, err}
 	}()
 

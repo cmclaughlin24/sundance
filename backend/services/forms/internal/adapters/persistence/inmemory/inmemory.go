@@ -9,9 +9,10 @@ import (
 
 func Bootstrap(logger *slog.Logger) *ports.Repository {
 	return &ports.Repository{
-		Database:    database.NewInMemoryDatabase(),
-		Forms:       newInMemoryFormsRepository(logger),
-		FormVersions:    newInMemoryFormVersionsRepository(logger),
-		Submissions: NewInMemorySubmissionsRepository(logger),
+		Database:      database.NewInMemoryDatabase(),
+		CanonicalTags: newInMemoryCanonicalTagRepository(logger),
+		Forms:         newInMemoryFormsRepository(logger),
+		FormVersions:  newInMemoryFormVersionsRepository(logger),
+		Submissions:   newInMemorySubmissionsRepository(logger),
 	}
 }

@@ -5,6 +5,22 @@ import (
 	"sundance/backend/services/forms/internal/core/domain"
 )
 
+type DeleteCommand[T comparable] struct {
+	TenantID string `validate:"required"`
+	ID       T      `validate:"required"`
+}
+
+func NewDeleteCommand[T comparable](tenantID string, id T) DeleteCommand[T] {
+	return DeleteCommand[T]{
+		TenantID: tenantID,
+		ID:       id,
+	}
+}
+
+func (c *DeleteCommand[T]) Validate() error {
+	return validate.ValidateStruct(c)
+}
+
 type CreateCanonicalTagCommand struct {
 	TenantID    string `validate:"required"`
 	Key         string `validate:"required,nowhitespace"`
@@ -64,22 +80,6 @@ func NewUpdateFormCommand(tenantID string, id domain.FormID, name, description s
 }
 
 func (c *UpdateFormCommand) Validate() error {
-	return validate.ValidateStruct(c)
-}
-
-type RemoveFormCommand struct {
-	ID       domain.FormID `validate:"required"`
-	TenantID string        `validate:"required"`
-}
-
-func NewRemoveFormCommand(tenantID string, id domain.FormID) *RemoveFormCommand {
-	return &RemoveFormCommand{
-		TenantID: tenantID,
-		ID:       id,
-	}
-}
-
-func (c *RemoveFormCommand) Validate() error {
 	return validate.ValidateStruct(c)
 }
 

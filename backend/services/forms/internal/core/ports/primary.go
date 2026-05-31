@@ -17,7 +17,7 @@ type CanonicalTagAPI interface {
 	Find(context.Context, FindCanonicalTagsQuery) ([]*domain.CanonicalTag, error)
 	FindById(context.Context, FindByIDQuery[domain.CanonicalTagID]) (*domain.CanonicalTag, error)
 	Create(context.Context, CreateCanonicalTagCommand) (*domain.CanonicalTag, error)
-	Delete(context.Context, any) error
+	Delete(context.Context, DeleteCommand[domain.CanonicalTagID]) error
 	// FindVersions(context.Context, any) error
 	// FindVersion(context.Context, any) error
 	// CreateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
@@ -32,7 +32,7 @@ type FormsAPI interface {
 	FindByID(context.Context, *FindFormByIDQuery) (*domain.Form, error)
 	Create(context.Context, *CreateFormCommand) (*domain.Form, error)
 	Update(context.Context, *UpdateFormCommand) (*domain.Form, error)
-	Delete(context.Context, *RemoveFormCommand) error
+	Delete(context.Context, *DeleteCommand[domain.FormID]) error
 	FindVersions(context.Context, *FindFormVersionsQuery) ([]*domain.FormVersion, error)
 	FindVersion(context.Context, *FindFormVersionByIDQuery) (*domain.FormVersion, error)
 	CreateVersion(context.Context, *CreateFormVersionCommand) (*domain.FormVersion, error)

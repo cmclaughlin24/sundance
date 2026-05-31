@@ -6,6 +6,8 @@ import (
 	"sundance/backend/services/forms/internal/adapters/rest/dto"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func (h *Handlers) GetCanonicalTags(w http.ResponseWriter, r *http.Request) {
@@ -39,13 +41,14 @@ func (h *Handlers) GetCanonicalTags(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetCanonicalTag(w http.ResponseWriter, r *http.Request) {
-	// tenantID := httputil.TenantFromContext(r.Context())
-	// query := ports.NewFindFormsQuery(tenantID)
+	tenantID := httputil.TenantFromContext(r.Context())
+	tagID := h.getCanonicalTagIDPathValue(r)
+	query := ports.NewFindByIDQuery(tenantID, tagID)
 	resultChan := make(chan result[*domain.CanonicalTag], 1)
 
 	go func() {
 		defer close(resultChan)
-		tag, err := h.app.API.CanonicalTags.FindById(r.Context())
+		tag, err := h.app.API.CanonicalTags.FindById(r.Context(), query)
 		resultChan <- result[*domain.CanonicalTag]{tag, err}
 	}()
 
@@ -64,20 +67,20 @@ func (h *Handlers) GetCanonicalTag(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) CreateCanonicalTag(w http.ResponseWriter, r *http.Request) {
-	var body dto.UpsertCanonicalTagRequest
+	var body dto.CreateCanonicalTagRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
 		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
 		h.sendErrorResponse(w, err)
 		return
 	}
 
-	// tenantID := httputil.TenantFromContext(r.Context())
+	tenantID := httputil.TenantFromContext(r.Context())
 	resultChan := make(chan result[*domain.CanonicalTag], 1)
-	// command := ports.NewCreateFormCommand(tenantID, body.Name, body.Description)
+	command := ports.NewCreateCanonicalTagCommand(tenantID, body.Key, body.DisplayName)
 
 	go func() {
 		defer close(resultChan)
-		tag, err := h.app.API.CanonicalTags.Create(r.Context(), nil)
+		tag, err := h.app.API.CanonicalTags.Create(r.Context(), command)
 		resultChan <- result[*domain.CanonicalTag]{tag, err}
 	}()
 
@@ -99,14 +102,14 @@ func (h *Handlers) CreateCanonicalTag(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) DeleteCanonicalTag(w http.ResponseWriter, r *http.Request) {
-	// tenantID := httputil.TenantFromContext(r.Context())
-	// formID := h.getFormIDPathValue(r)
-	// command := ports.NewRemoveFormCommand(tenantID, formID)
+	tenantID := httputil.TenantFromContext(r.Context())
+	tagID := h.getCanonicalTagIDPathValue(r)
+	command := ports.NewDeleteCommand(tenantID, tagID)
 	resultChan := make(chan result[any], 1)
 
 	go func() {
 		defer close(resultChan)
-		err := h.app.API.CanonicalTags.Delete(r.Context(), nil)
+		err := h.app.API.CanonicalTags.Delete(r.Context(), command)
 		resultChan <- result[any]{nil, err}
 	}()
 
@@ -137,3 +140,8 @@ func (h *Handlers) PublishCanonicalTagVersion(w http.ResponseWriter, r *http.Req
 func (h *Handlers) DeprecateCanonicalTagVersion(w http.ResponseWriter, r *http.Request) {}
 
 func (h *Handlers) RetireCanonicalTagVersion(w http.ResponseWriter, r *http.Request) {}
+
+func (h *Handlers) getCanonicalTagIDPathValue(r *http.Request) domain.CanonicalTagID {
+	id := chi.URLParam(r, "tagId")
+	return domain.CanonicalTagID(id)
+}
