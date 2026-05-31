@@ -84,7 +84,6 @@ func NewRoutes(app *core.Application, host string) http.Handler {
 
 					versionsRoutes.Route("/{versionId}", func(versionRoutes chi.Router) {
 						versionRoutes.Get("/", h.GetTagVersion)
-						versionRoutes.Put("/", h.UpdateTagVersion)
 						versionRoutes.Put("/deprecate", h.DeprecateTagVersion)
 						versionRoutes.Put("/publish", h.PublishTagVersion)
 						versionRoutes.Put("/retire", h.RetireTagVersion)

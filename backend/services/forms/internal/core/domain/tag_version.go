@@ -24,13 +24,15 @@ const (
 )
 
 type TagVersion struct {
-	ID        TagVersionID
-	TagID     TagID
-	Version   int
-	Type      TagType
-	Status    TagStatus
-	CreatedAt time.Time
-	RetiredAt time.Time
+	ID           TagVersionID
+	TagID        TagID
+	Version      int
+	Type         TagType
+	Status       TagStatus
+	CreatedAt    time.Time
+	DeprecatedAt time.Time
+	PublishedAt  time.Time
+	RetiredAt    time.Time
 }
 
 func NewTagVersion(tagID TagID, version int, tagType TagType) (*TagVersion, error) {
@@ -57,15 +59,34 @@ func HydrateTagVersion(
 	tagType TagType,
 	status TagStatus,
 	createdAt,
+	deprectatedAt,
+	publishedAt,
 	retiredAt time.Time,
 ) *TagVersion {
 	return &TagVersion{
-		ID:        id,
-		TagID:     tagID,
-		Version:   version,
-		Type:      tagType,
-		Status:    status,
-		CreatedAt: createdAt,
-		RetiredAt: retiredAt,
+		ID:           id,
+		TagID:        tagID,
+		Version:      version,
+		Type:         tagType,
+		Status:       status,
+		CreatedAt:    createdAt,
+		DeprecatedAt: deprectatedAt,
+		PublishedAt:  publishedAt,
+		RetiredAt:    retiredAt,
 	}
+}
+
+func (tv *TagVersion) Deprecate() {
+	tv.Status = TagStatusRetired
+	tv.DeprecatedAt = Now()
+}
+
+func (tv *TagVersion) Publish() {
+	tv.Status = TagStatusActive
+	tv.PublishedAt = Now()
+}
+
+func (tv *TagVersion) Retire() {
+	tv.Status = TagStatusRetired
+	tv.RetiredAt = Now()
 }

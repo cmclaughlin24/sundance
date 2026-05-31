@@ -6,27 +6,31 @@ import (
 )
 
 type UpsertTagVersionRequest struct {
-	Type string `json:"type" validate:"required"`
+	Type domain.TagType `json:"type" validate:"required"`
 }
 
 type TagVersionResponse struct {
-	ID        domain.TagVersionID `json:"id"`
-	TagID     domain.TagID        `json:"tagId"`
-	Version   int                 `json:"version"`
-	Type      domain.TagType      `json:"type"`
-	Status    domain.TagStatus    `json:"status"`
-	CreatedAt time.Time           `json:"createdAt"`
-	RetiredAt time.Time           `json:"retiredAt"`
+	ID           domain.TagVersionID `json:"id"`
+	TagID        domain.TagID        `json:"tagId"`
+	Version      int                 `json:"version"`
+	Type         domain.TagType      `json:"type"`
+	Status       domain.TagStatus    `json:"status"`
+	CreatedAt    time.Time           `json:"createdAt"`
+	DeprecatedAt time.Time           `json:"deprecatedAt"`
+	PublishedAt  time.Time           `json:"publishedAt"`
+	RetiredAt    time.Time           `json:"retiredAt"`
 }
 
-func TagVersionToResponse(t *domain.TagVersion) TagVersionResponse {
+func TagVersionToResponse(tv *domain.TagVersion) TagVersionResponse {
 	return TagVersionResponse{
-		ID:        t.ID,
-		TagID:     t.TagID,
-		Version:   t.Version,
-		Type:      t.Type,
-		Status:    t.Status,
-		CreatedAt: t.CreatedAt,
-		RetiredAt: t.RetiredAt,
+		ID:           tv.ID,
+		TagID:        tv.TagID,
+		Version:      tv.Version,
+		Type:         tv.Type,
+		Status:       tv.Status,
+		CreatedAt:    tv.CreatedAt,
+		DeprecatedAt: tv.DeprecatedAt,
+		PublishedAt:  tv.PublishedAt,
+		RetiredAt:    tv.RetiredAt,
 	}
 }

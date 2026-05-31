@@ -6,24 +6,28 @@ import (
 )
 
 type TagVersionDocument struct {
-	ID        string    `bson:"_id"`
-	TagID     string    `bson:"tag_id"`
-	Version   int       `bson:"version"`
-	Type      string    `bson:"type"`
-	Status    string    `bson:"status"`
-	CreatedAt time.Time `bson:"created_at"`
-	RetiredAt time.Time `bson:"retired_at"`
+	ID           string    `bson:"_id"`
+	TagID        string    `bson:"tag_id"`
+	Version      int       `bson:"version"`
+	Type         string    `bson:"type"`
+	Status       string    `bson:"status"`
+	CreatedAt    time.Time `bson:"created_at"`
+	DeprecatedAt time.Time `bson:"deprecated_at"`
+	PublishedAt  time.Time `bson:"published_at,omitempty"`
+	RetiredAt    time.Time `bson:"retired_at,omitempty"`
 }
 
-func ToTagVersionDocument(v *domain.TagVersion) TagVersionDocument {
+func ToTagVersionDocument(tv *domain.TagVersion) TagVersionDocument {
 	return TagVersionDocument{
-		ID:        string(v.ID),
-		TagID:     string(v.TagID),
-		Version:   v.Version,
-		Type:      string(v.Type),
-		Status:    string(v.Status),
-		CreatedAt: v.CreatedAt,
-		RetiredAt: v.RetiredAt,
+		ID:           string(tv.ID),
+		TagID:        string(tv.TagID),
+		Version:      tv.Version,
+		Type:         string(tv.Type),
+		Status:       string(tv.Status),
+		CreatedAt:    tv.CreatedAt,
+		DeprecatedAt: tv.DeprecatedAt,
+		PublishedAt:  tv.PublishedAt,
+		RetiredAt:    tv.RetiredAt,
 	}
 }
 
@@ -35,6 +39,8 @@ func FromTagVersionDocument(d TagVersionDocument) *domain.TagVersion {
 		domain.TagType(d.Type),
 		domain.TagStatus(d.Status),
 		d.CreatedAt,
+		d.DeprecatedAt,
+		d.PublishedAt,
 		d.RetiredAt,
 	)
 }

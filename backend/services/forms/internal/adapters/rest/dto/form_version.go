@@ -12,16 +12,16 @@ type UpsertFormVersionRequest struct {
 
 type FormVersionResponse struct {
 	ID            domain.FormVersionID     `json:"id"`
-	FormID        domain.FormID        `json:"formId"`
-	Version       int                  `json:"version"`
+	FormID        domain.FormID            `json:"formId"`
+	Version       int                      `json:"version"`
 	Status        domain.FormVersionStatus `json:"status"`
-	PublishedByID string               `json:"publishedById"`
-	PublishedAt   time.Time            `json:"publishedAt"`
-	RetiredByID   string               `json:"retiredById"`
-	RetiredAt     time.Time            `json:"retiredAt"`
-	CreatedAt     time.Time            `json:"createdAt"`
-	UpdatedAt     time.Time            `json:"updatedAt"`
-	Pages         []*PageResponse      `json:"pages"`
+	PublishedByID string                   `json:"publishedById"`
+	PublishedAt   time.Time                `json:"publishedAt"`
+	RetiredByID   string                   `json:"retiredById"`
+	RetiredAt     time.Time                `json:"retiredAt"`
+	CreatedAt     time.Time                `json:"createdAt"`
+	UpdatedAt     time.Time                `json:"updatedAt"`
+	Pages         []*PageResponse          `json:"pages"`
 }
 
 func FormVersionToResponse(version *domain.FormVersion) *FormVersionResponse {

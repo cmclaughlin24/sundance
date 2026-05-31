@@ -271,6 +271,30 @@ func (h *Handlers) GetTagVersions(w http.ResponseWriter, r *http.Request) {
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/tags/{tagId}/versions/{versionId} [get]
 func (h *Handlers) GetTagVersion(w http.ResponseWriter, r *http.Request) {
+	tenantID := httputil.TenantFromContext(r.Context())
+	tagID := h.getTagIDPathValue(r)
+	versionID := h.getTagVersionIDPathValue(r)
+	query := ports.NewFindTagVersionQuery(tenantID, tagID, versionID)
+	resultChan := make(chan result[*domain.TagVersion], 1)
+
+	go func() {
+		defer close(resultChan)
+		version, err := h.app.API.Tags.FindVersion(r.Context(), query)
+		resultChan <- result[*domain.TagVersion]{version, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusOK, dto.TagVersionToResponse(res.data))
+	}
 }
 
 // @summary		Create a tag version
@@ -287,9 +311,40 @@ func (h *Handlers) GetTagVersion(w http.ResponseWriter, r *http.Request) {
 // @failure		500 {object} httputil.APIErrorResponse
 // @Router		/tags/{tagId}/versions [post]
 func (h *Handlers) CreateTagVersion(w http.ResponseWriter, r *http.Request) {
-}
+	tenantID := httputil.TenantFromContext(r.Context())
+	tagID := h.getTagIDPathValue(r)
 
-func (h *Handlers) UpdateTagVersion(w http.ResponseWriter, r *http.Request) {
+	var body dto.UpsertTagVersionRequest
+	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
+		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
+		h.sendErrorResponse(w, err)
+		return
+	}
+
+	resultChan := make(chan result[*domain.TagVersion], 1)
+	command := ports.NewTagVersionCommand(tenantID, tagID, body.Type)
+
+	go func() {
+		defer close(resultChan)
+		version, err := h.app.API.Tags.CreateVersion(r.Context(), command)
+		resultChan <- result[*domain.TagVersion]{version, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusCreated, httputil.APIResponse[dto.TagVersionResponse]{
+			Message: "Successfully created!",
+			Data:    dto.TagVersionToResponse(res.data),
+		})
+	}
 }
 
 func (h *Handlers) PublishTagVersion(w http.ResponseWriter, r *http.Request) {}

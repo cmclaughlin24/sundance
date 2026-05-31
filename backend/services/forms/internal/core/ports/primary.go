@@ -48,8 +48,7 @@ type TagsAPI interface {
 	Delete(context.Context, DeleteCommand[domain.TagID]) error
 	FindVersions(context.Context, FindTagVersionsQuery) ([]*domain.TagVersion, error)
 	FindVersion(context.Context, FindTagVersionQuery) (*domain.TagVersion, error)
-	// CreateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
-	// UpdateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	CreateVersion(context.Context, CreateTagVersionCommand) (*domain.TagVersion, error)
 	// PublishVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
 	// DeprecateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
 	// RetireVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
