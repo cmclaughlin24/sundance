@@ -238,7 +238,7 @@ type CreateTagVersionCommand struct {
 	Type     domain.TagType `validate:"required"`
 }
 
-func NewTagVersionCommand(tenantID string, tagID domain.TagID, tagType domain.TagType) CreateTagVersionCommand {
+func NewCreateTagVersionCommand(tenantID string, tagID domain.TagID, tagType domain.TagType) CreateTagVersionCommand {
 	return CreateTagVersionCommand{
 		TenantID: tenantID,
 		TagID:    tagID,
@@ -247,5 +247,23 @@ func NewTagVersionCommand(tenantID string, tagID domain.TagID, tagType domain.Ta
 }
 
 func (c CreateTagVersionCommand) Validate() error {
+	return validate.ValidateStruct(c)
+}
+
+type TransitionTagVersionCommand struct {
+	TenantID  string              `validate:"required"`
+	TagID     domain.TagID        `validate:"required"`
+	VersionID domain.TagVersionID `validate:"required"`
+}
+
+func NewTransitionTagVersionCommand(tenantID string, tagID domain.TagID, versionID domain.TagVersionID) TransitionTagVersionCommand {
+	return TransitionTagVersionCommand{
+		TenantID:  tenantID,
+		TagID:     tagID,
+		VersionID: versionID,
+	}
+}
+
+func (c TransitionTagVersionCommand) Validate() error {
 	return validate.ValidateStruct(c)
 }

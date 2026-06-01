@@ -239,6 +239,58 @@ func (s *tagsService) CreateVersion(ctx context.Context, command ports.CreateTag
 	return version, nil
 }
 
+func (s *tagsService) PublishVersion(ctx context.Context, command ports.TransitionTagVersionCommand) (*domain.TagVersion, error) {
+	return s.transitionVersion(ctx, command, func(tv *domain.TagVersion) error {
+		return tv.Publish()
+	})
+}
+
+func (s *tagsService) DeprecateVersion(ctx context.Context, command ports.TransitionTagVersionCommand) (*domain.TagVersion, error) {
+	return s.transitionVersion(ctx, command, func(tv *domain.TagVersion) error {
+		return tv.Deprecate()
+	})
+}
+
+func (s *tagsService) RetireVersion(ctx context.Context, command ports.TransitionTagVersionCommand) (*domain.TagVersion, error) {
+	return s.transitionVersion(ctx, command, func(tv *domain.TagVersion) error {
+		return tv.Retire()
+	})
+}
+
+func (s *tagsService) transitionVersion(ctx context.Context, command ports.TransitionTagVersionCommand, transition func(*domain.TagVersion) error) (*domain.TagVersion, error) {
+	s.logger.DebugContext(ctx, "transitioning tag version", "tenant_id", command.TenantID, "tag_id", command.TagID, "version_id", command.VersionID)
+
+	if err := command.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "tag version transition failed; invalid command", "tenant_id", command.TenantID, "tag_id", command.TagID, "version_id", command.VersionID, "error", err)
+		return nil, err
+	}
+
+	if err := s.isValidAccess(ctx, command.TenantID, command.TagID); err != nil {
+		return nil, err
+	}
+
+	version, err := s.versionsRepository.FindByID(ctx, command.VersionID)
+	if err != nil {
+		s.logFindTagVersionByIDError(ctx, err, command.TagID, command.VersionID)
+		return nil, err
+	}
+
+	if err := transition(version); err != nil {
+		s.logger.WarnContext(ctx, "tag version transition failed; domain invariant violation", "tenant_id", command.TenantID, "form_id", command.TagID, "version_id", command.VersionID, "error", err)
+		return nil, err
+	}
+
+	version, err = s.versionsRepository.Upsert(ctx, version)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to persist tag version", "tenant_id", command.TenantID, "tag_id", command.TagID, "version_id", command.VersionID, "error", err)
+		return nil, err
+	}
+
+	s.logger.InfoContext(ctx, "tag version transitioned", "tenant_id", command.TenantID, "tag_id", command.TagID, "version_id", command.VersionID)
+
+	return version, nil
+}
+
 func (s *tagsService) logFindTagByIDError(ctx context.Context, err error, tagID domain.TagID) {
 	if errors.Is(err, common.ErrNotFound) {
 		s.logger.WarnContext(ctx, "tag not found", "tag_id", tagID)

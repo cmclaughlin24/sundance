@@ -2,12 +2,15 @@ package domain
 
 import (
 	"errors"
+	"fmt"
 	"sundance/backend/pkg/common/validate"
 	"time"
 )
 
 var (
-	ErrDuplicateTagVersion = errors.New("duplicate tag version")
+	ErrInvalidTagVersion       = errors.New("invalid tag version")
+	ErrDuplicateTagVersion     = errors.New("duplicate tag version")
+	ErrInvalidTagVersionStatus = errors.New("invalid tag version status invariant")
 )
 
 type TagVersionID string
@@ -76,17 +79,47 @@ func HydrateTagVersion(
 	}
 }
 
-func (tv *TagVersion) Deprecate() {
-	tv.Status = TagStatusRetired
+func (tv *TagVersion) Deprecate() error {
+	if tv == nil {
+		return ErrInvalidTagVersion
+	}
+
+	if tv.Status != TagStatusActive {
+		return fmt.Errorf("cannot deprecate tag in status %s: %w", tv.Status, ErrInvalidTagVersionStatus)
+	}
+
+	tv.Status = TagStatusDeprecated
 	tv.DeprecatedAt = Now()
+
+	return nil
 }
 
-func (tv *TagVersion) Publish() {
+func (tv *TagVersion) Publish() error {
+	if tv == nil {
+		return ErrInvalidTagVersion
+	}
+
+	if tv.Status != TagStatusDraft {
+		return fmt.Errorf("cannot publish tag in status %s: %w", tv.Status, ErrInvalidTagVersionStatus)
+	}
+
 	tv.Status = TagStatusActive
 	tv.PublishedAt = Now()
+
+	return nil
 }
 
-func (tv *TagVersion) Retire() {
+func (tv *TagVersion) Retire() error {
+	if tv == nil {
+		return ErrInvalidTagVersion
+	}
+
+	if tv.Status != TagStatusDeprecated {
+		return fmt.Errorf("cannot retire tag in status %s: %w", tv.Status, ErrInvalidTagVersionStatus)
+	}
+
 	tv.Status = TagStatusRetired
 	tv.RetiredAt = Now()
+
+	return nil
 }

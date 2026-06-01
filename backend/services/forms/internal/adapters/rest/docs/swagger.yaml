@@ -380,7 +380,11 @@ definitions:
     properties:
       createdAt:
         type: string
+      deprecatedAt:
+        type: string
       id:
+        type: string
+      publishedAt:
         type: string
       retiredAt:
         type: string
@@ -1306,6 +1310,138 @@ paths:
           schema:
             $ref: '#/definitions/APIErrorResponse'
       summary: Get a tag version by ID
+      tags:
+      - Tags
+  /tags/{tagId}/versions/{versionId}/deprecate:
+    post:
+      consumes:
+      - application/json
+      description: Transitions an active tag version to deprecated status, signaling
+        that consumers should migrate away from it while still permitting reads.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Tag ID
+        in: path
+        name: tagId
+        required: true
+        type: string
+      - description: Version ID
+        in: path
+        name: versionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/APIResponse-TagVersionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Deprecate a tag version
+      tags:
+      - Tags
+  /tags/{tagId}/versions/{versionId}/publish:
+    post:
+      consumes:
+      - application/json
+      description: Transitions a draft tag version to active status, making it the
+        live version for the tag. Only one version per tag can be active at a time.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Tag ID
+        in: path
+        name: tagId
+        required: true
+        type: string
+      - description: Version ID
+        in: path
+        name: versionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/APIResponse-TagVersionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Publish a tag version
+      tags:
+      - Tags
+  /tags/{tagId}/versions/{versionId}/retire:
+    post:
+      consumes:
+      - application/json
+      description: Transitions a tag version to retired status, making it inactive
+        and unavailable for new associations.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Tag ID
+        in: path
+        name: tagId
+        required: true
+        type: string
+      - description: Version ID
+        in: path
+        name: versionId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/APIResponse-TagVersionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      summary: Retire a tag version
       tags:
       - Tags
 swagger: "2.0"

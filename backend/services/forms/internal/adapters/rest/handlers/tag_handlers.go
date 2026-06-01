@@ -322,7 +322,7 @@ func (h *Handlers) CreateTagVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultChan := make(chan result[*domain.TagVersion], 1)
-	command := ports.NewTagVersionCommand(tenantID, tagID, body.Type)
+	command := ports.NewCreateTagVersionCommand(tenantID, tagID, body.Type)
 
 	go func() {
 		defer close(resultChan)
@@ -347,11 +347,134 @@ func (h *Handlers) CreateTagVersion(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *Handlers) PublishTagVersion(w http.ResponseWriter, r *http.Request) {}
+// @summary		Publish a tag version
+// @description	Transitions a draft tag version to active status, making it the live version for the tag. Only one version per tag can be active at a time.
+// @tags		Tags
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		tagId path string true "Tag ID"
+// @param		versionId path string true "Version ID"
+// @success		200 {object} httputil.APIResponse[dto.TagVersionResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/tags/{tagId}/versions/{versionId}/publish [post]
+func (h *Handlers) PublishTagVersion(w http.ResponseWriter, r *http.Request) {
+	tenantID := httputil.TenantFromContext(r.Context())
+	tagID := h.getTagIDPathValue(r)
+	versionID := h.getTagVersionIDPathValue(r)
+	command := ports.NewTransitionTagVersionCommand(tenantID, tagID, versionID)
+	resultChan := make(chan result[*domain.TagVersion], 1)
 
-func (h *Handlers) DeprecateTagVersion(w http.ResponseWriter, r *http.Request) {}
+	go func() {
+		defer close(resultChan)
+		version, err := h.app.API.Tags.PublishVersion(r.Context(), command)
+		resultChan <- result[*domain.TagVersion]{version, err}
+	}()
 
-func (h *Handlers) RetireTagVersion(w http.ResponseWriter, r *http.Request) {}
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[dto.TagVersionResponse]{
+			Message: "Successfully published!",
+			Data:    dto.TagVersionToResponse(res.data),
+		})
+	}
+}
+
+// @summary		Deprecate a tag version
+// @description	Transitions an active tag version to deprecated status, signaling that consumers should migrate away from it while still permitting reads.
+// @tags		Tags
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		tagId path string true "Tag ID"
+// @param		versionId path string true "Version ID"
+// @success		200 {object} httputil.APIResponse[dto.TagVersionResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/tags/{tagId}/versions/{versionId}/deprecate [post]
+func (h *Handlers) DeprecateTagVersion(w http.ResponseWriter, r *http.Request) {
+	tenantID := httputil.TenantFromContext(r.Context())
+	tagID := h.getTagIDPathValue(r)
+	versionID := h.getTagVersionIDPathValue(r)
+	command := ports.NewTransitionTagVersionCommand(tenantID, tagID, versionID)
+	resultChan := make(chan result[*domain.TagVersion], 1)
+
+	go func() {
+		defer close(resultChan)
+		version, err := h.app.API.Tags.DeprecateVersion(r.Context(), command)
+		resultChan <- result[*domain.TagVersion]{version, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[dto.TagVersionResponse]{
+			Message: "Successfully deprecated!",
+			Data:    dto.TagVersionToResponse(res.data),
+		})
+	}
+}
+
+// @summary		Retire a tag version
+// @description	Transitions a tag version to retired status, making it inactive and unavailable for new associations.
+// @tags		Tags
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param		tagId path string true "Tag ID"
+// @param		versionId path string true "Version ID"
+// @success		200 {object} httputil.APIResponse[dto.TagVersionResponse]
+// @failure		400 {object} httputil.APIErrorResponse
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @Router		/tags/{tagId}/versions/{versionId}/retire [post]
+func (h *Handlers) RetireTagVersion(w http.ResponseWriter, r *http.Request) {
+	tenantID := httputil.TenantFromContext(r.Context())
+	tagID := h.getTagIDPathValue(r)
+	versionID := h.getTagVersionIDPathValue(r)
+	command := ports.NewTransitionTagVersionCommand(tenantID, tagID, versionID)
+	resultChan := make(chan result[*domain.TagVersion], 1)
+
+	go func() {
+		defer close(resultChan)
+		version, err := h.app.API.Tags.RetireVersion(r.Context(), command)
+		resultChan <- result[*domain.TagVersion]{version, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[dto.TagVersionResponse]{
+			Message: "Successfully retired!",
+			Data:    dto.TagVersionToResponse(res.data),
+		})
+	}
+}
 
 func (h *Handlers) getTagIDPathValue(r *http.Request) domain.TagID {
 	id := chi.URLParam(r, "tagId")

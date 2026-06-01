@@ -29,8 +29,8 @@ var (
 
 type Submission struct {
 	ID            SubmissionID
-	TenantID      string    `validate:"required"`
-	FormID        FormID    `validate:"required"`
+	TenantID      string        `validate:"required"`
+	FormID        FormID        `validate:"required"`
 	VersionID     FormVersionID `validate:"required"`
 	ReferenceID   ReferenceID
 	IdempotencyID IdempotencyID `validate:"required"`

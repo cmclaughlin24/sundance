@@ -49,7 +49,7 @@ type TagsAPI interface {
 	FindVersions(context.Context, FindTagVersionsQuery) ([]*domain.TagVersion, error)
 	FindVersion(context.Context, FindTagVersionQuery) (*domain.TagVersion, error)
 	CreateVersion(context.Context, CreateTagVersionCommand) (*domain.TagVersion, error)
-	// PublishVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
-	// DeprecateVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
-	// RetireVersion(context.Context, any) (*domain.CanonicalTagVersion, error)
+	PublishVersion(context.Context, TransitionTagVersionCommand) (*domain.TagVersion, error)
+	DeprecateVersion(context.Context, TransitionTagVersionCommand) (*domain.TagVersion, error)
+	RetireVersion(context.Context, TransitionTagVersionCommand) (*domain.TagVersion, error)
 }
