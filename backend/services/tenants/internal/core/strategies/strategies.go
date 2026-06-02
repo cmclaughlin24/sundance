@@ -23,7 +23,8 @@ func Bootstrap(opts ...func(*strategyOptions)) *ports.Strategies {
 	lookupStrategies := stratreg.New[domain.DataSourceType, ports.LookupStrategy]().
 		Set(domain.DataSourceTypeStatic, NewStaticLookupStrategy(so.logger)).
 		Set(domain.DataSourceTypeScheduled, NewScheduledLookupStrategy(so.logger)).
-		Set(domain.DataSourceTypeWebhook, NewWebhookLookupStrategy(so.logger, so.clients))
+		Set(domain.DataSourceTypeWebhook, NewWebhookLookupStrategy(so.logger, so.clients)).
+		Set(domain.DataSourceTypeDataLake, NewDataLakeLookupStrategy(so.logger, so.clients))
 
 	return &ports.Strategies{
 		Lookups: lookupStrategies,

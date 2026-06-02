@@ -297,3 +297,87 @@ func TestGetDataSourceAttributes_Webhook(t *testing.T) {
 	}
 }
 
+func TestGetDataSourceAttributes_DataLake(t *testing.T) {
+	tests := []struct {
+		name    string
+		attr    domain.DataSourceAttributes
+		wantErr bool
+	}{
+		{
+			"should return data lake attributes",
+			domain.DataLakeDataSourceAttributes{
+				Query:        "SELECT value, label FROM pokedex WHERE region = @region",
+				RequiredKeys: []string{"region"},
+				OptionalKeys: []string{"generation"},
+				Catalog:      "pokemon",
+				Schema:       "galar",
+				ValueField:   "value",
+				LabelField:   "label",
+				Limit:        100,
+				TimeoutMs:    5000,
+			},
+			false,
+		},
+		{
+			"should yield an error for static attributes",
+			domain.StaticDataSourceAttributes{
+				Data: []*domain.Lookup{
+					{Value: "grookey", Label: "Grookey"},
+				},
+			},
+			true,
+		},
+		{
+			"should yield an error for nil attributes",
+			nil,
+			true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Act.
+			got, gotErr := domain.GetDataSourceAttributes[domain.DataLakeDataSourceAttributes](tt.attr)
+
+			// Assert.
+			if tt.wantErr {
+				if gotErr == nil {
+					t.Errorf("expected error but got nil")
+				}
+				if !errors.Is(gotErr, domain.ErrDataSourceAttributeMismatch) {
+					t.Errorf("expected ErrDataSourceAttributeMismatch but got %v", gotErr)
+				}
+				return
+			}
+
+			if gotErr != nil {
+				t.Errorf("expected no error but got %v", gotErr)
+				return
+			}
+
+			input, _ := tt.attr.(domain.DataLakeDataSourceAttributes)
+			if got.Query != input.Query {
+				t.Errorf("expected Query %q but got %q", input.Query, got.Query)
+			}
+			if got.Catalog != input.Catalog {
+				t.Errorf("expected Catalog %q but got %q", input.Catalog, got.Catalog)
+			}
+			if got.Schema != input.Schema {
+				t.Errorf("expected Schema %q but got %q", input.Schema, got.Schema)
+			}
+			if got.ValueField != input.ValueField {
+				t.Errorf("expected ValueField %q but got %q", input.ValueField, got.ValueField)
+			}
+			if got.LabelField != input.LabelField {
+				t.Errorf("expected LabelField %q but got %q", input.LabelField, got.LabelField)
+			}
+			if got.Limit != input.Limit {
+				t.Errorf("expected Limit %d but got %d", input.Limit, got.Limit)
+			}
+			if got.TimeoutMs != input.TimeoutMs {
+				t.Errorf("expected TimeoutMs %d but got %d", input.TimeoutMs, got.TimeoutMs)
+			}
+		})
+	}
+}
+

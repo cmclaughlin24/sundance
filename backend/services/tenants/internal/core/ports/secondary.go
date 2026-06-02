@@ -33,7 +33,12 @@ type DataSourcesRepository interface {
 }
 
 type Clients struct {
-	Lookups LookupClient
+	DataLake DataLakeClient
+	Lookups  LookupClient
+}
+
+type DataLakeClient interface {
+	Query(ctx context.Context, attr domain.DataLakeDataSourceAttributes, params map[string]any) ([]*domain.Lookup, error)
 }
 
 type LookupClient interface {

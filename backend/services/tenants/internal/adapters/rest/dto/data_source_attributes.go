@@ -25,6 +25,9 @@ var attributeParserStrategies = stratreg.New[domain.DataSourceType, attributePar
 	}).
 	Set(domain.DataSourceTypeWebhook, func(data []byte) (domain.DataSourceAttributes, error) {
 		return parseAttributes[domain.WebhookDataSourceAttributes](data)
+	}).
+	Set(domain.DataSourceTypeDataLake, func(data []byte) (domain.DataSourceAttributes, error) {
+		return parseAttributes[domain.DataLakeDataSourceAttributes](data)
 	})
 
 func parseAttributes[T domain.DataSourceAttributes](data []byte) (domain.DataSourceAttributes, error) {
@@ -76,6 +79,18 @@ type webhookDataSourceAttributesResponse struct {
 	Headers map[string]string `json:"headers,omitempty"`
 }
 
+type dataLakeDataSourceAttributesResponse struct {
+	Query        string   `json:"query"`
+	RequiredKeys []string `json:"requiredKeys"`
+	OptionalKeys []string `json:"optionalKeys,omitempty"`
+	Catalog      string   `json:"catalog"`
+	Schema       string   `json:"schema"`
+	ValueField   string   `json:"valueField"`
+	LabelField   string   `json:"labelField"`
+	Limit        int      `json:"limit"`
+	TimeoutMs    int      `json:"timeoutMs"`
+}
+
 func dataSourceAttributesToResponse(attr domain.DataSourceAttributes) any {
 	switch t := attr.(type) {
 	case domain.ScheduledDataSourceAttributes:
@@ -100,6 +115,18 @@ func dataSourceAttributesToResponse(attr domain.DataSourceAttributes) any {
 			URL:     t.URL,
 			Method:  t.Method,
 			Headers: t.Headers,
+		}
+	case domain.DataLakeDataSourceAttributes:
+		return dataLakeDataSourceAttributesResponse{
+			Query:        t.Query,
+			RequiredKeys: t.RequiredKeys,
+			OptionalKeys: t.OptionalKeys,
+			Catalog:      t.Catalog,
+			Schema:       t.Schema,
+			ValueField:   t.ValueField,
+			LabelField:   t.LabelField,
+			Limit:        t.Limit,
+			TimeoutMs:    t.TimeoutMs,
 		}
 	default:
 		return attr

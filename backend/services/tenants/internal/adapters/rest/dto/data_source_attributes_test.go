@@ -48,6 +48,21 @@ func Test_dataSourceAttributesToResponse(t *testing.T) {
 			},
 			"webhook",
 		},
+		{
+			"should yield a data lake attributes response",
+			domain.DataLakeDataSourceAttributes{
+				Query:        "SELECT value, label FROM laps WHERE driver = @driver",
+				RequiredKeys: []string{"driver"},
+				OptionalKeys: []string{"season"},
+				Catalog:      "f1",
+				Schema:       "telemetry",
+				ValueField:   "value",
+				LabelField:   "label",
+				Limit:        250,
+				TimeoutMs:    7000,
+			},
+			"data-lake",
+		},
 	}
 
 	for _, tt := range tests {
@@ -114,6 +129,42 @@ func Test_dataSourceAttributesToResponse(t *testing.T) {
 				if resp.Method != input.Method {
 					t.Errorf("expected Method %q but got %q", input.Method, resp.Method)
 				}
+			case "data-lake":
+				resp, ok := got.(dataLakeDataSourceAttributesResponse)
+				if !ok {
+					t.Errorf("expected dataLakeDataSourceAttributesResponse but got %T", got)
+					return
+				}
+
+				input := tt.attr.(domain.DataLakeDataSourceAttributes)
+
+				if resp.Query != input.Query {
+					t.Errorf("expected Query %q but got %q", input.Query, resp.Query)
+				}
+
+				if resp.Catalog != input.Catalog {
+					t.Errorf("expected Catalog %q but got %q", input.Catalog, resp.Catalog)
+				}
+
+				if resp.Schema != input.Schema {
+					t.Errorf("expected Schema %q but got %q", input.Schema, resp.Schema)
+				}
+
+				if resp.ValueField != input.ValueField {
+					t.Errorf("expected ValueField %q but got %q", input.ValueField, resp.ValueField)
+				}
+
+				if resp.LabelField != input.LabelField {
+					t.Errorf("expected LabelField %q but got %q", input.LabelField, resp.LabelField)
+				}
+
+				if resp.Limit != input.Limit {
+					t.Errorf("expected Limit %d but got %d", input.Limit, resp.Limit)
+				}
+
+				if resp.TimeoutMs != input.TimeoutMs {
+					t.Errorf("expected TimeoutMs %d but got %d", input.TimeoutMs, resp.TimeoutMs)
+				}
 			}
 		})
 	}
@@ -155,6 +206,22 @@ func TestRequestToDataSourceAttributes(t *testing.T) {
 				"url":     "https://example.com/timing",
 				"method":  "POST",
 				"headers": map[string]string{"Authorization": "Bearer fia-token"},
+			},
+			false,
+		},
+		{
+			"should parse data lake attributes",
+			domain.DataSourceTypeDataLake,
+			map[string]any{
+				"query":        "SELECT value, label FROM laps WHERE driver = @driver",
+				"requiredKeys": []string{"driver"},
+				"optionalKeys": []string{"season"},
+				"catalog":      "f1",
+				"schema":       "telemetry",
+				"valueField":   "value",
+				"labelField":   "label",
+				"limit":        250,
+				"timeoutMs":    7000,
 			},
 			false,
 		},
@@ -207,6 +274,10 @@ func TestRequestToDataSourceAttributes(t *testing.T) {
 			case domain.DataSourceTypeWebhook:
 				if _, ok := got.(domain.WebhookDataSourceAttributes); !ok {
 					t.Errorf("expected WebhookDataSourceAttributes but got %T", got)
+				}
+			case domain.DataSourceTypeDataLake:
+				if _, ok := got.(domain.DataLakeDataSourceAttributes); !ok {
+					t.Errorf("expected DataLakeDataSourceAttributes but got %T", got)
 				}
 			}
 		})

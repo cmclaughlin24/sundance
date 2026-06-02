@@ -19,3 +19,11 @@ type mockLookupClient struct {
 func (c *mockLookupClient) FetchLookups(ctx context.Context, method, url string, headers map[string]string) ([]*domain.Lookup, error) {
 	return c.fetchLookupsFn(ctx, method, url, headers)
 }
+
+type mockDataLakeClient struct {
+	queryFn func(context.Context, domain.DataLakeDataSourceAttributes, map[string]any) ([]*domain.Lookup, error)
+}
+
+func (c *mockDataLakeClient) Query(ctx context.Context, attr domain.DataLakeDataSourceAttributes, params map[string]any) ([]*domain.Lookup, error) {
+	return c.queryFn(ctx, attr, params)
+}

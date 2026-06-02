@@ -50,6 +50,19 @@ type WebhookDataSourceAttributes struct {
 	Headers map[string]string
 }
 
+type DataLakeDataSourceAttributes struct {
+	baseDataSourceAttributes
+	Query        string
+	RequiredKeys []string
+	OptionalKeys []string
+	Catalog      string
+	Schema       string
+	ValueField   string
+	LabelField   string
+	Limit        int
+	TimeoutMs    int
+}
+
 func GetDataSourceAttributes[T DataSourceAttributes](attr DataSourceAttributes) (T, error) {
 	switch t := attr.(type) {
 	case T:

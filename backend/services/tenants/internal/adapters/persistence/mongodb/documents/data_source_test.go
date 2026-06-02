@@ -61,6 +61,26 @@ func TestToDataSourceDocument(t *testing.T) {
 				now, now.Add(24*time.Hour),
 			),
 		},
+		{
+			"should yield a document from a data lake data source",
+			domain.HydrateDataSource(
+				"ds-4", "xc-1", "Affinity Lookups",
+				"Affinity chart data queried from the analytics warehouse",
+				domain.DataSourceTypeDataLake,
+				domain.DataLakeDataSourceAttributes{
+					Query:        "SELECT value, label FROM affinity WHERE party = @party",
+					RequiredKeys: []string{"party"},
+					OptionalKeys: []string{"chapter"},
+					Catalog:      "xenoblade",
+					Schema:       "analytics",
+					ValueField:   "value",
+					LabelField:   "label",
+					Limit:        100,
+					TimeoutMs:    5000,
+				},
+				now, now.Add(24*time.Hour),
+			),
+		},
 	}
 
 	for _, tt := range tests {
@@ -138,6 +158,18 @@ func TestFromDataSourceDocument(t *testing.T) {
 		Headers: map[string]string{"Authorization": "Bearer token"},
 	})
 
+	dataLakeAttrRaw, _ := bson.Marshal(domain.DataLakeDataSourceAttributes{
+		Query:        "SELECT value, label FROM affinity WHERE party = @party",
+		RequiredKeys: []string{"party"},
+		OptionalKeys: []string{"chapter"},
+		Catalog:      "xenoblade",
+		Schema:       "analytics",
+		ValueField:   "value",
+		LabelField:   "label",
+		Limit:        100,
+		TimeoutMs:    5000,
+	})
+
 	tests := []struct {
 		name    string
 		input   *documents.DataSourceDocument
@@ -180,6 +212,20 @@ func TestFromDataSourceDocument(t *testing.T) {
 				Description: "Real-time salvage data from the Cloud Sea",
 				Type:        "webhook",
 				Attributes:  webhookAttrRaw,
+				CreatedAt:   now,
+				UpdatedAt:   now.Add(24 * time.Hour),
+			},
+			false,
+		},
+		{
+			"should yield a data lake data source from a document",
+			&documents.DataSourceDocument{
+				ID:          "ds-5",
+				TenantID:    "xc-1",
+				Name:        "Affinity Lookups",
+				Description: "Affinity chart data queried from the analytics warehouse",
+				Type:        "data-lake",
+				Attributes:  dataLakeAttrRaw,
 				CreatedAt:   now,
 				UpdatedAt:   now.Add(24 * time.Hour),
 			},

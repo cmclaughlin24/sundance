@@ -15,6 +15,7 @@ const (
 	DataSourceTypeStatic    DataSourceType = "static"
 	DataSourceTypeScheduled DataSourceType = "scheduled"
 	DataSourceTypeWebhook   DataSourceType = "webhook"
+	DataSourceTypeDataLake  DataSourceType = "data-lake"
 )
 
 var (
@@ -127,6 +128,7 @@ var isValidSourceType = validate.NewTypeValidator([]DataSourceType{
 	DataSourceTypeStatic,
 	DataSourceTypeScheduled,
 	DataSourceTypeWebhook,
+	DataSourceTypeDataLake,
 })
 
 func isValidAttributeType(sourceType DataSourceType, attributes DataSourceAttributes) bool {
@@ -137,6 +139,8 @@ func isValidAttributeType(sourceType DataSourceType, attributes DataSourceAttrib
 		return sourceType == DataSourceTypeScheduled
 	case WebhookDataSourceAttributes:
 		return sourceType == DataSourceTypeWebhook
+	case DataLakeDataSourceAttributes:
+		return sourceType == DataSourceTypeDataLake
 	default:
 		return false
 	}

@@ -19,7 +19,8 @@ func Bootstrap(opts ...func(*clientOptions)) *ports.Clients {
 	}
 
 	return &ports.Clients{
-		Lookups: NewLookupClient(co.client, co.logger),
+		DataLake: NewBigQueryDataLakeClient(co.logger),
+		Lookups:  NewLookupClient(co.client, co.logger),
 	}
 }
 
