@@ -292,6 +292,12 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "object",
+                        "description": "Optional parameters for look-up retrieval, such as query parameters for external fetches or payload for webhook calls.",
+                        "name": "query",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -627,12 +633,14 @@ const docTemplate = `{
             "enum": [
                 "static",
                 "scheduled",
-                "webhook"
+                "webhook",
+                "data-lake"
             ],
             "x-enum-varnames": [
                 "DataSourceTypeStatic",
                 "DataSourceTypeScheduled",
-                "DataSourceTypeWebhook"
+                "DataSourceTypeWebhook",
+                "DataSourceTypeDataLake"
             ]
         },
         "LookupResponse": {

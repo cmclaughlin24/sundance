@@ -39,12 +39,14 @@ func (q *FindDataSourceByIDQuery) Validate() error {
 type GetDataSourceLookupsQuery struct {
 	TenantID domain.TenantID     `validate:"required"`
 	ID       domain.DataSourceID `validate:"required"`
+	Query    map[string]any
 }
 
-func NewGetDataSourceLookupsQuery(tenantID domain.TenantID, sourceID domain.DataSourceID) *GetDataSourceLookupsQuery {
+func NewGetDataSourceLookupsQuery(tenantID domain.TenantID, sourceID domain.DataSourceID, query map[string]any) *GetDataSourceLookupsQuery {
 	return &GetDataSourceLookupsQuery{
 		TenantID: tenantID,
 		ID:       sourceID,
+		Query:    query,
 	}
 }
 

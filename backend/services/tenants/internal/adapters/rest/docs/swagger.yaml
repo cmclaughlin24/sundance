@@ -63,11 +63,13 @@ definitions:
     - static
     - scheduled
     - webhook
+    - data-lake
     type: string
     x-enum-varnames:
     - DataSourceTypeStatic
     - DataSourceTypeScheduled
     - DataSourceTypeWebhook
+    - DataSourceTypeDataLake
   LookupResponse:
     properties:
       label:
@@ -287,6 +289,11 @@ paths:
         name: id
         required: true
         type: string
+      - description: Optional parameters for look-up retrieval, such as query parameters
+          for external fetches or payload for webhook calls.
+        in: query
+        name: query
+        type: object
       produces:
       - application/json
       responses:

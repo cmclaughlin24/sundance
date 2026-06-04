@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"sundance/backend/pkg/common/httputil"
 	"sundance/backend/services/tenants/internal/adapters/rest/dto"
@@ -248,6 +249,7 @@ func (h *Handlers) DeleteDataSource(w http.ResponseWriter, r *http.Request) {
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		id path string true "Data Source ID"
+// @param		query query object false "Optional parameters for look-up retrieval, such as query parameters for external fetches or payload for webhook calls."
 // @success		200 {array} dto.LookupResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -256,7 +258,14 @@ func (h *Handlers) GetLookups(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
 	sourceID := chi.URLParam(r, "dataSourceId")
 	resultChan := make(chan result[[]*domain.Lookup], 1)
-	command := ports.NewGetDataSourceLookupsQuery(tenantID, domain.DataSourceID(sourceID))
+
+	query, err := h.parseDataSourceLookupQuery(r)
+	if err != nil {
+		h.sendErrorResponse(w, err)
+		return
+	}
+
+	command := ports.NewGetDataSourceLookupsQuery(tenantID, domain.DataSourceID(sourceID), query)
 
 	go func() {
 		defer close(resultChan)
@@ -282,4 +291,19 @@ func (h *Handlers) GetLookups(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) getTenantFromContext(r *http.Request) domain.TenantID {
 	tenantID := httputil.TenantFromContext(r.Context())
 	return domain.TenantID(tenantID)
+}
+
+func (h *Handlers) parseDataSourceLookupQuery(r *http.Request) (map[string]any, error) {
+	query := r.URL.Query().Get("query")
+	data := make(map[string]any)
+
+	if query == "" {
+		return data, nil
+	}
+
+	if err := json.Unmarshal([]byte(query), &data); err != nil {
+		return nil, err
+	}
+
+	return data, nil
 }

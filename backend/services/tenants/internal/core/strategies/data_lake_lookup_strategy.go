@@ -19,7 +19,7 @@ func NewDataLakeLookupStrategy(logger *slog.Logger, client *ports.Clients) ports
 	}
 }
 
-func (s *DataLakeLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSource) ([]*domain.Lookup, error) {
+func (s *DataLakeLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSource, _ map[string]any) ([]*domain.Lookup, error) {
 	attr, err := domain.GetDataSourceAttributes[domain.DataLakeDataSourceAttributes](ds.Attributes)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "data_source_id", ds.ID, "data_source_type", ds.Type, "error", err)
