@@ -134,8 +134,10 @@ func TestGetDataSourceAttributes_Static(t *testing.T) {
 		{
 			"should yield an error for scheduled attributes",
 			domain.ScheduledDataSourceAttributes{
-				URL:           "https://example.com/pokemon",
-				Method:        "GET",
+				DataSourceRequest: domain.DataSourceRequest{
+					URL:    "https://example.com/pokemon",
+					Method: "GET",
+				},
 				IntervalHours: 24,
 			},
 			true,
@@ -185,9 +187,11 @@ func TestGetDataSourceAttributes_Scheduled(t *testing.T) {
 		{
 			"should return scheduled attributes",
 			domain.ScheduledDataSourceAttributes{
-				URL:           "https://example.com/pokemon",
-				Method:        "GET",
-				Headers:       map[string]string{"Authorization": "Bearer token"},
+				DataSourceRequest: domain.DataSourceRequest{
+					URL:     "https://example.com/pokemon",
+					Method:  "GET",
+					Headers: map[string]string{"Authorization": "Bearer token"},
+				},
 				IntervalHours: 24,
 			},
 			false,
@@ -246,9 +250,11 @@ func TestGetDataSourceAttributes_Webhook(t *testing.T) {
 		{
 			"should return webhook attributes",
 			domain.WebhookDataSourceAttributes{
-				URL:     "https://example.com/pokemon",
-				Method:  "GET",
-				Headers: map[string]string{"Authorization": "Bearer token"},
+				DataSourceRequest: domain.DataSourceRequest{
+					URL:     "https://example.com/pokemon",
+					Method:  "GET",
+					Headers: map[string]string{"Authorization": "Bearer token"},
+				},
 			},
 			false,
 		},
@@ -313,7 +319,6 @@ func TestGetDataSourceAttributes_DataLake(t *testing.T) {
 				Schema:       "galar",
 				ValueField:   "value",
 				LabelField:   "label",
-				Limit:        100,
 				TimeoutMs:    5000,
 			},
 			false,
@@ -370,9 +375,6 @@ func TestGetDataSourceAttributes_DataLake(t *testing.T) {
 			}
 			if got.LabelField != input.LabelField {
 				t.Errorf("expected LabelField %q but got %q", input.LabelField, got.LabelField)
-			}
-			if got.Limit != input.Limit {
-				t.Errorf("expected Limit %d but got %d", input.Limit, got.Limit)
 			}
 			if got.TimeoutMs != input.TimeoutMs {
 				t.Errorf("expected TimeoutMs %d but got %d", input.TimeoutMs, got.TimeoutMs)

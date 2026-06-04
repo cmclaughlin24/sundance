@@ -447,6 +447,15 @@ func Test_handlers_GetLookups(t *testing.T) {
 			len:        0,
 			queryParam: "not-json",
 		},
+		{
+			name: "should yield BAD REQUEST when the strategy reports missing required keys",
+			fn: func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
+				return nil, domain.ErrMissingRequiredKeys
+			},
+			statusCode: http.StatusBadRequest,
+			id:         "ds-1",
+			len:        0,
+		},
 	}
 
 	for _, tt := range tests {
@@ -454,7 +463,7 @@ func Test_handlers_GetLookups(t *testing.T) {
 			// Arrange.
 			var receivedQuery map[string]any
 			lookupFn := func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
-				receivedQuery = query.Query
+				receivedQuery = query.Params
 				return tt.fn(ctx, query)
 			}
 			s := &ports.API{DataSources: &mockDataSourcesService{lookupFn: lookupFn}}
@@ -463,7 +472,7 @@ func Test_handlers_GetLookups(t *testing.T) {
 			rctx.URLParams.Add("dataSourceId", tt.id)
 			url := "/api/v1/data-sources/" + tt.id + "/look-ups"
 			if tt.queryParam != "" {
-				url += "?query=" + tt.queryParam
+				url += "?params=" + tt.queryParam
 			}
 			req, _ := http.NewRequest(http.MethodGet, url, nil)
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")

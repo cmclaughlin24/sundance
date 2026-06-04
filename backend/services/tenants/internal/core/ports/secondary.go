@@ -38,11 +38,11 @@ type Clients struct {
 }
 
 type DataLakeClient interface {
-	Query(ctx context.Context, attr domain.DataLakeDataSourceAttributes, params map[string]any) ([]*domain.Lookup, error)
+	Query(context.Context, domain.DataLakeDataSourceAttributes, map[string]any) ([]*domain.Lookup, error)
 }
 
 type LookupClient interface {
-	FetchLookups(ctx context.Context, method, url string, headers map[string]string) ([]*domain.Lookup, error)
+	FetchLookups(context.Context, domain.DataSourceRequest, map[string]any) ([]map[string]any, error)
 }
 
 type Strategies struct {

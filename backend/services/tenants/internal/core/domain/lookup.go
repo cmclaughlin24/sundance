@@ -1,11 +1,11 @@
 package domain
 
 type Lookup struct {
-	Value string
+	Value any
 	Label string
 }
 
-func NewLookup(value, label string) *Lookup {
+func NewLookup(value any, label string) *Lookup {
 	return &Lookup{
 		Value: value,
 		Label: label,

@@ -7,10 +7,19 @@ import (
 
 var (
 	ErrDataSourceAttributeMismatch = errors.New("data source type and attributes mismatch")
+	ErrMissingRequiredKeys         = errors.New("missing required keys in parameters")
 )
 
 type DataSourceAttributes interface {
 	isDataSourceAttributes()
+}
+
+type DataSourceRequest struct {
+	URL        string
+	Method     string
+	Headers    map[string]string
+	ValueField string
+	LabelField string
 }
 
 type baseDataSourceAttributes struct{}
@@ -24,10 +33,8 @@ type StaticDataSourceAttributes struct {
 
 type ScheduledDataSourceAttributes struct {
 	baseDataSourceAttributes
+	DataSourceRequest
 	Data           []*Lookup
-	URL            string
-	Method         string
-	Headers        map[string]string
 	IntervalHours  float64
 	ExpirationDate time.Time
 	Attempts       int
@@ -45,12 +52,8 @@ func (attr *ScheduledDataSourceAttributes) RefreshData(data []*Lookup) {
 
 type WebhookDataSourceAttributes struct {
 	baseDataSourceAttributes
-	URL     string
-	Method  string
-	Headers map[string]string
+	DataSourceRequest
 	RequiredKeys []string
-	ValueField   string
-	LabelField   string
 }
 
 type DataLakeDataSourceAttributes struct {
@@ -62,7 +65,6 @@ type DataLakeDataSourceAttributes struct {
 	Schema       string
 	ValueField   string
 	LabelField   string
-	Limit        int
 	TimeoutMs    int
 }
 

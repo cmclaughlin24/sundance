@@ -21,14 +21,16 @@ func TestDataLakeLookupStrategy_Lookup(t *testing.T) {
 			Schema:       "analytics",
 			ValueField:   "value",
 			LabelField:   "label",
-			Limit:        100,
 			TimeoutMs:    5000,
 		},
 	}
 
+	validParams := map[string]any{"party": "shulk"}
+
 	tests := []struct {
 		name    string
 		ds      *domain.DataSource
+		params  map[string]any
 		queryFn func(context.Context, domain.DataLakeDataSourceAttributes, map[string]any) ([]*domain.Lookup, error)
 		want    []*domain.Lookup
 		wantErr error
@@ -36,6 +38,7 @@ func TestDataLakeLookupStrategy_Lookup(t *testing.T) {
 		{
 			"should yield a list of lookups",
 			dataLakeDS,
+			validParams,
 			func(_ context.Context, _ domain.DataLakeDataSourceAttributes, _ map[string]any) ([]*domain.Lookup, error) {
 				return []*domain.Lookup{
 					{Value: "shulk", Label: "Shulk"},
@@ -51,6 +54,7 @@ func TestDataLakeLookupStrategy_Lookup(t *testing.T) {
 		{
 			"should yield an empty list of lookups",
 			dataLakeDS,
+			validParams,
 			func(_ context.Context, _ domain.DataLakeDataSourceAttributes, _ map[string]any) ([]*domain.Lookup, error) {
 				return []*domain.Lookup{}, nil
 			},
@@ -62,16 +66,26 @@ func TestDataLakeLookupStrategy_Lookup(t *testing.T) {
 			&domain.DataSource{},
 			nil,
 			nil,
+			nil,
 			domain.ErrDataSourceAttributeMismatch,
 		},
 		{
 			"should yield an error when the client fails",
 			dataLakeDS,
+			validParams,
 			func(_ context.Context, _ domain.DataLakeDataSourceAttributes, _ map[string]any) ([]*domain.Lookup, error) {
 				return nil, errors.New("client error")
 			},
 			nil,
 			errors.New("client error"),
+		},
+		{
+			"should yield an error when a required key is missing",
+			dataLakeDS,
+			nil,
+			nil,
+			nil,
+			domain.ErrMissingRequiredKeys,
 		},
 	}
 
@@ -90,12 +104,19 @@ func TestDataLakeLookupStrategy_Lookup(t *testing.T) {
 			})
 
 			// Act.
-			got, gotErr := s.Lookup(context.Background(), tt.ds, nil)
+			got, gotErr := s.Lookup(context.Background(), tt.ds, tt.params)
 
 			// Assert.
 			if tt.wantErr != nil {
 				if gotErr == nil {
 					t.Errorf("expected error but got nil")
+					return
+				}
+				if errors.Is(tt.wantErr, domain.ErrDataSourceAttributeMismatch) ||
+					errors.Is(tt.wantErr, domain.ErrMissingRequiredKeys) {
+					if !errors.Is(gotErr, tt.wantErr) {
+						t.Errorf("expected error wrapping %v but got %v", tt.wantErr, gotErr)
+					}
 				}
 				return
 			}

@@ -60,11 +60,12 @@ func (s *dataSourcesJobService) Process(ctx context.Context, command *ports.Proc
 		return err
 	}
 
-	lookups, err := s.client.FetchLookups(ctx, attr.Method, attr.URL, attr.Headers)
+	data, err := s.client.FetchLookups(ctx, attr.DataSourceRequest, nil)
 	if err != nil {
 		attr.RecordAttempt()
 		s.logger.ErrorContext(ctx, "failed to fetch lookups for data source", "data_source_id", ds.ID, "error", err, "attempts", attr.Attempts)
 	} else {
+		lookups := s.toLookups(ctx, data, attr.ValueField, attr.LabelField, ds.ID)
 		attr.RefreshData(lookups)
 	}
 
@@ -75,4 +76,30 @@ func (s *dataSourcesJobService) Process(ctx context.Context, command *ports.Proc
 	}
 
 	return nil
+}
+
+func (s *dataSourcesJobService) toLookups(ctx context.Context, rows []map[string]any, valueField, labelField string, dataSourceID domain.DataSourceID) []*domain.Lookup {
+	lookups := make([]*domain.Lookup, 0, len(rows))
+
+	for i, row := range rows {
+		value, ok := row[valueField]
+		if !ok {
+			s.logger.WarnContext(ctx, "skipping lookup row missing value field", "data_source_id", dataSourceID, "row_index", i, "value_field", valueField)
+			continue
+		}
+
+		label, ok := row[labelField]
+		if !ok {
+			s.logger.WarnContext(ctx, "skipping lookup row missing label field", "data_source_id", dataSourceID, "row_index", i, "label_field", labelField)
+			continue
+		}
+
+		switch l := label.(type) {
+		case string:
+			lookups = append(lookups, domain.NewLookup(value, l))
+		default:
+			s.logger.WarnContext(ctx, "skipping lookup row label field is not string", "data_source_id", dataSourceID, "row_index", i, "label_field", labelField)
+		}
+	}
+	return lookups
 }

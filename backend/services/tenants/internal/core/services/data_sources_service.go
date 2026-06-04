@@ -187,7 +187,7 @@ func (s *dataSourcesService) Lookup(ctx context.Context, query *ports.GetDataSou
 		return nil, err
 	}
 
-	lookups, err := strategy.Lookup(ctx, ds, query.Query)
+	lookups, err := strategy.Lookup(ctx, ds, query.Params)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to execute lookup", "tenant_id", query.TenantID, "data_source_id", query.ID, "type", ds.Type, "error", err)
 		return nil, err
