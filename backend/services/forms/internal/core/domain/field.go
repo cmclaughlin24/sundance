@@ -2,6 +2,8 @@ package domain
 
 import (
 	"errors"
+	"fmt"
+	"slices"
 
 	"sundance/backend/pkg/common/validate"
 )
@@ -19,8 +21,9 @@ const (
 )
 
 var (
-	ErrInvalidFieldType       = errors.New("invalid field type")
-	ErrInvalidFieldAttributes = errors.New("invalid field attributes for type")
+	ErrInvalidFieldType         = errors.New("invalid field type")
+	ErrInvalidFieldAttributes   = errors.New("invalid field attributes for type")
+	ErrDuplicateFieldTagMapping = errors.New("duplicate field tag mapping for same tag version")
 )
 
 type Field struct {
@@ -29,6 +32,7 @@ type Field struct {
 	Name       string `validate:"required"`
 	Type       FieldType
 	Attributes FieldAttributes
+	tags       []*FieldTagMapping
 	withPosition
 	withRules
 }
@@ -64,17 +68,50 @@ func NewField(key, name string, fieldType FieldType, attributes FieldAttributes,
 	return f, nil
 }
 
-func HydrateField(id FieldID, key, name string, fieldType FieldType, attr FieldAttributes, position float32) *Field {
+func HydrateField(
+	id FieldID,
+	key,
+	name string,
+	fieldType FieldType,
+	attr FieldAttributes,
+	position float32,
+	tags []*FieldTagMapping,
+) *Field {
 	return &Field{
 		ID:         id,
 		Key:        key,
 		Name:       name,
 		Type:       fieldType,
 		Attributes: attr,
+		tags:       tags,
 		withPosition: withPosition{
 			position: position,
 		},
 	}
+}
+
+func (f Field) GetTags() []*FieldTagMapping {
+	return f.tags
+}
+
+func (f *Field) AddTags(tags ...FieldTagMappingConfig) error {
+	for _, tag := range tags {
+		idx := slices.IndexFunc(f.tags, func(ftm *FieldTagMapping) bool {
+			return ftm.TagVersionID == tag.TagVersionID
+		})
+
+		if idx != -1 {
+			return fmt.Errorf("%w: tagVersion=%s", ErrDuplicateFieldTagMapping, tag.TagVersionID)
+		}
+
+		ftm, err := NewFieldTagMapping(f.ID, tag.TagVersionID, tag.Priority)
+		if err != nil {
+			return err
+		}
+
+		f.tags = append(f.tags, ftm)
+	}
+	return nil
 }
 
 var isValidFieldType = validate.NewTypeValidator([]FieldType{

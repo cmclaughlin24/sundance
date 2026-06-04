@@ -1,24 +1,28 @@
 package dto
 
-import "sundance/backend/services/forms/internal/core/domain"
+import (
+	"sundance/backend/services/forms/internal/core/domain"
+)
 
 type FieldRequest struct {
-	Key        string        `json:"key" validate:"required,max=25"`
-	Name       string        `json:"name" validate:"required,max=250"`
-	Type       string        `json:"type" validate:"required"`
-	Position   float32       `json:"position" validate:"gte=0,lte=50"`
-	Attributes any           `json:"attributes" validate:"required" swaggertype:"object"`
-	Rules      []RuleRequest `json:"rules" validate:"dive"`
+	Key        string                         `json:"key" validate:"required,max=25"`
+	Name       string                         `json:"name" validate:"required,max=250"`
+	Type       string                         `json:"type" validate:"required"`
+	Position   float32                        `json:"position" validate:"gte=0,lte=50"`
+	Attributes any                            `json:"attributes" validate:"required" swaggertype:"object"`
+	Tags       []upsertFieldTagMappingRequest `json:"tags" validate:"dive"`
+	Rules      []RuleRequest                  `json:"rules" validate:"dive"`
 }
 
 type FieldResponse struct {
-	ID         domain.FieldID  `json:"id"`
-	Key        string          `json:"key"`
-	Name       string          `json:"name"`
-	Type       string          `json:"type"`
-	Position   float32         `json:"position"`
-	Attributes any             `json:"attributes" swaggertype:"object"`
-	Rules      []*RuleResponse `json:"rules"`
+	ID         domain.FieldID             `json:"id"`
+	Key        string                     `json:"key"`
+	Name       string                     `json:"name"`
+	Type       string                     `json:"type"`
+	Position   float32                    `json:"position"`
+	Attributes any                        `json:"attributes" swaggertype:"object"`
+	Tags       []*FieldTagMappingResponse `json:"tags"`
+	Rules      []*RuleResponse            `json:"rules"`
 }
 
 func RequestToField(dto FieldRequest) (*domain.Field, error) {
@@ -49,6 +53,11 @@ func RequestToField(dto FieldRequest) (*domain.Field, error) {
 		return nil, err
 	}
 
+	configs := requestToFieldTagMappingConfigs(dto.Tags)
+	if err := f.AddTags(configs...); err != nil {
+		return nil, err
+	}
+
 	return f, nil
 }
 
@@ -58,6 +67,7 @@ func FieldToResponse(field *domain.Field) *FieldResponse {
 	}
 
 	attr := fieldAttributesToResponse(field.Attributes)
+	tags := fieldTagMappingsToResponses(field.GetTags())
 	rules := RulesToResponse(field.GetRules())
 
 	return &FieldResponse{
@@ -67,6 +77,7 @@ func FieldToResponse(field *domain.Field) *FieldResponse {
 		Type:       string(field.Type),
 		Position:   field.GetPosition(),
 		Attributes: attr,
+		Tags:       tags,
 		Rules:      rules,
 	}
 }

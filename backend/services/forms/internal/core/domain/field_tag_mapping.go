@@ -7,22 +7,28 @@ import (
 
 type FieldTagMappingID string
 
-type FieldTagMapping struct {
-	ID           FieldTagMappingID
-	FieldID      FieldID
+type FieldTagMappingConfig struct {
 	TagVersionID TagVersionID
 	Priority     int
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+}
+
+type FieldTagMapping struct {
+	ID        FieldTagMappingID
+	FieldID   FieldID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	FieldTagMappingConfig
 }
 
 func NewFieldTagMapping(fieldID FieldID, tagVersionID TagVersionID, priority int) (*FieldTagMapping, error) {
 	ftm := &FieldTagMapping{
-		ID:           FieldTagMappingID(NewID()),
-		FieldID:      fieldID,
-		TagVersionID: tagVersionID,
-		Priority:     priority,
-		CreatedAt:    Now(),
+		ID:      FieldTagMappingID(NewID()),
+		FieldID: fieldID,
+		FieldTagMappingConfig: FieldTagMappingConfig{
+			TagVersionID: tagVersionID,
+			Priority:     priority,
+		},
+		CreatedAt: Now(),
 	}
 
 	if err := validate.ValidateStruct(ftm); err != nil {
@@ -41,11 +47,13 @@ func HydrateFieldTagMapping(
 	updatedAt time.Time,
 ) *FieldTagMapping {
 	return &FieldTagMapping{
-		ID:           id,
-		FieldID:      fieldID,
-		TagVersionID: tagVersionID,
-		Priority:     priority,
-		CreatedAt:    createdAt,
-		UpdatedAt:    updatedAt,
+		ID:      id,
+		FieldID: fieldID,
+		FieldTagMappingConfig: FieldTagMappingConfig{
+			TagVersionID: tagVersionID,
+			Priority:     priority,
+		},
+		CreatedAt: createdAt,
+		UpdatedAt: updatedAt,
 	}
 }

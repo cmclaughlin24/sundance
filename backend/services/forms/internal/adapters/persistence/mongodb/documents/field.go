@@ -8,13 +8,14 @@ import (
 )
 
 type FieldDocument struct {
-	ID         string          `bson:"_id"`
-	Key        string          `bson:"key"`
-	Name       string          `bson:"name"`
-	Type       string          `bson:"type"`
-	Attributes bson.Raw        `bson:"attributes"`
-	Position   float32         `bson:"position"`
-	Rules      []*ruleDocument `bson:"rules"`
+	ID         string                     `bson:"_id"`
+	Key        string                     `bson:"key"`
+	Name       string                     `bson:"name"`
+	Type       string                     `bson:"type"`
+	Attributes bson.Raw                   `bson:"attributes"`
+	Position   float32                    `bson:"position"`
+	Tags       []*fieldTagMappingDocument `bson:"tags"`
+	Rules      []*ruleDocument            `bson:"rules"`
 }
 
 func ToFieldDocument(f *domain.Field) (*FieldDocument, error) {
@@ -25,6 +26,7 @@ func ToFieldDocument(f *domain.Field) (*FieldDocument, error) {
 	}
 
 	rules := RulesToDocuments(f.GetRules())
+	tags := toFieldTagMappingDocuments(f.GetTags())
 
 	return &FieldDocument{
 		ID:         string(f.ID),
@@ -33,6 +35,7 @@ func ToFieldDocument(f *domain.Field) (*FieldDocument, error) {
 		Type:       string(f.Type),
 		Attributes: attr,
 		Position:   f.GetPosition(),
+		Tags:       tags,
 		Rules:      rules,
 	}, nil
 }
@@ -52,6 +55,7 @@ func FromFieldDocument(f *FieldDocument) (*domain.Field, error) {
 		fieldType,
 		attr,
 		f.Position,
+		fromFieldTagMappingDocuments(f.Tags),
 	)
 
 	rules, err := documentsToRules(f.Rules)
