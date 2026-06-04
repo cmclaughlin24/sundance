@@ -296,7 +296,7 @@ const docTemplate = `{
                     {
                         "type": "object",
                         "description": "Optional parameters for look-up retrieval, such as query parameters for external fetches or payload for webhook calls.",
-                        "name": "query",
+                        "name": "params",
                         "in": "query"
                     }
                 ],

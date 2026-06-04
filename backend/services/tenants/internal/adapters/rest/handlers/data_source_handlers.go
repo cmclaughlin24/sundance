@@ -249,7 +249,7 @@ func (h *Handlers) DeleteDataSource(w http.ResponseWriter, r *http.Request) {
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		id path string true "Data Source ID"
-// @param		query query object false "Optional parameters for look-up retrieval, such as query parameters for external fetches or payload for webhook calls."
+// @param		params query object false "Optional parameters for look-up retrieval, such as query parameters for external fetches or payload for webhook calls."
 // @success		200 {array} dto.LookupResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -259,17 +259,17 @@ func (h *Handlers) GetLookups(w http.ResponseWriter, r *http.Request) {
 	sourceID := chi.URLParam(r, "dataSourceId")
 	resultChan := make(chan result[[]*domain.Lookup], 1)
 
-	query, err := h.parseDataSourceLookupQuery(r)
+	params, err := h.parseDataSourceLookupQuery(r)
 	if err != nil {
 		h.sendErrorResponse(w, err)
 		return
 	}
 
-	command := ports.NewGetDataSourceLookupsQuery(tenantID, domain.DataSourceID(sourceID), query)
+	query := ports.NewGetDataSourceLookupsQuery(tenantID, domain.DataSourceID(sourceID), params)
 
 	go func() {
 		defer close(resultChan)
-		lookups, err := h.app.API.DataSources.Lookup(r.Context(), command)
+		lookups, err := h.app.API.DataSources.Lookup(r.Context(), query)
 		resultChan <- result[[]*domain.Lookup]{lookups, err}
 	}()
 
@@ -294,7 +294,7 @@ func (h *Handlers) getTenantFromContext(r *http.Request) domain.TenantID {
 }
 
 func (h *Handlers) parseDataSourceLookupQuery(r *http.Request) (map[string]any, error) {
-	query := r.URL.Query().Get("query")
+	query := r.URL.Query().Get("params")
 	data := make(map[string]any)
 
 	if query == "" {

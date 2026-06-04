@@ -31,9 +31,13 @@ func Test_dataSourceAttributesToResponse(t *testing.T) {
 				Data: []*domain.Lookup{
 					{Value: "verstappen", Label: "Max Verstappen"},
 				},
-				URL:            "https://example.com/standings",
-				Method:         "GET",
-				Headers:        map[string]string{"Authorization": "Bearer fia-token"},
+				DataSourceRequest: domain.DataSourceRequest{
+					URL:        "https://example.com/standings",
+					Method:     "GET",
+					Headers:    map[string]string{"Authorization": "Bearer fia-token"},
+					ValueField: "driverId",
+					LabelField: "driverName",
+				},
 				IntervalHours:  24,
 				ExpirationDate: now.Add(48 * time.Hour),
 			},
@@ -42,9 +46,14 @@ func Test_dataSourceAttributesToResponse(t *testing.T) {
 		{
 			"should yield a webhook attributes response",
 			domain.WebhookDataSourceAttributes{
-				URL:     "https://example.com/timing",
-				Method:  "POST",
-				Headers: map[string]string{"Authorization": "Bearer fia-token"},
+				DataSourceRequest: domain.DataSourceRequest{
+					URL:        "https://example.com/timing",
+					Method:     "POST",
+					Headers:    map[string]string{"Authorization": "Bearer fia-token"},
+					ValueField: "driverId",
+					LabelField: "driverName",
+				},
+				RequiredKeys: []string{"driver"},
 			},
 			"webhook",
 		},
@@ -58,7 +67,6 @@ func Test_dataSourceAttributesToResponse(t *testing.T) {
 				Schema:       "telemetry",
 				ValueField:   "value",
 				LabelField:   "label",
-				Limit:        250,
 				TimeoutMs:    7000,
 			},
 			"data-lake",
@@ -106,6 +114,14 @@ func Test_dataSourceAttributesToResponse(t *testing.T) {
 					t.Errorf("expected Method %q but got %q", input.Method, resp.Method)
 				}
 
+				if resp.ValueField != input.ValueField {
+					t.Errorf("expected ValueField %q but got %q", input.ValueField, resp.ValueField)
+				}
+
+				if resp.LabelField != input.LabelField {
+					t.Errorf("expected LabelField %q but got %q", input.LabelField, resp.LabelField)
+				}
+
 				if resp.IntervalHours != input.IntervalHours {
 					t.Errorf("expected IntervalHours %v but got %v", input.IntervalHours, resp.IntervalHours)
 				}
@@ -128,6 +144,18 @@ func Test_dataSourceAttributesToResponse(t *testing.T) {
 
 				if resp.Method != input.Method {
 					t.Errorf("expected Method %q but got %q", input.Method, resp.Method)
+				}
+
+				if len(resp.RequiredKeys) != len(input.RequiredKeys) {
+					t.Errorf("expected %d required keys but got %d", len(input.RequiredKeys), len(resp.RequiredKeys))
+				}
+
+				if resp.ValueField != input.ValueField {
+					t.Errorf("expected ValueField %q but got %q", input.ValueField, resp.ValueField)
+				}
+
+				if resp.LabelField != input.LabelField {
+					t.Errorf("expected LabelField %q but got %q", input.LabelField, resp.LabelField)
 				}
 			case "data-lake":
 				resp, ok := got.(dataLakeDataSourceAttributesResponse)
@@ -156,10 +184,6 @@ func Test_dataSourceAttributesToResponse(t *testing.T) {
 
 				if resp.LabelField != input.LabelField {
 					t.Errorf("expected LabelField %q but got %q", input.LabelField, resp.LabelField)
-				}
-
-				if resp.Limit != input.Limit {
-					t.Errorf("expected Limit %d but got %d", input.Limit, resp.Limit)
 				}
 
 				if resp.TimeoutMs != input.TimeoutMs {

@@ -39,9 +39,11 @@ func TestToDataSourceDocument(t *testing.T) {
 				"Blade awakening schedule from the core crystal registry",
 				domain.DataSourceTypeScheduled,
 				domain.ScheduledDataSourceAttributes{
-					URL:           "https://example.com/blades",
-					Method:        "GET",
-					Headers:       map[string]string{"Authorization": "Bearer token"},
+					DataSourceRequest: domain.DataSourceRequest{
+						URL:     "https://example.com/blades",
+						Method:  "GET",
+						Headers: map[string]string{"Authorization": "Bearer token"},
+					},
 					IntervalHours: 12,
 				},
 				now, now.Add(24*time.Hour),
@@ -54,9 +56,11 @@ func TestToDataSourceDocument(t *testing.T) {
 				"Real-time salvage data from the Cloud Sea",
 				domain.DataSourceTypeWebhook,
 				domain.WebhookDataSourceAttributes{
-					URL:     "https://example.com/salvage",
-					Method:  "POST",
-					Headers: map[string]string{"Authorization": "Bearer token"},
+					DataSourceRequest: domain.DataSourceRequest{
+						URL:     "https://example.com/salvage",
+						Method:  "POST",
+						Headers: map[string]string{"Authorization": "Bearer token"},
+					},
 				},
 				now, now.Add(24*time.Hour),
 			),
@@ -75,7 +79,6 @@ func TestToDataSourceDocument(t *testing.T) {
 					Schema:       "analytics",
 					ValueField:   "value",
 					LabelField:   "label",
-					Limit:        100,
 					TimeoutMs:    5000,
 				},
 				now, now.Add(24*time.Hour),
@@ -146,16 +149,20 @@ func TestFromDataSourceDocument(t *testing.T) {
 	})
 
 	scheduledAttrRaw, _ := bson.Marshal(domain.ScheduledDataSourceAttributes{
-		URL:           "https://example.com/blades",
-		Method:        "GET",
-		Headers:       map[string]string{"Authorization": "Bearer token"},
+		DataSourceRequest: domain.DataSourceRequest{
+			URL:     "https://example.com/blades",
+			Method:  "GET",
+			Headers: map[string]string{"Authorization": "Bearer token"},
+		},
 		IntervalHours: 12,
 	})
 
 	webhookAttrRaw, _ := bson.Marshal(domain.WebhookDataSourceAttributes{
-		URL:     "https://example.com/salvage",
-		Method:  "POST",
-		Headers: map[string]string{"Authorization": "Bearer token"},
+		DataSourceRequest: domain.DataSourceRequest{
+			URL:     "https://example.com/salvage",
+			Method:  "POST",
+			Headers: map[string]string{"Authorization": "Bearer token"},
+		},
 	})
 
 	dataLakeAttrRaw, _ := bson.Marshal(domain.DataLakeDataSourceAttributes{
@@ -166,7 +173,6 @@ func TestFromDataSourceDocument(t *testing.T) {
 		Schema:       "analytics",
 		ValueField:   "value",
 		LabelField:   "label",
-		Limit:        100,
 		TimeoutMs:    5000,
 	})
 

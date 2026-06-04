@@ -42,6 +42,7 @@ func (h *Handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 func isBadRequest(err error) bool {
 	return errors.Is(err, dto.ErrDataSourceAttrParse) ||
 		errors.Is(err, domain.ErrInvalidSourceType) ||
-		errors.Is(err, domain.ErrInvalidSourceTypeAttributes)
+		errors.Is(err, domain.ErrInvalidSourceTypeAttributes) ||
+		errors.Is(err, domain.ErrMissingRequiredKeys)
 
 }

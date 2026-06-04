@@ -94,33 +94,39 @@ func Test_dataSourcesJobService_Process(t *testing.T) {
 		Name:     "Pokemon Types",
 		Type:     domain.DataSourceTypeScheduled,
 		Attributes: domain.ScheduledDataSourceAttributes{
-			URL:           "https://example.com/pokemon-types",
-			Method:        "GET",
-			Headers:       map[string]string{"Authorization": "Bearer token"},
+			DataSourceRequest: domain.DataSourceRequest{
+				URL:        "https://example.com/pokemon-types",
+				Method:     "GET",
+				Headers:    map[string]string{"Authorization": "Bearer token"},
+				ValueField: "value",
+				LabelField: "label",
+			},
 			IntervalHours: 24,
 		},
 	}
 
-	lookups := []*domain.Lookup{
-		{Value: "fire", Label: "Fire"},
-		{Value: "water", Label: "Water"},
+	rows := []map[string]any{
+		{"value": "fire", "label": "Fire"},
+		{"value": "water", "label": "Water"},
 	}
 
 	tests := []struct {
-		name           string
-		command        *ports.ProcessDataSourceJobCommand
-		fetchLookupsFn func(context.Context, string, string, map[string]string) ([]*domain.Lookup, error)
-		upsertErr      error
-		wantErr        bool
+		name             string
+		command          *ports.ProcessDataSourceJobCommand
+		fetchLookupsFn   func(context.Context, domain.DataSourceRequest, map[string]any) ([]map[string]any, error)
+		upsertErr        error
+		wantErr          bool
+		wantRefreshedLen int
 	}{
 		{
 			"should process a data source job",
 			ports.NewProcessDataSourceJobCommand(scheduledDS),
-			func(_ context.Context, _, _ string, _ map[string]string) ([]*domain.Lookup, error) {
-				return lookups, nil
+			func(_ context.Context, _ domain.DataSourceRequest, _ map[string]any) ([]map[string]any, error) {
+				return rows, nil
 			},
 			nil,
 			false,
+			2,
 		},
 		{
 			"should yield an error when the command is invalid",
@@ -128,6 +134,7 @@ func Test_dataSourcesJobService_Process(t *testing.T) {
 			nil,
 			nil,
 			true,
+			0,
 		},
 		{
 			"should yield an error when the attribute type mismatches",
@@ -141,30 +148,49 @@ func Test_dataSourcesJobService_Process(t *testing.T) {
 			nil,
 			nil,
 			true,
+			0,
 		},
 		{
 			"should record an attempt when fetching lookups fails",
 			ports.NewProcessDataSourceJobCommand(scheduledDS),
-			func(_ context.Context, _, _ string, _ map[string]string) ([]*domain.Lookup, error) {
+			func(_ context.Context, _ domain.DataSourceRequest, _ map[string]any) ([]map[string]any, error) {
 				return nil, errors.New("fetch error")
 			},
 			nil,
 			false,
+			-1,
 		},
 		{
 			"should yield an error when the repository fails to persist",
 			ports.NewProcessDataSourceJobCommand(scheduledDS),
-			func(_ context.Context, _, _ string, _ map[string]string) ([]*domain.Lookup, error) {
-				return lookups, nil
+			func(_ context.Context, _ domain.DataSourceRequest, _ map[string]any) ([]map[string]any, error) {
+				return rows, nil
 			},
 			errors.New("repository error"),
 			true,
+			0,
+		},
+		{
+			"should skip rows missing value or label fields",
+			ports.NewProcessDataSourceJobCommand(scheduledDS),
+			func(_ context.Context, _ domain.DataSourceRequest, _ map[string]any) ([]map[string]any, error) {
+				return []map[string]any{
+					{"value": "fire", "label": "Fire"},
+					{"value": "no-label"},
+					{"label": "No Value"},
+					{"value": "weird", "label": 42},
+				}, nil
+			},
+			nil,
+			false,
+			1,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
+			var upserted *domain.DataSource
 			s := dataSourcesJobService{
 				logger: logger,
 				repository: &mockDataSourcesRepository{
@@ -172,13 +198,14 @@ func Test_dataSourcesJobService_Process(t *testing.T) {
 						if tt.upsertErr != nil {
 							return nil, tt.upsertErr
 						}
+						upserted = ds
 						return ds, nil
 					},
 				},
 				client: &mockLookupClient{
-					fetchLookupsFn: func(ctx context.Context, method, url string, headers map[string]string) ([]*domain.Lookup, error) {
+					fetchLookupsFn: func(ctx context.Context, request domain.DataSourceRequest, params map[string]any) ([]map[string]any, error) {
 						if tt.fetchLookupsFn != nil {
-							return tt.fetchLookupsFn(ctx, method, url, headers)
+							return tt.fetchLookupsFn(ctx, request, params)
 						}
 						return nil, nil
 					},
@@ -199,6 +226,21 @@ func Test_dataSourcesJobService_Process(t *testing.T) {
 			if gotErr != nil {
 				t.Errorf("expected no error but got %v", gotErr)
 				return
+			}
+
+			if tt.wantRefreshedLen >= 0 {
+				if upserted == nil {
+					t.Errorf("expected upsert to be called")
+					return
+				}
+				attr, ok := upserted.Attributes.(domain.ScheduledDataSourceAttributes)
+				if !ok {
+					t.Errorf("expected ScheduledDataSourceAttributes but got %T", upserted.Attributes)
+					return
+				}
+				if len(attr.Data) != tt.wantRefreshedLen {
+					t.Errorf("expected refreshed data length %d but got %d", tt.wantRefreshedLen, len(attr.Data))
+				}
 			}
 		})
 	}

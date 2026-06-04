@@ -292,7 +292,7 @@ paths:
       - description: Optional parameters for look-up retrieval, such as query parameters
           for external fetches or payload for webhook calls.
         in: query
-        name: query
+        name: params
         type: object
       produces:
       - application/json

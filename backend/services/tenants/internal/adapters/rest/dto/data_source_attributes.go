@@ -69,14 +69,19 @@ type scheduledDataSourceAttributesResponse struct {
 	URL            string            `json:"url"`
 	Method         string            `json:"method"`
 	Headers        map[string]string `json:"headers,omitempty"`
+	ValueField     string            `json:"valueField"`
+	LabelField     string            `json:"labelField"`
 	IntervalHours  float64           `json:"intervalHours"`
 	ExpirationDate time.Time         `json:"expirationDate"`
 }
 
 type webhookDataSourceAttributesResponse struct {
-	URL     string            `json:"url"`
-	Method  string            `json:"method"`
-	Headers map[string]string `json:"headers,omitempty"`
+	URL          string            `json:"url"`
+	Method       string            `json:"method"`
+	Headers      map[string]string `json:"headers,omitempty"`
+	RequiredKeys []string          `json:"requiredKeys"`
+	ValueField   string            `json:"valueField"`
+	LabelField   string            `json:"labelField"`
 }
 
 type dataLakeDataSourceAttributesResponse struct {
@@ -87,7 +92,6 @@ type dataLakeDataSourceAttributesResponse struct {
 	Schema       string   `json:"schema"`
 	ValueField   string   `json:"valueField"`
 	LabelField   string   `json:"labelField"`
-	Limit        int      `json:"limit"`
 	TimeoutMs    int      `json:"timeoutMs"`
 }
 
@@ -101,6 +105,8 @@ func dataSourceAttributesToResponse(attr domain.DataSourceAttributes) any {
 			URL:            t.URL,
 			Method:         t.Method,
 			Headers:        t.Headers,
+			ValueField:     t.ValueField,
+			LabelField:     t.LabelField,
 			IntervalHours:  t.IntervalHours,
 			ExpirationDate: t.ExpirationDate,
 		}
@@ -112,9 +118,12 @@ func dataSourceAttributesToResponse(attr domain.DataSourceAttributes) any {
 		}
 	case domain.WebhookDataSourceAttributes:
 		return webhookDataSourceAttributesResponse{
-			URL:     t.URL,
-			Method:  t.Method,
-			Headers: t.Headers,
+			URL:          t.URL,
+			Method:       t.Method,
+			Headers:      t.Headers,
+			RequiredKeys: t.RequiredKeys,
+			ValueField:   t.ValueField,
+			LabelField:   t.LabelField,
 		}
 	case domain.DataLakeDataSourceAttributes:
 		return dataLakeDataSourceAttributesResponse{
@@ -125,7 +134,6 @@ func dataSourceAttributesToResponse(attr domain.DataSourceAttributes) any {
 			Schema:       t.Schema,
 			ValueField:   t.ValueField,
 			LabelField:   t.LabelField,
-			Limit:        t.Limit,
 			TimeoutMs:    t.TimeoutMs,
 		}
 	default:

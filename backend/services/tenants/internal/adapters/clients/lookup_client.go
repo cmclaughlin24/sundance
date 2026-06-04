@@ -1,9 +1,14 @@
 package clients
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"sundance/backend/pkg/common/httputil"
 	"sundance/backend/services/tenants/internal/core/domain"
@@ -26,36 +31,66 @@ func NewLookupClient(client httpClient, logger *slog.Logger) ports.LookupClient 
 	}
 }
 
-func (c *LookupClient) FetchLookups(ctx context.Context, method, url string, headers map[string]string) ([]*domain.Lookup, error) {
-	req, err := http.NewRequestWithContext(ctx, method, url, nil)
+func (c *LookupClient) FetchLookups(ctx context.Context, request domain.DataSourceRequest, params map[string]any) ([]map[string]any, error) {
+	var body io.Reader
+	method := strings.ToUpper(request.Method)
+
+	if len(params) > 0 && (method == http.MethodPost || method == http.MethodPut || method == http.MethodPatch) {
+		b, err := c.setRequestBody(params)
+
+		if err != nil {
+			c.logger.ErrorContext(ctx, "lookup request body encode failed", "error", err)
+			return nil, err
+		}
+
+		body = b
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, request.URL, body)
 	if err != nil {
 		return nil, err
 	}
 
-	for key, value := range headers {
+	if len(params) > 0 && (method == http.MethodGet) {
+		c.setQueryString(req, params)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	for key, value := range request.Headers {
 		req.Header.Set(key, value)
 	}
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		c.logger.ErrorContext(ctx, "lookup request failed", "url", url, "error", err)
+		c.logger.ErrorContext(ctx, "lookup request failed", "url", request.URL, "error", err)
 		return nil, err
 	}
 
-	var items []struct {
-		Value string `json:"value"`
-		Label string `json:"label"`
-	}
-
-	if err := httputil.DecodeJSONResponse(resp, &items); err != nil {
+	var data []map[string]any
+	if err := httputil.DecodeJSONResponse(resp, &data); err != nil {
 		c.logger.ErrorContext(ctx, "lookup request response decode failed", "error", err)
 		return nil, err
 	}
 
-	lookups := make([]*domain.Lookup, 0, len(items))
-	for _, item := range items {
-		lookups = append(lookups, domain.NewLookup(item.Value, item.Label))
+	return data, nil
+}
+
+func (c *LookupClient) setRequestBody(params map[string]any) (io.Reader, error) {
+	jsonBytes, err := json.Marshal(params)
+
+	if err != nil {
+		return nil, err
 	}
 
-	return lookups, nil
+	return bytes.NewBuffer(jsonBytes), nil
+}
+
+func (c *LookupClient) setQueryString(r *http.Request, params map[string]any) {
+	query := r.URL.Query()
+
+	for key, value := range params {
+		query.Add(key, fmt.Sprint(value))
+	}
+
+	r.URL.RawQuery = query.Encode()
 }

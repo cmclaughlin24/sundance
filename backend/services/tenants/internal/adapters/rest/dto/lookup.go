@@ -5,7 +5,7 @@ import (
 )
 
 type LookupResponse struct {
-	Value string `json:"value"`
+	Value any `json:"value"`
 	Label string `json:"label"`
 }
 
