@@ -50,7 +50,7 @@ type Strategies struct {
 }
 
 type LookupStrategy interface {
-	Lookup(context.Context, *domain.DataSource) ([]*domain.Lookup, error)
+	Lookup(context.Context, *domain.DataSource, map[string]any) ([]*domain.Lookup, error)
 }
 
 type LookupStrategyRegistry = stratreg.StrategyRegistry[domain.DataSourceType, LookupStrategy]

@@ -1,6 +1,6 @@
 {
   "port": 80,
-  "host": "http://localhost:8082",
+  "host": "http://localhost:8081",
   "persistence": {
     "driver": "mongodb",
     "options": {

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"sundance/backend/pkg/common"
 	"sundance/backend/pkg/common/httputil"
 	"sundance/backend/services/tenants/internal/adapters/rest/dto"
@@ -392,47 +393,79 @@ func Test_handlers_GetLookups(t *testing.T) {
 		statusCode int
 		id         string
 		len        int
+		queryParam string
+		wantQuery  map[string]any
 	}{
 		{
-			"should yield OK if the request is successful with results",
-			func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
+			name: "should yield OK if the request is successful with results",
+			fn: func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
 				return []*domain.Lookup{
 					{Value: "blue", Label: "Blue Heeler"},
 					{Value: "red", Label: "Red Heeler"},
 				}, nil
 			},
-			http.StatusOK,
-			"ds-1",
-			2,
+			statusCode: http.StatusOK,
+			id:         "ds-1",
+			len:        2,
 		},
 		{
-			"should yield OK if the request is successful with empty results",
-			func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
+			name: "should yield OK if the request is successful with empty results",
+			fn: func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
 				return []*domain.Lookup{}, nil
 			},
-			http.StatusOK,
-			"ds-1",
-			0,
+			statusCode: http.StatusOK,
+			id:         "ds-1",
+			len:        0,
 		},
 		{
-			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
+			name: "should yield INTERNAL SERVER ERROR if the request fails",
+			fn: func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
 				return nil, errors.New("internal error")
 			},
-			http.StatusInternalServerError,
-			"ds-1",
-			0,
+			statusCode: http.StatusInternalServerError,
+			id:         "ds-1",
+			len:        0,
+		},
+		{
+			name: "should forward parsed query parameters to the service",
+			fn: func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
+				return []*domain.Lookup{}, nil
+			},
+			statusCode: http.StatusOK,
+			id:         "ds-1",
+			len:        0,
+			queryParam: `{"foo":"bar","count":2}`,
+			wantQuery:  map[string]any{"foo": "bar", "count": float64(2)},
+		},
+		{
+			name: "should yield INTERNAL SERVER ERROR when the query parameter is malformed JSON",
+			fn: func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
+				return []*domain.Lookup{}, nil
+			},
+			statusCode: http.StatusInternalServerError,
+			id:         "ds-1",
+			len:        0,
+			queryParam: "not-json",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := &ports.API{DataSources: &mockDataSourcesService{lookupFn: tt.fn}}
+			var receivedQuery map[string]any
+			lookupFn := func(ctx context.Context, query *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error) {
+				receivedQuery = query.Query
+				return tt.fn(ctx, query)
+			}
+			s := &ports.API{DataSources: &mockDataSourcesService{lookupFn: lookupFn}}
 			h := newTestHandlers(s)
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("dataSourceId", tt.id)
-			req, _ := http.NewRequest(http.MethodGet, "/api/v1/data-sources/"+tt.id+"/look-ups", nil)
+			url := "/api/v1/data-sources/" + tt.id + "/look-ups"
+			if tt.queryParam != "" {
+				url += "?query=" + tt.queryParam
+			}
+			req, _ := http.NewRequest(http.MethodGet, url, nil)
 			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
 			req = req.WithContext(context.WithValue(ctx, chi.RouteCtxKey, rctx))
 			rr := httptest.NewRecorder()
@@ -450,6 +483,10 @@ func Test_handlers_GetLookups(t *testing.T) {
 
 			if tt.statusCode < 200 || tt.statusCode >= 300 {
 				return
+			}
+
+			if tt.wantQuery != nil && !reflect.DeepEqual(receivedQuery, tt.wantQuery) {
+				t.Errorf("expected forwarded query %v but got %v", tt.wantQuery, receivedQuery)
 			}
 
 			var body []map[string]any

@@ -20,7 +20,7 @@ func NewWebhookLookupStrategy(logger *slog.Logger, clients *ports.Clients) ports
 	}
 }
 
-func (s *WebhookLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSource) ([]*domain.Lookup, error) {
+func (s *WebhookLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSource, _ map[string]any) ([]*domain.Lookup, error) {
 	attr, err := domain.GetDataSourceAttributes[domain.WebhookDataSourceAttributes](ds.Attributes)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "data_source_id", ds.ID, "data_source_type", ds.Type, "error", err)

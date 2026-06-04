@@ -660,12 +660,12 @@ func TestDataSourcesService_Lookup(t *testing.T) {
 	}{
 		{
 			"should yield lookups",
-			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1"),
+			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1", nil),
 			staticDS,
 			nil,
 			ports.LookupStrategyRegistry{
 				domain.DataSourceTypeStatic: &mockLookupStrategy{
-					lookupFn: func(_ context.Context, _ *domain.DataSource) ([]*domain.Lookup, error) {
+					lookupFn: func(_ context.Context, _ *domain.DataSource, _ map[string]any) ([]*domain.Lookup, error) {
 						return lookups, nil
 					},
 				},
@@ -676,7 +676,7 @@ func TestDataSourcesService_Lookup(t *testing.T) {
 		},
 		{
 			"should yield an error when the query is invalid",
-			ports.NewGetDataSourceLookupsQuery("", ""),
+			ports.NewGetDataSourceLookupsQuery("", "", nil),
 			nil,
 			nil,
 			nil,
@@ -686,7 +686,7 @@ func TestDataSourcesService_Lookup(t *testing.T) {
 		},
 		{
 			"should yield an ErrNotFound when the data source does not exist",
-			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1"),
+			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1", nil),
 			nil,
 			common.ErrNotFound,
 			nil,
@@ -696,7 +696,7 @@ func TestDataSourcesService_Lookup(t *testing.T) {
 		},
 		{
 			"should yield an error when the repository returns an error on find",
-			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1"),
+			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1", nil),
 			nil,
 			errors.New("repository error"),
 			nil,
@@ -706,7 +706,7 @@ func TestDataSourcesService_Lookup(t *testing.T) {
 		},
 		{
 			"should yield an error when the lookup strategy is not found",
-			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1"),
+			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1", nil),
 			staticDS,
 			nil,
 			ports.LookupStrategyRegistry{},
@@ -716,12 +716,12 @@ func TestDataSourcesService_Lookup(t *testing.T) {
 		},
 		{
 			"should yield an error when the lookup execution fails",
-			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1"),
+			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1", nil),
 			staticDS,
 			nil,
 			ports.LookupStrategyRegistry{
 				domain.DataSourceTypeStatic: &mockLookupStrategy{
-					lookupFn: func(_ context.Context, _ *domain.DataSource) ([]*domain.Lookup, error) {
+					lookupFn: func(_ context.Context, _ *domain.DataSource, _ map[string]any) ([]*domain.Lookup, error) {
 						return nil, errors.New("lookup error")
 					},
 				},

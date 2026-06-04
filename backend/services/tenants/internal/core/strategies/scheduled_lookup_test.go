@@ -49,7 +49,7 @@ func TestScheduledLookupStrategy_Lookup(t *testing.T) {
 			s := strategies.NewScheduledLookupStrategy(logger)
 
 			// Act.
-			got, gotErr := s.Lookup(context.Background(), tt.ds)
+			got, gotErr := s.Lookup(context.Background(), tt.ds, nil)
 
 			// Assert.
 			if tt.wantErr != nil {

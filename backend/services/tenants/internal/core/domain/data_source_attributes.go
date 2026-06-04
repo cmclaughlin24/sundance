@@ -48,6 +48,9 @@ type WebhookDataSourceAttributes struct {
 	URL     string
 	Method  string
 	Headers map[string]string
+	RequiredKeys []string
+	ValueField   string
+	LabelField   string
 }
 
 type DataLakeDataSourceAttributes struct {

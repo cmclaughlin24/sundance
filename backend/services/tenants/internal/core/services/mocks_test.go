@@ -112,9 +112,9 @@ func (c *mockLookupClient) FetchLookups(ctx context.Context, method, url string,
 }
 
 type mockLookupStrategy struct {
-	lookupFn func(context.Context, *domain.DataSource) ([]*domain.Lookup, error)
+	lookupFn func(context.Context, *domain.DataSource, map[string]any) ([]*domain.Lookup, error)
 }
 
-func (s *mockLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSource) ([]*domain.Lookup, error) {
-	return s.lookupFn(ctx, ds)
+func (s *mockLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSource, query map[string]any) ([]*domain.Lookup, error) {
+	return s.lookupFn(ctx, ds, query)
 }
