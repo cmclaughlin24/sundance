@@ -68,6 +68,10 @@ definitions:
         items:
           $ref: '#/definitions/RuleRequest'
         type: array
+      tags:
+        items:
+          $ref: '#/definitions/upsertFieldTagMappingRequest'
+        type: array
       type:
         type: string
     required:
@@ -92,7 +96,26 @@ definitions:
         items:
           $ref: '#/definitions/RuleResponse'
         type: array
+      tags:
+        items:
+          $ref: '#/definitions/FieldTagMappingResponse'
+        type: array
       type:
+        type: string
+    type: object
+  FieldTagMappingResponse:
+    properties:
+      createdAt:
+        type: string
+      fieldId:
+        type: string
+      id:
+        type: string
+      priority:
+        type: integer
+      tagVersionId:
+        type: string
+      updatedAt:
         type: string
     type: object
   FormResponse:
@@ -426,6 +449,13 @@ definitions:
         type: string
     required:
     - type
+    type: object
+  upsertFieldTagMappingRequest:
+    properties:
+      priority:
+        type: integer
+      tagVersionId:
+        type: string
     type: object
 info:
   contact: {}

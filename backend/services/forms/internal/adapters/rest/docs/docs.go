@@ -1627,6 +1627,12 @@ const docTemplate = `{
                         "$ref": "#/definitions/RuleRequest"
                     }
                 },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/upsertFieldTagMappingRequest"
+                    }
+                },
                 "type": {
                     "type": "string"
                 }
@@ -1656,7 +1662,36 @@ const docTemplate = `{
                         "$ref": "#/definitions/RuleResponse"
                     }
                 },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/FieldTagMappingResponse"
+                    }
+                },
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "FieldTagMappingResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "fieldId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "priority": {
+                    "type": "integer"
+                },
+                "tagVersionId": {
+                    "type": "string"
+                },
+                "updatedAt": {
                     "type": "string"
                 }
             }
@@ -2145,6 +2180,17 @@ const docTemplate = `{
             ],
             "properties": {
                 "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "upsertFieldTagMappingRequest": {
+            "type": "object",
+            "properties": {
+                "priority": {
+                    "type": "integer"
+                },
+                "tagVersionId": {
                     "type": "string"
                 }
             }
