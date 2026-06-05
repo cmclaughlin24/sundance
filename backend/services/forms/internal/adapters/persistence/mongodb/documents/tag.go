@@ -11,7 +11,7 @@ type TagDocument struct {
 	Key         string    `bson:"key"`
 	DisplayName string    `bson:"display_name"`
 	CreatedAt   time.Time `bson:"created_at"`
-	UpdatedAt   time.Time `wson:"updated_at"`
+	UpdatedAt   time.Time `bson:"updated_at"`
 }
 
 func ToTagDocument(d *domain.Tag) TagDocument {

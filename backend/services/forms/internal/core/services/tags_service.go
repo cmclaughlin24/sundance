@@ -27,7 +27,7 @@ func NewTagsService(logger *slog.Logger, repository *ports.Repository) ports.Tag
 }
 
 func (s *tagsService) Find(ctx context.Context, query ports.FindTagsQuery) ([]*domain.Tag, error) {
-	s.logger.DebugContext(ctx, "listing tags", "tenant_id", "")
+	s.logger.DebugContext(ctx, "listing tags", "tenant_id", query.TenantID)
 
 	if err := query.Validate(); err != nil {
 		s.logger.WarnContext(ctx, "tag listing failed; invalid query", "tenant_id", query.TenantID, "error", err)

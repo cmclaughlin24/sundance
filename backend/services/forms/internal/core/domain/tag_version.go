@@ -62,7 +62,7 @@ func HydrateTagVersion(
 	tagType TagType,
 	status TagStatus,
 	createdAt,
-	deprectatedAt,
+	deprecatedAt,
 	publishedAt,
 	retiredAt time.Time,
 ) *TagVersion {
@@ -73,7 +73,7 @@ func HydrateTagVersion(
 		Type:         tagType,
 		Status:       status,
 		CreatedAt:    createdAt,
-		DeprecatedAt: deprectatedAt,
+		DeprecatedAt: deprecatedAt,
 		PublishedAt:  publishedAt,
 		RetiredAt:    retiredAt,
 	}

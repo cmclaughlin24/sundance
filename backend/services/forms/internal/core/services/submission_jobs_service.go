@@ -176,7 +176,7 @@ func (s *submissionJobsService) validateField(ctx context.Context, field *domain
 	if !ok {
 		if field.Attributes.GetIsRequired() {
 			s.logger.WarnContext(ctx, "submission validation failed; required field missing", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "field_id", field.ID, "field_key", field.Key)
-			return fmt.Errorf("field id=%s key=%s is required", field.ID, field.Key)
+			return fmt.Errorf("%w; id=%s key=%s", strategies.ErrFieldRequired, field.ID, field.Key)
 		}
 
 		return nil
