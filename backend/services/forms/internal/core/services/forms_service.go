@@ -27,7 +27,7 @@ func NewFormsService(logger *slog.Logger, repository *ports.Repository) ports.Fo
 	}
 }
 
-func (s *formsService) Find(ctx context.Context, query *ports.FindFormsQuery) ([]*domain.Form, error) {
+func (s *formsService) Find(ctx context.Context, query ports.FindFormsQuery) ([]*domain.Form, error) {
 	s.logger.DebugContext(ctx, "listing forms", "tenant_id", query.TenantID)
 
 	if err := query.Validate(); err != nil {
@@ -68,7 +68,7 @@ func (s *formsService) FindByID(ctx context.Context, query ports.FindByIDQuery[d
 	return form, nil
 }
 
-func (s *formsService) Create(ctx context.Context, command *ports.CreateFormCommand) (*domain.Form, error) {
+func (s *formsService) Create(ctx context.Context, command ports.CreateFormCommand) (*domain.Form, error) {
 	s.logger.DebugContext(ctx, "creating form", "tenant_id", command.TenantID)
 
 	if err := command.Validate(); err != nil {
@@ -93,7 +93,7 @@ func (s *formsService) Create(ctx context.Context, command *ports.CreateFormComm
 	return form, nil
 }
 
-func (s *formsService) Update(ctx context.Context, command *ports.UpdateFormCommand) (*domain.Form, error) {
+func (s *formsService) Update(ctx context.Context, command ports.UpdateFormCommand) (*domain.Form, error) {
 	s.logger.DebugContext(ctx, "updating form", "tenant_id", command.TenantID, "form_id", command.ID)
 
 	if err := command.Validate(); err != nil {
@@ -128,7 +128,7 @@ func (s *formsService) Update(ctx context.Context, command *ports.UpdateFormComm
 	return form, nil
 }
 
-func (s *formsService) Delete(ctx context.Context, command *ports.DeleteCommand[domain.FormID]) error {
+func (s *formsService) Delete(ctx context.Context, command ports.DeleteCommand[domain.FormID]) error {
 	s.logger.DebugContext(ctx, "deleting form", "tenant_id", command.TenantID, "form_id", command.ID)
 
 	if err := command.Validate(); err != nil {
@@ -158,7 +158,7 @@ func (s *formsService) Delete(ctx context.Context, command *ports.DeleteCommand[
 	return nil
 }
 
-func (s *formsService) FindVersions(ctx context.Context, query *ports.FindFormVersionsQuery) ([]*domain.FormVersion, error) {
+func (s *formsService) FindVersions(ctx context.Context, query ports.FindFormVersionsQuery) ([]*domain.FormVersion, error) {
 	s.logger.DebugContext(ctx, "listing versions", "tenant_id", query.TenantID, "form_id", query.ID)
 
 	if err := query.Validate(); err != nil {
@@ -179,7 +179,7 @@ func (s *formsService) FindVersions(ctx context.Context, query *ports.FindFormVe
 	return versions, nil
 }
 
-func (s *formsService) FindVersion(ctx context.Context, query *ports.FindFormVersionByIDQuery) (*domain.FormVersion, error) {
+func (s *formsService) FindVersion(ctx context.Context, query ports.FindFormVersionByIDQuery) (*domain.FormVersion, error) {
 	s.logger.DebugContext(ctx, "finding version", "tenant_id", query.TenantID, "form_id", query.ID, "version_id", query.VersionID)
 
 	if err := query.Validate(); err != nil {
@@ -287,7 +287,7 @@ func (s *formsService) UpdateVersion(ctx context.Context, command *ports.UpdateF
 	return version, nil
 }
 
-func (s *formsService) PublishVersion(ctx context.Context, command *ports.PublishFormVersionCommand) (*domain.FormVersion, error) {
+func (s *formsService) PublishVersion(ctx context.Context, command ports.PublishFormVersionCommand) (*domain.FormVersion, error) {
 	s.logger.DebugContext(ctx, "publishing version", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID)
 
 	if err := command.Validate(); err != nil {
@@ -321,7 +321,7 @@ func (s *formsService) PublishVersion(ctx context.Context, command *ports.Publis
 	return version, nil
 }
 
-func (s *formsService) RetireVersion(ctx context.Context, command *ports.RetireFormVersionCommand) (*domain.FormVersion, error) {
+func (s *formsService) RetireVersion(ctx context.Context, command ports.RetireFormVersionCommand) (*domain.FormVersion, error) {
 	s.logger.DebugContext(ctx, "retiring version", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID)
 
 	if err := command.Validate(); err != nil {

@@ -76,13 +76,13 @@ type FindFormsQuery struct {
 	TenantID string `validate:"required"`
 }
 
-func NewFindFormsQuery(tenantID string) *FindFormsQuery {
-	return &FindFormsQuery{
+func NewFindFormsQuery(tenantID string) FindFormsQuery {
+	return FindFormsQuery{
 		TenantID: tenantID,
 	}
 }
 
-func (q *FindFormsQuery) Validate() error {
+func (q FindFormsQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 
@@ -91,14 +91,14 @@ type FindFormVersionsQuery struct {
 	ID       domain.FormID `validate:"required"`
 }
 
-func NewFindFormVersionsQuery(tenantID string, formID domain.FormID) *FindFormVersionsQuery {
-	return &FindFormVersionsQuery{
+func NewFindFormVersionsQuery(tenantID string, formID domain.FormID) FindFormVersionsQuery {
+	return FindFormVersionsQuery{
 		TenantID: tenantID,
 		ID:       formID,
 	}
 }
 
-func (q *FindFormVersionsQuery) Validate() error {
+func (q FindFormVersionsQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 
@@ -108,15 +108,15 @@ type FindFormVersionByIDQuery struct {
 	VersionID domain.FormVersionID `validate:"required"`
 }
 
-func NewFindFormVersionByIDQuery(tenantID string, formID domain.FormID, versionID domain.FormVersionID) *FindFormVersionByIDQuery {
-	return &FindFormVersionByIDQuery{
+func NewFindFormVersionByIDQuery(tenantID string, formID domain.FormID, versionID domain.FormVersionID) FindFormVersionByIDQuery {
+	return FindFormVersionByIDQuery{
 		TenantID:  tenantID,
 		ID:        formID,
 		VersionID: versionID,
 	}
 }
 
-func (q *FindFormVersionByIDQuery) Validate() error {
+func (q FindFormVersionByIDQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 
@@ -124,35 +124,33 @@ type FindSubmissionsQuery struct {
 	TenantID string `validate:"required"`
 }
 
-func NewFindSubmissionsQuery(tenantID string) *FindSubmissionsQuery {
-	return &FindSubmissionsQuery{
+func NewFindSubmissionsQuery(tenantID string) FindSubmissionsQuery {
+	return FindSubmissionsQuery{
 		TenantID: tenantID,
 	}
 }
 
-func (q *FindSubmissionsQuery) Validate() error {
+func (q FindSubmissionsQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }
 
 type FindSubmissionByIDQuery[T comparable] = FindByIDQuery[T]
 
-func NewFindSubmissionByIDQuery[T comparable](tenantID string, id T) *FindSubmissionByIDQuery[T] {
-	query := &FindSubmissionByIDQuery[T]{
+func NewFindSubmissionByIDQuery[T comparable](tenantID string, id T) FindSubmissionByIDQuery[T] {
+	return FindSubmissionByIDQuery[T]{
 		TenantID: tenantID,
 		ID:       id,
 	}
-
-	return query
 }
 
 type FindSubmissionJobsQuery struct {
 	Take int `validate:"min=0"`
 }
 
-func NewFindSubmissionJobsQuery(take int) *FindSubmissionJobsQuery {
-	return &FindSubmissionJobsQuery{take}
+func NewFindSubmissionJobsQuery(take int) FindSubmissionJobsQuery {
+	return FindSubmissionJobsQuery{take}
 }
 
-func (q *FindSubmissionJobsQuery) Validate() error {
+func (q FindSubmissionJobsQuery) Validate() error {
 	return validate.ValidateStruct(q)
 }

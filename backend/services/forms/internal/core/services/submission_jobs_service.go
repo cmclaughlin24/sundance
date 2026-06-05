@@ -45,7 +45,7 @@ func NewSubmissionJobsService(
 	}
 }
 
-func (s *submissionJobsService) Find(ctx context.Context, query *ports.FindSubmissionJobsQuery) ([]domain.SubmissionID, error) {
+func (s *submissionJobsService) Find(ctx context.Context, query ports.FindSubmissionJobsQuery) ([]domain.SubmissionID, error) {
 	s.logger.DebugContext(ctx, "listing submission jobs")
 
 	if err := query.Validate(); err != nil {

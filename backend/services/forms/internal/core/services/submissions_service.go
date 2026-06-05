@@ -22,7 +22,7 @@ func NewSubmissionsService(logger *slog.Logger, repository *ports.Repository) po
 	}
 }
 
-func (s *submissionsService) Find(ctx context.Context, query *ports.FindSubmissionsQuery) ([]*domain.Submission, error) {
+func (s *submissionsService) Find(ctx context.Context, query ports.FindSubmissionsQuery) ([]*domain.Submission, error) {
 	s.logger.DebugContext(ctx, "listing submissions", "tenant_id", query.TenantID)
 
 	if err := query.Validate(); err != nil {
@@ -41,7 +41,7 @@ func (s *submissionsService) Find(ctx context.Context, query *ports.FindSubmissi
 	return submissions, nil
 }
 
-func (s *submissionsService) FindByID(ctx context.Context, query *ports.FindSubmissionByIDQuery[domain.SubmissionID]) (*domain.Submission, error) {
+func (s *submissionsService) FindByID(ctx context.Context, query ports.FindSubmissionByIDQuery[domain.SubmissionID]) (*domain.Submission, error) {
 	s.logger.DebugContext(ctx, "finding submission", "tenant_id", query.TenantID, "submission_id", query.ID)
 
 	if err := query.Validate(); err != nil {
@@ -63,7 +63,7 @@ func (s *submissionsService) FindByID(ctx context.Context, query *ports.FindSubm
 	return submission, nil
 }
 
-func (s *submissionsService) FindByReferenceID(ctx context.Context, query *ports.FindSubmissionByIDQuery[domain.ReferenceID]) (*domain.Submission, error) {
+func (s *submissionsService) FindByReferenceID(ctx context.Context, query ports.FindSubmissionByIDQuery[domain.ReferenceID]) (*domain.Submission, error) {
 	s.logger.DebugContext(ctx, "finding submission by reference", "tenant_id", query.TenantID, "reference_id", query.ID)
 
 	if err := query.Validate(); err != nil {
@@ -127,7 +127,7 @@ func (s *submissionsService) Create(ctx context.Context, command *ports.CreateSu
 	return submission, nil
 }
 
-func (s *submissionsService) Replay(ctx context.Context, command *ports.ReplaySubmissionCommand) error {
+func (s *submissionsService) Replay(ctx context.Context, command ports.ReplaySubmissionCommand) error {
 	s.logger.DebugContext(ctx, "replaying submission", "tenant_id", command.TenantID, "submission_id", command.ID)
 
 	if err := command.Validate(); err != nil {

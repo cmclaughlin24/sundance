@@ -198,7 +198,7 @@ func (h *Handlers) DeleteForm(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		defer close(resultChan)
-		err := h.app.API.Forms.Delete(r.Context(), &command)
+		err := h.app.API.Forms.Delete(r.Context(), command)
 		resultChan <- result[any]{nil, err}
 	}()
 
