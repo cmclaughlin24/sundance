@@ -25,12 +25,12 @@ import (
 )
 
 type settings struct {
-	Port        int                             `json:"port"`
-	Persistence persistence.PersistenceSettings `json:"persistence"`
-	Cache       cache.CacheSettings             `json:"cache"`
-	LogLevel    string                          `json:"log_level"`
-	Host        string                          `json:"host"`
-	Worker      workers.WorkerOptions           `json:"worker"`
+	Port        int                             `json:"port" yaml:"port"`
+	Persistence persistence.PersistenceSettings `json:"persistence" yaml:"persistence"`
+	Cache       cache.CacheSettings             `json:"cache" yaml:"cache"`
+	LogLevel    string                          `json:"log_level" yaml:"logLevel"`
+	Host        string                          `json:"host" yaml:"host"`
+	Worker      workers.WorkerOptions           `json:"worker" yaml:"worker"`
 }
 
 func main() {
