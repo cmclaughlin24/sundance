@@ -23,8 +23,8 @@ type bootstrapFn func(PersistenceOptions, *slog.Logger) (*ports.Repository, erro
 type PersistenceOptions any
 
 type PersistenceSettings struct {
-	Driver  PersistenceDriver  `json:"driver"`
-	Options PersistenceOptions `json:"options"`
+	Driver  PersistenceDriver  `json:"driver" yaml:"driver"`
+	Options PersistenceOptions `json:"options" yaml:"options"`
 }
 
 func Bootstrap(settings PersistenceSettings, logger *slog.Logger) (*ports.Repository, error) {
