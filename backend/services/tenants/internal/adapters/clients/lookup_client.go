@@ -31,7 +31,7 @@ func NewLookupClient(client httpClient, logger *slog.Logger) ports.LookupClient 
 	}
 }
 
-func (c *LookupClient) FetchLookups(ctx context.Context, request domain.DataSourceRequest, params map[string]any) ([]map[string]any, error) {
+func (c *LookupClient) FetchLookups(ctx context.Context, request domain.DataSourceHTTPRequest, params map[string]any) ([]map[string]any, error) {
 	var body io.Reader
 	method := strings.ToUpper(request.Method)
 

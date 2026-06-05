@@ -41,7 +41,7 @@ func TestDataSourceToResponse(t *testing.T) {
 						{Value: "verstappen", Label: "Max Verstappen"},
 						{Value: "hamilton", Label: "Lewis Hamilton"},
 					},
-					DataSourceRequest: domain.DataSourceRequest{
+					DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 						URL:     "https://example.com/standings",
 						Method:  "GET",
 						Headers: map[string]string{"Authorization": "Bearer fia-token"},
@@ -59,7 +59,7 @@ func TestDataSourceToResponse(t *testing.T) {
 				"Formula 1 cars generate over 300 sensors worth of telemetry data during a race",
 				domain.DataSourceTypeWebhook,
 				domain.WebhookDataSourceAttributes{
-					DataSourceRequest: domain.DataSourceRequest{
+					DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 						URL:     "https://example.com/timing",
 						Method:  "POST",
 						Headers: map[string]string{"Authorization": "Bearer fia-token"},

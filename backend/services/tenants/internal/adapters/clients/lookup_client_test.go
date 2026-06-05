@@ -234,7 +234,7 @@ func TestLookupClient_FetchLookups(t *testing.T) {
 			client := clients.NewLookupClient(&mockHttpClient{doFn: tt.doFn}, logger)
 
 			// Act.
-			got, gotErr := client.FetchLookups(context.Background(), domain.DataSourceRequest{Method: tt.method, URL: tt.url, Headers: tt.headers}, tt.params)
+			got, gotErr := client.FetchLookups(context.Background(), domain.DataSourceHTTPRequest{Method: tt.method, URL: tt.url, Headers: tt.headers}, tt.params)
 
 			// Assert.
 			if tt.wantErr {

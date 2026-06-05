@@ -14,7 +14,7 @@ func TestWebhookLookupStrategy_Lookup(t *testing.T) {
 		ID:   "ds-1",
 		Type: domain.DataSourceTypeWebhook,
 		Attributes: domain.WebhookDataSourceAttributes{
-			DataSourceRequest: domain.DataSourceRequest{
+			DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 				URL:        "https://example.com/pokemon",
 				Method:     "GET",
 				Headers:    map[string]string{"Authorization": "Bearer token"},
@@ -28,7 +28,7 @@ func TestWebhookLookupStrategy_Lookup(t *testing.T) {
 		ID:   "ds-2",
 		Type: domain.DataSourceTypeWebhook,
 		Attributes: domain.WebhookDataSourceAttributes{
-			DataSourceRequest: domain.DataSourceRequest{
+			DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 				URL:        "https://example.com/pokemon",
 				Method:     "GET",
 				ValueField: "id",
@@ -41,7 +41,7 @@ func TestWebhookLookupStrategy_Lookup(t *testing.T) {
 		ID:   "ds-3",
 		Type: domain.DataSourceTypeWebhook,
 		Attributes: domain.WebhookDataSourceAttributes{
-			DataSourceRequest: domain.DataSourceRequest{
+			DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 				URL:        "https://example.com/pokemon",
 				Method:     "GET",
 				ValueField: "value",

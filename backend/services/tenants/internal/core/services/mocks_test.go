@@ -104,10 +104,10 @@ func (r *mockDataSourcesRepository) DeleteAll(ctx context.Context, tenantID doma
 }
 
 type mockLookupClient struct {
-	fetchLookupsFn func(context.Context, domain.DataSourceRequest, map[string]any) ([]map[string]any, error)
+	fetchLookupsFn func(context.Context, domain.DataSourceHTTPRequest, map[string]any) ([]map[string]any, error)
 }
 
-func (c *mockLookupClient) FetchLookups(ctx context.Context, request domain.DataSourceRequest, params map[string]any) ([]map[string]any, error) {
+func (c *mockLookupClient) FetchLookups(ctx context.Context, request domain.DataSourceHTTPRequest, params map[string]any) ([]map[string]any, error) {
 	return c.fetchLookupsFn(ctx, request, params)
 }
 

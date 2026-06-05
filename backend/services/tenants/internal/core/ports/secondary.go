@@ -42,7 +42,7 @@ type DataLakeClient interface {
 }
 
 type LookupClient interface {
-	FetchLookups(context.Context, domain.DataSourceRequest, map[string]any) ([]map[string]any, error)
+	FetchLookups(context.Context, domain.DataSourceHTTPRequest, map[string]any) ([]map[string]any, error)
 }
 
 type Strategies struct {

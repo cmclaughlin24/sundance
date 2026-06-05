@@ -37,7 +37,7 @@ func (s *WebhookLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSourc
 
 	s.logger.DebugContext(ctx, "webhook lookup request", "data_source_id", ds.ID, "method", attr.Method, "url", attr.URL)
 
-	rows, err := s.client.FetchLookups(ctx, attr.DataSourceRequest, params)
+	rows, err := s.client.FetchLookups(ctx, attr.DataSourceHTTPRequest, params)
 	if err != nil {
 		return nil, err
 	}

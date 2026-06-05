@@ -134,7 +134,7 @@ func TestGetDataSourceAttributes_Static(t *testing.T) {
 		{
 			"should yield an error for scheduled attributes",
 			domain.ScheduledDataSourceAttributes{
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:    "https://example.com/pokemon",
 					Method: "GET",
 				},
@@ -187,7 +187,7 @@ func TestGetDataSourceAttributes_Scheduled(t *testing.T) {
 		{
 			"should return scheduled attributes",
 			domain.ScheduledDataSourceAttributes{
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:     "https://example.com/pokemon",
 					Method:  "GET",
 					Headers: map[string]string{"Authorization": "Bearer token"},
@@ -250,7 +250,7 @@ func TestGetDataSourceAttributes_Webhook(t *testing.T) {
 		{
 			"should return webhook attributes",
 			domain.WebhookDataSourceAttributes{
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:     "https://example.com/pokemon",
 					Method:  "GET",
 					Headers: map[string]string{"Authorization": "Bearer token"},

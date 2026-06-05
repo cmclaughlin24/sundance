@@ -39,7 +39,7 @@ func TestToDataSourceDocument(t *testing.T) {
 				"Blade awakening schedule from the core crystal registry",
 				domain.DataSourceTypeScheduled,
 				domain.ScheduledDataSourceAttributes{
-					DataSourceRequest: domain.DataSourceRequest{
+					DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 						URL:     "https://example.com/blades",
 						Method:  "GET",
 						Headers: map[string]string{"Authorization": "Bearer token"},
@@ -56,7 +56,7 @@ func TestToDataSourceDocument(t *testing.T) {
 				"Real-time salvage data from the Cloud Sea",
 				domain.DataSourceTypeWebhook,
 				domain.WebhookDataSourceAttributes{
-					DataSourceRequest: domain.DataSourceRequest{
+					DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 						URL:     "https://example.com/salvage",
 						Method:  "POST",
 						Headers: map[string]string{"Authorization": "Bearer token"},
@@ -149,7 +149,7 @@ func TestFromDataSourceDocument(t *testing.T) {
 	})
 
 	scheduledAttrRaw, _ := bson.Marshal(domain.ScheduledDataSourceAttributes{
-		DataSourceRequest: domain.DataSourceRequest{
+		DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 			URL:     "https://example.com/blades",
 			Method:  "GET",
 			Headers: map[string]string{"Authorization": "Bearer token"},
@@ -158,7 +158,7 @@ func TestFromDataSourceDocument(t *testing.T) {
 	})
 
 	webhookAttrRaw, _ := bson.Marshal(domain.WebhookDataSourceAttributes{
-		DataSourceRequest: domain.DataSourceRequest{
+		DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 			URL:     "https://example.com/salvage",
 			Method:  "POST",
 			Headers: map[string]string{"Authorization": "Bearer token"},
