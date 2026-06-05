@@ -25,21 +25,20 @@ import (
 )
 
 type settings struct {
-	Port        int                             `json:"port" yaml:"port"`
-	Persistence persistence.PersistenceSettings `json:"persistence" yaml:"persistence"`
-	Cache       cache.CacheSettings             `json:"cache" yaml:"cache"`
-	LogLevel    string                          `json:"log_level" yaml:"logLevel"`
-	Host        string                          `json:"host" yaml:"host"`
-	Worker      workers.WorkerOptions           `json:"worker" yaml:"worker"`
+	Port        int                             `json:"port"` 
+	Persistence persistence.PersistenceSettings `json:"persistence"`
+	Cache       cache.CacheSettings             `json:"cache"`
+	LogLevel    string                          `json:"logLevel"`
+	Host        string                          `json:"host"`
+	Worker      workers.WorkerOptions           `json:"worker"`
 }
 
 func main() {
-	settingsPath := flag.String("settings", "settings.json", "Path to settings JSON file")
+	settingsPath := flag.String("settings", "settings.json", "Path to settings JSON/YAML file")
 	flag.Parse()
 
 	var settings settings
-
-	if err := common.ReadJSONFile(*settingsPath, &settings); err != nil {
+	if err := common.ReadSettings(*settingsPath, &settings); err != nil {
 		panic(err)
 	}
 

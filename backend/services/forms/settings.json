@@ -1,11 +1,12 @@
 {
   "port": 80,
   "host": "http://localhost:8080",
+  "logLevel": "debug",
   "persistence": {
     "driver": "mongodb",
     "options": {
       "uri": "mongodb://mongo:27017",
-      "database_name": "forms"
+      "databaseName": "forms"
     }
   },
   "cache": {
@@ -15,10 +16,9 @@
       "port": 6379
     }
   },
-  "log_level": "debug",
   "worker": {
     "interval": 1,
-    "pool_size": 10,
-    "retry_limit": 5
+    "poolSize": 10,
+    "retryLimit": 5
   }
 }

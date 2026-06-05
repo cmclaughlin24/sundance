@@ -29,8 +29,8 @@ type bootstrapFn func(CacheOptions, *slog.Logger) (CacheManager, CacheCloser, er
 type CacheOptions any
 
 type CacheSettings struct {
-	Type    CacheType    `json:"type" yaml:"type"`
-	Options CacheOptions `json:"options" yaml:"options"`
+	Type    CacheType    `json:"type"` 
+	Options CacheOptions `json:"options"`
 }
 
 type CacheManager interface {

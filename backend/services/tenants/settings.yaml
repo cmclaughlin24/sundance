@@ -1,0 +1,17 @@
+port: 80
+host: 'http://localhost:8081'
+logLevel: 'debug'
+persistence:
+  driver: 'mongodb'
+  options:
+    uri: 'mongodb://mongo:27017'
+    databaseName: 'tenants'
+cache:
+  type: 'redis'
+  options:
+    host: 'redis'
+    port: 6379
+worker:
+  interval: 1
+  poolSize: 10
+  retryLimit: 5
