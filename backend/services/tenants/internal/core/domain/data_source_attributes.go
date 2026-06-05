@@ -14,7 +14,7 @@ type DataSourceAttributes interface {
 	isDataSourceAttributes()
 }
 
-type DataSourceRequest struct {
+type DataSourceHTTPRequest struct {
 	URL        string
 	Method     string
 	Headers    map[string]string
@@ -33,7 +33,7 @@ type StaticDataSourceAttributes struct {
 
 type ScheduledDataSourceAttributes struct {
 	baseDataSourceAttributes
-	DataSourceRequest
+	DataSourceHTTPRequest
 	Data           []*Lookup
 	IntervalHours  float64
 	ExpirationDate time.Time
@@ -52,7 +52,7 @@ func (attr *ScheduledDataSourceAttributes) RefreshData(data []*Lookup) {
 
 type WebhookDataSourceAttributes struct {
 	baseDataSourceAttributes
-	DataSourceRequest
+	DataSourceHTTPRequest
 	RequiredKeys []string
 }
 

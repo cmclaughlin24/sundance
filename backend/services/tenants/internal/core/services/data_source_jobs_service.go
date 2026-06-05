@@ -60,7 +60,7 @@ func (s *dataSourcesJobService) Process(ctx context.Context, command *ports.Proc
 		return err
 	}
 
-	data, err := s.client.FetchLookups(ctx, attr.DataSourceRequest, nil)
+	data, err := s.client.FetchLookups(ctx, attr.DataSourceHTTPRequest, nil)
 	if err != nil {
 		attr.RecordAttempt()
 		s.logger.ErrorContext(ctx, "failed to fetch lookups for data source", "data_source_id", ds.ID, "error", err, "attempts", attr.Attempts)

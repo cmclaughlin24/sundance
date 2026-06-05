@@ -16,7 +16,7 @@ type mockLookupClient struct {
 	fetchLookupsFn func(context.Context, string, string, map[string]string, map[string]any) ([]map[string]any, error)
 }
 
-func (c *mockLookupClient) FetchLookups(ctx context.Context, request domain.DataSourceRequest, params map[string]any) ([]map[string]any, error) {
+func (c *mockLookupClient) FetchLookups(ctx context.Context, request domain.DataSourceHTTPRequest, params map[string]any) ([]map[string]any, error) {
 	return c.fetchLookupsFn(ctx, request.Method, request.URL, request.Headers, params)
 }
 

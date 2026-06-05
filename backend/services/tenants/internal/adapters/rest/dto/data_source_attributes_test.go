@@ -31,7 +31,7 @@ func Test_dataSourceAttributesToResponse(t *testing.T) {
 				Data: []*domain.Lookup{
 					{Value: "verstappen", Label: "Max Verstappen"},
 				},
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:        "https://example.com/standings",
 					Method:     "GET",
 					Headers:    map[string]string{"Authorization": "Bearer fia-token"},
@@ -46,7 +46,7 @@ func Test_dataSourceAttributesToResponse(t *testing.T) {
 		{
 			"should yield a webhook attributes response",
 			domain.WebhookDataSourceAttributes{
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:        "https://example.com/timing",
 					Method:     "POST",
 					Headers:    map[string]string{"Authorization": "Bearer fia-token"},

@@ -38,7 +38,7 @@ func TestNewDataSource(t *testing.T) {
 			"156 new Pokemon introduced in Generation V",
 			domain.DataSourceTypeScheduled,
 			domain.ScheduledDataSourceAttributes{
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:     "https://example.com/unova",
 					Method:  "GET",
 					Headers: map[string]string{"Authorization": "Bearer token"},
@@ -54,7 +54,7 @@ func TestNewDataSource(t *testing.T) {
 			"Generation IX Pokemon from the Paldea region",
 			domain.DataSourceTypeWebhook,
 			domain.WebhookDataSourceAttributes{
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:     "https://example.com/paldea",
 					Method:  "GET",
 					Headers: map[string]string{"Authorization": "Bearer token"},
@@ -139,7 +139,7 @@ func TestNewDataSource(t *testing.T) {
 			"107 new Pokemon introduced in Generation IV",
 			domain.DataSourceTypeStatic,
 			domain.ScheduledDataSourceAttributes{
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:    "https://example.com/sinnoh",
 					Method: "GET",
 				},
@@ -244,7 +244,7 @@ func TestHydrateDataSource(t *testing.T) {
 			"156 new Pokemon introduced in Generation V",
 			domain.DataSourceTypeScheduled,
 			domain.ScheduledDataSourceAttributes{
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:     "https://example.com/unova",
 					Method:  "GET",
 					Headers: map[string]string{"Authorization": "Bearer token"},
@@ -262,7 +262,7 @@ func TestHydrateDataSource(t *testing.T) {
 			"",
 			domain.DataSourceTypeWebhook,
 			domain.WebhookDataSourceAttributes{
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:     "https://example.com/paldea",
 					Method:  "GET",
 					Headers: map[string]string{"Authorization": "Bearer token"},
@@ -343,7 +343,7 @@ func TestDataSource_UpdateAttributes(t *testing.T) {
 			"ds-1", "tenant-1", "Unova Pokedex", "156 new Pokemon introduced in Generation V",
 			domain.DataSourceTypeScheduled,
 			domain.ScheduledDataSourceAttributes{
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:     "https://example.com/unova",
 					Method:  "GET",
 					Headers: map[string]string{"Authorization": "Bearer token"},
@@ -364,7 +364,7 @@ func TestDataSource_UpdateAttributes(t *testing.T) {
 			"should update attributes for a scheduled data source",
 			newScheduledDS(),
 			domain.ScheduledDataSourceAttributes{
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:     "https://example.com/unova",
 					Method:  "GET",
 					Headers: map[string]string{"Authorization": "Bearer token"},
@@ -476,7 +476,7 @@ func TestDataSource_Update(t *testing.T) {
 			"107 new Pokemon introduced in Generation IV",
 			domain.DataSourceTypeScheduled,
 			domain.ScheduledDataSourceAttributes{
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:     "https://example.com/sinnoh",
 					Method:  "GET",
 					Headers: map[string]string{"Authorization": "Bearer token"},
@@ -518,7 +518,7 @@ func TestDataSource_Update(t *testing.T) {
 			"Generation VIII Pokemon from the Galar region",
 			domain.DataSourceTypeStatic,
 			domain.ScheduledDataSourceAttributes{
-				DataSourceRequest: domain.DataSourceRequest{
+				DataSourceHTTPRequest: domain.DataSourceHTTPRequest{
 					URL:    "https://example.com/galar",
 					Method: "GET",
 				},
