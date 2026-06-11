@@ -1,8 +1,12 @@
 package authenticators
 
 import (
-	"sundance/backend/pkg/auth"
+	"context"
+	"errors"
+	"fmt"
+	"time"
 
+	"github.com/MicahParks/keyfunc/v3"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -13,6 +17,7 @@ type PingFedClaims struct {
 type PingFedValidator struct {
 	audience string
 	issuer   string
+	jwk      keyfunc.Keyfunc
 }
 
 func NewPingFedValidator(opts ...AuthenticatorOption) (*PingFedValidator, error) {
@@ -32,17 +37,44 @@ func NewPingFedValidator(opts ...AuthenticatorOption) (*PingFedValidator, error)
 		return nil, ErrMissingAuthenticatorSettings(settingsKeyIssuer)
 	}
 
-	_, ok = settings[settingsKeyJWK]
+	jwkURI, ok := settings[settingsKeyJWK]
 	if !ok {
 		return nil, ErrMissingAuthenticatorSettings(settingsKeyJWK)
+	}
+
+	k, err := keyfunc.NewDefaultCtx(context.Background(), []string{jwkURI})
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialise JWKs keyfunc: %w", err)
 	}
 
 	return &PingFedValidator{
 		audience: audience,
 		issuer:   issuer,
+		jwk:      k,
 	}, nil
 }
 
-func (v *PingFedValidator) Validate(t string) (auth.Claims, error) {
-	return nil, nil
+func (v *PingFedValidator) Validate(ctx context.Context, t string) (*PingFedClaims, error) {
+	claims := &PingFedClaims{}
+
+	token, err := jwt.ParseWithClaims(
+		t,
+		claims,
+		v.jwk.Keyfunc,
+		jwt.WithAudience(v.audience),
+		jwt.WithExpirationRequired(),
+		jwt.WithIssuer(v.issuer),
+		jwt.WithIssuedAt(),
+		jwt.WithLeeway(5*time.Second),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if !token.Valid {
+		return nil, errors.New("token is not valid")
+	}
+
+	return claims, nil
 }

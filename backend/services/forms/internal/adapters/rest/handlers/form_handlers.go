@@ -425,8 +425,9 @@ func (h *Handlers) PublishFormVersion(w http.ResponseWriter, r *http.Request) {
 	formID := h.getFormIDPathValue(r)
 	versionID := h.getVersionIDPathValue(r)
 	claims := auth.GetClaimsFromContext(r.Context())
+	sub, _ := claims.GetSubject()
 	resultChan := make(chan result[*domain.FormVersion], 1)
-	command := ports.NewPublishFormVersionCommand(tenantID, formID, versionID, claims.GetSubject())
+	command := ports.NewPublishFormVersionCommand(tenantID, formID, versionID, sub)
 
 	go func() {
 		defer close(resultChan)
@@ -470,7 +471,8 @@ func (h *Handlers) RetireFormVersion(w http.ResponseWriter, r *http.Request) {
 	versionID := h.getVersionIDPathValue(r)
 	resultChan := make(chan result[*domain.FormVersion], 1)
 	claims := auth.GetClaimsFromContext(r.Context())
-	command := ports.NewRetireFormVersionCommand(tenantID, formID, versionID, claims.GetSubject())
+	sub, _ := claims.GetSubject()
+	command := ports.NewRetireFormVersionCommand(tenantID, formID, versionID, sub)
 
 	go func() {
 		defer close(resultChan)

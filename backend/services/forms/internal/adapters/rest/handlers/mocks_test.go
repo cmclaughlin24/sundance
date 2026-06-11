@@ -69,6 +69,6 @@ type mockClaims struct {
 	subject string
 }
 
-func (c *mockClaims) GetSubject() string {
-	return c.subject
+func (c *mockClaims) GetSubject() (string, error) {
+	return c.subject, nil
 }

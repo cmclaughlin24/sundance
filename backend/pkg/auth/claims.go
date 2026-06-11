@@ -11,7 +11,7 @@ type claimsContextKey string
 const ClaimsKey claimsContextKey = "claims"
 
 type Claims interface {
-	GetSubject() string
+	GetSubject() (string, error)
 }
 
 func SetClaimsContext(ctx context.Context, claims Claims) context.Context {
@@ -23,7 +23,7 @@ func GetClaimsFromContext(ctx context.Context) Claims {
 
 	if !ok {
 		err := errors.New("failed to get claims from context; claims not found or of wrong type")
-		slog.ErrorContext(ctx, "error", err)
+		slog.ErrorContext(ctx, "failed to get claims from context", "error", err)
 		panic(err)
 	}
 

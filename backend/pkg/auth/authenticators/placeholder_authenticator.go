@@ -10,8 +10,8 @@ type PlaceholderClaims struct {
 	subject string
 }
 
-func (c PlaceholderClaims) GetSubject() string {
-	return c.subject
+func (c PlaceholderClaims) GetSubject() (string, error) {
+	return c.subject, nil
 }
 
 func NewPlaceholderAuthenticator(subject string) auth.Authenticator {
