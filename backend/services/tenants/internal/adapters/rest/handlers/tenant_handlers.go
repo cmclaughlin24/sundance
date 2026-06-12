@@ -16,6 +16,7 @@ import (
 // @produce		json
 // @success		200 {array} dto.TenantResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/tenants [get]
 func (h *Handlers) GetTenants(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[[]*domain.Tenant], 1)
@@ -53,6 +54,7 @@ func (h *Handlers) GetTenants(w http.ResponseWriter, r *http.Request) {
 // @success		200 {object} dto.TenantResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/tenants/{id} [get]
 func (h *Handlers) GetTenant(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantIDPathValue(r)
@@ -86,6 +88,7 @@ func (h *Handlers) GetTenant(w http.ResponseWriter, r *http.Request) {
 // @success		201 {object} httputil.APIResponse[dto.TenantResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/tenants [post]
 func (h *Handlers) CreateTenant(w http.ResponseWriter, r *http.Request) {
 	var body dto.TenantRequest
@@ -131,6 +134,7 @@ func (h *Handlers) CreateTenant(w http.ResponseWriter, r *http.Request) {
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/tenants/{id} [put]
 func (h *Handlers) UpdateTenant(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantIDPathValue(r)
@@ -177,6 +181,7 @@ func (h *Handlers) UpdateTenant(w http.ResponseWriter, r *http.Request) {
 // @success		204
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/tenants/{id} [delete]
 func (h *Handlers) DeleteTenant(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantIDPathValue(r)

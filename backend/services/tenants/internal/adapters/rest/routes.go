@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"regexp"
 
+	"sundance/backend/pkg/auth"
+	"sundance/backend/pkg/auth/authenticators"
 	"sundance/backend/pkg/common/httputil"
-	"sundance/backend/services/tenants/internal/adapters/rest/handlers"
 	"sundance/backend/services/tenants/internal/adapters/rest/docs"
+	"sundance/backend/services/tenants/internal/adapters/rest/handlers"
 	"sundance/backend/services/tenants/internal/core"
 
 	"github.com/go-chi/chi/v5"
@@ -16,9 +18,17 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Bearer JWT. Format: "Bearer <token>"
+
 func NewRoutes(app *core.Application, host string) http.Handler {
 	h := handlers.NewHandlers(app)
 	mux := chi.NewRouter()
+
+	placeHolderTokenValidator := &authenticators.PlaceholderTokenValidator{}
+	bearerAuthenticator := authenticators.NewBearerAuthenticator(placeHolderTokenValidator)
 
 	mux.Use(middleware.RequestID)
 	mux.Use(httplog.RequestLogger(app.Logger, &httplog.Options{
@@ -26,6 +36,8 @@ func NewRoutes(app *core.Application, host string) http.Handler {
 	}))
 
 	mux.Route("/api/v1", func(routes chi.Router) {
+		routes.Use(auth.NewMiddleware(bearerAuthenticator))
+
 		routes.Route("/tenants", func(tenantsRoutes chi.Router) {
 			tenantsRoutes.Get("/", h.GetTenants)
 			tenantsRoutes.Post("/", h.CreateTenant)

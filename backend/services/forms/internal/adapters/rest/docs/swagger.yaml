@@ -483,6 +483,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get all forms
       tags:
       - Forms
@@ -516,6 +518,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Create a form
       tags:
       - Forms
@@ -552,6 +556,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Delete a form
       tags:
       - Forms
@@ -584,6 +590,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get a form by ID
       tags:
       - Forms
@@ -626,6 +634,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Update a form
       tags:
       - Forms
@@ -657,6 +667,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get all versions
       tags:
       - Forms
@@ -697,6 +709,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Create a version
       tags:
       - Forms
@@ -735,6 +749,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get a version by ID
       tags:
       - Forms
@@ -784,6 +800,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Update a version
       tags:
       - Forms
@@ -828,6 +846,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Publish a version
       tags:
       - Forms
@@ -872,6 +892,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Retire a version
       tags:
       - Forms
@@ -898,6 +920,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get all Submissions
       tags:
       - Submissions
@@ -938,6 +962,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Create a submission
       tags:
       - Submissions
@@ -973,6 +999,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Replay a submission
       tags:
       - Submissions
@@ -1006,6 +1034,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get a submission by reference ID
       tags:
       - Submissions
@@ -1042,6 +1072,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get a submission status
       tags:
       - Submissions
@@ -1068,6 +1100,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get all tags
       tags:
       - Tags
@@ -1103,6 +1137,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Create a tag
       tags:
       - Tags
@@ -1145,6 +1181,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Delete a tag
       tags:
       - Tags
@@ -1177,6 +1215,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get a tag by ID
       tags:
       - Tags
@@ -1221,6 +1261,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Update a tag
       tags:
       - Tags
@@ -1256,6 +1298,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get all tag versions
       tags:
       - Tags
@@ -1301,6 +1345,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Create a tag version
       tags:
       - Tags
@@ -1339,6 +1385,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get a tag version by ID
       tags:
       - Tags
@@ -1383,6 +1431,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Deprecate a tag version
       tags:
       - Tags
@@ -1427,6 +1477,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Publish a tag version
       tags:
       - Tags
@@ -1471,7 +1523,15 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Retire a tag version
       tags:
       - Tags
+securityDefinitions:
+  BearerAuth:
+    description: 'Bearer JWT. Format: "Bearer <token>"'
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

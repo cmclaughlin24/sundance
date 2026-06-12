@@ -17,6 +17,11 @@ const docTemplate = `{
     "paths": {
         "/forms": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -55,6 +60,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -107,6 +117,11 @@ const docTemplate = `{
         },
         "/forms/{formId}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -155,6 +170,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -218,6 +238,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "All versions belonging to the form will also be deleted.",
                 "consumes": [
                     "application/json"
@@ -272,6 +297,11 @@ const docTemplate = `{
         },
         "/forms/{formId}/versions": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -317,6 +347,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "The pages field defines the structure of the form version including sections, fields, and validation rules.",
                 "consumes": [
                     "application/json"
@@ -377,6 +412,11 @@ const docTemplate = `{
         },
         "/forms/{formId}/versions/{versionId}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -432,6 +472,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Only draft versions can be updated. Published or retired versions are locked.",
                 "consumes": [
                     "application/json"
@@ -505,6 +550,11 @@ const docTemplate = `{
         },
         "/forms/{formId}/versions/{versionId}/publish": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Transitions a draft version to published status. Only one version per form can be published at a time.",
                 "consumes": [
                     "application/json"
@@ -569,6 +619,11 @@ const docTemplate = `{
         },
         "/forms/{formId}/versions/{versionId}/retire": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Transitions a published version to retired status, making it no longer active.",
                 "consumes": [
                     "application/json"
@@ -633,6 +688,11 @@ const docTemplate = `{
         },
         "/submissions": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -671,6 +731,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Accepts a form submission for asynchronous processing. An Idempotency-Key header is required to prevent duplicate submissions.",
                 "consumes": [
                     "application/json"
@@ -731,6 +796,11 @@ const docTemplate = `{
         },
         "/submissions/by-reference/{referenceId}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -781,6 +851,11 @@ const docTemplate = `{
         },
         "/submissions/by-reference/{referenceId}/status": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -836,6 +911,11 @@ const docTemplate = `{
         },
         "/submissions/{submissionId}/replay": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Re-publishes the submission event for reprocessing by downstream consumers.",
                 "consumes": [
                     "application/json"
@@ -887,6 +967,11 @@ const docTemplate = `{
         },
         "/tags": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -925,6 +1010,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates a new tag for the tenant. The key must be unique within the tenant and is used as the stable identifier for tag-to-field associations.",
                 "consumes": [
                     "application/json"
@@ -978,6 +1068,11 @@ const docTemplate = `{
         },
         "/tags/{tagId}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1026,6 +1121,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Updates the display name of a tag. The key is immutable to preserve historical associations.",
                 "consumes": [
                     "application/json"
@@ -1090,6 +1190,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Deletes a tag. Deletion is only permitted when a tag version has never been associated with any form field, in order to preserve historical context.",
                 "consumes": [
                     "application/json"
@@ -1150,6 +1255,11 @@ const docTemplate = `{
         },
         "/tags/{tagId}/versions": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1201,6 +1311,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Creates a new draft version for the tag. Versions follow a draft → active → deprecated → retired lifecycle and define the data type associated with the tag.",
                 "consumes": [
                     "application/json"
@@ -1267,6 +1382,11 @@ const docTemplate = `{
         },
         "/tags/{tagId}/versions/{versionId}": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "consumes": [
                     "application/json"
                 ],
@@ -1324,6 +1444,11 @@ const docTemplate = `{
         },
         "/tags/{tagId}/versions/{versionId}/deprecate": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Transitions an active tag version to deprecated status, signaling that consumers should migrate away from it while still permitting reads.",
                 "consumes": [
                     "application/json"
@@ -1388,6 +1513,11 @@ const docTemplate = `{
         },
         "/tags/{tagId}/versions/{versionId}/publish": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Transitions a draft tag version to active status, making it the live version for the tag. Only one version per tag can be active at a time.",
                 "consumes": [
                     "application/json"
@@ -1452,6 +1582,11 @@ const docTemplate = `{
         },
         "/tags/{tagId}/versions/{versionId}/retire": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Transitions a tag version to retired status, making it inactive and unavailable for new associations.",
                 "consumes": [
                     "application/json"
@@ -2194,6 +2329,14 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Bearer JWT. Format: \"Bearer \u003ctoken\u003e\"",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

@@ -18,6 +18,7 @@ import (
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @success		200 {array} dto.FormResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/forms [get]
 func (h *Handlers) GetForms(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
@@ -58,6 +59,7 @@ func (h *Handlers) GetForms(w http.ResponseWriter, r *http.Request) {
 // @success		200 {object} dto.FormResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/forms/{formId} [get]
 func (h *Handlers) GetForm(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
@@ -94,6 +96,7 @@ func (h *Handlers) GetForm(w http.ResponseWriter, r *http.Request) {
 // @success		201 {object} httputil.APIResponse[dto.FormResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/forms [post]
 func (h *Handlers) CreateForm(w http.ResponseWriter, r *http.Request) {
 	var body dto.UpsertFormRequest
@@ -141,6 +144,7 @@ func (h *Handlers) CreateForm(w http.ResponseWriter, r *http.Request) {
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/forms/{formId} [put]
 func (h *Handlers) UpdateForm(w http.ResponseWriter, r *http.Request) {
 	var body dto.UpsertFormRequest
@@ -189,6 +193,7 @@ func (h *Handlers) UpdateForm(w http.ResponseWriter, r *http.Request) {
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/forms/{formId} [delete]
 func (h *Handlers) DeleteForm(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
@@ -224,6 +229,7 @@ func (h *Handlers) DeleteForm(w http.ResponseWriter, r *http.Request) {
 // @param		formId path string true "Form ID"
 // @success		200 {array} dto.FormVersionResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/forms/{formId}/versions [get]
 func (h *Handlers) GetFormVersions(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
@@ -266,6 +272,7 @@ func (h *Handlers) GetFormVersions(w http.ResponseWriter, r *http.Request) {
 // @success		200 {object} dto.FormVersionResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/forms/{formId}/versions/{versionId} [get]
 func (h *Handlers) GetFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
@@ -305,6 +312,7 @@ func (h *Handlers) GetFormVersion(w http.ResponseWriter, r *http.Request) {
 // @success		201 {object} httputil.APIResponse[dto.FormVersionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/forms/{formId}/versions [post]
 func (h *Handlers) CreateFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
@@ -362,6 +370,7 @@ func (h *Handlers) CreateFormVersion(w http.ResponseWriter, r *http.Request) {
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/forms/{formId}/versions/{versionId} [put]
 func (h *Handlers) UpdateFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
@@ -419,6 +428,7 @@ func (h *Handlers) UpdateFormVersion(w http.ResponseWriter, r *http.Request) {
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/forms/{formId}/versions/{versionId}/publish [post]
 func (h *Handlers) PublishFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
@@ -464,6 +474,7 @@ func (h *Handlers) PublishFormVersion(w http.ResponseWriter, r *http.Request) {
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/forms/{formId}/versions/{versionId}/retire [post]
 func (h *Handlers) RetireFormVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())

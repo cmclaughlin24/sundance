@@ -14,13 +14,13 @@ type PingFedClaims struct {
 	jwt.RegisteredClaims
 }
 
-type PingFedValidator struct {
+type PingFedTokenValidator struct {
 	audience string
 	issuer   string
 	jwk      keyfunc.Keyfunc
 }
 
-func NewPingFedValidator(opts ...AuthenticatorOption) (*PingFedValidator, error) {
+func NewPingFedTokenValidator(opts ...AuthenticatorOption) (*PingFedTokenValidator, error) {
 	settings := make(autenticatorSettings)
 
 	for _, opt := range opts {
@@ -47,14 +47,14 @@ func NewPingFedValidator(opts ...AuthenticatorOption) (*PingFedValidator, error)
 		return nil, fmt.Errorf("failed to initialise JWKs keyfunc: %w", err)
 	}
 
-	return &PingFedValidator{
+	return &PingFedTokenValidator{
 		audience: audience,
 		issuer:   issuer,
 		jwk:      k,
 	}, nil
 }
 
-func (v *PingFedValidator) Validate(ctx context.Context, t string) (*PingFedClaims, error) {
+func (v *PingFedTokenValidator) Validate(ctx context.Context, t string) (*PingFedClaims, error) {
 	claims := &PingFedClaims{}
 
 	token, err := jwt.ParseWithClaims(

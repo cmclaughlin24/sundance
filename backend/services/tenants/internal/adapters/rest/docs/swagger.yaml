@@ -74,8 +74,7 @@ definitions:
     properties:
       label:
         type: string
-      value:
-        type: string
+      value: {}
     type: object
   TenantRequest:
     properties:
@@ -127,6 +126,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get all data sources
       tags:
       - Data Sources
@@ -162,6 +163,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Create a data source
       tags:
       - Data Sources
@@ -193,6 +196,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Delete a data source
       tags:
       - Data Sources
@@ -225,6 +230,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get a data source by ID
       tags:
       - Data Sources
@@ -269,6 +276,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Update a data source
       tags:
       - Data Sources
@@ -311,6 +320,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get data source look-ups
       tags:
       - Data Sources
@@ -331,6 +342,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get all tenants
       tags:
       - Tenants
@@ -359,6 +372,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Create a tenant
       tags:
       - Tenants
@@ -386,6 +401,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Delete a tenant
       tags:
       - Tenants
@@ -413,6 +430,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Get a tenant by ID
       tags:
       - Tenants
@@ -450,7 +469,15 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
       summary: Update a tenant
       tags:
       - Tenants
+securityDefinitions:
+  BearerAuth:
+    description: 'Bearer JWT. Format: "Bearer <token>"'
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

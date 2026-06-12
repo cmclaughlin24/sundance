@@ -129,6 +129,29 @@ $ go tool cover -html=coverage.out -o coverage.html
 
 You can then open the `coverage.html` file in your web browser to view the code coverage report. Alternatively, Visual Studio Code has built-in support for runnig Go tests and viewing code coverage directly within the editor when using the Go extension.
 
+### Generate OpenAPI Documentation 📑
+
+The services use [swaggo/swag]() to generate OpenAPI documentation. To generate the documentation:
+
+1. Install the swag CLI tool by running the following command:
+
+   ```bash
+   $ go install github.com/swaggo/swag/cmd/swag@latest
+   ```
+
+> [!NOTE]
+> Ensure that your Go bin directory is in your system's PATH environment variable to use the `swag` command globally.
+
+2. Navigate to the service directory and run the following command to generate the documentation:
+
+   ```bash
+   
+   $ swag init -g [general-info-file] -o [output-directory] --parseDependency --useStructName
+
+   # Example: 
+   $ swag init -g ./internal/adapters/rest/routes.go -o ./internal/adapters/rest/docs --parseDependency --useStructName
+   ```
+
 ## Project Structure
 
 The repository is organized into several directories, each serving a specific purpose:

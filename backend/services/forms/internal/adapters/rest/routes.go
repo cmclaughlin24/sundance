@@ -18,10 +18,17 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Bearer JWT. Format: "Bearer <token>"
+
 func NewRoutes(app *core.Application, host string) http.Handler {
 	h := handlers.NewHandlers(app)
 	mux := chi.NewRouter()
-	placeholderAuthenticator := authenticators.NewPlaceholderAuthenticator("placeholder") // TODO: Remove for a proper authentication implementation.
+
+	placeHolderTokenValidator := &authenticators.PlaceholderTokenValidator{}
+	bearerAuthenticator := authenticators.NewBearerAuthenticator(placeHolderTokenValidator)
 
 	mux.Use(middleware.RequestID)
 	mux.Use(httplog.RequestLogger(app.Logger, &httplog.Options{
@@ -30,7 +37,7 @@ func NewRoutes(app *core.Application, host string) http.Handler {
 
 	mux.Route("/api/v1", func(routes chi.Router) {
 		routes.Use(httputil.NewTenantMiddleware("X-Tenant-ID"))
-		routes.Use(auth.NewMiddleware(placeholderAuthenticator))
+		routes.Use(auth.NewMiddleware(bearerAuthenticator))
 
 		routes.Route("/forms", func(formsRoutes chi.Router) {
 			formsRoutes.Get("/", h.GetForms)

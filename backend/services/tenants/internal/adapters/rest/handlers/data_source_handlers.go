@@ -18,6 +18,7 @@ import (
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @success		200 {array} dto.DataSourceResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/data-sources [get]
 func (h *Handlers) GetDataSources(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
@@ -58,6 +59,7 @@ func (h *Handlers) GetDataSources(w http.ResponseWriter, r *http.Request) {
 // @success		200 {object} dto.DataSourceResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/data-sources/{id} [get]
 func (h *Handlers) GetDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
@@ -95,6 +97,7 @@ func (h *Handlers) GetDataSource(w http.ResponseWriter, r *http.Request) {
 // @success		201 {object} httputil.APIResponse[dto.DataSourceResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/data-sources [post]
 func (h *Handlers) CreateDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
@@ -156,6 +159,7 @@ func (h *Handlers) CreateDataSource(w http.ResponseWriter, r *http.Request) {
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/data-sources/{id} [put]
 func (h *Handlers) UpdateDataSource(w http.ResponseWriter, r *http.Request) {
 	var body dto.DataSourceRequest
@@ -215,6 +219,7 @@ func (h *Handlers) UpdateDataSource(w http.ResponseWriter, r *http.Request) {
 // @success		204
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/data-sources/{id} [delete]
 func (h *Handlers) DeleteDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
@@ -253,6 +258,7 @@ func (h *Handlers) DeleteDataSource(w http.ResponseWriter, r *http.Request) {
 // @success		200 {array} dto.LookupResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/data-sources/{id}/look-ups [get]
 func (h *Handlers) GetLookups(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)

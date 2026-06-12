@@ -18,6 +18,7 @@ import (
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @success		200 {array} dto.SubmissionResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/submissions [get]
 func (h *Handlers) GetSubmissions(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
@@ -58,6 +59,7 @@ func (h *Handlers) GetSubmissions(w http.ResponseWriter, r *http.Request) {
 // @success		200 {object} dto.SubmissionResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/submissions/by-reference/{referenceId} [get]
 func (h *Handlers) GetSubmissionByReferenceID(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
@@ -96,6 +98,7 @@ func (h *Handlers) GetSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 // @success		202 {object} httputil.APIResponse[dto.SubmissionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/submissions [post]
 func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 	var body dto.SubmissionRequest
@@ -153,6 +156,7 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 // @success		200 {object} object{status=string}
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/submissions/by-reference/{referenceId}/status [get]
 func (h *Handlers) GetSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
@@ -194,6 +198,7 @@ func (h *Handlers) GetSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 // @success		202 {object} httputil.APIResponse[dto.SubmissionResponse]
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
 // @Router		/submissions/{submissionId}/replay [post]
 func (h *Handlers) ReplaySubmission(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
