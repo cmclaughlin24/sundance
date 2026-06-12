@@ -7,6 +7,16 @@ import (
 	"sundance/backend/pkg/common/httputil"
 )
 
+type OAuth2 struct {
+	Audience string `json:"audience"`
+	Issuer   string `json:"issuer"`
+	JWK      string `json:"jwk"`
+}
+
+type AuthOptions struct {
+	OAuth2 OAuth2 `json:"oauth2"`
+}
+
 type Authenticator = func(*http.Request) (Claims, error)
 
 func NewMiddleware(authenticators ...Authenticator) func(http.Handler) http.Handler {

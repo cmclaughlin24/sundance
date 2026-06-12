@@ -2,6 +2,7 @@
   "port": 80,
   "host": "http://localhost:8081",
   "logLevel": "debug",
+  "auth": {},
   "persistence": {
     "driver": "mongodb",
     "options": {
