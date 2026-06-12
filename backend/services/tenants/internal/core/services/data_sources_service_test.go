@@ -8,6 +8,7 @@ import (
 	"sundance/backend/pkg/common"
 	"sundance/backend/services/tenants/internal/core/domain"
 	"sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/services/tenants/internal/core/ports/commands"
 )
 
 func TestDataSourcesService_Find(t *testing.T) {
@@ -181,87 +182,87 @@ func TestDataSourcesService_FindByID(t *testing.T) {
 func TestDataSourcesService_Create(t *testing.T) {
 	tests := []struct {
 		name         string
-		command      *ports.CreateDataSourceCommand
+		command      *commands.CreateDataSourceCommand
 		tenantExists bool
 		want         *domain.DataSource
 		wantErr      error
 	}{
 		{
 			"should create a data source",
-			ports.NewCreateDataSourceCommand(
-				"tenant-1",
-				"F-Zero Tracks",
-				"The original F-Zero was released in 1990 for the Super Nintendo and featured 15 tracks across three leagues",
-				domain.DataSourceTypeStatic,
-				domain.StaticDataSourceAttributes{
-					Data: []*domain.Lookup{
-						{Value: "mute-city", Label: "Mute City"},
-						{Value: "big-blue", Label: "Big Blue"},
-						{Value: "port-town", Label: "Port Town"},
-					},
+		commands.NewCreateDataSourceCommand(
+			"tenant-1",
+			"F-Zero Tracks",
+			"The original F-Zero was released in 1990 for the Super Nintendo and featured 15 tracks across three leagues",
+			domain.DataSourceTypeStatic,
+			domain.StaticDataSourceAttributes{
+				Data: []*domain.Lookup{
+					{Value: "mute-city", Label: "Mute City"},
+					{Value: "big-blue", Label: "Big Blue"},
+					{Value: "port-town", Label: "Port Town"},
 				},
-			),
+			},
+		),
 			true,
 			&domain.DataSource{TenantID: "tenant-1", Name: "F-Zero Tracks", Description: "The original F-Zero was released in 1990 for the Super Nintendo and featured 15 tracks across three leagues"},
 			nil,
 		},
 		{
 			"should yield an error when the command is invalid",
-			ports.NewCreateDataSourceCommand("", "", "", "", nil),
+			commands.NewCreateDataSourceCommand("", "", "", "", nil),
 			true,
 			nil,
 			errors.New("validation error"),
 		},
 		{
 			"should yield an ErrNotFound when the tenant does not exist",
-			ports.NewCreateDataSourceCommand(
-				"tenant-1",
-				"F-Zero Pilots",
-				"F-Zero X on the Nintendo 64 expanded the roster to 30 playable pilots",
-				domain.DataSourceTypeStatic,
-				domain.StaticDataSourceAttributes{
-					Data: []*domain.Lookup{
-						{Value: "captain-falcon", Label: "Captain Falcon"},
-						{Value: "samurai-goroh", Label: "Samurai Goroh"},
-					},
+		commands.NewCreateDataSourceCommand(
+			"tenant-1",
+			"F-Zero Pilots",
+			"F-Zero X on the Nintendo 64 expanded the roster to 30 playable pilots",
+			domain.DataSourceTypeStatic,
+			domain.StaticDataSourceAttributes{
+				Data: []*domain.Lookup{
+					{Value: "captain-falcon", Label: "Captain Falcon"},
+					{Value: "samurai-goroh", Label: "Samurai Goroh"},
 				},
-			),
+			},
+		),
 			false,
 			nil,
 			common.ErrNotFound,
 		},
 		{
 			"should yield an error when there is a domain invariant violation",
-			ports.NewCreateDataSourceCommand(
-				"tenant-1",
-				"F-Zero Machines",
-				"F-Zero GX was co-developed by Sega's Amusement Vision and is considered one of the fastest racing games ever made",
-				"invalid",
-				domain.StaticDataSourceAttributes{
-					Data: []*domain.Lookup{
-						{Value: "blue-falcon", Label: "Blue Falcon"},
-						{Value: "fire-stingray", Label: "Fire Stingray"},
-					},
+		commands.NewCreateDataSourceCommand(
+			"tenant-1",
+			"F-Zero Machines",
+			"F-Zero GX was co-developed by Sega's Amusement Vision and is considered one of the fastest racing games ever made",
+			"invalid",
+			domain.StaticDataSourceAttributes{
+				Data: []*domain.Lookup{
+					{Value: "blue-falcon", Label: "Blue Falcon"},
+					{Value: "fire-stingray", Label: "Fire Stingray"},
 				},
-			),
+			},
+		),
 			true,
 			nil,
 			domain.ErrInvalidSourceType,
 		},
 		{
 			"should yield an error when the repository returns an error",
-			ports.NewCreateDataSourceCommand(
-				"tenant-1",
-				"F-Zero Cups",
-				"F-Zero Maximum Velocity was a launch title for the Game Boy Advance in 2001",
-				domain.DataSourceTypeStatic,
-				domain.StaticDataSourceAttributes{
-					Data: []*domain.Lookup{
-						{Value: "knight-league", Label: "Knight League"},
-						{Value: "queen-league", Label: "Queen League"},
-						{Value: "king-league", Label: "King League"},
-					},
-				}),
+		commands.NewCreateDataSourceCommand(
+			"tenant-1",
+			"F-Zero Cups",
+			"F-Zero Maximum Velocity was a launch title for the Game Boy Advance in 2001",
+			domain.DataSourceTypeStatic,
+			domain.StaticDataSourceAttributes{
+				Data: []*domain.Lookup{
+					{Value: "knight-league", Label: "Knight League"},
+					{Value: "queen-league", Label: "Queen League"},
+					{Value: "king-league", Label: "King League"},
+				},
+			}),
 			true,
 			nil,
 			errors.New("repository error"),
@@ -331,7 +332,7 @@ func TestDataSourcesService_Update(t *testing.T) {
 
 	tests := []struct {
 		name         string
-		command      *ports.UpdateDataSourceCommand
+		command      *commands.UpdateDataSourceCommand
 		tenantExists bool
 		findDs       *domain.DataSource
 		findErr      error
@@ -341,19 +342,19 @@ func TestDataSourcesService_Update(t *testing.T) {
 	}{
 		{
 			"should update a data source",
-			ports.NewUpdateDataSourceCommand(
-				"tenant-1",
-				"ds-1",
-				"F-Zero Pilots",
-				"F-Zero X on the Nintendo 64 expanded the roster to 30 playable pilots",
-				domain.DataSourceTypeStatic,
-				domain.StaticDataSourceAttributes{
-					Data: []*domain.Lookup{
-						{Value: "captain-falcon", Label: "Captain Falcon"},
-						{Value: "samurai-goroh", Label: "Samurai Goroh"},
-					},
+		commands.NewUpdateDataSourceCommand(
+			"tenant-1",
+			"ds-1",
+			"F-Zero Pilots",
+			"F-Zero X on the Nintendo 64 expanded the roster to 30 playable pilots",
+			domain.DataSourceTypeStatic,
+			domain.StaticDataSourceAttributes{
+				Data: []*domain.Lookup{
+					{Value: "captain-falcon", Label: "Captain Falcon"},
+					{Value: "samurai-goroh", Label: "Samurai Goroh"},
 				},
-			),
+			},
+		),
 			true,
 			validDS,
 			nil,
@@ -363,7 +364,7 @@ func TestDataSourcesService_Update(t *testing.T) {
 		},
 		{
 			"should yield an error when the command is invalid",
-			ports.NewUpdateDataSourceCommand("", "", "", "", "", nil),
+			commands.NewUpdateDataSourceCommand("", "", "", "", "", nil),
 			true,
 			nil,
 			nil,
@@ -373,18 +374,18 @@ func TestDataSourcesService_Update(t *testing.T) {
 		},
 		{
 			"should yield an ErrNotFound when the tenant does not exist",
-			ports.NewUpdateDataSourceCommand(
-				"tenant-1",
-				"ds-1",
-				"F-Zero Cups",
-				"F-Zero Maximum Velocity was a launch title for the Game Boy Advance in 2001",
-				domain.DataSourceTypeStatic,
-				domain.StaticDataSourceAttributes{
-					Data: []*domain.Lookup{
-						{Value: "knight-league", Label: "Knight League"},
-					},
+		commands.NewUpdateDataSourceCommand(
+			"tenant-1",
+			"ds-1",
+			"F-Zero Cups",
+			"F-Zero Maximum Velocity was a launch title for the Game Boy Advance in 2001",
+			domain.DataSourceTypeStatic,
+			domain.StaticDataSourceAttributes{
+				Data: []*domain.Lookup{
+					{Value: "knight-league", Label: "Knight League"},
 				},
-			),
+			},
+		),
 			false,
 			nil,
 			nil,
@@ -394,60 +395,60 @@ func TestDataSourcesService_Update(t *testing.T) {
 		},
 		{
 			"should yield an ErrNotFound when the data source does not exist",
-			ports.NewUpdateDataSourceCommand(
-				"tenant-1",
-				"ds-1",
-				"F-Zero Tracks",
-				"The original F-Zero was released in 1990",
-				domain.DataSourceTypeStatic,
-				domain.StaticDataSourceAttributes{
-					Data: []*domain.Lookup{
-						{Value: "mute-city", Label: "Mute City"},
-					},
+		commands.NewUpdateDataSourceCommand(
+			"tenant-1",
+			"ds-1",
+			"F-Zero Tracks",
+			"The original F-Zero was released in 1990",
+			domain.DataSourceTypeStatic,
+			domain.StaticDataSourceAttributes{
+				Data: []*domain.Lookup{
+					{Value: "mute-city", Label: "Mute City"},
 				},
-			),
-			true,
-			nil,
-			common.ErrNotFound,
+			},
+		),
+		true,
+		nil,
+		common.ErrNotFound,
 			nil,
 			nil,
 			common.ErrNotFound,
 		},
 		{
 			"should yield an error when the repository returns an error on find",
-			ports.NewUpdateDataSourceCommand(
-				"tenant-1",
-				"ds-1",
-				"F-Zero Tracks",
-				"The original F-Zero was released in 1990",
-				domain.DataSourceTypeStatic,
-				domain.StaticDataSourceAttributes{
-					Data: []*domain.Lookup{
-						{Value: "mute-city", Label: "Mute City"},
-					},
+		commands.NewUpdateDataSourceCommand(
+			"tenant-1",
+			"ds-1",
+			"F-Zero Tracks",
+			"The original F-Zero was released in 1990",
+			domain.DataSourceTypeStatic,
+			domain.StaticDataSourceAttributes{
+				Data: []*domain.Lookup{
+					{Value: "mute-city", Label: "Mute City"},
 				},
-			),
-			true,
-			nil,
-			errors.New("repository error"),
+			},
+		),
+		true,
+		nil,
+		errors.New("repository error"),
 			nil,
 			nil,
 			errors.New("repository error"),
 		},
 		{
 			"should yield an error when there is a domain invariant violation",
-			ports.NewUpdateDataSourceCommand(
-				"tenant-1",
-				"ds-1",
-				"F-Zero Machines",
-				"F-Zero GX was co-developed by Sega's Amusement Vision",
-				"invalid",
-				domain.StaticDataSourceAttributes{
-					Data: []*domain.Lookup{
-						{Value: "blue-falcon", Label: "Blue Falcon"},
-					},
+		commands.NewUpdateDataSourceCommand(
+			"tenant-1",
+			"ds-1",
+			"F-Zero Machines",
+			"F-Zero GX was co-developed by Sega's Amusement Vision",
+			"invalid",
+			domain.StaticDataSourceAttributes{
+				Data: []*domain.Lookup{
+					{Value: "blue-falcon", Label: "Blue Falcon"},
 				},
-			),
+			},
+		),
 			true,
 			validDS,
 			nil,
@@ -457,20 +458,20 @@ func TestDataSourcesService_Update(t *testing.T) {
 		},
 		{
 			"should yield an error when the repository fails to persist",
-			ports.NewUpdateDataSourceCommand(
-				"tenant-1",
-				"ds-1",
-				"F-Zero Tracks",
-				"The original F-Zero was released in 1990",
-				domain.DataSourceTypeStatic,
-				domain.StaticDataSourceAttributes{
-					Data: []*domain.Lookup{
-						{Value: "mute-city", Label: "Mute City"},
-					},
+		commands.NewUpdateDataSourceCommand(
+			"tenant-1",
+			"ds-1",
+			"F-Zero Tracks",
+			"The original F-Zero was released in 1990",
+			domain.DataSourceTypeStatic,
+			domain.StaticDataSourceAttributes{
+				Data: []*domain.Lookup{
+					{Value: "mute-city", Label: "Mute City"},
 				},
-			),
-			true,
-			validDS,
+			},
+		),
+		true,
+		validDS,
 			nil,
 			errors.New("repository error"),
 			nil,
@@ -537,7 +538,7 @@ func TestDataSourcesService_Update(t *testing.T) {
 func TestDataSourcesService_Delete(t *testing.T) {
 	tests := []struct {
 		name         string
-		command      *ports.RemoveDataSourceCommand
+		command      *commands.RemoveDataSourceCommand
 		tenantExists bool
 		dsExists     bool
 		dsExistsErr  error
@@ -545,15 +546,15 @@ func TestDataSourcesService_Delete(t *testing.T) {
 	}{
 		{
 			"should delete a data source",
-			ports.NewRemoveDataSourceCommand("tenant-1", "ds-1"),
-			true,
-			true,
-			nil,
-			nil,
+		commands.NewRemoveDataSourceCommand("tenant-1", "ds-1"),
+		true,
+		true,
+		nil,
+		nil,
 		},
 		{
 			"should yield an error when the command is invalid",
-			ports.NewRemoveDataSourceCommand("", ""),
+			commands.NewRemoveDataSourceCommand("", ""),
 			true,
 			true,
 			nil,
@@ -561,15 +562,15 @@ func TestDataSourcesService_Delete(t *testing.T) {
 		},
 		{
 			"should yield an ErrNotFound when the tenant does not exist",
-			ports.NewRemoveDataSourceCommand("tenant-1", "ds-1"),
-			false,
+		commands.NewRemoveDataSourceCommand("tenant-1", "ds-1"),
+		false,
 			true,
 			nil,
 			common.ErrNotFound,
 		},
 		{
 			"should yield an error when the existence check fails",
-			ports.NewRemoveDataSourceCommand("tenant-1", "ds-1"),
+			commands.NewRemoveDataSourceCommand("tenant-1", "ds-1"),
 			true,
 			false,
 			errors.New("exists error"),
@@ -577,7 +578,7 @@ func TestDataSourcesService_Delete(t *testing.T) {
 		},
 		{
 			"should yield an ErrNotFound when the data source does not exist",
-			ports.NewRemoveDataSourceCommand("tenant-1", "ds-1"),
+			commands.NewRemoveDataSourceCommand("tenant-1", "ds-1"),
 			true,
 			false,
 			nil,
@@ -585,7 +586,7 @@ func TestDataSourcesService_Delete(t *testing.T) {
 		},
 		{
 			"should yield an error when the repository fails to delete",
-			ports.NewRemoveDataSourceCommand("tenant-1", "ds-1"),
+			commands.NewRemoveDataSourceCommand("tenant-1", "ds-1"),
 			true,
 			true,
 			nil,

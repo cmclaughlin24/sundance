@@ -7,6 +7,7 @@ import (
 	"sundance/backend/services/tenants/internal/adapters/rest/dto"
 	"sundance/backend/services/tenants/internal/core/domain"
 	"sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/services/tenants/internal/core/ports/commands"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -116,7 +117,7 @@ func (h *Handlers) CreateDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultChan := make(chan result[*domain.DataSource], 1)
-	command := ports.NewCreateDataSourceCommand(
+	command := commands.NewCreateDataSourceCommand(
 		tenantID,
 		body.Name,
 		body.Description,
@@ -178,7 +179,7 @@ func (h *Handlers) UpdateDataSource(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultChan := make(chan result[*domain.DataSource], 1)
-	command := ports.NewUpdateDataSourceCommand(
+	command := commands.NewUpdateDataSourceCommand(
 		tenantID,
 		domain.DataSourceID(sourceID),
 		body.Name,
@@ -225,7 +226,7 @@ func (h *Handlers) DeleteDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
 	sourceID := chi.URLParam(r, "dataSourceId")
 	resultChan := make(chan result[any], 1)
-	command := ports.NewRemoveDataSourceCommand(tenantID, domain.DataSourceID(sourceID))
+	command := commands.NewRemoveDataSourceCommand(tenantID, domain.DataSourceID(sourceID))
 
 	go func() {
 		defer close(resultChan)

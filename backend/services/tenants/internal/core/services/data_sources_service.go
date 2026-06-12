@@ -8,6 +8,7 @@ import (
 	"sundance/backend/pkg/common"
 	"sundance/backend/services/tenants/internal/core/domain"
 	"sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/services/tenants/internal/core/ports/commands"
 )
 
 type dataSourcesService struct {
@@ -64,7 +65,7 @@ func (s *dataSourcesService) FindByID(ctx context.Context, query *ports.FindData
 	return ds, nil
 }
 
-func (s *dataSourcesService) Create(ctx context.Context, cmd *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
+func (s *dataSourcesService) Create(ctx context.Context, cmd *commands.CreateDataSourceCommand) (*domain.DataSource, error) {
 	s.logger.DebugContext(ctx, "creating data source", "tenant_id", cmd.TenantID)
 
 	if err := cmd.Validate(); err != nil {
@@ -100,7 +101,7 @@ func (s *dataSourcesService) Create(ctx context.Context, cmd *ports.CreateDataSo
 	return ds, nil
 }
 
-func (s *dataSourcesService) Update(ctx context.Context, cmd *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
+func (s *dataSourcesService) Update(ctx context.Context, cmd *commands.UpdateDataSourceCommand) (*domain.DataSource, error) {
 	s.logger.DebugContext(ctx, "updating data source", "tenant_id", cmd.TenantID, "data_source_id", cmd.ID)
 
 	if err := cmd.Validate(); err != nil {
@@ -134,7 +135,7 @@ func (s *dataSourcesService) Update(ctx context.Context, cmd *ports.UpdateDataSo
 	return ds, nil
 }
 
-func (s *dataSourcesService) Delete(ctx context.Context, cmd *ports.RemoveDataSourceCommand) error {
+func (s *dataSourcesService) Delete(ctx context.Context, cmd *commands.RemoveDataSourceCommand) error {
 	s.logger.DebugContext(ctx, "deleting data source", "tenant_id", cmd.TenantID, "data_source_id", cmd.ID)
 
 	if err := cmd.Validate(); err != nil {

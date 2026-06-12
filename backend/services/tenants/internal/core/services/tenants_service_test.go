@@ -7,7 +7,7 @@ import (
 
 	"sundance/backend/pkg/common"
 	"sundance/backend/services/tenants/internal/core/domain"
-	"sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/services/tenants/internal/core/ports/commands"
 )
 
 func TestTenantsService_Find(t *testing.T) {
@@ -135,25 +135,25 @@ func TestTenantsService_FindByID(t *testing.T) {
 func TestTenantsService_Create(t *testing.T) {
 	tests := []struct {
 		name    string
-		command *ports.CreateTenantCommand
+		command *commands.CreateTenantCommand
 		want    *domain.Tenant
 		wantErr error
 	}{
 		{
 			"should create a tenant",
-			ports.NewCreateTenantCommand("Star Fox 64", "Released in 1997 for the Nintendo 64, featuring Fox McCloud and his team"),
+			commands.NewCreateTenantCommand("Star Fox 64", "Released in 1997 for the Nintendo 64, featuring Fox McCloud and his team"),
 			&domain.Tenant{Name: "Star Fox 64", Description: "Released in 1997 for the Nintendo 64, featuring Fox McCloud and his team"},
 			nil,
 		},
 		{
 			"should yield an error when the command is invalid",
-			ports.NewCreateTenantCommand("", ""),
+			commands.NewCreateTenantCommand("", ""),
 			nil,
 			errors.New("validation error"),
 		},
 		{
 			"should yield an error when the repository returns an error",
-			ports.NewCreateTenantCommand("Star Fox Assault", "Released in 2005 for the GameCube, featured on-foot combat missions"),
+			commands.NewCreateTenantCommand("Star Fox Assault", "Released in 2005 for the GameCube, featured on-foot combat missions"),
 			nil,
 			errors.New("repository error"),
 		},
@@ -202,31 +202,31 @@ func TestTenantsService_Create(t *testing.T) {
 func TestTenantsService_Update(t *testing.T) {
 	tests := []struct {
 		name    string
-		command *ports.UpdateTenantCommand
+		command *commands.UpdateTenantCommand
 		want    *domain.Tenant
 		wantErr error
 	}{
 		{
 			"should update a tenant",
-			ports.NewUpdateTenantCommand(domain.TenantID("star-fox-1"), "Star Fox", "Originally released in 1993 for the SNES, it was the first game to use the Super FX chip for 3D polygon graphics"),
+			commands.NewUpdateTenantCommand(domain.TenantID("star-fox-1"), "Star Fox", "Originally released in 1993 for the SNES, it was the first game to use the Super FX chip for 3D polygon graphics"),
 			&domain.Tenant{Name: "Star Fox", Description: "Originally released in 1993 for the SNES, it was the first game to use the Super FX chip for 3D polygon graphics"},
 			nil,
 		},
 		{
 			"should yield an error when the command is invalid",
-			ports.NewUpdateTenantCommand(domain.TenantID(""), "", ""),
+			commands.NewUpdateTenantCommand(domain.TenantID(""), "", ""),
 			nil,
 			errors.New("validation error"),
 		},
 		{
 			"should yield an ErrNotFound when the tenant does not exist",
-			ports.NewUpdateTenantCommand(domain.TenantID("star-fox-2"), "Star Fox 2", "Completed in 1995 but shelved until its official release on the SNES Classic Edition in 2017"),
+			commands.NewUpdateTenantCommand(domain.TenantID("star-fox-2"), "Star Fox 2", "Completed in 1995 but shelved until its official release on the SNES Classic Edition in 2017"),
 			nil,
 			common.ErrNotFound,
 		},
 		{
 			"should yield an error when the repository returns an error",
-			ports.NewUpdateTenantCommand(domain.TenantID("star-fox-zero"), "Star Fox Zero", "Released in 2016 for the Wii U with motion controls and a dual-screen gameplay mechanic"),
+			commands.NewUpdateTenantCommand(domain.TenantID("star-fox-zero"), "Star Fox Zero", "Released in 2016 for the Wii U with motion controls and a dual-screen gameplay mechanic"),
 			&domain.Tenant{Name: "Star Fox Zero", Description: "Released in 2016 for the Wii U with motion controls and a dual-screen gameplay mechanic"},
 			errors.New("repository error"),
 		},

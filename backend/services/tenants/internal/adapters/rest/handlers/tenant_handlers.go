@@ -5,7 +5,7 @@ import (
 	"sundance/backend/pkg/common/httputil"
 	"sundance/backend/services/tenants/internal/adapters/rest/dto"
 	"sundance/backend/services/tenants/internal/core/domain"
-	"sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/services/tenants/internal/core/ports/commands"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -99,7 +99,7 @@ func (h *Handlers) CreateTenant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultChan := make(chan result[*domain.Tenant], 1)
-	command := ports.NewCreateTenantCommand(body.Name, body.Description)
+	command := commands.NewCreateTenantCommand(body.Name, body.Description)
 
 	go func() {
 		defer close(resultChan)
@@ -147,7 +147,7 @@ func (h *Handlers) UpdateTenant(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultChan := make(chan result[*domain.Tenant], 1)
-	command := ports.NewUpdateTenantCommand(tenantID, body.Name, body.Description)
+	command := commands.NewUpdateTenantCommand(tenantID, body.Name, body.Description)
 
 	go func() {
 		defer close(resultChan)

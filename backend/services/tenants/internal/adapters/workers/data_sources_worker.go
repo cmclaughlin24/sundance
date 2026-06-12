@@ -9,6 +9,7 @@ import (
 	"sundance/backend/services/tenants/internal/core"
 	"sundance/backend/services/tenants/internal/core/domain"
 	"sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/services/tenants/internal/core/ports/commands"
 )
 
 type dataSourceJob struct {
@@ -24,7 +25,7 @@ func newDataSourceJob(api ports.DataSourceJobsAPI, ds *domain.DataSource) *dataS
 }
 
 func (j *dataSourceJob) Process(ctx context.Context) error {
-	return j.api.Process(ctx, ports.NewProcessDataSourceJobCommand(j.ds))
+	return j.api.Process(ctx, commands.NewProcessDataSourceJobCommand(j.ds))
 }
 
 func newDataSourcesBackgroundWorker(app *core.Application, opts ...func(*WorkerOptions)) (*worker.BackgroundWorker[*dataSourceJob], error) {

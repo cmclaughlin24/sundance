@@ -6,6 +6,7 @@ import (
 
 	"sundance/backend/services/tenants/internal/core/domain"
 	"sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/services/tenants/internal/core/ports/commands"
 )
 
 type dataSourcesJobService struct {
@@ -45,7 +46,7 @@ func (s *dataSourcesJobService) Find(ctx context.Context, query *ports.FindDataS
 	return sources, nil
 }
 
-func (s *dataSourcesJobService) Process(ctx context.Context, cmd *ports.ProcessDataSourceJobCommand) error {
+func (s *dataSourcesJobService) Process(ctx context.Context, cmd *commands.ProcessDataSourceJobCommand) error {
 	if err := cmd.Validate(); err != nil {
 		s.logger.WarnContext(ctx, "data source job process failed; invalid command", "error", err)
 		return err

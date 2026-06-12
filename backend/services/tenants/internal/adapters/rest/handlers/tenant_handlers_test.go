@@ -11,6 +11,7 @@ import (
 	"sundance/backend/services/tenants/internal/adapters/rest/dto"
 	"sundance/backend/services/tenants/internal/core/domain"
 	"sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/services/tenants/internal/core/ports/commands"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -161,13 +162,13 @@ func Test_handlers_GetTenant(t *testing.T) {
 func Test_handlers_CreateTenant(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.CreateTenantCommand) (*domain.Tenant, error)
+		fn         func(context.Context, *commands.CreateTenantCommand) (*domain.Tenant, error)
 		statusCode int
 		body       dto.TenantRequest
 	}{
 		{
 			"should yield CREATED if the request is successful",
-			func(ctx context.Context, command *ports.CreateTenantCommand) (*domain.Tenant, error) {
+			func(ctx context.Context, command *commands.CreateTenantCommand) (*domain.Tenant, error) {
 				return domain.NewTenant(command.Name, command.Description)
 			},
 			http.StatusCreated,
@@ -175,7 +176,7 @@ func Test_handlers_CreateTenant(t *testing.T) {
 		},
 		{
 			"should yield BAD REQUEST if the request body is invalid",
-			func(ctx context.Context, command *ports.CreateTenantCommand) (*domain.Tenant, error) {
+			func(ctx context.Context, command *commands.CreateTenantCommand) (*domain.Tenant, error) {
 				return nil, nil
 			},
 			http.StatusBadRequest,
@@ -183,7 +184,7 @@ func Test_handlers_CreateTenant(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command *ports.CreateTenantCommand) (*domain.Tenant, error) {
+			func(ctx context.Context, command *commands.CreateTenantCommand) (*domain.Tenant, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -220,14 +221,14 @@ func Test_handlers_CreateTenant(t *testing.T) {
 func Test_handlers_UpdateTenant(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.UpdateTenantCommand) (*domain.Tenant, error)
+		fn         func(context.Context, *commands.UpdateTenantCommand) (*domain.Tenant, error)
 		statusCode int
 		id         string
 		body       dto.TenantRequest
 	}{
 		{
 			"should yield OK if the request is successful",
-			func(ctx context.Context, command *ports.UpdateTenantCommand) (*domain.Tenant, error) {
+			func(ctx context.Context, command *commands.UpdateTenantCommand) (*domain.Tenant, error) {
 				return domain.NewTenant(command.Name, command.Description)
 			},
 			http.StatusOK,
@@ -236,7 +237,7 @@ func Test_handlers_UpdateTenant(t *testing.T) {
 		},
 		{
 			"should yield BAD REQUEST if the request body is invalid",
-			func(ctx context.Context, command *ports.UpdateTenantCommand) (*domain.Tenant, error) {
+			func(ctx context.Context, command *commands.UpdateTenantCommand) (*domain.Tenant, error) {
 				return nil, nil
 			},
 			http.StatusBadRequest,
@@ -245,7 +246,7 @@ func Test_handlers_UpdateTenant(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command *ports.UpdateTenantCommand) (*domain.Tenant, error) {
+			func(ctx context.Context, command *commands.UpdateTenantCommand) (*domain.Tenant, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,

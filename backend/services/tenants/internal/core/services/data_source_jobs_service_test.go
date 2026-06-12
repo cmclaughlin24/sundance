@@ -5,6 +5,7 @@ import (
 	"errors"
 	"sundance/backend/services/tenants/internal/core/domain"
 	"sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/services/tenants/internal/core/ports/commands"
 	"testing"
 )
 
@@ -112,7 +113,7 @@ func Test_dataSourcesJobService_Process(t *testing.T) {
 
 	tests := []struct {
 		name             string
-		command          *ports.ProcessDataSourceJobCommand
+		command          *commands.ProcessDataSourceJobCommand
 		fetchLookupsFn   func(context.Context, domain.DataSourceHTTPRequest, map[string]any) ([]map[string]any, error)
 		upsertErr        error
 		wantErr          bool
@@ -120,7 +121,7 @@ func Test_dataSourcesJobService_Process(t *testing.T) {
 	}{
 		{
 			"should process a data source job",
-			ports.NewProcessDataSourceJobCommand(scheduledDS),
+			commands.NewProcessDataSourceJobCommand(scheduledDS),
 			func(_ context.Context, _ domain.DataSourceHTTPRequest, _ map[string]any) ([]map[string]any, error) {
 				return rows, nil
 			},
@@ -130,7 +131,7 @@ func Test_dataSourcesJobService_Process(t *testing.T) {
 		},
 		{
 			"should yield an error when the command is invalid",
-			ports.NewProcessDataSourceJobCommand(nil),
+			commands.NewProcessDataSourceJobCommand(nil),
 			nil,
 			nil,
 			true,
@@ -138,7 +139,7 @@ func Test_dataSourcesJobService_Process(t *testing.T) {
 		},
 		{
 			"should yield an error when the attribute type mismatches",
-			ports.NewProcessDataSourceJobCommand(&domain.DataSource{
+			commands.NewProcessDataSourceJobCommand(&domain.DataSource{
 				ID:         "ds-2",
 				TenantID:   "tenant-1",
 				Name:       "Pokemon Regions",
@@ -152,7 +153,7 @@ func Test_dataSourcesJobService_Process(t *testing.T) {
 		},
 		{
 			"should record an attempt when fetching lookups fails",
-			ports.NewProcessDataSourceJobCommand(scheduledDS),
+			commands.NewProcessDataSourceJobCommand(scheduledDS),
 			func(_ context.Context, _ domain.DataSourceHTTPRequest, _ map[string]any) ([]map[string]any, error) {
 				return nil, errors.New("fetch error")
 			},
@@ -162,7 +163,7 @@ func Test_dataSourcesJobService_Process(t *testing.T) {
 		},
 		{
 			"should yield an error when the repository fails to persist",
-			ports.NewProcessDataSourceJobCommand(scheduledDS),
+			commands.NewProcessDataSourceJobCommand(scheduledDS),
 			func(_ context.Context, _ domain.DataSourceHTTPRequest, _ map[string]any) ([]map[string]any, error) {
 				return rows, nil
 			},
@@ -172,7 +173,7 @@ func Test_dataSourcesJobService_Process(t *testing.T) {
 		},
 		{
 			"should skip rows missing value or label fields",
-			ports.NewProcessDataSourceJobCommand(scheduledDS),
+			commands.NewProcessDataSourceJobCommand(scheduledDS),
 			func(_ context.Context, _ domain.DataSourceHTTPRequest, _ map[string]any) ([]map[string]any, error) {
 				return []map[string]any{
 					{"value": "fire", "label": "Fire"},

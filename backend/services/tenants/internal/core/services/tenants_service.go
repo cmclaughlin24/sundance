@@ -9,6 +9,7 @@ import (
 	"sundance/backend/pkg/database"
 	"sundance/backend/services/tenants/internal/core/domain"
 	"sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/services/tenants/internal/core/ports/commands"
 )
 
 type tenantsService struct {
@@ -51,7 +52,7 @@ func (s *tenantsService) FindByID(ctx context.Context, id domain.TenantID) (*dom
 	return t, nil
 }
 
-func (s *tenantsService) Create(ctx context.Context, cmd *ports.CreateTenantCommand) (*domain.Tenant, error) {
+func (s *tenantsService) Create(ctx context.Context, cmd *commands.CreateTenantCommand) (*domain.Tenant, error) {
 	s.logger.DebugContext(ctx, "creating tenant")
 
 	if err := cmd.Validate(); err != nil {
@@ -76,7 +77,7 @@ func (s *tenantsService) Create(ctx context.Context, cmd *ports.CreateTenantComm
 	return t, nil
 }
 
-func (s *tenantsService) Update(ctx context.Context, cmd *ports.UpdateTenantCommand) (*domain.Tenant, error) {
+func (s *tenantsService) Update(ctx context.Context, cmd *commands.UpdateTenantCommand) (*domain.Tenant, error) {
 	s.logger.DebugContext(ctx, "updating tenant", "tenant_id", cmd.ID)
 
 	if err := cmd.Validate(); err != nil {

@@ -13,6 +13,7 @@ import (
 	"sundance/backend/services/tenants/internal/adapters/rest/dto"
 	"sundance/backend/services/tenants/internal/core/domain"
 	"sundance/backend/services/tenants/internal/core/ports"
+	"sundance/backend/services/tenants/internal/core/ports/commands"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -170,13 +171,13 @@ func Test_handlers_GetDataSource(t *testing.T) {
 func Test_handlers_CreateDataSource(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.CreateDataSourceCommand) (*domain.DataSource, error)
+		fn         func(context.Context, *commands.CreateDataSourceCommand) (*domain.DataSource, error)
 		statusCode int
 		body       dto.DataSourceRequest
 	}{
 		{
 			"should yield CREATED if the request is successful",
-			func(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
+			func(ctx context.Context, command *commands.CreateDataSourceCommand) (*domain.DataSource, error) {
 				return &domain.DataSource{
 					ID:       "ds-1",
 					TenantID: command.TenantID,
@@ -194,7 +195,7 @@ func Test_handlers_CreateDataSource(t *testing.T) {
 		},
 		{
 			"should yield BAD REQUEST if the request body is invalid",
-			func(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
+			func(ctx context.Context, command *commands.CreateDataSourceCommand) (*domain.DataSource, error) {
 				return nil, nil
 			},
 			http.StatusBadRequest,
@@ -202,7 +203,7 @@ func Test_handlers_CreateDataSource(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
+			func(ctx context.Context, command *commands.CreateDataSourceCommand) (*domain.DataSource, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -247,14 +248,14 @@ func Test_handlers_CreateDataSource(t *testing.T) {
 func Test_handlers_UpdateDataSource(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.UpdateDataSourceCommand) (*domain.DataSource, error)
+		fn         func(context.Context, *commands.UpdateDataSourceCommand) (*domain.DataSource, error)
 		statusCode int
 		id         string
 		body       dto.DataSourceRequest
 	}{
 		{
 			"should yield OK if the request is successful",
-			func(ctx context.Context, command *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
+			func(ctx context.Context, command *commands.UpdateDataSourceCommand) (*domain.DataSource, error) {
 				return &domain.DataSource{
 					ID:       command.ID,
 					TenantID: command.TenantID,
@@ -273,7 +274,7 @@ func Test_handlers_UpdateDataSource(t *testing.T) {
 		},
 		{
 			"should yield BAD REQUEST if the request body is invalid",
-			func(ctx context.Context, command *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
+			func(ctx context.Context, command *commands.UpdateDataSourceCommand) (*domain.DataSource, error) {
 				return nil, nil
 			},
 			http.StatusBadRequest,
@@ -282,7 +283,7 @@ func Test_handlers_UpdateDataSource(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
+			func(ctx context.Context, command *commands.UpdateDataSourceCommand) (*domain.DataSource, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -330,13 +331,13 @@ func Test_handlers_UpdateDataSource(t *testing.T) {
 func Test_handlers_DeleteDataSource(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.RemoveDataSourceCommand) error
+		fn         func(context.Context, *commands.RemoveDataSourceCommand) error
 		statusCode int
 		id         string
 	}{
 		{
 			"should yield NO CONTENT if the request is successful",
-			func(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
+			func(ctx context.Context, command *commands.RemoveDataSourceCommand) error {
 				return nil
 			},
 			http.StatusNoContent,
@@ -344,7 +345,7 @@ func Test_handlers_DeleteDataSource(t *testing.T) {
 		},
 		{
 			"should yield NOT FOUND if the resource is not found",
-			func(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
+			func(ctx context.Context, command *commands.RemoveDataSourceCommand) error {
 				return common.ErrNotFound
 			},
 			http.StatusNotFound,
@@ -352,7 +353,7 @@ func Test_handlers_DeleteDataSource(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
+			func(ctx context.Context, command *commands.RemoveDataSourceCommand) error {
 				return errors.New("internal error")
 			},
 			http.StatusInternalServerError,
