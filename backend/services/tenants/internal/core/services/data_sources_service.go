@@ -64,105 +64,105 @@ func (s *dataSourcesService) FindByID(ctx context.Context, query *ports.FindData
 	return ds, nil
 }
 
-func (s *dataSourcesService) Create(ctx context.Context, command *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
-	s.logger.DebugContext(ctx, "creating data source", "tenant_id", command.TenantID)
+func (s *dataSourcesService) Create(ctx context.Context, cmd *ports.CreateDataSourceCommand) (*domain.DataSource, error) {
+	s.logger.DebugContext(ctx, "creating data source", "tenant_id", cmd.TenantID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "data source creation failed; invalid command", "tenant_id", command.TenantID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "data source creation failed; invalid command", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
 	}
 
-	if err := s.tenantExists(ctx, command.TenantID); err != nil {
+	if err := s.tenantExists(ctx, cmd.TenantID); err != nil {
 		return nil, err
 	}
 
 	ds, err := domain.NewDataSource(
-		command.TenantID,
-		command.Name,
-		command.Description,
-		command.Type,
-		command.Attributes,
+		cmd.TenantID,
+		cmd.Name,
+		cmd.Description,
+		cmd.Type,
+		cmd.Attributes,
 	)
 
 	if err != nil {
-		s.logger.WarnContext(ctx, "data source creation failed; domain invariant violation", "tenant_id", command.TenantID, "error", err)
+		s.logger.WarnContext(ctx, "data source creation failed; domain invariant violation", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
 	}
 
 	ds, err = s.dataSourcesRepository.Upsert(ctx, ds)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to persist data source", "tenant_id", command.TenantID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to persist data source", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "data source created", "tenant_id", command.TenantID, "data_source_id", ds.ID)
+	s.logger.InfoContext(ctx, "data source created", "tenant_id", cmd.TenantID, "data_source_id", ds.ID)
 
 	return ds, nil
 }
 
-func (s *dataSourcesService) Update(ctx context.Context, command *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
-	s.logger.DebugContext(ctx, "updating data source", "tenant_id", command.TenantID, "data_source_id", command.ID)
+func (s *dataSourcesService) Update(ctx context.Context, cmd *ports.UpdateDataSourceCommand) (*domain.DataSource, error) {
+	s.logger.DebugContext(ctx, "updating data source", "tenant_id", cmd.TenantID, "data_source_id", cmd.ID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "data source update failed; invalid command", "tenant_id", command.TenantID, "data_source_id", command.ID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "data source update failed; invalid command", "tenant_id", cmd.TenantID, "data_source_id", cmd.ID, "error", err)
 		return nil, err
 	}
 
-	if err := s.tenantExists(ctx, command.TenantID); err != nil {
+	if err := s.tenantExists(ctx, cmd.TenantID); err != nil {
 		return nil, err
 	}
 
-	ds, err := s.dataSourcesRepository.FindByID(ctx, command.TenantID, command.ID)
+	ds, err := s.dataSourcesRepository.FindByID(ctx, cmd.TenantID, cmd.ID)
 	if err != nil {
-		s.logFindByIDError(ctx, err, command.TenantID, command.ID)
+		s.logFindByIDError(ctx, err, cmd.TenantID, cmd.ID)
 		return nil, err
 	}
 
-	if err := ds.Update(command.Name, command.Description, command.Type, command.Attributes); err != nil {
-		s.logger.WarnContext(ctx, "data source update failed; domain invariant violation", "tenant_id", command.TenantID, "data_source_id", command.ID, "error", err)
+	if err := ds.Update(cmd.Name, cmd.Description, cmd.Type, cmd.Attributes); err != nil {
+		s.logger.WarnContext(ctx, "data source update failed; domain invariant violation", "tenant_id", cmd.TenantID, "data_source_id", cmd.ID, "error", err)
 		return nil, err
 	}
 
 	ds, err = s.dataSourcesRepository.Upsert(ctx, ds)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to persist data source", "tenant_id", command.TenantID, "data_source_id", command.ID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to persist data source", "tenant_id", cmd.TenantID, "data_source_id", cmd.ID, "error", err)
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "data source updated", "tenant_id", command.TenantID, "data_source_id", command.ID)
+	s.logger.InfoContext(ctx, "data source updated", "tenant_id", cmd.TenantID, "data_source_id", cmd.ID)
 
 	return ds, nil
 }
 
-func (s *dataSourcesService) Delete(ctx context.Context, command *ports.RemoveDataSourceCommand) error {
-	s.logger.DebugContext(ctx, "deleting data source", "tenant_id", command.TenantID, "data_source_id", command.ID)
+func (s *dataSourcesService) Delete(ctx context.Context, cmd *ports.RemoveDataSourceCommand) error {
+	s.logger.DebugContext(ctx, "deleting data source", "tenant_id", cmd.TenantID, "data_source_id", cmd.ID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "data source deletion failed; invalid command", "tenant_id", command.TenantID, "data_source_id", command.ID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "data source deletion failed; invalid command", "tenant_id", cmd.TenantID, "data_source_id", cmd.ID, "error", err)
 		return err
 	}
 
-	if err := s.tenantExists(ctx, command.TenantID); err != nil {
+	if err := s.tenantExists(ctx, cmd.TenantID); err != nil {
 		return err
 	}
 
-	exists, err := s.dataSourcesRepository.Exists(ctx, command.TenantID, command.ID)
+	exists, err := s.dataSourcesRepository.Exists(ctx, cmd.TenantID, cmd.ID)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to check data source existence", "tenant_id", command.TenantID, "data_source_id", command.ID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to check data source existence", "tenant_id", cmd.TenantID, "data_source_id", cmd.ID, "error", err)
 		return err
 	}
 
 	if !exists {
-		s.logger.WarnContext(ctx, "data source not found", "tenant_id", command.TenantID, "data_source_id", command.ID)
+		s.logger.WarnContext(ctx, "data source not found", "tenant_id", cmd.TenantID, "data_source_id", cmd.ID)
 		return common.ErrNotFound
 	}
 
-	if err := s.dataSourcesRepository.Delete(ctx, command.TenantID, command.ID); err != nil {
-		s.logger.ErrorContext(ctx, "failed to delete data source", "tenant_id", command.TenantID, "data_source_id", command.ID, "error", err)
+	if err := s.dataSourcesRepository.Delete(ctx, cmd.TenantID, cmd.ID); err != nil {
+		s.logger.ErrorContext(ctx, "failed to delete data source", "tenant_id", cmd.TenantID, "data_source_id", cmd.ID, "error", err)
 		return err
 	}
 
-	s.logger.InfoContext(ctx, "data source deleted", "tenant_id", command.TenantID, "data_source_id", command.ID)
+	s.logger.InfoContext(ctx, "data source deleted", "tenant_id", cmd.TenantID, "data_source_id", cmd.ID)
 
 	return nil
 }

@@ -3,6 +3,7 @@ package dto
 import "sundance/backend/services/forms/internal/core/domain"
 
 type RuleRequest struct {
+	ID          *string                  `json:"id,omitempty" validate:"uuidv7"`
 	Type        string                   `json:"type" validate:"required"`
 	Expressions []*RuleExpressionRequest `json:"expressions" validate:"dive"`
 }

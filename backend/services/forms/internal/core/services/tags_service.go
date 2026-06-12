@@ -8,6 +8,7 @@ import (
 	"sundance/backend/pkg/database"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/services/forms/internal/core/ports/commands"
 )
 
 type tagsService struct {
@@ -67,82 +68,82 @@ func (s *tagsService) FindById(ctx context.Context, query ports.FindByIDQuery[do
 	return tag, nil
 }
 
-func (s *tagsService) Create(ctx context.Context, command ports.CreateTagCommand) (*domain.Tag, error) {
-	s.logger.DebugContext(ctx, "creating tag", "tenant_id", command.TenantID)
+func (s *tagsService) Create(ctx context.Context, cmd commands.CreateTagCommand) (*domain.Tag, error) {
+	s.logger.DebugContext(ctx, "creating tag", "tenant_id", cmd.TenantID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "tag creation failed; invalid command", "tenant_id", command.TenantID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "tag creation failed; invalid command", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
 	}
 
-	tag, err := domain.NewTag(command.TenantID, command.Key, command.DisplayName)
+	tag, err := domain.NewTag(cmd.TenantID, cmd.Key, cmd.DisplayName)
 	if err != nil {
-		s.logger.WarnContext(ctx, "tag creation failed; domain invariant violation", "tenant_id", command.TenantID, "error", err)
+		s.logger.WarnContext(ctx, "tag creation failed; domain invariant violation", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
 	}
 
 	tag, err = s.tagsRepository.Upsert(ctx, tag)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to persist tag", "tenant_id", command.TenantID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to persist tag", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "tag created", "tenant_id", command.TenantID, "tag_id", tag.ID)
+	s.logger.InfoContext(ctx, "tag created", "tenant_id", cmd.TenantID, "tag_id", tag.ID)
 
 	return tag, nil
 }
 
-func (s *tagsService) Update(ctx context.Context, command ports.UpdateTagCommand) (*domain.Tag, error) {
-	s.logger.DebugContext(ctx, "updating tag", "tenant_id", command.TenantID)
+func (s *tagsService) Update(ctx context.Context, cmd commands.UpdateTagCommand) (*domain.Tag, error) {
+	s.logger.DebugContext(ctx, "updating tag", "tenant_id", cmd.TenantID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "tag update failed; invalid command", "tenant_id", command.TenantID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "tag update failed; invalid command", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
 	}
 
-	tag, err := s.tagsRepository.FindByID(ctx, command.ID)
+	tag, err := s.tagsRepository.FindByID(ctx, cmd.ID)
 	if err != nil {
-		s.logFindTagByIDError(ctx, err, command.ID)
+		s.logFindTagByIDError(ctx, err, cmd.ID)
 		return nil, err
 	}
 
-	if tag.TenantID != command.TenantID {
-		s.logger.WarnContext(ctx, "unauthorized tag access", "tenant_id", command.TenantID, "tag_id", command.ID)
+	if tag.TenantID != cmd.TenantID {
+		s.logger.WarnContext(ctx, "unauthorized tag access", "tenant_id", cmd.TenantID, "tag_id", cmd.ID)
 		return nil, common.ErrUnauthorized
 	}
 
-	if err := tag.Update(command.DisplayName); err != nil {
-		s.logger.WarnContext(ctx, "tag update failed; domain invariant violation", "tenant_id", command.TenantID, "tag_id", command.ID, "error", err)
+	if err := tag.Update(cmd.DisplayName); err != nil {
+		s.logger.WarnContext(ctx, "tag update failed; domain invariant violation", "tenant_id", cmd.TenantID, "tag_id", cmd.ID, "error", err)
 		return nil, err
 	}
 
 	tag, err = s.tagsRepository.Upsert(ctx, tag)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to persist tag", "tenant_id", command.TenantID, "tag_id", command.ID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to persist tag", "tenant_id", cmd.TenantID, "tag_id", cmd.ID, "error", err)
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "tag updated", "tenant_id", command.TenantID, "tag_id", command.ID)
+	s.logger.InfoContext(ctx, "tag updated", "tenant_id", cmd.TenantID, "tag_id", cmd.ID)
 
 	return tag, nil
 }
 
-func (s *tagsService) Delete(ctx context.Context, command ports.DeleteCommand[domain.TagID]) error {
-	s.logger.DebugContext(ctx, "deleting tag", "tenant_id", command.TenantID, "tag_id", command.ID)
+func (s *tagsService) Delete(ctx context.Context, cmd commands.DeleteCommand[domain.TagID]) error {
+	s.logger.DebugContext(ctx, "deleting tag", "tenant_id", cmd.TenantID, "tag_id", cmd.ID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "tag deletion failed; invalid command", "tenant_id", command.TenantID, "tag_id", command.ID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "tag deletion failed; invalid command", "tenant_id", cmd.TenantID, "tag_id", cmd.ID, "error", err)
 		return err
 	}
 
 	// FIXME: A tag should not be deletable if it has ever had an active version to ensure audit history can be maintained.
 
-	if err := s.tagsRepository.Delete(ctx, command.ID); err != nil {
-		s.logger.ErrorContext(ctx, "failed to delete tag", "tenant_id", command.TenantID, "tag_id", command.ID, "error", err)
+	if err := s.tagsRepository.Delete(ctx, cmd.ID); err != nil {
+		s.logger.ErrorContext(ctx, "failed to delete tag", "tenant_id", cmd.TenantID, "tag_id", cmd.ID, "error", err)
 		return err
 	}
 
-	s.logger.InfoContext(ctx, "tag deleted", "tenant_id", command.TenantID, "tag_id", command.ID)
+	s.logger.InfoContext(ctx, "tag deleted", "tenant_id", cmd.TenantID, "tag_id", cmd.ID)
 
 	return nil
 }
@@ -191,102 +192,102 @@ func (s *tagsService) FindVersion(ctx context.Context, query ports.FindTagVersio
 	return version, nil
 }
 
-func (s *tagsService) CreateVersion(ctx context.Context, command ports.CreateTagVersionCommand) (*domain.TagVersion, error) {
-	s.logger.DebugContext(ctx, "creating version", "tenant_id", command.TenantID, "tag_id", command.TagID)
+func (s *tagsService) CreateVersion(ctx context.Context, cmd commands.CreateTagVersionCommand) (*domain.TagVersion, error) {
+	s.logger.DebugContext(ctx, "creating version", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "version creation failed; invalid command", "tenant_id", command.TenantID, "tag_id", command.TagID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "version creation failed; invalid command", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "error", err)
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, command.TenantID, command.TagID); err != nil {
+	if err := s.isValidAccess(ctx, cmd.TenantID, cmd.TagID); err != nil {
 		return nil, err
 	}
 
 	txCtx, err := s.database.BeginTx(ctx)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to begin transaction", "tenant_id", command.TenantID, "tag_id", command.TagID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to begin transaction", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "error", err)
 		return nil, err
 	}
 
 	defer s.database.RollbackTx(txCtx)
 
-	versionNum, err := s.versionsRepository.FindNextVersionNumber(txCtx, command.TagID)
+	versionNum, err := s.versionsRepository.FindNextVersionNumber(txCtx, cmd.TagID)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to find next version number", "tenant_id", command.TenantID, "tag_id", command.TagID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to find next version number", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "error", err)
 		return nil, err
 	}
 
-	version, err := domain.NewTagVersion(command.TagID, versionNum, command.Type)
+	version, err := domain.NewTagVersion(cmd.TagID, versionNum, cmd.Type)
 	if err != nil {
-		s.logger.WarnContext(ctx, "version creation failed; domain invariant violation", "tenant_id", command.TenantID, "tag_id", command.TagID, "error", err)
+		s.logger.WarnContext(ctx, "version creation failed; domain invariant violation", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "error", err)
 		return nil, err
 	}
 
 	version, err = s.versionsRepository.Upsert(txCtx, version)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to persist version", "tenant_id", command.TenantID, "tag_id", command.TagID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to persist version", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "error", err)
 		return nil, err
 	}
 
 	if err := s.database.CommitTx(txCtx); err != nil {
-		s.logger.ErrorContext(ctx, "failed to commit version creation transaction", "tenant_id", command.TenantID, "tag_id", command.TagID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to commit version creation transaction", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "error", err)
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "version created", "tenant_id", command.TenantID, "tag_id", command.TagID, "version_id", version.ID)
+	s.logger.InfoContext(ctx, "version created", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", version.ID)
 
 	return version, nil
 }
 
-func (s *tagsService) PublishVersion(ctx context.Context, command ports.TransitionTagVersionCommand) (*domain.TagVersion, error) {
-	return s.transitionVersion(ctx, command, func(tv *domain.TagVersion) error {
+func (s *tagsService) PublishVersion(ctx context.Context, cmd commands.TransitionTagVersionCommand) (*domain.TagVersion, error) {
+	return s.transitionVersion(ctx, cmd, func(tv *domain.TagVersion) error {
 		return tv.Publish()
 	})
 }
 
-func (s *tagsService) DeprecateVersion(ctx context.Context, command ports.TransitionTagVersionCommand) (*domain.TagVersion, error) {
-	return s.transitionVersion(ctx, command, func(tv *domain.TagVersion) error {
+func (s *tagsService) DeprecateVersion(ctx context.Context, cmd commands.TransitionTagVersionCommand) (*domain.TagVersion, error) {
+	return s.transitionVersion(ctx, cmd, func(tv *domain.TagVersion) error {
 		return tv.Deprecate()
 	})
 }
 
-func (s *tagsService) RetireVersion(ctx context.Context, command ports.TransitionTagVersionCommand) (*domain.TagVersion, error) {
-	return s.transitionVersion(ctx, command, func(tv *domain.TagVersion) error {
+func (s *tagsService) RetireVersion(ctx context.Context, cmd commands.TransitionTagVersionCommand) (*domain.TagVersion, error) {
+	return s.transitionVersion(ctx, cmd, func(tv *domain.TagVersion) error {
 		return tv.Retire()
 	})
 }
 
-func (s *tagsService) transitionVersion(ctx context.Context, command ports.TransitionTagVersionCommand, transition func(*domain.TagVersion) error) (*domain.TagVersion, error) {
-	s.logger.DebugContext(ctx, "transitioning tag version", "tenant_id", command.TenantID, "tag_id", command.TagID, "version_id", command.VersionID)
+func (s *tagsService) transitionVersion(ctx context.Context, cmd commands.TransitionTagVersionCommand, transition func(*domain.TagVersion) error) (*domain.TagVersion, error) {
+	s.logger.DebugContext(ctx, "transitioning tag version", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", cmd.VersionID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "tag version transition failed; invalid command", "tenant_id", command.TenantID, "tag_id", command.TagID, "version_id", command.VersionID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "tag version transition failed; invalid command", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, command.TenantID, command.TagID); err != nil {
+	if err := s.isValidAccess(ctx, cmd.TenantID, cmd.TagID); err != nil {
 		return nil, err
 	}
 
-	version, err := s.versionsRepository.FindByID(ctx, command.VersionID)
+	version, err := s.versionsRepository.FindByID(ctx, cmd.VersionID)
 	if err != nil {
-		s.logFindTagVersionByIDError(ctx, err, command.TagID, command.VersionID)
+		s.logFindTagVersionByIDError(ctx, err, cmd.TagID, cmd.VersionID)
 		return nil, err
 	}
 
 	if err := transition(version); err != nil {
-		s.logger.WarnContext(ctx, "tag version transition failed; domain invariant violation", "tenant_id", command.TenantID, "form_id", command.TagID, "version_id", command.VersionID, "error", err)
+		s.logger.WarnContext(ctx, "tag version transition failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.TagID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
 
 	version, err = s.versionsRepository.Upsert(ctx, version)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to persist tag version", "tenant_id", command.TenantID, "tag_id", command.TagID, "version_id", command.VersionID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to persist tag version", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "tag version transitioned", "tenant_id", command.TenantID, "tag_id", command.TagID, "version_id", command.VersionID)
+	s.logger.InfoContext(ctx, "tag version transitioned", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", cmd.VersionID)
 
 	return version, nil
 }

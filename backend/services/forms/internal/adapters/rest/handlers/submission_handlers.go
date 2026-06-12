@@ -7,6 +7,7 @@ import (
 	"sundance/backend/services/forms/internal/adapters/rest/dto"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/services/forms/internal/core/ports/commands"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -115,7 +116,7 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 
 	tenantID := httputil.TenantFromContext(r.Context())
 	idempotencyID := httputil.IdempotencyFromContext(r.Context())
-	command := ports.NewCreateSubmissionCommand(
+	command := commands.NewCreateSubmissionCommand(
 		tenantID,
 		domain.FormID(body.FormID),
 		domain.FormVersionID(body.VersionID),
@@ -203,7 +204,7 @@ func (h *Handlers) GetSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) ReplaySubmission(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	id := chi.URLParam(r, "submissionId")
-	command := ports.NewReplaySubmissionCommand(
+	command := commands.NewReplaySubmissionCommand(
 		tenantID,
 		domain.SubmissionID(id),
 	)

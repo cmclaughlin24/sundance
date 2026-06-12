@@ -5,6 +5,7 @@ import (
 )
 
 type FieldRequest struct {
+	ID         *string                        `json:"id,omitempty" validate:"uuidv7"`
 	Key        string                         `json:"key" validate:"required,max=25"`
 	Name       string                         `json:"name" validate:"required,max=250"`
 	Type       string                         `json:"type" validate:"required"`

@@ -15,6 +15,7 @@ import (
 	"sundance/backend/services/forms/internal/adapters/rest/dto"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/services/forms/internal/core/ports/commands"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -171,13 +172,13 @@ func Test_handlers_GetForm(t *testing.T) {
 func Test_handlers_CreateForm(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, ports.CreateFormCommand) (*domain.Form, error)
+		fn         func(context.Context, commands.CreateFormCommand) (*domain.Form, error)
 		statusCode int
 		body       dto.UpsertFormRequest
 	}{
 		{
 			"should yield CREATED if the request is successful",
-			func(ctx context.Context, command ports.CreateFormCommand) (*domain.Form, error) {
+			func(ctx context.Context, command commands.CreateFormCommand) (*domain.Form, error) {
 				return domain.NewForm(command.TenantID, command.Name, command.Description)
 			},
 			http.StatusCreated,
@@ -185,7 +186,7 @@ func Test_handlers_CreateForm(t *testing.T) {
 		},
 		{
 			"should yield BAD REQUEST if the request body is invalid",
-			func(ctx context.Context, command ports.CreateFormCommand) (*domain.Form, error) {
+			func(ctx context.Context, command commands.CreateFormCommand) (*domain.Form, error) {
 				return nil, nil
 			},
 			http.StatusBadRequest,
@@ -193,7 +194,7 @@ func Test_handlers_CreateForm(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command ports.CreateFormCommand) (*domain.Form, error) {
+			func(ctx context.Context, command commands.CreateFormCommand) (*domain.Form, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -233,14 +234,14 @@ func Test_handlers_CreateForm(t *testing.T) {
 func Test_handlers_UpdateForm(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, ports.UpdateFormCommand) (*domain.Form, error)
+		fn         func(context.Context, commands.UpdateFormCommand) (*domain.Form, error)
 		statusCode int
 		id         string
 		body       dto.UpsertFormRequest
 	}{
 		{
 			"should yield OK if the request is successful",
-			func(ctx context.Context, command ports.UpdateFormCommand) (*domain.Form, error) {
+			func(ctx context.Context, command commands.UpdateFormCommand) (*domain.Form, error) {
 				return domain.NewForm(command.TenantID, command.Name, command.Description)
 			},
 			http.StatusOK,
@@ -249,7 +250,7 @@ func Test_handlers_UpdateForm(t *testing.T) {
 		},
 		{
 			"should yield BAD REQUEST if the request body is invalid",
-			func(ctx context.Context, command ports.UpdateFormCommand) (*domain.Form, error) {
+			func(ctx context.Context, command commands.UpdateFormCommand) (*domain.Form, error) {
 				return nil, nil
 			},
 			http.StatusBadRequest,
@@ -258,7 +259,7 @@ func Test_handlers_UpdateForm(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command ports.UpdateFormCommand) (*domain.Form, error) {
+			func(ctx context.Context, command commands.UpdateFormCommand) (*domain.Form, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -301,13 +302,13 @@ func Test_handlers_UpdateForm(t *testing.T) {
 func Test_handlers_DeleteForm(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, ports.DeleteCommand[domain.FormID]) error
+		fn         func(context.Context, commands.DeleteCommand[domain.FormID]) error
 		statusCode int
 		id         string
 	}{
 		{
 			"should yield NO CONTENT if the request is successful",
-			func(ctx context.Context, command ports.DeleteCommand[domain.FormID]) error {
+			func(ctx context.Context, command commands.DeleteCommand[domain.FormID]) error {
 				return nil
 			},
 			http.StatusNoContent,
@@ -315,7 +316,7 @@ func Test_handlers_DeleteForm(t *testing.T) {
 		},
 		{
 			"should yield NOT FOUND if the resource is not found",
-			func(ctx context.Context, command ports.DeleteCommand[domain.FormID]) error {
+			func(ctx context.Context, command commands.DeleteCommand[domain.FormID]) error {
 				return common.ErrNotFound
 			},
 			http.StatusNotFound,
@@ -323,7 +324,7 @@ func Test_handlers_DeleteForm(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command ports.DeleteCommand[domain.FormID]) error {
+			func(ctx context.Context, command commands.DeleteCommand[domain.FormID]) error {
 				return errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -495,13 +496,13 @@ func Test_handlers_GetFormVersion(t *testing.T) {
 func Test_handlers_CreateFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.CreateFormVersionCommand) (*domain.FormVersion, error)
+		fn         func(context.Context, *commands.CreateFormVersionCommand) (*domain.FormVersion, error)
 		statusCode int
 		body       dto.UpsertFormVersionRequest
 	}{
 		{
 			"should yield CREATED if the request is successful",
-			func(ctx context.Context, command *ports.CreateFormVersionCommand) (*domain.FormVersion, error) {
+			func(ctx context.Context, command *commands.CreateFormVersionCommand) (*domain.FormVersion, error) {
 				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusDraft)
 				return v, nil
 			},
@@ -514,7 +515,7 @@ func Test_handlers_CreateFormVersion(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command *ports.CreateFormVersionCommand) (*domain.FormVersion, error) {
+			func(ctx context.Context, command *commands.CreateFormVersionCommand) (*domain.FormVersion, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -556,13 +557,13 @@ func Test_handlers_CreateFormVersion(t *testing.T) {
 func Test_handlers_UpdateFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, *ports.UpdateFormVersionCommand) (*domain.FormVersion, error)
+		fn         func(context.Context, *commands.UpdateFormVersionCommand) (*domain.FormVersion, error)
 		statusCode int
 		body       dto.UpsertFormVersionRequest
 	}{
 		{
 			"should yield OK if the request is successful",
-			func(ctx context.Context, command *ports.UpdateFormVersionCommand) (*domain.FormVersion, error) {
+			func(ctx context.Context, command *commands.UpdateFormVersionCommand) (*domain.FormVersion, error) {
 				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusDraft)
 				return v, nil
 			},
@@ -575,7 +576,7 @@ func Test_handlers_UpdateFormVersion(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command *ports.UpdateFormVersionCommand) (*domain.FormVersion, error) {
+			func(ctx context.Context, command *commands.UpdateFormVersionCommand) (*domain.FormVersion, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -618,12 +619,12 @@ func Test_handlers_UpdateFormVersion(t *testing.T) {
 func Test_handlers_PublishFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, ports.PublishFormVersionCommand) (*domain.FormVersion, error)
+		fn         func(context.Context, commands.PublishFormVersionCommand) (*domain.FormVersion, error)
 		statusCode int
 	}{
 		{
 			"should yield OK if the request is successful",
-			func(ctx context.Context, command ports.PublishFormVersionCommand) (*domain.FormVersion, error) {
+			func(ctx context.Context, command commands.PublishFormVersionCommand) (*domain.FormVersion, error) {
 				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusActive)
 				return v, nil
 			},
@@ -631,7 +632,7 @@ func Test_handlers_PublishFormVersion(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command ports.PublishFormVersionCommand) (*domain.FormVersion, error) {
+			func(ctx context.Context, command commands.PublishFormVersionCommand) (*domain.FormVersion, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,
@@ -669,12 +670,12 @@ func Test_handlers_PublishFormVersion(t *testing.T) {
 func Test_handlers_RetireFormVersion(t *testing.T) {
 	tests := []struct {
 		name       string
-		fn         func(context.Context, ports.RetireFormVersionCommand) (*domain.FormVersion, error)
+		fn         func(context.Context, commands.RetireFormVersionCommand) (*domain.FormVersion, error)
 		statusCode int
 	}{
 		{
 			"should yield OK if the request is successful",
-			func(ctx context.Context, command ports.RetireFormVersionCommand) (*domain.FormVersion, error) {
+			func(ctx context.Context, command commands.RetireFormVersionCommand) (*domain.FormVersion, error) {
 				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusRetired)
 				return v, nil
 			},
@@ -682,7 +683,7 @@ func Test_handlers_RetireFormVersion(t *testing.T) {
 		},
 		{
 			"should yield INTERNAL SERVER ERROR if the request fails",
-			func(ctx context.Context, command ports.RetireFormVersionCommand) (*domain.FormVersion, error) {
+			func(ctx context.Context, command commands.RetireFormVersionCommand) (*domain.FormVersion, error) {
 				return nil, errors.New("internal error")
 			},
 			http.StatusInternalServerError,

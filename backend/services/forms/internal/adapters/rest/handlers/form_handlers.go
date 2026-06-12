@@ -7,6 +7,7 @@ import (
 	"sundance/backend/services/forms/internal/adapters/rest/dto"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/services/forms/internal/core/ports/commands"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -108,7 +109,7 @@ func (h *Handlers) CreateForm(w http.ResponseWriter, r *http.Request) {
 
 	tenantID := httputil.TenantFromContext(r.Context())
 	resultChan := make(chan result[*domain.Form], 1)
-	command := ports.NewCreateFormCommand(tenantID, body.Name, body.Description)
+	command := commands.NewCreateFormCommand(tenantID, body.Name, body.Description)
 
 	go func() {
 		defer close(resultChan)
@@ -157,7 +158,7 @@ func (h *Handlers) UpdateForm(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
 	resultChan := make(chan result[*domain.Form], 1)
-	command := ports.NewUpdateFormCommand(tenantID, formID, body.Name, body.Description)
+	command := commands.NewUpdateFormCommand(tenantID, formID, body.Name, body.Description)
 
 	go func() {
 		defer close(resultChan)
@@ -198,7 +199,7 @@ func (h *Handlers) UpdateForm(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) DeleteForm(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	formID := h.getFormIDPathValue(r)
-	command := ports.NewDeleteCommand(tenantID, formID)
+	command := commands.NewDeleteCommand(tenantID, formID)
 	resultChan := make(chan result[any], 1)
 
 	go func() {
@@ -332,7 +333,7 @@ func (h *Handlers) CreateFormVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultChan := make(chan result[*domain.FormVersion], 1)
-	command := ports.NewCreateFormVersionCommand(tenantID, formID, pages)
+	command := commands.NewCreateFormVersionCommand(tenantID, formID, pages)
 
 	go func() {
 		defer close(resultChan)
@@ -391,7 +392,7 @@ func (h *Handlers) UpdateFormVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultChan := make(chan result[*domain.FormVersion], 1)
-	command := ports.NewUpdateFormVersionCommand(tenantID, versionID, formID, pages)
+	command := commands.NewUpdateFormVersionCommand(tenantID, versionID, formID, pages)
 
 	go func() {
 		defer close(resultChan)
@@ -437,7 +438,7 @@ func (h *Handlers) PublishFormVersion(w http.ResponseWriter, r *http.Request) {
 	claims := auth.GetClaimsFromContext(r.Context())
 	sub, _ := claims.GetSubject()
 	resultChan := make(chan result[*domain.FormVersion], 1)
-	command := ports.NewPublishFormVersionCommand(tenantID, formID, versionID, sub)
+	command := commands.NewPublishFormVersionCommand(tenantID, formID, versionID, sub)
 
 	go func() {
 		defer close(resultChan)
@@ -483,7 +484,7 @@ func (h *Handlers) RetireFormVersion(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[*domain.FormVersion], 1)
 	claims := auth.GetClaimsFromContext(r.Context())
 	sub, _ := claims.GetSubject()
-	command := ports.NewRetireFormVersionCommand(tenantID, formID, versionID, sub)
+	command := commands.NewRetireFormVersionCommand(tenantID, formID, versionID, sub)
 
 	go func() {
 		defer close(resultChan)

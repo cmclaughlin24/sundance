@@ -8,6 +8,7 @@ import (
 	"sundance/backend/pkg/common"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/services/forms/internal/core/ports/commands"
 )
 
 type submissionsService struct {
@@ -85,75 +86,75 @@ func (s *submissionsService) FindByReferenceID(ctx context.Context, query ports.
 	return submission, nil
 }
 
-func (s *submissionsService) Create(ctx context.Context, command *ports.CreateSubmissionCommand) (*domain.Submission, error) {
-	s.logger.DebugContext(ctx, "creating submission", "tenant_id", command.TenantID)
+func (s *submissionsService) Create(ctx context.Context, cmd *commands.CreateSubmissionCommand) (*domain.Submission, error) {
+	s.logger.DebugContext(ctx, "creating submission", "tenant_id", cmd.TenantID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "submission creation failed; invalid command", "tenant_id", command.TenantID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "submission creation failed; invalid command", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
 	}
 
-	submission, err := s.repository.FindByIdempotencyID(ctx, command.IdempotencyID)
+	submission, err := s.repository.FindByIdempotencyID(ctx, cmd.IdempotencyID)
 	if err != nil && !errors.Is(err, common.ErrNotFound) {
-		s.logger.ErrorContext(ctx, "failed to check submission existence", "tenant_id", command.TenantID, "submission_idempotency_id", command.IdempotencyID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to check submission existence", "tenant_id", cmd.TenantID, "submission_idempotency_id", cmd.IdempotencyID, "error", err)
 		return nil, err
 	}
 
 	if submission != nil {
-		s.logger.InfoContext(ctx, "submission exists", "tenant_id", command.TenantID, "submission_id", submission.ID, "submission_idempotency_id", command.IdempotencyID)
+		s.logger.InfoContext(ctx, "submission exists", "tenant_id", cmd.TenantID, "submission_id", submission.ID, "submission_idempotency_id", cmd.IdempotencyID)
 		return submission, nil
 	}
 
 	submission, err = domain.NewSubmission(
-		command.TenantID,
-		command.FormID,
-		command.VersionID,
-		command.IdempotencyID,
-		command.Values,
+		cmd.TenantID,
+		cmd.FormID,
+		cmd.VersionID,
+		cmd.IdempotencyID,
+		cmd.Values,
 	)
 	if err != nil {
-		s.logger.WarnContext(ctx, "submission creation failed; domain invariant violation", "tenant_id", command.TenantID, "error", err)
+		s.logger.WarnContext(ctx, "submission creation failed; domain invariant violation", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
 	}
 
 	submission, err = s.repository.Upsert(ctx, submission)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to persist submission", "tenant_id", command.TenantID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to persist submission", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "submission created", "tenant_id", command.TenantID, "submission_id", submission.ID)
+	s.logger.InfoContext(ctx, "submission created", "tenant_id", cmd.TenantID, "submission_id", submission.ID)
 
 	return submission, nil
 }
 
-func (s *submissionsService) Replay(ctx context.Context, command ports.ReplaySubmissionCommand) error {
-	s.logger.DebugContext(ctx, "replaying submission", "tenant_id", command.TenantID, "submission_id", command.ID)
+func (s *submissionsService) Replay(ctx context.Context, cmd commands.ReplaySubmissionCommand) error {
+	s.logger.DebugContext(ctx, "replaying submission", "tenant_id", cmd.TenantID, "submission_id", cmd.ID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "submission replay failed; invalid command", "tenant_id", command.TenantID, "submission_id", command.ID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "submission replay failed; invalid command", "tenant_id", cmd.TenantID, "submission_id", cmd.ID, "error", err)
 		return err
 	}
 
-	submission, err := s.repository.FindByID(ctx, command.ID)
+	submission, err := s.repository.FindByID(ctx, cmd.ID)
 	if err != nil {
-		s.logFindByIDError(ctx, err, command.ID)
+		s.logFindByIDError(ctx, err, cmd.ID)
 		return err
 	}
 
-	if submission.TenantID != command.TenantID {
-		s.logger.WarnContext(ctx, "unauthorized form access", "tenant_id", command.TenantID, "submission_id", command.ID)
+	if submission.TenantID != cmd.TenantID {
+		s.logger.WarnContext(ctx, "unauthorized form access", "tenant_id", cmd.TenantID, "submission_id", cmd.ID)
 		return common.ErrUnauthorized
 	}
 
 	submission.Reset()
 
 	if _, err := s.repository.Upsert(ctx, submission); err != nil {
-		s.logger.ErrorContext(ctx, "submission replay failed", "tenant_id", command.TenantID, "submission_id", submission.ID, "error", err)
+		s.logger.ErrorContext(ctx, "submission replay failed", "tenant_id", cmd.TenantID, "submission_id", submission.ID, "error", err)
 		return err
 	}
 
-	s.logger.InfoContext(ctx, "submission replayed", "tenant_id", command.TenantID, "submission_id", submission.ID)
+	s.logger.InfoContext(ctx, "submission replayed", "tenant_id", cmd.TenantID, "submission_id", submission.ID)
 
 	return nil
 }

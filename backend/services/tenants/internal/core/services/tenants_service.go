@@ -51,15 +51,15 @@ func (s *tenantsService) FindByID(ctx context.Context, id domain.TenantID) (*dom
 	return t, nil
 }
 
-func (s *tenantsService) Create(ctx context.Context, command *ports.CreateTenantCommand) (*domain.Tenant, error) {
+func (s *tenantsService) Create(ctx context.Context, cmd *ports.CreateTenantCommand) (*domain.Tenant, error) {
 	s.logger.DebugContext(ctx, "creating tenant")
 
-	if err := command.Validate(); err != nil {
+	if err := cmd.Validate(); err != nil {
 		s.logger.WarnContext(ctx, "tenant creation failed; invalid command", "error", err)
 		return nil, err
 	}
 
-	t, err := domain.NewTenant(command.Name, command.Description)
+	t, err := domain.NewTenant(cmd.Name, cmd.Description)
 	if err != nil {
 		s.logger.WarnContext(ctx, "tenant creation failed; domain invariant violation", "error", err)
 		return nil, err
@@ -76,21 +76,21 @@ func (s *tenantsService) Create(ctx context.Context, command *ports.CreateTenant
 	return t, nil
 }
 
-func (s *tenantsService) Update(ctx context.Context, command *ports.UpdateTenantCommand) (*domain.Tenant, error) {
-	s.logger.DebugContext(ctx, "updating tenant", "tenant_id", command.ID)
+func (s *tenantsService) Update(ctx context.Context, cmd *ports.UpdateTenantCommand) (*domain.Tenant, error) {
+	s.logger.DebugContext(ctx, "updating tenant", "tenant_id", cmd.ID)
 
-	if err := command.Validate(); err != nil {
+	if err := cmd.Validate(); err != nil {
 		s.logger.WarnContext(ctx, "tenant update failed; invalid command", "error", err)
 		return nil, err
 	}
 
-	tenant, err := s.tenantsRepository.FindByID(ctx, command.ID)
+	tenant, err := s.tenantsRepository.FindByID(ctx, cmd.ID)
 	if err != nil {
-		s.logFindByIDError(ctx, err, command.ID)
+		s.logFindByIDError(ctx, err, cmd.ID)
 		return nil, err
 	}
 
-	if err := tenant.Update(command.Name, command.Description); err != nil {
+	if err := tenant.Update(cmd.Name, cmd.Description); err != nil {
 		s.logger.WarnContext(ctx, "tenant update failed; domain invariant violation", "error", err)
 		return nil, err
 	}

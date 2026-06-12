@@ -11,11 +11,11 @@ import (
 type PageID string
 
 var (
-	ErrInvalidPage = errors.New("invalid page")
+	ErrInvalidPage     = errors.New("invalid page")
 	ErrInvalidPageRule = errors.New("invalid page rule type")
 
-	pageRuleTypes = map[RuleType]bool {
-		RuleTypeVisible: true,	
+	pageRuleTypes = map[RuleType]bool{
+		RuleTypeVisible: true,
 	}
 )
 

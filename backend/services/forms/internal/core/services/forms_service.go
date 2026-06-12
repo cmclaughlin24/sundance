@@ -9,6 +9,7 @@ import (
 	"sundance/backend/pkg/database"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/services/forms/internal/core/ports/commands"
 )
 
 type formsService struct {
@@ -68,92 +69,92 @@ func (s *formsService) FindByID(ctx context.Context, query ports.FindByIDQuery[d
 	return form, nil
 }
 
-func (s *formsService) Create(ctx context.Context, command ports.CreateFormCommand) (*domain.Form, error) {
-	s.logger.DebugContext(ctx, "creating form", "tenant_id", command.TenantID)
+func (s *formsService) Create(ctx context.Context, cmd commands.CreateFormCommand) (*domain.Form, error) {
+	s.logger.DebugContext(ctx, "creating form", "tenant_id", cmd.TenantID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "form creation failed; invalid command", "tenant_id", command.TenantID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "form creation failed; invalid command", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
 	}
 
-	form, err := domain.NewForm(command.TenantID, command.Name, command.Description)
+	form, err := domain.NewForm(cmd.TenantID, cmd.Name, cmd.Description)
 	if err != nil {
-		s.logger.WarnContext(ctx, "form creation failed; domain invariant violation", "tenant_id", command.TenantID, "error", err)
+		s.logger.WarnContext(ctx, "form creation failed; domain invariant violation", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
 	}
 
 	form, err = s.formsRepository.Upsert(ctx, form)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to persist form", "tenant_id", command.TenantID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to persist form", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "form created", "tenant_id", command.TenantID, "form_id", form.ID)
+	s.logger.InfoContext(ctx, "form created", "tenant_id", cmd.TenantID, "form_id", form.ID)
 
 	return form, nil
 }
 
-func (s *formsService) Update(ctx context.Context, command ports.UpdateFormCommand) (*domain.Form, error) {
-	s.logger.DebugContext(ctx, "updating form", "tenant_id", command.TenantID, "form_id", command.ID)
+func (s *formsService) Update(ctx context.Context, cmd commands.UpdateFormCommand) (*domain.Form, error) {
+	s.logger.DebugContext(ctx, "updating form", "tenant_id", cmd.TenantID, "form_id", cmd.ID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "form update failed; invalid command", "tenant_id", command.TenantID, "form_id", command.ID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "form update failed; invalid command", "tenant_id", cmd.TenantID, "form_id", cmd.ID, "error", err)
 		return nil, err
 	}
 
-	form, err := s.formsRepository.FindByID(ctx, command.ID)
+	form, err := s.formsRepository.FindByID(ctx, cmd.ID)
 	if err != nil {
-		s.logFindFormByIDError(ctx, err, command.ID)
+		s.logFindFormByIDError(ctx, err, cmd.ID)
 		return nil, err
 	}
 
-	if form.TenantID != command.TenantID {
-		s.logger.WarnContext(ctx, "unauthorized form access", "tenant_id", command.TenantID, "form_id", command.ID)
+	if form.TenantID != cmd.TenantID {
+		s.logger.WarnContext(ctx, "unauthorized form access", "tenant_id", cmd.TenantID, "form_id", cmd.ID)
 		return nil, common.ErrUnauthorized
 	}
 
-	if err := form.Update(command.Name, command.Description); err != nil {
-		s.logger.WarnContext(ctx, "form update failed; domain invariant violation", "tenant_id", command.TenantID, "form_id", command.ID, "error", err)
+	if err := form.Update(cmd.Name, cmd.Description); err != nil {
+		s.logger.WarnContext(ctx, "form update failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.ID, "error", err)
 		return nil, err
 	}
 
 	form, err = s.formsRepository.Upsert(ctx, form)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to persist form", "tenant_id", command.TenantID, "form_id", command.ID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to persist form", "tenant_id", cmd.TenantID, "form_id", cmd.ID, "error", err)
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "form updated", "tenant_id", command.TenantID, "form_id", command.ID)
+	s.logger.InfoContext(ctx, "form updated", "tenant_id", cmd.TenantID, "form_id", cmd.ID)
 
 	return form, nil
 }
 
-func (s *formsService) Delete(ctx context.Context, command ports.DeleteCommand[domain.FormID]) error {
-	s.logger.DebugContext(ctx, "deleting form", "tenant_id", command.TenantID, "form_id", command.ID)
+func (s *formsService) Delete(ctx context.Context, cmd commands.DeleteCommand[domain.FormID]) error {
+	s.logger.DebugContext(ctx, "deleting form", "tenant_id", cmd.TenantID, "form_id", cmd.ID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "form deletion failed; invalid command", "tenant_id", command.TenantID, "form_id", command.ID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "form deletion failed; invalid command", "tenant_id", cmd.TenantID, "form_id", cmd.ID, "error", err)
 		return err
 	}
 
-	if err := s.isValidAccess(ctx, command.TenantID, command.ID); err != nil {
+	if err := s.isValidAccess(ctx, cmd.TenantID, cmd.ID); err != nil {
 		return err
 	}
 
-	hasActive, err := s.hasActiveVersion(ctx, command.ID)
+	hasActive, err := s.hasActiveVersion(ctx, cmd.ID)
 	if err != nil {
 		return err
 	} else if hasActive {
-		s.logger.WarnContext(ctx, "form deletion failed; form has active version", "tenant_id", command.TenantID, "form_id", command.ID)
+		s.logger.WarnContext(ctx, "form deletion failed; form has active version", "tenant_id", cmd.TenantID, "form_id", cmd.ID)
 		return domain.ErrFormHasActiveVersion
 	}
 
-	if err := s.formsRepository.Delete(ctx, command.ID); err != nil {
-		s.logger.ErrorContext(ctx, "failed to delete form", "tenant_id", command.TenantID, "form_id", command.ID, "error", err)
+	if err := s.formsRepository.Delete(ctx, cmd.ID); err != nil {
+		s.logger.ErrorContext(ctx, "failed to delete form", "tenant_id", cmd.TenantID, "form_id", cmd.ID, "error", err)
 		return err
 	}
 
-	s.logger.InfoContext(ctx, "form deleted", "tenant_id", command.TenantID, "form_id", command.ID)
+	s.logger.InfoContext(ctx, "form deleted", "tenant_id", cmd.TenantID, "form_id", cmd.ID)
 
 	return nil
 }
@@ -200,157 +201,157 @@ func (s *formsService) FindVersion(ctx context.Context, query ports.FindFormVers
 	return version, nil
 }
 
-func (s *formsService) CreateVersion(ctx context.Context, command *ports.CreateFormVersionCommand) (*domain.FormVersion, error) {
-	s.logger.DebugContext(ctx, "creating version", "tenant_id", command.TenantID, "form_id", command.FormID)
+func (s *formsService) CreateVersion(ctx context.Context, cmd *commands.CreateFormVersionCommand) (*domain.FormVersion, error) {
+	s.logger.DebugContext(ctx, "creating version", "tenant_id", cmd.TenantID, "form_id", cmd.FormID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "version creation failed; invalid command", "tenant_id", command.TenantID, "form_id", command.FormID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "version creation failed; invalid command", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "error", err)
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, command.TenantID, command.FormID); err != nil {
+	if err := s.isValidAccess(ctx, cmd.TenantID, cmd.FormID); err != nil {
 		return nil, err
 	}
 
 	txCtx, err := s.database.BeginTx(ctx)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to begin transaction", "tenant_id", command.TenantID, "form_id", command.FormID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to begin transaction", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "error", err)
 		return nil, err
 	}
 
 	defer s.database.RollbackTx(txCtx)
 
-	versionNum, err := s.versionsRepository.FindNextVersionNumber(txCtx, command.FormID)
+	versionNum, err := s.versionsRepository.FindNextVersionNumber(txCtx, cmd.FormID)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to find next version number", "tenant_id", command.TenantID, "form_id", command.FormID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to find next version number", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "error", err)
 		return nil, err
 	}
 
-	version, err := domain.NewFormVersion(command.FormID, versionNum, domain.FormVersionStatusDraft)
+	version, err := domain.NewFormVersion(cmd.FormID, versionNum, domain.FormVersionStatusDraft)
 	if err != nil {
-		s.logger.WarnContext(ctx, "version creation failed; domain invariant violation", "tenant_id", command.TenantID, "form_id", command.FormID, "error", err)
+		s.logger.WarnContext(ctx, "version creation failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "error", err)
 		return nil, err
 	}
 
-	if err := version.AddPages(command.Pages...); err != nil {
-		s.logger.WarnContext(ctx, "version creation failed; domain invariant violation", "tenant_id", command.TenantID, "form_id", command.FormID, "error", err)
+	if err := version.AddPages(cmd.Pages...); err != nil {
+		s.logger.WarnContext(ctx, "version creation failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "error", err)
 		return nil, err
 	}
 
 	version, err = s.versionsRepository.Upsert(txCtx, version)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to persist version", "tenant_id", command.TenantID, "form_id", command.FormID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to persist version", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "error", err)
 		return nil, err
 	}
 
 	if err := s.database.CommitTx(txCtx); err != nil {
-		s.logger.ErrorContext(ctx, "failed to commit version creation transaction", "tenant_id", command.TenantID, "form_id", command.FormID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to commit version creation transaction", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "error", err)
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "version created", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", version.ID)
+	s.logger.InfoContext(ctx, "version created", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", version.ID)
 
 	return version, nil
 }
 
-func (s *formsService) UpdateVersion(ctx context.Context, command *ports.UpdateFormVersionCommand) (*domain.FormVersion, error) {
-	s.logger.DebugContext(ctx, "updating version", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID)
+func (s *formsService) UpdateVersion(ctx context.Context, cmd *commands.UpdateFormVersionCommand) (*domain.FormVersion, error) {
+	s.logger.DebugContext(ctx, "updating version", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "version update failed; invalid command", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "version update failed; invalid command", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, command.TenantID, command.FormID); err != nil {
+	if err := s.isValidAccess(ctx, cmd.TenantID, cmd.FormID); err != nil {
 		return nil, err
 	}
 
-	version, err := s.versionsRepository.FindByID(ctx, command.VersionID)
+	version, err := s.versionsRepository.FindByID(ctx, cmd.VersionID)
 	if err != nil {
-		s.logFindVersionByIDError(ctx, err, command.FormID, command.VersionID)
+		s.logFindVersionByIDError(ctx, err, cmd.FormID, cmd.VersionID)
 		return nil, err
 	}
 
-	if err := version.ReplacePages(command.Pages...); err != nil {
-		s.logger.WarnContext(ctx, "version update failed; domain invariant violation", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID, "error", err)
+	if err := version.ReplacePages(cmd.Pages...); err != nil {
+		s.logger.WarnContext(ctx, "version update failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
 
 	version, err = s.versionsRepository.Upsert(ctx, version)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to persist version", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to persist version", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "version updated", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID)
+	s.logger.InfoContext(ctx, "version updated", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID)
 
 	return version, nil
 }
 
-func (s *formsService) PublishVersion(ctx context.Context, command ports.PublishFormVersionCommand) (*domain.FormVersion, error) {
-	s.logger.DebugContext(ctx, "publishing version", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID)
+func (s *formsService) PublishVersion(ctx context.Context, cmd commands.PublishFormVersionCommand) (*domain.FormVersion, error) {
+	s.logger.DebugContext(ctx, "publishing version", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "version publish failed; invalid command", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "version publish failed; invalid command", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, command.TenantID, command.FormID); err != nil {
+	if err := s.isValidAccess(ctx, cmd.TenantID, cmd.FormID); err != nil {
 		return nil, err
 	}
 
-	version, err := s.versionsRepository.FindByID(ctx, command.VersionID)
+	version, err := s.versionsRepository.FindByID(ctx, cmd.VersionID)
 	if err != nil {
-		s.logFindVersionByIDError(ctx, err, command.FormID, command.VersionID)
+		s.logFindVersionByIDError(ctx, err, cmd.FormID, cmd.VersionID)
 		return nil, err
 	}
 
-	if err := version.Publish(command.UserID); err != nil {
-		s.logger.WarnContext(ctx, "version publish failed; domain invariant violation", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID, "error", err)
+	if err := version.Publish(cmd.UserID); err != nil {
+		s.logger.WarnContext(ctx, "version publish failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
 
 	version, err = s.versionsRepository.Upsert(ctx, version)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to persist version", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to persist version", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "version published", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID)
+	s.logger.InfoContext(ctx, "version published", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID)
 
 	return version, nil
 }
 
-func (s *formsService) RetireVersion(ctx context.Context, command ports.RetireFormVersionCommand) (*domain.FormVersion, error) {
-	s.logger.DebugContext(ctx, "retiring version", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID)
+func (s *formsService) RetireVersion(ctx context.Context, cmd commands.RetireFormVersionCommand) (*domain.FormVersion, error) {
+	s.logger.DebugContext(ctx, "retiring version", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID)
 
-	if err := command.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "version retire failed; invalid command", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID, "error", err)
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "version retire failed; invalid command", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, command.TenantID, command.FormID); err != nil {
+	if err := s.isValidAccess(ctx, cmd.TenantID, cmd.FormID); err != nil {
 		return nil, err
 	}
 
-	version, err := s.versionsRepository.FindByID(ctx, command.VersionID)
+	version, err := s.versionsRepository.FindByID(ctx, cmd.VersionID)
 	if err != nil {
-		s.logFindVersionByIDError(ctx, err, command.FormID, command.VersionID)
+		s.logFindVersionByIDError(ctx, err, cmd.FormID, cmd.VersionID)
 		return nil, err
 	}
 
-	if err := version.Retire(command.UserID); err != nil {
-		s.logger.WarnContext(ctx, "version retire failed; domain invariant violation", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID, "error", err)
+	if err := version.Retire(cmd.UserID); err != nil {
+		s.logger.WarnContext(ctx, "version retire failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
 
 	version, err = s.versionsRepository.Upsert(ctx, version)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to persist version", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to persist version", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
 
-	s.logger.InfoContext(ctx, "version retired", "tenant_id", command.TenantID, "form_id", command.FormID, "version_id", command.VersionID)
+	s.logger.InfoContext(ctx, "version retired", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID)
 
 	return version, nil
 }

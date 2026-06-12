@@ -45,13 +45,13 @@ func (s *dataSourcesJobService) Find(ctx context.Context, query *ports.FindDataS
 	return sources, nil
 }
 
-func (s *dataSourcesJobService) Process(ctx context.Context, command *ports.ProcessDataSourceJobCommand) error {
-	if err := command.Validate(); err != nil {
+func (s *dataSourcesJobService) Process(ctx context.Context, cmd *ports.ProcessDataSourceJobCommand) error {
+	if err := cmd.Validate(); err != nil {
 		s.logger.WarnContext(ctx, "data source job process failed; invalid command", "error", err)
 		return err
 	}
 
-	ds := command.DataSource
+	ds := cmd.DataSource
 	s.logger.DebugContext(ctx, "processing data source job", "data_source_id", ds.ID)
 
 	attr, err := domain.GetDataSourceAttributes[domain.ScheduledDataSourceAttributes](ds.Attributes)

@@ -5,7 +5,8 @@ import (
 )
 
 type PageRequest struct {
-	Key      string           `json:"key" validate:"required,max=25"`
+	ID       *string          `json:"id,omitempty" validate:"uuidv7"`
+	Key      string           `json:"key" validate:"required,max=50"`
 	Name     string           `json:"name" validate:"required,max=75"`
 	Position float32          `json:"position" validate:"gte=0,lte=10"`
 	Sections []SectionRequest `json:"sections" validate:"dive"`

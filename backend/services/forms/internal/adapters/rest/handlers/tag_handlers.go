@@ -6,6 +6,7 @@ import (
 	"sundance/backend/services/forms/internal/adapters/rest/dto"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
+	"sundance/backend/services/forms/internal/core/ports/commands"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -108,7 +109,7 @@ func (h *Handlers) CreateTag(w http.ResponseWriter, r *http.Request) {
 
 	tenantID := httputil.TenantFromContext(r.Context())
 	resultChan := make(chan result[*domain.Tag], 1)
-	command := ports.NewCreateTagCommand(tenantID, body.Key, body.DisplayName)
+	command := commands.NewCreateTagCommand(tenantID, body.Key, body.DisplayName)
 
 	go func() {
 		defer close(resultChan)
@@ -158,7 +159,7 @@ func (h *Handlers) UpdateTag(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
 	resultChan := make(chan result[*domain.Tag], 1)
-	command := ports.NewUpdateTagCommand(tenantID, tagID, body.DisplayName)
+	command := commands.NewUpdateTagCommand(tenantID, tagID, body.DisplayName)
 
 	go func() {
 		defer close(resultChan)
@@ -200,7 +201,7 @@ func (h *Handlers) UpdateTag(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) DeleteTag(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
-	command := ports.NewDeleteCommand(tenantID, tagID)
+	command := commands.NewDeleteCommand(tenantID, tagID)
 	resultChan := make(chan result[any], 1)
 
 	go func() {
@@ -330,7 +331,7 @@ func (h *Handlers) CreateTagVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultChan := make(chan result[*domain.TagVersion], 1)
-	command := ports.NewCreateTagVersionCommand(tenantID, tagID, body.Type)
+	command := commands.NewCreateTagVersionCommand(tenantID, tagID, body.Type)
 
 	go func() {
 		defer close(resultChan)
@@ -373,7 +374,7 @@ func (h *Handlers) PublishTagVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
 	versionID := h.getTagVersionIDPathValue(r)
-	command := ports.NewTransitionTagVersionCommand(tenantID, tagID, versionID)
+	command := commands.NewTransitionTagVersionCommand(tenantID, tagID, versionID)
 	resultChan := make(chan result[*domain.TagVersion], 1)
 
 	go func() {
@@ -417,7 +418,7 @@ func (h *Handlers) DeprecateTagVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
 	versionID := h.getTagVersionIDPathValue(r)
-	command := ports.NewTransitionTagVersionCommand(tenantID, tagID, versionID)
+	command := commands.NewTransitionTagVersionCommand(tenantID, tagID, versionID)
 	resultChan := make(chan result[*domain.TagVersion], 1)
 
 	go func() {
@@ -461,7 +462,7 @@ func (h *Handlers) RetireTagVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
 	versionID := h.getTagVersionIDPathValue(r)
-	command := ports.NewTransitionTagVersionCommand(tenantID, tagID, versionID)
+	command := commands.NewTransitionTagVersionCommand(tenantID, tagID, versionID)
 	resultChan := make(chan result[*domain.TagVersion], 1)
 
 	go func() {
