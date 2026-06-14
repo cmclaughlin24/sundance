@@ -21,7 +21,7 @@ type PingFedTokenValidator struct {
 }
 
 func NewPingFedTokenValidator(opts ...AuthenticatorOption) (*PingFedTokenValidator, error) {
-	settings := make(autenticatorSettings)
+	settings := make(authenticatorSettings)
 
 	for _, opt := range opts {
 		opt(settings)

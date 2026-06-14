@@ -2,7 +2,6 @@ package auth
 
 import (
 	"net/http"
-	"reflect"
 
 	"sundance/backend/pkg/common/httputil"
 )
@@ -30,9 +29,7 @@ func NewMiddleware(authenticators ...Authenticator) func(http.Handler) http.Hand
 					continue
 				}
 
-				valOfClaims := reflect.ValueOf(claims)
-
-				if valOfClaims.IsValid() && !valOfClaims.IsZero() {
+				if claims != nil {
 					r := r.WithContext(SetClaimsContext(r.Context(), claims))
 					next.ServeHTTP(w, r)
 					return
