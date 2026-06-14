@@ -16,8 +16,8 @@ var (
 	ErrVersionStatus = errors.New("invalid version status")
 )
 
-type ruleGetter interface {
-	GetRule(domain.RuleType) *domain.Rule
+type ruleByTypeGetter interface {
+	GetRuleByType(domain.RuleType) *domain.Rule
 }
 
 type submissionJobsService struct {
@@ -189,8 +189,8 @@ func (s *submissionJobsService) validateField(ctx context.Context, field *domain
 	return nil
 }
 
-func (s *submissionJobsService) isRequired(ctx context.Context, rg ruleGetter, evalCtx ports.RuleEvaluationContext) (*bool, error) {
-	rule := rg.GetRule(domain.RuleTypeRequired)
+func (s *submissionJobsService) isRequired(ctx context.Context, rg ruleByTypeGetter, evalCtx ports.RuleEvaluationContext) (*bool, error) {
+	rule := rg.GetRuleByType(domain.RuleTypeRequired)
 	if rule == nil {
 		return nil, nil
 	}
@@ -203,8 +203,8 @@ func (s *submissionJobsService) isRequired(ctx context.Context, rg ruleGetter, e
 	return &result, nil
 }
 
-func (s *submissionJobsService) shouldValidate(ctx context.Context, rg ruleGetter, evalCtx ports.RuleEvaluationContext) (bool, error) {
-	rule := rg.GetRule(domain.RuleTypeVisible)
+func (s *submissionJobsService) shouldValidate(ctx context.Context, rg ruleByTypeGetter, evalCtx ports.RuleEvaluationContext) (bool, error) {
+	rule := rg.GetRuleByType(domain.RuleTypeVisible)
 
 	if rule == nil {
 		return true, nil

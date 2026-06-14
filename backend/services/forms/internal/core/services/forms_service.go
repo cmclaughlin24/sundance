@@ -233,7 +233,14 @@ func (s *formsService) CreateVersion(ctx context.Context, cmd *commands.CreateFo
 		return nil, err
 	}
 
-	if err := version.AddPages(cmd.Pages...); err != nil {
+	mapper := newFormDefinitionMapper(cmd.PagesData)
+	pages, err := mapper.createFormDefinition()
+	if err != nil {
+		s.logger.WarnContext(ctx, "version creation failed; invalid form definition", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "error", err)
+		return nil, err
+	}
+
+	if err := version.AddPages(pages...); err != nil {
 		s.logger.WarnContext(ctx, "version creation failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "error", err)
 		return nil, err
 	}
@@ -272,7 +279,14 @@ func (s *formsService) UpdateVersion(ctx context.Context, cmd *commands.UpdateFo
 		return nil, err
 	}
 
-	if err := version.ReplacePages(cmd.Pages...); err != nil {
+	mapper := newFormDefinitionMapper(cmd.PagesData)
+	pages, err := mapper.updateFormDefinition(version)
+	if err != nil {
+		s.logger.WarnContext(ctx, "version update failed; invalid form definition", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
+		return nil, err
+	}
+
+	if err := version.ReplacePages(pages...); err != nil {
 		s.logger.WarnContext(ctx, "version update failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}

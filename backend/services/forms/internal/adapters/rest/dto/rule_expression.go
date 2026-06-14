@@ -1,6 +1,9 @@
 package dto
 
-import "sundance/backend/services/forms/internal/core/domain"
+import (
+	"sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/ports/commands"
+)
 
 type RuleExpressionRequest struct {
 	FieldKey         string  `json:"fieldKey" validate:"required"`
@@ -18,28 +21,20 @@ type RuleExpressionResponse struct {
 	Position         float32 `json:"position"`
 }
 
-func requestToRuleExpression(dto *RuleExpressionRequest) (*domain.RuleExpression, error) {
-	return domain.NewRuleExpression(
-		dto.FieldKey,
-		domain.ExprOperator(dto.Operator),
-		dto.Value,
-		(*domain.JoinOperator)(dto.JoinWithPrevious),
-		dto.Position,
-	)
-}
+func requestsToRuleExpressionData(dtos []*RuleExpressionRequest) []*commands.RuleExpressionData {
+	expressions := make([]*commands.RuleExpressionData, 0, len(dtos))
 
-func requestsToRuleExpressions(dtos []*RuleExpressionRequest) ([]*domain.RuleExpression, error) {
-	expressions := make([]*domain.RuleExpression, 0, len(dtos))
 	for _, dto := range dtos {
-		e, err := requestToRuleExpression(dto)
-		if err != nil {
-			return nil, err
-		}
-
-		expressions = append(expressions, e)
+		expressions = append(expressions, &commands.RuleExpressionData{
+			FieldKey:         dto.FieldKey,
+			Operator:         dto.Operator,
+			Value:            dto.Value,
+			JoinWithPrevious: dto.JoinWithPrevious,
+			Position:         dto.Position,
+		})
 	}
 
-	return expressions, nil
+	return expressions
 }
 
 func ruleExpressionsToResponse(expressions []*domain.RuleExpression) []*RuleExpressionResponse {

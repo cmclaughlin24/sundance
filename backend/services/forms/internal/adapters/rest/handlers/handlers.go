@@ -7,6 +7,7 @@ import (
 	"sundance/backend/pkg/common/httputil"
 	"sundance/backend/services/forms/internal/core"
 	"sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/services"
 )
 
 type result[T any] struct {
@@ -55,5 +56,7 @@ func isBadRequest(err error) bool {
 		errors.Is(err, domain.ErrInvalidPage) ||
 		errors.Is(err, domain.ErrInvalidSection) ||
 		errors.Is(err, domain.ErrInvalidExprOperator) ||
-		errors.Is(err, domain.ErrInvalidJoinOperator)
+		errors.Is(err, domain.ErrInvalidJoinOperator) ||
+		errors.Is(err, services.ErrDuplicateFormKey) ||
+		errors.Is(err, services.ErrInvalidExpressionKey)
 }

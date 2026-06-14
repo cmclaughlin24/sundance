@@ -89,7 +89,7 @@ func (b *withRules) GetRules() map[RuleType]*Rule {
 	return b.rules
 }
 
-func (b *withRules) GetRule(ruleType RuleType) *Rule {
+func (b *withRules) GetRuleByType(ruleType RuleType) *Rule {
 	r, ok := b.rules[ruleType]
 
 	if !ok {
@@ -97,6 +97,16 @@ func (b *withRules) GetRule(ruleType RuleType) *Rule {
 	}
 
 	return r
+}
+
+func (b *withRules) GetRule(ruleID RuleID) *Rule {
+	for _, rule := range b.rules {
+		if ruleID == rule.ID {
+			return rule
+		}
+	}
+
+	return nil
 }
 
 func (b *withRules) SetRules(rules ...*Rule) error {
@@ -113,6 +123,19 @@ func (b *withRules) SetRules(rules ...*Rule) error {
 
 		b.rules[rule.Type] = rule
 	}
+
+	return nil
+}
+
+func (b *withRules) ReplaceRules(rules ...*Rule) error {
+	cpy := *b
+	cpy.rules = make(map[RuleType]*Rule)
+
+	if err := cpy.SetRules(rules...); err != nil {
+		return err
+	}
+
+	*b = cpy
 
 	return nil
 }

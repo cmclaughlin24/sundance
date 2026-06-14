@@ -2,10 +2,11 @@ package dto
 
 import (
 	"sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/ports/commands"
 )
 
 type SectionRequest struct {
-	ID       *string        `json:"id,omitempty" validate:"uuidv7"`
+	ID       *string        `json:"id,omitempty" validate:"omitempty,uuidv7"`
 	Key      string         `json:"key" validate:"required,max=25"`
 	Name     string         `json:"name" validate:"required,max=75"`
 	Position float32        `json:"position" validate:"gte=0,lte=10"`
@@ -22,38 +23,28 @@ type SectionResponse struct {
 	Rules    []*RuleResponse  `json:"rules"`
 }
 
-func RequestToSection(dto SectionRequest) (*domain.Section, error) {
-	fields := make([]*domain.Field, 0, len(dto.Fields))
+func RequestToSectionData(dto SectionRequest) (commands.SectionData, error) {
+	fields := make([]commands.FieldData, 0, len(dto.Fields))
 
 	for _, f := range dto.Fields {
-		field, err := RequestToField(f)
-
+		field, err := RequestToFieldData(f)
 		if err != nil {
-			return nil, err
+			return commands.SectionData{}, err
 		}
 
 		fields = append(fields, field)
 	}
 
-	rules, err := RequestsToRules(dto.Rules)
-	if err != nil {
-		return nil, err
-	}
+	rules := RequestsToRuleData(dto.Rules)
 
-	section, err := domain.NewSection(dto.Key, dto.Name, dto.Position)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := section.AddFields(fields...); err != nil {
-		return nil, err
-	}
-
-	if err := section.SetRules(rules...); err != nil {
-		return nil, err
-	}
-
-	return section, nil
+	return commands.SectionData{
+		ID:         dto.ID,
+		Key:        dto.Key,
+		Name:       dto.Name,
+		Position:   dto.Position,
+		FieldsData: fields,
+		Rules:      rules,
+	}, nil
 }
 
 func SectionToResponse(section *domain.Section) *SectionResponse {

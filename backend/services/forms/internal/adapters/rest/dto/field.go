@@ -2,10 +2,11 @@ package dto
 
 import (
 	"sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/ports/commands"
 )
 
 type FieldRequest struct {
-	ID         *string                        `json:"id,omitempty" validate:"uuidv7"`
+	ID         *string                        `json:"id,omitempty" validate:"omitempty,uuidv7"`
 	Key        string                         `json:"key" validate:"required,max=25"`
 	Name       string                         `json:"name" validate:"required,max=250"`
 	Type       string                         `json:"type" validate:"required"`
@@ -26,40 +27,25 @@ type FieldResponse struct {
 	Rules      []*RuleResponse            `json:"rules"`
 }
 
-func RequestToField(dto FieldRequest) (*domain.Field, error) {
+func RequestToFieldData(dto FieldRequest) (commands.FieldData, error) {
 	attributes, err := attributesFromRequest(domain.FieldType(dto.Type), dto.Attributes)
-
 	if err != nil {
-		return nil, err
+		return commands.FieldData{}, err
 	}
 
-	rules, err := RequestsToRules(dto.Rules)
-	if err != nil {
-		return nil, err
-	}
+	rules := RequestsToRuleData(dto.Rules)
+	tags := requestToFieldTagMappingData(dto.Tags)
 
-	f, err := domain.NewField(
-		dto.Key,
-		dto.Name,
-		domain.FieldType(dto.Type),
-		attributes,
-		dto.Position,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if err := f.SetRules(rules...); err != nil {
-		return nil, err
-	}
-
-	configs := requestToFieldTagMappingConfigs(dto.Tags)
-	if err := f.AddTags(configs...); err != nil {
-		return nil, err
-	}
-
-	return f, nil
+	return commands.FieldData{
+		ID:         dto.ID,
+		Key:        dto.Key,
+		Name:       dto.Name,
+		Type:       dto.Type,
+		Position:   dto.Position,
+		Attributes: attributes,
+		Tags:       tags,
+		Rules:      rules,
+	}, nil
 }
 
 func FieldToResponse(field *domain.Field) *FieldResponse {

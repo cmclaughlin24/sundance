@@ -2,10 +2,11 @@ package dto
 
 import (
 	"sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/ports/commands"
 )
 
 type PageRequest struct {
-	ID       *string          `json:"id,omitempty" validate:"uuidv7"`
+	ID       *string          `json:"id,omitempty" validate:"omitempty,uuidv7"`
 	Key      string           `json:"key" validate:"required,max=50"`
 	Name     string           `json:"name" validate:"required,max=75"`
 	Position float32          `json:"position" validate:"gte=0,lte=10"`
@@ -22,11 +23,11 @@ type PageResponse struct {
 	Rules    []*RuleResponse    `json:"rules"`
 }
 
-func RequestToPages(dto UpsertFormVersionRequest) ([]*domain.Page, error) {
-	pages := make([]*domain.Page, 0, len(dto.Pages))
+func RequestToPages(dto UpsertFormVersionRequest) ([]commands.PageData, error) {
+	pages := make([]commands.PageData, 0, len(dto.Pages))
 
 	for _, p := range dto.Pages {
-		page, err := RequestToPage(p)
+		page, err := RequestToPageData(p)
 
 		if err != nil {
 			return nil, err
@@ -38,38 +39,29 @@ func RequestToPages(dto UpsertFormVersionRequest) ([]*domain.Page, error) {
 	return pages, nil
 }
 
-func RequestToPage(dto PageRequest) (*domain.Page, error) {
-	sections := make([]*domain.Section, 0, len(dto.Sections))
+func RequestToPageData(dto PageRequest) (commands.PageData, error) {
+	sections := make([]commands.SectionData, 0, len(dto.Sections))
 
 	for _, s := range dto.Sections {
-		section, err := RequestToSection(s)
+		section, err := RequestToSectionData(s)
 
 		if err != nil {
-			return nil, err
+			return commands.PageData{}, err
 		}
 
 		sections = append(sections, section)
 	}
 
-	rules, err := RequestsToRules(dto.Rules)
-	if err != nil {
-		return nil, err
-	}
+	rules := RequestsToRuleData(dto.Rules)
 
-	page, err := domain.NewPage(dto.Key, dto.Name, dto.Position)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := page.AddSections(sections...); err != nil {
-		return nil, err
-	}
-
-	if err := page.SetRules(rules...); err != nil {
-		return nil, err
-	}
-
-	return page, nil
+	return commands.PageData{
+		ID:       dto.ID,
+		Key:      dto.Key,
+		Name:     dto.Name,
+		Position: dto.Position,
+		SectionsData: sections,
+		Rules:    rules,
+	}, nil
 }
 
 func PageToResponse(page *domain.Page) *PageResponse {
