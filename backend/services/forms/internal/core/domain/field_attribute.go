@@ -1,6 +1,8 @@
 package domain
 
-import "errors"
+import (
+	"errors"
+)
 
 var (
 	ErrFieldAttributeMismatch = errors.New("field type and attributes mismatch")
@@ -10,6 +12,7 @@ type FieldAttributes interface {
 	GetIsRequired() bool
 	SetIsRequired(bool)
 	GetIsReadOnly() bool
+	GetReferencedKeys() []string
 }
 
 type BaseFieldAttributes struct {
@@ -23,6 +26,10 @@ func (a BaseFieldAttributes) GetIsRequired() bool {
 
 func (a BaseFieldAttributes) GetIsReadOnly() bool {
 	return a.IsReadOnly
+}
+
+func (a *BaseFieldAttributes) GetReferencedKeys() []string {
+	return make([]string, 0)
 }
 
 func (a *BaseFieldAttributes) SetIsRequired(required bool) {
@@ -46,9 +53,15 @@ type NumberFieldAttributes struct {
 
 type SelectFieldAttributes struct {
 	BaseFieldAttributes
-	Multiple    bool
-	MinSelected *int
-	MaxSelected *int
+	Data          []any
+	DataSourceRef *DataSourceRef
+	Multiple      bool
+	MinSelected   *int
+	MaxSelected   *int
+}
+
+func (a *SelectFieldAttributes) GetReferencedKeys() []string {
+	return getReferencedKeys(a.DataSourceRef)
 }
 
 type CheckboxFieldAttributes struct {
