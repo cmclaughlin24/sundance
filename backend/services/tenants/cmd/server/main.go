@@ -102,7 +102,7 @@ func main() {
 	case err := <-serverErrChan:
 		app.Logger.Error(fmt.Sprintf("server error: %v\n", err))
 	case sig := <-signalChan:
-		app.Logger.Error(fmt.Sprintf("application received shutdown signal: %v\n", sig))
+		app.Logger.Info(fmt.Sprintf("application received shutdown signal: %v\n", sig))
 	}
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)

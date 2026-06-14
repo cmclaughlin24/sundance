@@ -42,6 +42,6 @@ var isValidBindingSourceType = validate.NewTypeValidator([]BindingSourceType{
 })
 
 type DataSourceRef struct {
-	DataSourceId string
+	DataSourceID string
 	Bindings     map[string]BindingSource
 }

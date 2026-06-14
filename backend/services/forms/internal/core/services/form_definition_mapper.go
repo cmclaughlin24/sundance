@@ -125,7 +125,7 @@ func (m *formDefinitionMapper) updatePage(p commands.PageData, page *domain.Page
 			section := page.GetSection(domain.SectionID(*s.ID))
 
 			if section == nil {
-				return fmt.Errorf("%w; page id=%s", common.ErrNotFound, *p.ID)
+				return fmt.Errorf("%w; section id=%s", common.ErrNotFound, *s.ID)
 			}
 
 			if err := m.updateSection(s, section); err != nil {

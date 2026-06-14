@@ -1743,6 +1743,9 @@ const docTemplate = `{
                 "attributes": {
                     "type": "object"
                 },
+                "id": {
+                    "type": "string"
+                },
                 "key": {
                     "type": "string",
                     "maxLength": 25
@@ -1915,9 +1918,12 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
+                "id": {
+                    "type": "string"
+                },
                 "key": {
                     "type": "string",
-                    "maxLength": 25
+                    "maxLength": 50
                 },
                 "name": {
                     "type": "string",
@@ -2024,6 +2030,9 @@ const docTemplate = `{
                         "$ref": "#/definitions/RuleExpressionRequest"
                     }
                 },
+                "id": {
+                    "type": "string"
+                },
                 "type": {
                     "type": "string"
                 }
@@ -2071,6 +2080,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/FieldRequest"
                     }
+                },
+                "id": {
+                    "type": "string"
                 },
                 "key": {
                     "type": "string",

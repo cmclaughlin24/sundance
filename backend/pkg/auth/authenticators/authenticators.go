@@ -24,24 +24,24 @@ var (
 	}
 )
 
-type autenticatorSettings map[settingsKey]string
+type authenticatorSettings map[settingsKey]string
 
-type AuthenticatorOption func(autenticatorSettings)
+type AuthenticatorOption func(authenticatorSettings)
 
 func WithAudience(audience string) AuthenticatorOption {
-	return func(as autenticatorSettings) {
+	return func(as authenticatorSettings) {
 		as[settingsKeyAudience] = audience
 	}
 }
 
 func WithIssuer(issuer string) AuthenticatorOption {
-	return func(as autenticatorSettings) {
+	return func(as authenticatorSettings) {
 		as[settingsKeyIssuer] = issuer
 	}
 }
 
 func WithJWK(jwk string) AuthenticatorOption {
-	return func(as autenticatorSettings) {
+	return func(as authenticatorSettings) {
 		as[settingsKeyJWK] = jwk
 	}
 }
