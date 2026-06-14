@@ -5,8 +5,10 @@ import (
 	"strings"
 	"testing"
 
+	"sundance/backend/pkg/auth"
 	"sundance/backend/services/forms/internal/adapters/rest"
 	"sundance/backend/services/forms/internal/core"
+
 	"github.com/go-chi/chi/v5"
 )
 
@@ -28,7 +30,7 @@ func TestNewRoutes(t *testing.T) {
 		{"/api/v1/forms/{formId}/versions/{versionId}/publish", http.MethodPost},
 		{"/api/v1/forms/{formId}/versions/{versionId}/retire", http.MethodPost},
 	}
-	mux := rest.NewRoutes(&core.Application{}, "")
+	mux := rest.NewRoutes(&core.Application{}, "", auth.AuthOptions{})
 
 	for _, r := range routes {
 		// Act/Assert.

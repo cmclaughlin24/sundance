@@ -66,6 +66,41 @@ func (p *Page) GetSections() []*Section {
 	return p.sections
 }
 
+func (p *Page) GetSection(sectionID SectionID) *Section {
+	idx := slices.IndexFunc(p.sections, func(s *Section) bool {
+		return s.ID == sectionID
+	})
+
+	if idx == -1 {
+		return nil
+	}
+
+	return p.sections[idx]
+}
+
+func (p *Page) Update(key, name string, position float32) error {
+	if p == nil {
+		return ErrInvalidPage
+	}
+
+	if !isValidPosition(position) {
+		return ErrInvalidPosition
+	}
+
+	cpy := *p
+	cpy.Key = key
+	cpy.Name = name
+	cpy.position = position
+
+	if err := validate.ValidateStruct(cpy); err != nil {
+		return err
+	}
+
+	*p = cpy
+
+	return nil
+}
+
 func (p *Page) AddSections(sections ...*Section) error {
 	if p == nil {
 		return ErrInvalidPage

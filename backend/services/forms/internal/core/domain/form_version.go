@@ -105,6 +105,18 @@ func (v *FormVersion) GetPages() []*Page {
 	return v.pages
 }
 
+func (v *FormVersion) GetPage(pageID PageID) *Page {
+	idx := slices.IndexFunc(v.pages, func(p *Page) bool {
+		return p.ID == pageID
+	})
+
+	if idx == -1 {
+		return nil
+	}
+
+	return v.pages[idx]
+}
+
 func (v *FormVersion) AddPages(pages ...*Page) error {
 	if v == nil {
 		return ErrInvalidVersion

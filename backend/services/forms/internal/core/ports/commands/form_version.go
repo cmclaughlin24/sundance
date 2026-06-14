@@ -12,16 +12,16 @@ type baseFormVersionCommand struct {
 
 type CreateFormVersionCommand struct {
 	baseFormVersionCommand
-	Pages []*domain.Page
+	PagesData []PageData
 }
 
-func NewCreateFormVersionCommand(tenantID string, formID domain.FormID, pages []*domain.Page) *CreateFormVersionCommand {
+func NewCreateFormVersionCommand(tenantID string, formID domain.FormID, pages []PageData) *CreateFormVersionCommand {
 	return &CreateFormVersionCommand{
 		baseFormVersionCommand: baseFormVersionCommand{
 			TenantID: tenantID,
 			FormID:   formID,
 		},
-		Pages: pages,
+		PagesData: pages,
 	}
 }
 
@@ -32,17 +32,17 @@ func (c *CreateFormVersionCommand) Validate() error {
 type UpdateFormVersionCommand struct {
 	baseFormVersionCommand
 	VersionID domain.FormVersionID `validate:"required"`
-	Pages     []*domain.Page
+	PagesData     []PageData
 }
 
-func NewUpdateFormVersionCommand(tenantID string, id domain.FormVersionID, formID domain.FormID, pages []*domain.Page) *UpdateFormVersionCommand {
+func NewUpdateFormVersionCommand(tenantID string, id domain.FormVersionID, formID domain.FormID, pages []PageData) *UpdateFormVersionCommand {
 	return &UpdateFormVersionCommand{
 		baseFormVersionCommand: baseFormVersionCommand{
 			TenantID: tenantID,
 			FormID:   formID,
 		},
 		VersionID: id,
-		Pages:     pages,
+		PagesData:     pages,
 	}
 }
 

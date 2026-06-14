@@ -23,7 +23,7 @@ import (
 // @name Authorization
 // @description Bearer JWT. Format: "Bearer <token>"
 
-func NewRoutes(app *core.Application, host string) http.Handler {
+func NewRoutes(app *core.Application, host string, _ auth.AuthOptions) http.Handler {
 	h := handlers.NewHandlers(app)
 	mux := chi.NewRouter()
 

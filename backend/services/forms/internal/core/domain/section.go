@@ -62,8 +62,43 @@ func HydrateSection(id SectionID, key, name string, position float32) *Section {
 	}
 }
 
+func (s *Section) Update(key, name string, position float32) error {
+	if s == nil {
+		return ErrInvalidSection
+	}
+
+	if !isValidPosition(position) {
+		return ErrInvalidPosition
+	}
+
+	cpy := *s
+	cpy.Key = key
+	cpy.Name = name
+	cpy.position = position
+
+	if err := validate.ValidateStruct(cpy); err != nil {
+		return err
+	}
+
+	*s = cpy
+
+	return nil
+}
+
 func (s *Section) GetFields() PositionElements[*Field] {
 	return s.fields
+}
+
+func (s *Section) GetField(fieldID FieldID) *Field {
+	idx := slices.IndexFunc(s.fields, func(f *Field) bool {
+		return f.ID == fieldID
+	})
+
+	if idx == -1 {
+		return nil
+	}
+
+	return s.fields[idx]
 }
 
 func (s *Section) AddFields(fields ...*Field) error {

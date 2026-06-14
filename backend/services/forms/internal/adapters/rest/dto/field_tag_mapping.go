@@ -2,6 +2,7 @@ package dto
 
 import (
 	"sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/ports/commands"
 	"time"
 )
 
@@ -19,12 +20,12 @@ type FieldTagMappingResponse struct {
 	UpdatedAt    time.Time                `json:"updatedAt"`
 }
 
-func requestToFieldTagMappingConfigs(dtos []upsertFieldTagMappingRequest) []domain.FieldTagMappingConfig {
-	configs := make([]domain.FieldTagMappingConfig, 0, len(dtos))
+func requestToFieldTagMappingData(dtos []upsertFieldTagMappingRequest) []commands.FieldTagMappingData {
+	configs := make([]commands.FieldTagMappingData, 0, len(dtos))
 
 	for _, dto := range dtos {
-		configs = append(configs, domain.FieldTagMappingConfig{
-			TagVersionID: domain.TagVersionID(dto.TagVersionID),
+		configs = append(configs, commands.FieldTagMappingData{
+			TagVersionID: dto.TagVersionID,
 			Priority:     dto.Priority,
 		})
 	}
