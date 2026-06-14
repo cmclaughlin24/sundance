@@ -54,6 +54,8 @@ definitions:
     properties:
       attributes:
         type: object
+      id:
+        type: string
       key:
         maxLength: 25
         type: string
@@ -172,8 +174,10 @@ definitions:
     - FormVersionStatusRetired
   PageRequest:
     properties:
+      id:
+        type: string
       key:
-        maxLength: 25
+        maxLength: 50
         type: string
       name:
         maxLength: 75
@@ -247,6 +251,8 @@ definitions:
         items:
           $ref: '#/definitions/RuleExpressionRequest'
         type: array
+      id:
+        type: string
       type:
         type: string
     required:
@@ -279,6 +285,8 @@ definitions:
         items:
           $ref: '#/definitions/FieldRequest'
         type: array
+      id:
+        type: string
       key:
         maxLength: 25
         type: string

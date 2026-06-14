@@ -66,7 +66,7 @@ func NewRoutes(app *core.Application, host string, _ auth.AuthOptions) http.Hand
 
 	re := regexp.MustCompile(`https?://`)
 	docs.SwaggerInfo.Host = re.ReplaceAllString(host, "")
-	docs.SwaggerInfo.Title = "Form Builder SaaS | Tenants Service"
+	docs.SwaggerInfo.Title = "Forms Hub SaaS | Tenants Service"
 	docs.SwaggerInfo.Description = "The Tenants Service manages multi-tenant configurations and their associated data sources for the Form Builder SaaS platform. It provides CRUD operations for tenants and data sources, where data sources supply lookup key-value pairs (e.g., for populating dropdowns) via static data, scheduled external fetches, or on-demand webhook calls."
 	docs.SwaggerInfo.Version = "1.0.0"
 	docs.SwaggerInfo.BasePath = "/api/v1"

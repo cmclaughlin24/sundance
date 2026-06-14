@@ -102,7 +102,7 @@ func NewRoutes(app *core.Application, host string, _ auth.AuthOptions) http.Hand
 
 	re := regexp.MustCompile(`https?://`)
 	docs.SwaggerInfo.Host = re.ReplaceAllString(host, "")
-	docs.SwaggerInfo.Title = "Form Builder SaaS | Forms Service"
+	docs.SwaggerInfo.Title = "Forms Hub SaaS | Tenants Service"
 	docs.SwaggerInfo.Description = "The Forms Service is the system of record for form definitions, submissions, and tags in the Form Builder SaaS platform. **Forms** are composed of versioned schemas (pages, sections, fields, and validation rules) that follow a draft → published → retired lifecycle. **Submissions** are accepted asynchronously against a published form version, deduplicated via an idempotency key, and queryable by reference ID. **Tags** are tenant-scoped, stable identifiers used to attach semantic meaning to form fields and preserve historical associations across schema changes."
 	docs.SwaggerInfo.Version = "1.0.0"
 	docs.SwaggerInfo.BasePath = "/api/v1"
