@@ -45,3 +45,21 @@ type DataSourceRef struct {
 	DataSourceID string
 	Bindings     map[string]BindingSource
 }
+
+func getReferencedKeys(ds *DataSourceRef) []string {
+	keys := make([]string, 0)
+
+	if ds == nil {
+		return keys
+	}
+
+	for _, bs := range ds.Bindings {
+		if bs.Type != BindingSourceTypeField {
+			continue
+		}
+
+		keys = append(keys, bs.Key)
+	}
+
+	return keys
+}

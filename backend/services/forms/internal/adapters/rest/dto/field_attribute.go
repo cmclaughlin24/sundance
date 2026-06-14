@@ -84,9 +84,11 @@ type numberFieldAttributesResponse struct {
 
 type selectFieldAttributesResponse struct {
 	baseFieldAttributeResponse
-	Multiple    bool `json:"multiple"`
-	MinSelected *int `json:"minSelected"`
-	MaxSelected *int `json:"maxSelected"`
+	Data          []any                 `json:"data"`
+	DataSourceRef *domain.DataSourceRef `json:"dataSourceRef"`
+	Multiple      bool                  `json:"multiple"`
+	MinSelected   *int                  `json:"minSelected"`
+	MaxSelected   *int                  `json:"maxSelected"`
 }
 
 type checkboxFieldAttributesResponse struct {
@@ -125,6 +127,8 @@ func fieldAttributesToResponse(attr domain.FieldAttributes) any {
 	case *domain.SelectFieldAttributes:
 		return selectFieldAttributesResponse{
 			baseFieldAttributeResponse: base,
+			Data:                       t.Data,
+			DataSourceRef:              t.DataSourceRef,
 			Multiple:                   t.Multiple,
 			MinSelected:                t.MinSelected,
 			MaxSelected:                t.MaxSelected,

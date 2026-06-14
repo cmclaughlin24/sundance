@@ -199,7 +199,7 @@ func (m *formDefinitionMapper) updateSection(s commands.SectionData, section *do
 			field := section.GetField(domain.FieldID(*f.ID))
 
 			if field == nil {
-				return fmt.Errorf("%w; field id=%s", common.ErrNotFound, *s.ID)
+				return fmt.Errorf("%w; field id=%s", common.ErrNotFound, *f.ID)
 			}
 
 			if err := m.updateField(f, field); err != nil {
@@ -256,6 +256,7 @@ func (m *formDefinitionMapper) createField(f commands.FieldData) (*domain.Field,
 	}
 
 	m.trackFormKey(field.Key)
+	m.trackExpressionKeys(field.Attributes.GetReferencedKeys()...)
 	return field, nil
 }
 
@@ -281,6 +282,7 @@ func (m *formDefinitionMapper) updateField(f commands.FieldData, field *domain.F
 	}
 
 	m.trackFormKey(field.Key)
+	m.trackExpressionKeys(field.Attributes.GetReferencedKeys()...)
 	return nil
 }
 
@@ -340,7 +342,7 @@ func (m *formDefinitionMapper) createRule(r commands.RuleData) (*domain.Rule, er
 			return nil, err
 		}
 
-		m.trackExpressionKey(expression.FieldKey)
+		m.trackExpressionKeys(expression.FieldKey)
 	}
 
 	return rule, nil
@@ -356,8 +358,10 @@ func (m *formDefinitionMapper) trackFormKey(key string) {
 	}
 }
 
-func (m *formDefinitionMapper) trackExpressionKey(key string) {
-	m.expressionKeys[key] = true
+func (m *formDefinitionMapper) trackExpressionKeys(keys ...string) {
+	for _, key := range keys {
+		m.expressionKeys[key] = true
+	}
 }
 
 func (m *formDefinitionMapper) validate() error {
