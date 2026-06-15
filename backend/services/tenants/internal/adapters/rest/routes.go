@@ -14,22 +14,32 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/httplog/v3"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
+
+type ServerOptions struct {
+	AllowedOrigins []string         `json:"allowedOrigins"`
+	Auth           auth.AuthOptions `json:"security"`
+}
 
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
 // @description Bearer JWT. Format: "Bearer <token>"
 
-func NewRoutes(app *core.Application, host string, _ auth.AuthOptions) http.Handler {
+func NewRoutes(app *core.Application, host string, options ServerOptions) http.Handler {
 	h := handlers.NewHandlers(app)
 	mux := chi.NewRouter()
 
 	placeHolderTokenValidator := &authenticators.PlaceholderTokenValidator{}
 	bearerAuthenticator := authenticators.NewBearerAuthenticator(placeHolderTokenValidator)
 
+	mux.Use(cors.Handler(cors.Options{
+		AllowedOrigins: options.AllowedOrigins,
+		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+	}))
 	mux.Use(middleware.RequestID)
 	mux.Use(httplog.RequestLogger(app.Logger, &httplog.Options{
 		Schema: httplog.SchemaOTEL,
