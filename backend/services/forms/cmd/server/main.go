@@ -11,7 +11,6 @@ import (
 	"syscall"
 	"time"
 
-	"sundance/backend/pkg/auth"
 	"sundance/backend/pkg/cache"
 	"sundance/backend/pkg/common"
 	"sundance/backend/pkg/common/logger"
@@ -32,7 +31,7 @@ type settings struct {
 	LogLevel    string                          `json:"logLevel"`
 	Host        string                          `json:"host"`
 	Worker      workers.WorkerOptions           `json:"worker"`
-	Auth        auth.AuthOptions                `json:"security"`
+	Server      rest.ServerOptions              `json:"server"`
 }
 
 func main() {
@@ -68,7 +67,7 @@ func main() {
 	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithAPI(s), core.WithCache(cm.(core.Cache)))
 
 	defer app.Close(context.Background())
-	mux := rest.NewRoutes(app, settings.Host, settings.Auth)
+	mux := rest.NewRoutes(app, settings.Host, settings.Server)
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", settings.Port),
