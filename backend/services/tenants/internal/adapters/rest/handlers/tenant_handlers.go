@@ -14,6 +14,9 @@ import (
 // @tags		Tenants
 // @accept		json
 // @produce		json
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {array} dto.TenantResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
@@ -51,6 +54,9 @@ func (h *Handlers) GetTenants(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		id path string true "Tenant ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {object} dto.TenantResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -85,6 +91,9 @@ func (h *Handlers) GetTenant(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		body body dto.TenantRequest true "Create Tenant"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		201 {object} httputil.APIResponse[dto.TenantResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -130,6 +139,9 @@ func (h *Handlers) CreateTenant(w http.ResponseWriter, r *http.Request) {
 // @produce		json
 // @param		id path string true "Tenant ID"
 // @param		body body dto.TenantRequest true "Update Tenant"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {object} httputil.APIResponse[dto.TenantResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
@@ -178,6 +190,9 @@ func (h *Handlers) UpdateTenant(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		id path string true "Tenant ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		204
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse

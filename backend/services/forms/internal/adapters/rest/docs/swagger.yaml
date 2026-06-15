@@ -478,6 +478,19 @@ paths:
         name: X-Tenant-ID
         required: true
         type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -511,6 +524,19 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/UpsertFormRequest'
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -547,6 +573,19 @@ paths:
         name: formId
         required: true
         type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -582,6 +621,19 @@ paths:
         in: path
         name: formId
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json
@@ -623,6 +675,19 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/UpsertFormRequest'
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -661,6 +726,19 @@ paths:
         in: path
         name: formId
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json
@@ -702,6 +780,19 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/UpsertFormVersionRequest'
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -741,6 +832,19 @@ paths:
         in: path
         name: versionId
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json
@@ -789,6 +893,19 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/UpsertFormVersionRequest'
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -834,6 +951,19 @@ paths:
         in: path
         name: versionId
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json
@@ -881,6 +1011,19 @@ paths:
         name: versionId
         required: true
         type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -914,6 +1057,19 @@ paths:
         in: header
         name: X-Tenant-ID
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json
@@ -955,6 +1111,19 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/SubmissionRequest'
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -992,6 +1161,19 @@ paths:
         name: submissionId
         required: true
         type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -1026,6 +1208,19 @@ paths:
         in: path
         name: referenceId
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json
@@ -1062,6 +1257,19 @@ paths:
         name: referenceId
         required: true
         type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -1094,6 +1302,19 @@ paths:
         in: header
         name: X-Tenant-ID
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json
@@ -1130,6 +1351,19 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/CreateTagRequest'
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -1167,6 +1401,19 @@ paths:
         in: path
         name: tagId
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json
@@ -1207,6 +1454,19 @@ paths:
         in: path
         name: tagId
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json
@@ -1250,6 +1510,19 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/UpdateTagRequest'
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -1288,6 +1561,19 @@ paths:
         in: path
         name: tagId
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json
@@ -1334,6 +1620,19 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/UpsertTagVersionRequest'
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -1378,6 +1677,19 @@ paths:
         name: versionId
         required: true
         type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -1419,6 +1731,19 @@ paths:
         in: path
         name: versionId
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json
@@ -1466,6 +1791,19 @@ paths:
         name: versionId
         required: true
         type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -1511,6 +1849,19 @@ paths:
         in: path
         name: versionId
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json

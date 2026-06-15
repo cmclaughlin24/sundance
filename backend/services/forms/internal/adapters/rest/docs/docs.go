@@ -39,6 +39,25 @@ const docTemplate = `{
                         "name": "X-Tenant-ID",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -91,6 +110,25 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/UpsertFormRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -146,6 +184,25 @@ const docTemplate = `{
                         "name": "formId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -208,6 +265,25 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/UpsertFormRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -268,6 +344,25 @@ const docTemplate = `{
                         "name": "formId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -326,6 +421,25 @@ const docTemplate = `{
                         "name": "formId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -386,6 +500,25 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/UpsertFormVersionRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -448,6 +581,25 @@ const docTemplate = `{
                         "name": "versionId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -518,6 +670,25 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/UpsertFormVersionRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -587,6 +758,25 @@ const docTemplate = `{
                         "name": "versionId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -656,6 +846,25 @@ const docTemplate = `{
                         "name": "versionId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -710,6 +919,25 @@ const docTemplate = `{
                         "name": "X-Tenant-ID",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -770,6 +998,25 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/SubmissionRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -825,6 +1072,25 @@ const docTemplate = `{
                         "name": "referenceId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -880,6 +1146,25 @@ const docTemplate = `{
                         "name": "referenceId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -941,6 +1226,25 @@ const docTemplate = `{
                         "name": "submissionId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -989,6 +1293,25 @@ const docTemplate = `{
                         "name": "X-Tenant-ID",
                         "in": "header",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -1042,6 +1365,25 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/CreateTagRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -1097,6 +1439,25 @@ const docTemplate = `{
                         "name": "tagId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -1160,6 +1521,25 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/UpdateTagRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -1220,6 +1600,25 @@ const docTemplate = `{
                         "name": "tagId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -1284,6 +1683,25 @@ const docTemplate = `{
                         "name": "tagId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -1350,6 +1768,25 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/UpsertTagVersionRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -1418,6 +1855,25 @@ const docTemplate = `{
                         "name": "versionId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -1481,6 +1937,25 @@ const docTemplate = `{
                         "name": "versionId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -1550,6 +2025,25 @@ const docTemplate = `{
                         "name": "versionId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -1619,6 +2113,25 @@ const docTemplate = `{
                         "name": "versionId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
                     }
                 ],
                 "responses": {

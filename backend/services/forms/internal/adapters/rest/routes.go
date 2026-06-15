@@ -34,6 +34,8 @@ func NewRoutes(app *core.Application, host string, _ auth.AuthOptions) http.Hand
 	mux.Use(httplog.RequestLogger(app.Logger, &httplog.Options{
 		Schema: httplog.SchemaOTEL,
 	}))
+	mux.Use(httputil.NewCorrelationIDMiddleware("X-Correlation-ID"))
+	mux.Use(httputil.NewRequestDateMiddleware("X-Request-Date"))
 
 	mux.Route("/api/v1", func(routes chi.Router) {
 		routes.Use(httputil.NewTenantMiddleware("X-Tenant-ID"))

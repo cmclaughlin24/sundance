@@ -113,6 +113,19 @@ paths:
         name: X-Tenant-ID
         required: true
         type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -148,6 +161,19 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/DataSourceRequest'
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -183,6 +209,19 @@ paths:
         name: id
         required: true
         type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -214,6 +253,19 @@ paths:
         in: path
         name: id
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json
@@ -257,6 +309,19 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/DataSourceRequest'
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -303,6 +368,19 @@ paths:
         in: query
         name: params
         type: object
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -329,6 +407,20 @@ paths:
     get:
       consumes:
       - application/json
+      parameters:
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -357,6 +449,19 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/TenantRequest'
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -388,6 +493,19 @@ paths:
         name: id
         required: true
         type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:
@@ -414,6 +532,19 @@ paths:
         in: path
         name: id
         required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
         type: string
       produces:
       - application/json
@@ -450,6 +581,19 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/TenantRequest'
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
       produces:
       - application/json
       responses:

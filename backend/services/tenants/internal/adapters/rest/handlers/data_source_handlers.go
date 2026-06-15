@@ -17,6 +17,9 @@ import (
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {array} dto.DataSourceResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
@@ -57,6 +60,9 @@ func (h *Handlers) GetDataSources(w http.ResponseWriter, r *http.Request) {
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		id path string true "Data Source ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {object} dto.DataSourceResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -95,6 +101,9 @@ func (h *Handlers) GetDataSource(w http.ResponseWriter, r *http.Request) {
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		body body dto.DataSourceRequest true "Create Data Source"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		201 {object} httputil.APIResponse[dto.DataSourceResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -156,6 +165,9 @@ func (h *Handlers) CreateDataSource(w http.ResponseWriter, r *http.Request) {
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		id path string true "Data Source ID"
 // @param		body body dto.DataSourceRequest true "Update Data Source"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {object} httputil.APIResponse[dto.DataSourceResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
@@ -217,6 +229,9 @@ func (h *Handlers) UpdateDataSource(w http.ResponseWriter, r *http.Request) {
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		id path string true "Data Source ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		204
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -256,6 +271,9 @@ func (h *Handlers) DeleteDataSource(w http.ResponseWriter, r *http.Request) {
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		id path string true "Data Source ID"
 // @param		params query object false "Optional parameters for look-up retrieval, such as query parameters for external fetches or payload for webhook calls."
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {array} dto.LookupResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
