@@ -17,6 +17,9 @@ import (
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {array} dto.FormResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
@@ -57,6 +60,9 @@ func (h *Handlers) GetForms(w http.ResponseWriter, r *http.Request) {
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {object} dto.FormResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -94,6 +100,9 @@ func (h *Handlers) GetForm(w http.ResponseWriter, r *http.Request) {
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		body body dto.UpsertFormRequest true "Create Form"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		201 {object} httputil.APIResponse[dto.FormResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -141,6 +150,9 @@ func (h *Handlers) CreateForm(w http.ResponseWriter, r *http.Request) {
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
 // @param		body body dto.UpsertFormRequest true "Update Form"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {object} httputil.APIResponse[dto.FormResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
@@ -190,6 +202,9 @@ func (h *Handlers) UpdateForm(w http.ResponseWriter, r *http.Request) {
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		204
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
@@ -228,6 +243,9 @@ func (h *Handlers) DeleteForm(w http.ResponseWriter, r *http.Request) {
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {array} dto.FormVersionResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
@@ -270,6 +288,9 @@ func (h *Handlers) GetFormVersions(w http.ResponseWriter, r *http.Request) {
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
 // @param		versionId path string true "Version ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {object} dto.FormVersionResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -310,6 +331,9 @@ func (h *Handlers) GetFormVersion(w http.ResponseWriter, r *http.Request) {
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
 // @param		body body dto.UpsertFormVersionRequest true "Create Version"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		201 {object} httputil.APIResponse[dto.FormVersionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -367,6 +391,9 @@ func (h *Handlers) CreateFormVersion(w http.ResponseWriter, r *http.Request) {
 // @param		formId path string true "Form ID"
 // @param		versionId path string true "Version ID"
 // @param		body body dto.UpsertFormVersionRequest true "Update Version"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {object} httputil.APIResponse[dto.FormVersionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
@@ -425,6 +452,9 @@ func (h *Handlers) UpdateFormVersion(w http.ResponseWriter, r *http.Request) {
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
 // @param		versionId path string true "Version ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {object} httputil.APIResponse[dto.FormVersionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
@@ -471,6 +501,9 @@ func (h *Handlers) PublishFormVersion(w http.ResponseWriter, r *http.Request) {
 // @param		X-Tenant-ID header string true "Tenant ID"
 // @param		formId path string true "Form ID"
 // @param		versionId path string true "Version ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @success		200 {object} httputil.APIResponse[dto.FormVersionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
