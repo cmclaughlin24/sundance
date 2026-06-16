@@ -3,6 +3,7 @@ module sundance/backend/services/forms
 go 1.26.2
 
 require (
+	github.com/caarlos0/env/v11 v11.4.1
 	github.com/expr-lang/expr v1.17.8
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-chi/httplog/v3 v3.3.0

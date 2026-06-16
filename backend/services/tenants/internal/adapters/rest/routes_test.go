@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"sundance/backend/pkg/auth"
 	"sundance/backend/services/tenants/internal/adapters/rest"
 	"sundance/backend/services/tenants/internal/core"
 
@@ -30,7 +29,7 @@ func TestNewRoutes(t *testing.T) {
 		{"/api/v1/data-sources/{dataSourceId}/", http.MethodDelete},
 		{"/api/v1/data-sources/{dataSourceId}/look-ups", http.MethodGet},
 	}
-	mux := rest.NewRoutes(&core.Application{}, "", auth.AuthOptions{})
+	mux := rest.NewRoutes(&core.Application{}, rest.ServerOptions{})
 
 	for _, r := range routes {
 		// Act/Assert.

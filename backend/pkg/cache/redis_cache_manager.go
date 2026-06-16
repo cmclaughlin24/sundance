@@ -10,8 +10,8 @@ import (
 )
 
 type RedisOptions struct {
-	Host string `json:"host"` 
-	Port int    `json:"port"`
+	Host string `json:"host" env:"HOST"`
+	Port int    `json:"port" env:"PORT"`
 }
 
 var renewScript = redis.NewScript(`

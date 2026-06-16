@@ -20,8 +20,9 @@ import (
 )
 
 type ServerOptions struct {
-	AllowedOrigins []string         `json:"allowedOrigins"`
-	Auth           auth.AuthOptions `json:"security"`
+	AllowedOrigins []string         `json:"allowedOrigins" env:"ALLOWED_ORIGINS"`
+	Host           string           `json:"host" env:"HOST"`
+	Auth           auth.AuthOptions `json:"auth" envPrefix:"AUTH_"`
 }
 
 // @securityDefinitions.apikey BearerAuth
@@ -29,7 +30,7 @@ type ServerOptions struct {
 // @name Authorization
 // @description Bearer JWT. Format: "Bearer <token>"
 
-func NewRoutes(app *core.Application, host string, options ServerOptions) http.Handler {
+func NewRoutes(app *core.Application, options ServerOptions) http.Handler {
 	h := handlers.NewHandlers(app)
 	mux := chi.NewRouter()
 
@@ -77,14 +78,14 @@ func NewRoutes(app *core.Application, host string, options ServerOptions) http.H
 	})
 
 	re := regexp.MustCompile(`https?://`)
-	docs.SwaggerInfo.Host = re.ReplaceAllString(host, "")
+	docs.SwaggerInfo.Host = re.ReplaceAllString(options.Host, "")
 	docs.SwaggerInfo.Title = "Forms Hub SaaS | Tenants Service"
 	docs.SwaggerInfo.Description = "The Tenants Service manages multi-tenant configurations and their associated data sources for the Form Builder SaaS platform. It provides CRUD operations for tenants and data sources, where data sources supply lookup key-value pairs (e.g., for populating dropdowns) via static data, scheduled external fetches, or on-demand webhook calls."
 	docs.SwaggerInfo.Version = "1.0.0"
 	docs.SwaggerInfo.BasePath = "/api/v1"
 
 	mux.Route("/swagger", func(r chi.Router) {
-		r.Get("/*", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("%s/swagger/doc.json", host))))
+		r.Get("/*", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("%s/swagger/doc.json", options.Host))))
 	})
 
 	return mux

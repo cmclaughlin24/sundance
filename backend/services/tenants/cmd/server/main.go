@@ -22,16 +22,17 @@ import (
 	"sundance/backend/services/tenants/internal/core"
 	"sundance/backend/services/tenants/internal/core/services"
 	"sundance/backend/services/tenants/internal/core/strategies"
+
+	"github.com/caarlos0/env/v11"
 )
 
 type settings struct {
-	Port        int                             `json:"port"`
-	Persistence persistence.PersistenceSettings `json:"persistence"`
-	Cache       cache.CacheSettings             `json:"cache"`
-	LogLevel    string                          `json:"logLevel"`
-	Host        string                          `json:"host"`
-	Worker      workers.WorkerOptions           `json:"worker"`
-	Server      rest.ServerOptions              `json:"server"`
+	Port        int                             `json:"port" env:"APP_PORT"`
+	Persistence persistence.PersistenceSettings `json:"database" envPrefix:"APP_DATABASE_"`
+	Cache       cache.CacheSettings             `json:"cache" envPrefix:"APP_CACHE_"`
+	LogLevel    string                          `json:"logLevel" env:"APP_LOG_LEVEL"`
+	Worker      workers.WorkerOptions           `json:"worker" envPrefix:"APP_WORKER_"`
+	Server      rest.ServerOptions              `json:"server" envPrefix:"APP_SERVER_"`
 }
 
 func main() {
@@ -40,7 +41,11 @@ func main() {
 
 	var settings settings
 	if err := common.ReadSettings(*settingsPath, &settings); err != nil {
-		panic(err)
+		slog.Warn("failed to read settings from file; defaulting to environment variables", "error", err)
+
+		if err = env.Parse(&settings); err != nil {
+			panic(err)
+		}
 	}
 
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
@@ -67,7 +72,7 @@ func main() {
 	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithAPI(s), core.WithCache(cm.(core.Cache)))
 
 	defer app.Close(context.Background())
-	mux := rest.NewRoutes(app, settings.Host, settings.Server)
+	mux := rest.NewRoutes(app, settings.Server)
 
 	server := &http.Server{
 		Addr:         fmt.Sprintf(":%d", settings.Port),

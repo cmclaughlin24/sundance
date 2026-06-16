@@ -1,7 +1,7 @@
 package persistence
 
 import (
-	"encoding/json"
+	"errors"
 	"fmt"
 	"log/slog"
 
@@ -18,41 +18,29 @@ const (
 	PersistenceDriverMongodb  PersistenceDriver = "mongodb"
 )
 
-type bootstrapFn func(PersistenceOptions, *slog.Logger) (*ports.Repository, error)
-
-type PersistenceOptions any
-
 type PersistenceSettings struct {
-	Driver  PersistenceDriver  `json:"driver"`
-	Options PersistenceOptions `json:"options"`
+	Driver  PersistenceDriver     `json:"driver" env:"DRIVER"`
+	MongoDB *database.MongoDBOpts `json:"mongodb,omitempty" envPrefix:"MONGODB_" env:",init"`
 }
 
 func Bootstrap(settings PersistenceSettings, logger *slog.Logger) (*ports.Repository, error) {
-	var fn bootstrapFn
-
 	switch settings.Driver {
 	case PersistenceDriverInMemory:
-		fn = bootstrapInMemory
+		return bootstrapInMemory(logger)
 	case PersistenceDriverMongodb:
-		fn = bootstrapMongoDB
-	}
-
-	if fn == nil {
+		return bootstrapMongoDB(settings.MongoDB, logger)
+	default:
 		return nil, fmt.Errorf("unknown persistence driver: %s", settings.Driver)
 	}
-
-	return fn(settings.Options, logger)
 }
 
-func bootstrapInMemory(_ PersistenceOptions, logger *slog.Logger) (*ports.Repository, error) {
+func bootstrapInMemory(logger *slog.Logger) (*ports.Repository, error) {
 	return inmemory.Bootstrap(logger), nil
 }
 
-func bootstrapMongoDB(o PersistenceOptions, logger *slog.Logger) (*ports.Repository, error) {
-	options, err := parseOptions[database.MongoDBOpts](o)
-
-	if err != nil {
-		return nil, err
+func bootstrapMongoDB(options *database.MongoDBOpts, logger *slog.Logger) (*ports.Repository, error) {
+	if options == nil {
+		return nil, errors.New("mongodb options are required for mongodb persistence driver")
 	}
 
 	client, err := database.ConnectMongoDB(
@@ -64,20 +52,4 @@ func bootstrapMongoDB(o PersistenceOptions, logger *slog.Logger) (*ports.Reposit
 	}
 
 	return mongodb.Bootstrap(client, logger, options.DatabaseName), nil
-}
-
-func parseOptions[T PersistenceOptions](options PersistenceOptions) (T, error) {
-	data, err := json.Marshal(options)
-
-	if err != nil {
-		return *new(T), err
-	}
-
-	var opts T
-
-	if err := json.Unmarshal(data, &opts); err != nil {
-		return *new(T), err
-	}
-
-	return opts, nil
 }

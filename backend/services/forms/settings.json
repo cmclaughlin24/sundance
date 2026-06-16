@@ -1,18 +1,19 @@
 {
   "port": 80,
-  "host": "http://localhost:8080",
   "logLevel": "debug",
-  "server": {},
-  "persistence": {
+  "server": {
+    "host": "http://localhost:8080"
+  },
+  "database": {
     "driver": "mongodb",
-    "options": {
+    "mongodb": {
       "uri": "mongodb://mongo:27017",
       "databaseName": "forms"
     }
   },
   "cache": {
     "type": "redis",
-    "options": {
+    "redis": {
       "host": "redis",
       "port": 6379
     }
