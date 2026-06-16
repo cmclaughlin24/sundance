@@ -59,10 +59,10 @@ func (h *Handlers) GetSubmissions(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		referenceId path string true "Reference ID"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		referenceId path string true "Reference ID"
 // @success		200 {object} dto.SubmissionResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -100,11 +100,11 @@ func (h *Handlers) GetSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		Idempotency-Key header string true "Idempotency Key"
-// @param		body body dto.SubmissionRequest true "Create Submission"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		Idempotency-Key header string true "Idempotency Key"
+// @param		body body dto.SubmissionRequest true "Create Submission"
 // @success		202 {object} httputil.APIResponse[dto.SubmissionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -162,10 +162,10 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		referenceId path string true "Reference ID"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		referenceId path string true "Reference ID"
 // @success		200 {object} object{status=string}
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -207,10 +207,10 @@ func (h *Handlers) GetSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		submissionId path string true "Submission ID"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		submissionId path string true "Submission ID"
 // @success		202 {object} httputil.APIResponse[dto.SubmissionResponse]
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse

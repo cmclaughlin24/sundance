@@ -58,10 +58,10 @@ func (h *Handlers) GetTags(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		tagId path string true "Tag ID"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		tagId path string true "Tag ID"
 // @success		200 {object} dto.TagResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -99,10 +99,10 @@ func (h *Handlers) GetTag(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		body body dto.CreateTagRequest true "Create Tag"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		body body dto.CreateTagRequest true "Create Tag"
 // @success		201 {object} httputil.APIResponse[dto.TagResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -149,11 +149,11 @@ func (h *Handlers) CreateTag(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		tagId path string true "Tag ID"
-// @param		body body dto.UpdateTagRequest true "Update Tag"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		tagId path string true "Tag ID"
+// @param		body body dto.UpdateTagRequest true "Update Tag"
 // @success		200 {object} httputil.APIResponse[dto.TagResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
@@ -202,10 +202,10 @@ func (h *Handlers) UpdateTag(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		tagId path string true "Tag ID"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		tagId path string true "Tag ID"
 // @success		204
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
@@ -244,10 +244,10 @@ func (h *Handlers) DeleteTag(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		tagId path string true "Tag ID"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		tagId path string true "Tag ID"
 // @success		200 {array} dto.TagVersionResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -289,11 +289,11 @@ func (h *Handlers) GetTagVersions(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		tagId path string true "Tag ID"
-// @param		versionId path string true "Version ID"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		tagId path string true "Tag ID"
+// @param		versionId path string true "Version ID"
 // @success		200 {object} dto.TagVersionResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
@@ -332,11 +332,11 @@ func (h *Handlers) GetTagVersion(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		tagId path string true "Tag ID"
-// @param		body body dto.UpsertTagVersionRequest true "Create Tag Version"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		tagId path string true "Tag ID"
+// @param		body body dto.UpsertTagVersionRequest true "Create Tag Version"
 // @success		201 {object} httputil.APIResponse[dto.TagVersionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
@@ -386,11 +386,11 @@ func (h *Handlers) CreateTagVersion(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		tagId path string true "Tag ID"
-// @param		versionId path string true "Version ID"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		tagId path string true "Tag ID"
+// @param		versionId path string true "Version ID"
 // @success		200 {object} httputil.APIResponse[dto.TagVersionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
@@ -433,11 +433,11 @@ func (h *Handlers) PublishTagVersion(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		tagId path string true "Tag ID"
-// @param		versionId path string true "Version ID"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		tagId path string true "Tag ID"
+// @param		versionId path string true "Version ID"
 // @success		200 {object} httputil.APIResponse[dto.TagVersionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
@@ -480,11 +480,11 @@ func (h *Handlers) DeprecateTagVersion(w http.ResponseWriter, r *http.Request) {
 // @accept		json
 // @produce		json
 // @param		X-Tenant-ID header string true "Tenant ID"
-// @param		tagId path string true "Tag ID"
-// @param		versionId path string true "Version ID"
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		tagId path string true "Tag ID"
+// @param		versionId path string true "Version ID"
 // @success		200 {object} httputil.APIResponse[dto.TagVersionResponse]
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
