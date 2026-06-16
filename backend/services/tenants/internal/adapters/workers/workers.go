@@ -6,9 +6,9 @@ import (
 )
 
 type WorkerOptions struct {
-	Interval   int `json:"interval"`
-	PoolSize   int `json:"poolSize"`
-	RetryLimit int `json:"retryLimit"`
+	Interval   int `json:"interval" env:"INTERVAL"`
+	PoolSize   int `json:"poolSize" env:"POOL_SIZE"`
+	RetryLimit int `json:"retryLimit" env:"RETRY_LIMIT"`
 }
 
 func Bootstrap(app *core.Application, settings WorkerOptions) (func(context.Context), error) {

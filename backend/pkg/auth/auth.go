@@ -7,13 +7,13 @@ import (
 )
 
 type OAuth2 struct {
-	Audience string `json:"audience"`
-	Issuer   string `json:"issuer"`
-	JWK      string `json:"jwk"`
+	Audience string `json:"audience" env:"AUDIENCE"`
+	Issuer   string `json:"issuer" env:"ISSUER"`
+	JWK      string `json:"jwk" env:"JWK"`
 }
 
 type AuthOptions struct {
-	OAuth2 OAuth2 `json:"oauth2"`
+	OAuth2 OAuth2 `json:"oauth2" envPrefix:"OAUTH2_"`
 }
 
 type Authenticator = func(*http.Request) (Claims, error)

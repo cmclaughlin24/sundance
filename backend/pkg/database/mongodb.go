@@ -8,8 +8,8 @@ import (
 )
 
 type MongoDBOpts struct {
-	URI          string `json:"uri"`
-	DatabaseName string `json:"databaseName"`
+	URI          string `json:"uri" env:"URI"`
+	DatabaseName string `json:"databaseName" env:"DATABASE_NAME"`
 }
 
 func ConnectMongoDB(opts ...func(*MongoDBOpts)) (*mongo.Client, error) {

@@ -2,7 +2,6 @@ package cache
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -24,13 +23,9 @@ var (
 
 type CacheCloser func() error
 
-type bootstrapFn func(CacheOptions, *slog.Logger) (CacheManager, CacheCloser, error)
-
-type CacheOptions any
-
 type CacheSettings struct {
-	Type    CacheType    `json:"type"` 
-	Options CacheOptions `json:"options"`
+	Type  CacheType     `json:"type" env:"TYPE"`
+	Redis *RedisOptions `json:"redis" envPrefix:"REDIS_" env:",init"`
 }
 
 type CacheManager interface {
@@ -40,34 +35,28 @@ type CacheManager interface {
 }
 
 func Bootstrap(settings CacheSettings, logger *slog.Logger) (CacheManager, CacheCloser, error) {
-	var fn bootstrapFn
-
 	switch settings.Type {
 	case CacheTypeInMemory:
-		fn = bootstrapInMemory
+		return bootstrapInMemory(logger)
 	case CacheTypeRedis:
-		fn = bootstrapRedis
-	}
-
-	if fn == nil {
+		return bootstrapRedis(settings.Redis, logger)
+	default:
 		return nil, nil, fmt.Errorf("unknown cache type : %s", settings.Type)
 	}
 
-	return fn(settings.Options, logger)
 }
 
-func bootstrapInMemory(o CacheOptions, logger *slog.Logger) (CacheManager, CacheCloser, error) {
+func bootstrapInMemory(logger *slog.Logger) (CacheManager, CacheCloser, error) {
 	return NewInMemoryCacheManager(logger), func() error { return nil }, nil
 }
 
-func bootstrapRedis(o CacheOptions, logger *slog.Logger) (CacheManager, CacheCloser, error) {
-	opts, err := parseOptions[RedisOptions](o)
-	if err != nil {
-		return nil, nil, err
+func bootstrapRedis(options *RedisOptions, logger *slog.Logger) (CacheManager, CacheCloser, error) {
+	if options == nil {
+		return nil, nil, errors.New("redis options are required for redis cache driver")
 	}
 
 	client := redis.NewClient(&redis.Options{
-		Addr: fmt.Sprintf("%s:%d", opts.Host, opts.Port),
+		Addr: fmt.Sprintf("%s:%d", options.Host, options.Port),
 	})
 
 	if status := client.Ping(context.Background()); status.Err() != nil {
@@ -75,20 +64,4 @@ func bootstrapRedis(o CacheOptions, logger *slog.Logger) (CacheManager, CacheClo
 	}
 
 	return NewRedisCacheManager(client, logger), client.Close, nil
-}
-
-func parseOptions[T CacheOptions](options CacheOptions) (T, error) {
-	data, err := json.Marshal(options)
-
-	if err != nil {
-		return *new(T), err
-	}
-
-	var opts T
-
-	if err := json.Unmarshal(data, &opts); err != nil {
-		return *new(T), err
-	}
-
-	return opts, nil
 }
