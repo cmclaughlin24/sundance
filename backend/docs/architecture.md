@@ -62,6 +62,8 @@ At Wells Fargo, current solutions include:
 
 ### 1.3 Stakeholders
 
+## 2. Contraints
+
 ## 3. Context & Scope
 
 ### 3.1 System Context
@@ -74,37 +76,29 @@ C4Context
 
   Person(formDesigner, "Form Designer", "Creates and manages tenants, data sources, forms, tags, and validation rules.")
   Person(endUser, "End User", "Renders active forms and submits responses.")
-  System_Ext(downstreamSystem, "Downstream System", "Subscribes to and consumes canonical submission events.")
+  Person_Ext(downstreamSystem, "Downstream System", "Subscribes to and consumes canonical submission events.")
 
   System_Ext(frontend, "Frontend Application", "Web UI through which Form Designers and End Users interact with Forms Hub.")
-
-  System_Boundary(formsHub, "Forms Hub") {
-    System(tenantsService, "Tenants Service", "Manages tenant identities and data sources that supply dynamic lookup data for form fields.")
-    System(formsService, "Forms Service", "Manages form definitions, versioning, submissions, and canonical tag mappings.")
-  }
+  System(formsHub, "Forms Hub", "Multi-tenant SaaS platform for building, rendering, processing, and delivering forms and submission data.")
 
   System_Ext(messageBroker, "Message Broker", "Receives canonical submission events published by Forms Hub for downstream consumption (e.g. Kafka).")
-  System_Ext(mongodb, "MongoDB", "Primary datastore for all domain data across both services.")
-  System_Ext(redis, "Redis", "Distributed cache for lookup data and leader election locking for background workers.")
+  System_Ext(mongodb, "MongoDB", "Primary datastore for all domain data.")
+  System_Ext(redis, "Redis", "Distributed cache and leader election locking for background workers.")
   System_Ext(pingfederate, "PingFederate", "OAuth2 identity provider. Forms Hub validates inbound JWT bearer tokens against PingFederate's JWKS endpoint.")
-  System_Ext(externalHTTPAPIs, "External HTTP APIs", "Third-party endpoints polled by the Tenants Service to refresh scheduled and webhook data source lookups.")
-  System_Ext(bigquery, "Google BigQuery", "Data lake queried by the Tenants Service to resolve data lake lookup sources.")
+  System_Ext(externalHTTPAPIs, "External HTTP APIs", "Third-party endpoints polled to refresh scheduled and webhook data source lookups.")
+  System_Ext(bigquery, "Google BigQuery", "Data lake queried to resolve data lake lookup sources.")
 
   Rel(formDesigner, frontend, "Uses")
   Rel(endUser, frontend, "Uses")
-  Rel(frontend, tenantsService, "Manages tenants and data sources", "REST/JSON HTTPS")
-  Rel(frontend, formsService, "Manages forms, tags; renders and submits forms", "REST/JSON HTTPS")
-  Rel(formsService, messageBroker, "Publishes canonical submission events", "async")
+  Rel(frontend, formsHub, "Manages tenants, data sources, forms, tags; renders and submits forms", "REST/JSON HTTPS")
+  Rel(formsHub, messageBroker, "Publishes canonical submission events", "async")
   Rel(downstreamSystem, messageBroker, "Subscribes to submission events", "async")
-  Rel(tenantsService, mongodb, "Reads/writes tenant and data source data", "MongoDB wire protocol")
-  Rel(formsService, mongodb, "Reads/writes form, submission, and tag data", "MongoDB wire protocol")
-  Rel(tenantsService, redis, "Caches lookup data; distributed leader election", "Redis protocol")
-  Rel(formsService, redis, "Distributed leader election for submission worker", "Redis protocol")
+  Rel(formsHub, mongodb, "Reads/writes domain data", "MongoDB wire protocol")
+  Rel(formsHub, redis, "Caches lookup data; distributed leader election", "Redis protocol")
   Rel(frontend, pingfederate, "Authenticates users, obtains JWT", "OAuth2/HTTPS")
-  Rel(tenantsService, pingfederate, "Validates JWT bearer tokens", "JWKS/HTTPS")
-  Rel(formsService, pingfederate, "Validates JWT bearer tokens", "JWKS/HTTPS")
-  Rel(tenantsService, externalHTTPAPIs, "Fetches lookup data for scheduled and webhook sources", "HTTP/HTTPS")
-  Rel(tenantsService, bigquery, "Queries lookup data for data lake sources", "BigQuery API")
+  Rel(formsHub, pingfederate, "Validates JWT bearer tokens", "JWKS/HTTPS")
+  Rel(formsHub, externalHTTPAPIs, "Fetches lookup data for scheduled and webhook sources", "HTTP/HTTPS")
+  Rel(formsHub, bigquery, "Queries lookup data for data lake sources", "BigQuery API")
 ```
 
 ### 3.2 External Interfaces
