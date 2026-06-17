@@ -24,7 +24,7 @@ At Wells Fargo, current solutions include:
 
 - **WorkX**: A newer platform designed and developed to support Consumer Lending workflows. WorkX includes a form builder that allows users to create forms that are associated with specific tasks in a workflow. In WorkX, a form definition is embedded in the task definition, which reduces the reusability of forms and leading to duplication of form definitions across different tasks.
 
-#### 1.1.2 Goals
+#### 1.1.2 Product Goals
 
 | Goal                          | Description                                                                                                                                                              |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -36,13 +36,13 @@ At Wells Fargo, current solutions include:
 
 #### 1.1.3 Key Use Cases
 
-| Use Case               | Actor(s)          | Description                                                                                                                                                                                          |
-| ---------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Design a Form          | Form Designer     | A form designer creates a new form version with pages, sections, and fields. She configures validation rules for form elements, and publishes the form before rendering.                             |
-| Render a Form          | End User          | An end user loads an active form version; the system evaluates visibility, required, and read-only rules dynamically and renders the form accordingly.                                               |
-| Submit a Form          | End User          | An end user submits a form; the system validates the submission, persists it idempotently, and returns a reference identifier for tracking.                                                          |
-| Consume Canonical Data | Downstream System | A downstream system consumes canonical submission data via a message broker or REST API; the system transforms the submission data into a canonical format and delivers it to the downstream system. |
-| Manage Lookup Data     | Form Designer     | A form designer configures a data source to provide dynamic lookup data for form fields across one or more forms.                                                                                    |
+| Use Case               | Actor(s)               | Description                                                                                                                                                                                          |
+| ---------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Design a Form          | Form Designer          | A form designer creates a new form version with pages, sections, and fields. She configures validation rules for form elements, and publishes the form before rendering.                             |
+| Render a Form          | End User               | An end user loads an active form version; the system evaluates visibility, required, and read-only rules dynamically and renders the form accordingly.                                               |
+| Submit a Form          | End User               | An end user submits a form; the system validates the submission, persists it idempotently, and returns a reference identifier for tracking.                                                          |
+| Consume Canonical Data | Downstream System      | A downstream system consumes canonical submission data via a message broker or REST API; the system transforms the submission data into a canonical format and delivers it to the downstream system. |
+| Manage Lookup Data     | Form Designer / System | A form designer configures a data source to provide dynamic lookup data for form fields across one or more forms.                                                                                    |
 
 #### 1.1.4 Functional Requirements
 
@@ -74,9 +74,9 @@ C4Context
 
   Person(formDesigner, "Form Designer", "Creates and manages tenants, data sources, forms, tags, and validation rules.")
   Person(endUser, "End User", "Renders active forms and submits responses.")
-  Person_Ext(downstreamSystem, "Downstream System", "Subscribes to and consumes canonical submission events.")
+  System_Ext(downstreamSystem, "Downstream System", "Subscribes to and consumes canonical submission events.")
 
-  System(frontend, "Frontend Application", "Web UI through which Form Designers and End Users interact with Forms Hub.")
+  System_Ext(frontend, "Frontend Application", "Web UI through which Form Designers and End Users interact with Forms Hub.")
 
   System_Boundary(formsHub, "Forms Hub") {
     System(tenantsService, "Tenants Service", "Manages tenant identities and data sources that supply dynamic lookup data for form fields.")
@@ -123,15 +123,32 @@ C4Context
 
 ### 4.1 Architecture Style
 
-Forms Hub is built as a microservice-based system with two independently deployable services - the **Tenants Service** and the **Forms Service** - each owning it's own distinct domain model and data storage. The services share a deliberate, minimal integration surface: the Forms Service depends on the Tenants Service to resolve data sources configured by tenants to provide dynamic lookup data for form fields,.
+Forms Hub is built as a microservice-based system with two independently deployable services - the **Tenants Service** and the **Forms Service** - each owning its own distinct domain model and data storage. The services share a deliberate, minimal integration surface: the Forms Service depends on the Tenants Service to resolve data sources configured by tenants to provide dynamic lookup data for form fields.
 
-Within each service, a **Ports and Adapters (Hexagonal)** architecture style is applied. The domain and application logic is fully isolated from infrastructure concerns. Ports interfaces in `core/ports/` define the contracts; adapter implementations in `adapters/` fulfill them. This boundary means HTTP, MongoDB, Redis, and inter-service communication concerns can be swapped out or tested independently of domain logic. In-memory adapters for every infrastructure concern support local development and testing without external dependencies.
+Within each service, a **Ports and Adapters (Hexagonal)** architecture style is applied. The domain and application logic is fully isolated from infrastructure concerns. Ports interfaces in `core/ports/` define the contracts; adapter implementations in `adapters/` fulfill them. This boundary means HTTP, MongoDB, Redis, and inter-service communication concerns can be swapped out or tested independently of domain logic. In-memory adapters for every infrastructure concern support local development and testing without external dependencies. Both services also share a common `pkg/` library providing the generic background worker, auth middleware, validation utilities, and the strategy registry — keeping shared infrastructure consistent without coupling service domain models.
 
 ![Ports & Adapters Architecture](imgs/Ports%20%26%20Adapters%20Architecture.png)
 _Figure 4.1 — Ports & Adapters (Hexagonal) Architecture pattern. Each Forms Hub service follows this structure: driving adapters (REST handlers) on the left, domain and application services at the centre, and driven adapters (MongoDB, Redis, Tenants Service client) on the right._
 
 ### 4.2 Technology Decisions
 
+| Technology       | Decision                   | Rationale                                                                                                                                                                                |
+| ---------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Go               | Implementation language    | Statically typed, high concurrency, fast startup, and a small runtime footprint suited for independently deployable services.                                                            |
+| MongoDB          | Database                   | The deeply nested, polymorphic form definition hierarchy — pages, sections, fields, and per-type attributes — maps naturally to documents without requiring a complex relational schema. |
+| Redis            | Cache and distributed lock | Serves a dual purpose without an additional coordination service: lookup data cache in the Tenants Service and distributed leader election for background workers in both services.      |
+| chi              | HTTP router                | Lightweight and idiomatic Go; composable middleware chain supports cross-cutting concerns (auth, tenant extraction, idempotency, correlation ID) without framework lock-in.              |
+| `expr-lang/expr` | Rule evaluation            | Provides safe, sandboxed evaluation of runtime rule expressions (visibility, required, read-only) without the risks of `eval`-style execution.                                           |
+| UUID v7          | Entity identifiers         | Time-ordered UUIDs provide natural chronological sort order in MongoDB without a separate sequence or auto-increment mechanism.                                                          |
+| PingFederate     | Identity provider          | Enterprise OAuth2/JWKS integration; JWT validation is implemented and ready to activate when authentication is enforced.                                                                 |
+
 ### 4.3 Key Design Decisions
 
-### 4.4 How the Strategy Addresses the Goals
+- **Asynchronous submission processing** — `POST /submissions` returns 202 immediately; validation and canonical mapping run in a background worker. This decouples intake throughput from validation latency and enables retries without client involvement. Failed jobs are retried with exponential backoff up to a configurable limit; each attempt is recorded as an audit trail on the submission.
+- **Strategy pattern for data sources** — Four lookup strategies (static, scheduled, webhook, data lake) share a common interface and are resolved at runtime via a registry. New source types can be added without modifying existing resolution logic.
+- **Strategy pattern for field validation** — Each field type (text, number, select, checkbox, date) has its own validator resolved at runtime. Validation logic is isolated per type and independently testable.
+- **Generic background worker** — `BackgroundWorker[J Job]` is fully generic and reused by both services for completely different job types (data source refresh and submission processing). Redis-backed leader election ensures only one replica processes jobs at a time across horizontal scale.
+- **In-memory adapters for all infrastructure** — Every repository, cache, and elector has an in-memory implementation. No external dependencies are required for local development or unit testing.
+- **Explicit inter-service boundary** — The Forms Service holds a `DataSourceRef` on `select` fields and calls the Tenants Service at submission time to resolve valid lookup values. Outside of this single integration point the services share no runtime state, simplifying failure isolation and independent deployment.
+
+## 5. Building Block View
