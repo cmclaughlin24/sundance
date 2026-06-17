@@ -50,7 +50,7 @@ At Wells Fargo, current solutions include:
 | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Tenant Management             | The system shall support multiple isolated tenants. Each tenant's forms, submissions, tags, and data sources shall be scoped and inaccessible to other tenants.                     |
 | Form Definition               | The system shall allow users to define forms as versioned, metadata-driven schemas composed of pages, sections, and typed fields without requiring application code changes.        |
-| Form Versioning               | The system shall support a managed lifecycle for form versions: `draft → active → retired`. Only one version may be active at a time.                                               |
+| Form Versioning               | The system shall support a managed lifecycle for form versions: `draft → active → retired`.                                                                                         |
 | Dynamic Form Rendering        | The system shall render forms dynamically from their metadata definition without requiring custom frontend or backend development per form.                                         |
 | Configurable Validation       | The system shall support configurable visibility, required, and read-only rules on pages, sections, and fields, evaluated at runtime against submitted values.                      |
 | Submission Intake             | The system shall accept form submissions asynchronously and idempotently, associating each with a tenant, form version, and a unique reference ID for external tracking.            |
@@ -146,3 +146,70 @@ _Figure 4.1 — Ports & Adapters (Hexagonal) Architecture pattern. Each Forms Hu
 - **Explicit inter-service boundary** — The Forms Service holds a `DataSourceRef` on `select` fields and calls the Tenants Service at submission time to resolve valid lookup values. Outside of this single integration point the services share no runtime state, simplifying failure isolation and independent deployment.
 
 ## 5. Building Block View
+
+## 6. Runtime View
+
+### 6.1 Form Submission Flow
+
+![Form Submission (SRI)](imgs/Form%20Submission%20%28SRI%29.png)
+
+A client submits a form by sending `POST /api/v1/submissions` with an `Idempotency-Key` header. The Forms Service persists the submission with a status of `pending` and immediately returns `202 Accepted` with a reference ID — no validation occurs synchronously. A background worker (leader-elected via Redis) picks up pending submissions, loads the associated form version, and evaluates visibility, required, and read-only rules against the submitted values. For `select` fields backed by a `DataSourceRef`, the Forms Service calls the Tenants Service to resolve valid lookup values before validating the submitted value. On success the submission transitions to `accepted` and a canonical submission event is published to the message broker for downstream consumption; on validation failure it transitions to `rejected`. Failed attempts are retried with exponential backoff up to the configured retry limit.
+
+![Normalized Submission Architecture](imgs/Normalized%20Submission%20Architecture.png)
+
+Canonical normalization decouples the submission data from the form's field naming and layout. Each form field carries one or more `FieldTagMapping` entries that associate it with an active tag version. During submission processing, submitted field values are mapped through these tag mappings to produce a normalized output keyed by canonical tag — not by form field key. This means downstream systems consume a consistent data structure regardless of which form version collected the data or how its fields were named.
+
+![Tag Resolution Policy Table](imgs/Tag%20Resolution%20Policy%20Table.png)
+
+When a field maps to multiple tag versions, the winning tag is selected through a three-phase resolution: first, `draft` and `retired` tag versions are excluded; then, among the remaining candidates, the highest priority mapping wins; if priorities are tied, the system selects the highest version within the same lineage, or falls back to the most recently updated tag across different lineages.
+
+#### 6.1.1 Example: Requesting a Form-based Catalog Item
+
+![Requesting Form-based Catalog Items](imgs/Requesting%20Form-based%20Catalog%20Items.png)
+
+This diagram illustrates a concrete example of the submission flow in the context of a service request workflow. The Request Portal and Service Catalog are example external systems outside the Forms Hub boundary — Forms Hub is involved at two points only: serving the form definition when the actor selects a catalog item (step 4), and receiving the completed submission for validation, normalization, and processing at checkout (step 8). The SRI Service shown in the diagram is an example downstream consumer that receives the canonical submission event published by Forms Hub upon acceptance.
+
+### 6.2 Data Source Lookup Resolution
+
+![Data Source Look-up Strategy](imgs/Data%20Source%20Look-up%20Strategy.png)
+
+When a client calls `GET /api/v1/data-sources/{id}/look-ups`, the Tenants Service loads the data source from MongoDB and dispatches to the appropriate strategy via a runtime registry keyed by `DataSourceType`. The `static` strategy returns inline lookup data stored directly on the data source record. The `scheduled` strategy returns cached data previously fetched from an external HTTP endpoint by the background refresh worker — trading freshness for low latency. The `webhook` strategy makes a live HTTP call to the configured endpoint on each request, passing any required binding parameters — higher latency but always current. The `data-lake` strategy queries a configured BigQuery dataset using a parameterized query (currently a stub pending implementation). All four strategies return a uniform `[]Lookup` response of `{ value, label }` pairs.
+
+### 6.3 Form Version Lifecycle
+
+Form versions follow a linear, managed lifecycle: `draft → active → retired`. Only `draft` versions can be edited; once published they are immutable. Multiple versions of the same form may be `active` simultaneously, allowing a gradual transition between versions.
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft : POST /forms/{id}/versions
+    draft --> draft : PUT /forms/{id}/versions/{versionId}
+    draft --> active : POST .../publish
+    active --> retired : POST .../retire
+    draft --> [*] : DELETE /forms/{id}/versions/{versionId}
+```
+
+| Transition   | Endpoint                                            | Conditions                                                                                        |
+| ------------ | --------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Create draft | `POST /forms/{formId}/versions`                     | Always allowed; auto-increments version number                                                    |
+| Update draft | `PUT /forms/{formId}/versions/{versionId}`          | Only allowed while status is `draft`; locked once published                                       |
+| Publish      | `POST /forms/{formId}/versions/{versionId}/publish` | Transitions `draft → active`; does not affect other active versions                               |
+| Retire       | `POST /forms/{formId}/versions/{versionId}/retire`  | Transitions `active → retired`; a form cannot be deleted while it has at least one active version |
+
+### 6.4 Tag Version Lifecycle
+
+Tag versions follow a four-stage lifecycle: `draft → active → deprecated → retired`. Unlike form versions, the path to retirement requires passing through `deprecated` first — a tag cannot be retired directly from `active`. This enforces a grace period during which downstream systems can observe the deprecation before the tag is fully retired.
+
+```mermaid
+stateDiagram-v2
+    [*] --> draft : POST /tags/{id}/versions
+    draft --> active : POST .../publish
+    active --> deprecated : POST .../deprecate
+    deprecated --> retired : POST .../retire
+```
+
+| Transition   | Endpoint                                            | Conditions                                                         |
+| ------------ | --------------------------------------------------- | ------------------------------------------------------------------ |
+| Create draft | `POST /tags/{tagId}/versions`                       | Always allowed; auto-increments version number                     |
+| Publish      | `POST /tags/{tagId}/versions/{versionId}/publish`   | Transitions `draft → active`; only allowed from `draft`            |
+| Deprecate    | `POST /tags/{tagId}/versions/{versionId}/deprecate` | Transitions `active → deprecated`; only allowed from `active`      |
+| Retire       | `POST /tags/{tagId}/versions/{versionId}/retire`    | Transitions `deprecated → retired`; only allowed from `deprecated` |
