@@ -213,3 +213,15 @@ stateDiagram-v2
 | Publish      | `POST /tags/{tagId}/versions/{versionId}/publish`   | Transitions `draft → active`; only allowed from `draft`            |
 | Deprecate    | `POST /tags/{tagId}/versions/{versionId}/deprecate` | Transitions `active → deprecated`; only allowed from `active`      |
 | Retire       | `POST /tags/{tagId}/versions/{versionId}/retire`    | Transitions `deprecated → retired`; only allowed from `deprecated` |
+
+## 7. Deployment View
+
+## 8. Crosscutting Concepts
+
+## 9. Architecture Decisions
+
+## 10. Quality Requirements
+
+## 11. Risks and Technical Debt
+
+## 12. Glossary
