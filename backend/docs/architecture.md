@@ -61,3 +61,60 @@ At Wells Fargo, current solutions include:
 ### 1.2 Quality Goals
 
 ### 1.3 Stakeholders
+
+## 3. Context & Scope
+
+### 3.1 System Context
+
+Forms Hub is a multi-tenant SaaS platform that sits at the center of form design, rendering, submission intake, and canonical data delivery. The diagram below shows the system boundary and all external actors and systems that interact with it.
+
+```mermaid
+C4Context
+  title System Context — Forms Hub
+
+  Person(formDesigner, "Form Designer", "Creates and manages tenants, data sources, forms, tags, and validation rules.")
+  Person(endUser, "End User", "Renders active forms and submits responses.")
+  Person_Ext(downstreamSystem, "Downstream System", "Subscribes to and consumes canonical submission events.")
+
+  System(frontend, "Frontend Application", "Web UI through which Form Designers and End Users interact with Forms Hub.")
+
+  System_Boundary(formsHub, "Forms Hub") {
+    System(tenantsService, "Tenants Service", "Manages tenant identities and data sources that supply dynamic lookup data for form fields.")
+    System(formsService, "Forms Service", "Manages form definitions, versioning, submissions, and canonical tag mappings.")
+  }
+
+  System_Ext(messageBroker, "Message Broker", "Receives canonical submission events published by Forms Hub for downstream consumption (e.g. Kafka).")
+  System_Ext(mongodb, "MongoDB", "Primary datastore for all domain data across both services.")
+  System_Ext(redis, "Redis", "Distributed cache for lookup data and leader election locking for background workers.")
+  System_Ext(pingfederate, "PingFederate", "OAuth2 identity provider. Forms Hub validates inbound JWT bearer tokens against PingFederate's JWKS endpoint.")
+  System_Ext(externalHTTPAPIs, "External HTTP APIs", "Third-party endpoints polled by the Tenants Service to refresh scheduled and webhook data source lookups.")
+  System_Ext(bigquery, "Google BigQuery", "Data lake queried by the Tenants Service to resolve data lake lookup sources.")
+
+  Rel(formDesigner, frontend, "Uses")
+  Rel(endUser, frontend, "Uses")
+  Rel(frontend, tenantsService, "Manages tenants and data sources", "REST/JSON HTTPS")
+  Rel(frontend, formsService, "Manages forms, tags; renders and submits forms", "REST/JSON HTTPS")
+  Rel(formsService, messageBroker, "Publishes canonical submission events", "async")
+  Rel(downstreamSystem, messageBroker, "Subscribes to submission events", "async")
+  Rel(tenantsService, mongodb, "Reads/writes tenant and data source data", "MongoDB wire protocol")
+  Rel(formsService, mongodb, "Reads/writes form, submission, and tag data", "MongoDB wire protocol")
+  Rel(tenantsService, redis, "Caches lookup data; distributed leader election", "Redis protocol")
+  Rel(formsService, redis, "Distributed leader election for submission worker", "Redis protocol")
+  Rel(frontend, pingfederate, "Authenticates users, obtains JWT", "OAuth2/HTTPS")
+  Rel(tenantsService, pingfederate, "Validates JWT bearer tokens", "JWKS/HTTPS")
+  Rel(formsService, pingfederate, "Validates JWT bearer tokens", "JWKS/HTTPS")
+  Rel(tenantsService, externalHTTPAPIs, "Fetches lookup data for scheduled and webhook sources", "HTTP/HTTPS")
+  Rel(tenantsService, bigquery, "Queries lookup data for data lake sources", "BigQuery API")
+```
+
+### 3.2 External Interfaces
+
+| External System          | Direction | Protocol                     | Initiator       | Purpose                                                                                                                                                                                                                   | Status              |
+| ------------------------ | --------- | ---------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| **Frontend Application** | Inbound   | REST/JSON over HTTPS         | Frontend        | Form Designers and End Users interact with both services through a generic web UI.                                                                                                                                        | Active              |
+| **MongoDB**              | Outbound  | MongoDB wire protocol        | Both services   | Primary datastore. Tenants Service stores tenant and data source records; Forms Service stores forms, form versions, submissions, and tags.                                                                               | Active              |
+| **Redis**                | Outbound  | Redis protocol               | Both services   | Tenants Service caches resolved lookup data. Both services use Redis-backed distributed locking (`SetNX` + Lua scripts) for background worker leader election.                                                            | Active              |
+| **PingFederate**         | Outbound  | JWKS over HTTPS              | Both services   | Both services validate inbound JWT bearer tokens by fetching signing keys from PingFederate's JWKS URI. Audience, issuer, expiry, and issued-at claims are verified.                                                      | Active              |
+| **External HTTP APIs**   | Outbound  | HTTP/HTTPS                   | Tenants Service | The Tenants Service calls arbitrary third-party HTTP endpoints to fetch lookup key-value pairs for `scheduled` and `webhook` data sources. Supports `GET`, `POST`, `PUT`, and `PATCH` with configurable headers and body. | Active              |
+| **Google BigQuery**      | Outbound  | BigQuery API                 | Tenants Service | The Tenants Service queries a configured data lake to resolve lookup data for `data-lake` data sources, using configurable catalog, schema, query, and field mappings.                                                    | Planned (stub only) |
+| **Message Broker**       | Outbound  | Async messaging (e.g. Kafka) | Forms Service   | After a submission is accepted and canonical tag mapping is applied, the Forms Service publishes a canonical submission event for downstream consumption.                                                                 | Planned             |
