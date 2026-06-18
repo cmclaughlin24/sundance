@@ -164,27 +164,14 @@ C4Container
     Container(sharedLib, "pkg/ Shared Library", "Go", "Cross-cutting infrastructure: auth middleware, cache manager, database abstraction, generic background worker, and common utilities.")
   }
 
-  System_Ext(mongodb, "MongoDB", "Primary datastore for all domain data.")
-  System_Ext(redis, "Redis", "Distributed cache and leader election locking.")
-  System_Ext(pingfederate, "PingFederate", "OAuth2/JWKS identity provider.")
   System_Ext(messageBroker, "Message Broker", "Receives canonical submission events.")
-  System_Ext(externalHTTPAPIs, "External HTTP APIs", "Third-party endpoints for scheduled and webhook lookup sources.")
-  System_Ext(bigquery, "Google BigQuery", "Data lake for data-lake lookup sources.")
 
   Rel(formDesigner, tenantsService, "Manages tenants and data sources", "REST/JSON HTTPS")
   Rel(formDesigner, formsService, "Manages forms, tags, and versions", "REST/JSON HTTPS")
   Rel(endUser, formsService, "Renders forms and submits responses", "REST/JSON HTTPS")
   Rel(endUser, tenantsService, "Fetches lookup options at render time", "REST/JSON HTTPS")
   Rel(formsService, tenantsService, "Validates lookup values at submission time", "REST/JSON HTTPS")
-  Rel(tenantsService, mongodb, "Reads/writes tenant and data source records", "MongoDB wire protocol")
-  Rel(formsService, mongodb, "Reads/writes forms, versions, submissions, tags", "MongoDB wire protocol")
-  Rel(tenantsService, redis, "Caches lookup data; leader election", "Redis protocol")
-  Rel(formsService, redis, "Leader election for submission worker", "Redis protocol")
-  Rel(tenantsService, pingfederate, "Validates JWT bearer tokens", "JWKS/HTTPS")
-  Rel(formsService, pingfederate, "Validates JWT bearer tokens", "JWKS/HTTPS")
   Rel(formsService, messageBroker, "Publishes canonical submission events", "async")
-  Rel(tenantsService, externalHTTPAPIs, "Fetches lookup data for scheduled/webhook sources", "HTTP/HTTPS")
-  Rel(tenantsService, bigquery, "Queries lookup data for data-lake sources", "BigQuery API")
 ```
 
 | Building Block            | Responsibility                                                                                                                                                                                                                                   | Source                      |
