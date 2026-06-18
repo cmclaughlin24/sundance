@@ -107,7 +107,7 @@ C4Context
 | ------------------------ | --------- | ---------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
 | **Frontend Application** | Inbound   | REST/JSON over HTTPS         | Frontend        | Form Designers and End Users interact with both services through a generic web UI.                                                                                                                                        | Active              |
 | **MongoDB**              | Outbound  | MongoDB wire protocol        | Both services   | Primary datastore. Tenants Service stores tenant and data source records; Forms Service stores forms, form versions, submissions, and tags.                                                                               | Active              |
-| **Redis**                | Outbound  | Redis protocol               | Both services   | Tenants Service caches resolved lookup data. Both services use Redis-backed distributed locking (`SetNX` + Lua scripts) for background worker leader election.                                                            | Active              |
+| **Redis**                | Outbound  | Redis protocol               | Both services   | Both services use Redis-backed distributed locking (`SetNX` + Lua scripts) for background worker leader election.                                                                                                         | Active              |
 | **PingFederate**         | Outbound  | JWKS over HTTPS              | Both services   | Both services validate inbound JWT bearer tokens by fetching signing keys from PingFederate's JWKS URI. Audience, issuer, expiry, and issued-at claims are verified.                                                      | Active              |
 | **External HTTP APIs**   | Outbound  | HTTP/HTTPS                   | Tenants Service | The Tenants Service calls arbitrary third-party HTTP endpoints to fetch lookup key-value pairs for `scheduled` and `webhook` data sources. Supports `GET`, `POST`, `PUT`, and `PATCH` with configurable headers and body. | Active              |
 | **Google BigQuery**      | Outbound  | BigQuery API                 | Tenants Service | The Tenants Service queries a configured data lake to resolve lookup data for `data-lake` data sources, using configurable catalog, schema, query, and field mappings.                                                    | Planned (stub only) |
@@ -532,6 +532,42 @@ Forms Hub maintains two independent domain models — one per service — with n
 | **`Submission`**           | Records a form submission scoped to a tenant, form, and version. Holds `SubmissionFieldValue` entries and progresses through `pending → accepted / rejected / failed`. Identified externally by a `ReferenceID`; deduplicated by `IdempotencyID`.                                |
 | **`SubmissionFieldValue`** | A single submitted value keyed by `FieldID`.                                                                                                                                                                                                                                     |
 | **`SubmissionAttempt`**    | Records each processing attempt with its result and error details. Provides a full audit trail of retries.                                                                                                                                                                       |
+
+### 8.2 Persistency
+
+Forms Hub uses two storage technologies — MongoDB for all domain data and Redis for distributed lock state. Neither is accessed directly; both are abstracted behind port interfaces with in-memory substitutes selectable at startup via configuration.
+
+**MongoDB**
+
+All domain aggregates are persisted in MongoDB. Access never goes directly to the driver — all reads and writes pass through the `Repository` port interfaces defined in `core/ports/secondary.go`; concrete implementations live in `adapters/persistence/mongodb/`. A MongoDB replica set is required in production to support multi-document transactions used by the `Database` port (`BeginTx`, `CommitTx`, `RollbackTx`).
+
+| Service         | Collections                                                     |
+| --------------- | --------------------------------------------------------------- |
+| Tenants Service | `tenants`, `data_sources`                                       |
+| Forms Service   | `forms`, `form_versions`, `submissions`, `tags`, `tag_versions` |
+
+**Redis**
+
+Redis is used exclusively for distributed leader election in both services. The `CacheLocker` interface (`AcquireLock`, `RenewLock`, `ReleaseLock`) is implemented by `RedisCacheManager` and consumed by `CacheElector` to ensure only one replica runs the background worker at a time. Redis is not currently used as a lookup data cache in the Tenants Service, though the `CacheManager` interface is in place for that purpose.
+
+**Driver Selection**
+
+Both storage technologies have in-memory substitutes. The active driver is selected at startup via configuration — no code changes are required to switch between environments.
+
+| Store   | Production Driver                  | Dev/Test Driver                       | Config Key            |
+| ------- | ---------------------------------- | ------------------------------------- | --------------------- |
+| MongoDB | `adapters/persistence/mongodb/`    | `adapters/persistence/inmemory/`      | `APP_DATABASE_DRIVER` |
+| Redis   | `pkg/cache/redis_cache_manager.go` | `pkg/cache/inmemory_cache_manager.go` | `APP_CACHE_TYPE`      |
+
+### 8.3 Authentication & Authorization
+
+### 8.4 Tenant Scoping
+
+### 8.5 Idempotency
+
+### 8.6 Error Handling
+
+### 8.7 Structured Logging
 
 ## 9. Architecture Decisions
 
