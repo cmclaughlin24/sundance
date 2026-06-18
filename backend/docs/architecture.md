@@ -328,7 +328,61 @@ flowchart TD
 | **`DataLakeLookupStrategy`**  | Validates required binding params, then calls `DataLakeClient.Query`. Currently a stub; `BigQueryDataLakeClient` always returns `ErrBigQueryDataLakeNotConfigured`.                                           | `core/strategies/data_lake_lookup.go`     |
 | **`baseLookupStrategy`**      | Embedded base providing `toLookups()` (maps raw `[]map[string]any` rows to `[]*Lookup` by configured value/label field names) and `missingRequiredKeys()`. Used by `webhook` and `data-lake` strategies only. | `core/strategies/base_lookup_strategy.go` |
 
-#### 5.3.2 Submission Processing Pipeline (Forms Service)
+#### 5.3.2 Whitebox: Submission Processing Pipeline (Forms Service)
+
+The submission processing pipeline is the most complex flow in the system. `SubmissionJobsAPI.Process` is called by the Submissions Worker for each pending submission and executes six sequential steps: fetch, sanitize, build context, traverse the form definition, validate, and record the outcome.
+
+```mermaid
+flowchart TD
+    A[SubmissionJobsAPI.Process] --> B[Fetch Submission from repository]
+    B --> C{Already terminal?\naccepted / rejected / failed}
+    C -->|yes| D[Skip — no-op]
+    C -->|no| E[Fetch FormVersion from repository]
+    E --> F{Version status\nis draft?}
+    F -->|yes| G[Reject — ErrVersionStatus]
+    F -->|no| H[Build RuleEvaluationContext\nfield key → submitted value map]
+    H --> I[Traverse Pages]
+    I --> J{Evaluate visible\nrule for Page}
+    J -->|hidden| K[Skip page and all children]
+    J -->|visible| L[Traverse Sections]
+    L --> M{Evaluate visible\nrule for Section}
+    M -->|hidden| N[Skip section and all children]
+    M -->|visible| O[Traverse Fields]
+    O --> P{Evaluate visible\nrule for Field}
+    P -->|hidden| Q[Skip field]
+    P -->|visible| R{Evaluate required\nrule for Field}
+    R --> S[StrategyRegistry.Get FieldType]
+    S --> T[FieldValidatorStrategy.Validate]
+    T --> U{Validation\nerror?}
+    U -->|yes| V[Reject — ErrFieldValidation\nor ErrFieldRequired]
+    U -->|no| W{More fields?}
+    W -->|yes| O
+    W -->|no| X[Apply canonical tag mapping\nFieldTagMapping → active TagVersion]
+    X --> Y[submission.Accept]
+    V --> Z[submission.Reject]
+    G --> Z
+    Y --> AA[Persist inside transaction]
+    Z --> AA
+```
+
+| Building Block | Responsibility | Source |
+| --- | --- | --- |
+| **`SubmissionJobsAPI.Process`** | Orchestrates the full pipeline for a single submission. Entry point called by the Submissions Worker. | `core/services/submission_jobs_service.go` |
+| **`RuleEvaluationContext`** | `map[string]any` of field key → submitted value. Built once per submission and passed to every rule evaluation call. | `core/ports/secondary.go` |
+| **`RuleEvaluator`** | `ExprRuleEvaluator` evaluates `visible` and `required` rules against the context. Returns `bool`. Determines whether a page, section, or field is processed at all. | `adapters/evaluators/expr_rule_evaluator.go` |
+| **`FieldValidatorRegistry`** | Generic `StrategyRegistry[FieldType, FieldValidatorStrategy]` map. Returns `ErrStrategyNotFound` on an unregistered key — treated as non-retryable. | `pkg/common/stratreg/` |
+| **`FieldValidatorStrategy`** | One implementation per `FieldType` (`text`, `number`, `select`, `checkbox`, `date`). Validates the submitted value against the field's configured constraints. | `core/strategies/` |
+| **Canonical Tag Mapping** | After all fields pass validation, submitted values are mapped through `FieldTagMapping` entries to their active `TagVersion`. Produces a normalized output keyed by canonical tag rather than form field key. | `core/services/submission_jobs_service.go` |
+| **`submission.Accept / Reject`** | Domain methods that transition `Submission` status to `accepted` or `rejected` and record a `SubmissionAttempt` as an audit entry. Persisted inside a database transaction. | `core/domain/submission.go` |
+
+**Retry and error classification:**
+
+| Error | Classification | Outcome |
+| --- | --- | --- |
+| `ErrFieldValidation`, `ErrFieldRequired`, `ErrFieldTypeValue` | Non-retryable | Submission transitions to `rejected` immediately |
+| `ErrVersionStatus` (draft version) | Non-retryable | Submission transitions to `rejected` immediately |
+| `ErrStrategyNotFound` | Non-retryable | Submission transitions to `rejected` immediately |
+| Any other error (network, DB) | Retryable | Worker retries with exponential backoff up to `retryLimit`; transitions to `failed` on exhaustion |
 
 #### 5.3.3 Generic Background Worker (pkg/worker)
 
