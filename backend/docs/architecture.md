@@ -208,9 +208,93 @@ The Forms Service owns all form definitions, versioned schemas, submissions, and
 | Redis                               | Outbound  | Leader election for the submission processing worker                              |
 | Message Broker                      | Outbound  | Publishes canonical submission events upon acceptance (planned)                   |
 
-### 5.2
+### 5.2 Level 2
 
-### 5.3
+#### 5.2.1 Whitebox: Tenants Service
+
+The Tenants Service follows a Ports and Adapters (Hexagonal) structure. REST handlers on the left drive the application through inbound port interfaces; persistence, client, and worker adapters on the right are driven through outbound port interfaces. The domain and application services at the centre have no dependencies on infrastructure.
+
+```mermaid
+C4Component
+  title Building Block View — Level 2: Tenants Service
+
+  Container_Boundary(tenantsService, "Tenants Service") {
+    Component(restHandlers, "REST Handlers", "chi / Go", "Translates inbound HTTP requests into application commands and queries. Returns JSON responses.")
+    Component(appServices, "Application Services", "Go", "Implements TenantsAPI, DataSourcesAPI, and DataSourceJobsAPI. Orchestrates domain logic and delegates to outbound ports.")
+    Component(domain, "Domain", "Go", "Tenant and DataSource aggregates and value objects. Enforces business invariants.")
+    Component(strategies, "Lookup Strategies", "Go", "Four LookupStrategy implementations (static, scheduled, webhook, data-lake) dispatched at runtime via a StrategyRegistry keyed by DataSourceType.")
+    Component(persistence, "Persistence Adapters", "MongoDB / In-Memory", "Repository implementations for Tenant and DataSource aggregates. Driver selected at startup.")
+    Component(clients, "Client Adapters", "HTTP / BigQuery", "LookupClient fetches key-value pairs from external HTTP endpoints. BigQueryDataLakeClient is a stub pending implementation.")
+    Component(worker, "Data Sources Worker", "Go", "Leader-elected background worker. Periodically queries for expired scheduled data sources and refreshes their cached lookup data.")
+  }
+
+  Rel(restHandlers, appServices, "Invokes", "Go interface")
+  Rel(appServices, domain, "Creates and mutates")
+  Rel(appServices, strategies, "Resolves lookup strategy by DataSourceType", "StrategyRegistry")
+  Rel(appServices, persistence, "Reads and writes aggregates", "Go interface")
+  Rel(strategies, clients, "Fetches raw lookup data", "Go interface")
+  Rel(worker, appServices, "Polls and processes scheduled jobs", "DataSourceJobsAPI")
+```
+
+| Building Block           | Responsibility                                                                                                                                                                                                                                       | Source                  |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| **REST Handlers**        | Translates HTTP requests and responses to and from application commands and queries. Applies request validation and maps errors to HTTP status codes.                                                                                                | `adapters/rest/`        |
+| **Application Services** | Implements `TenantsAPI`, `DataSourcesAPI`, and `DataSourceJobsAPI`. Orchestrates domain construction, persistence, and strategy dispatch. Enforces tenant ownership on all operations.                                                               | `core/services/`        |
+| **Domain**               | `Tenant` and `DataSource` aggregates with their value objects (`Lookup`, `DataSourceAttributes`). Enforces invariants and owns all state transitions.                                                                                                | `core/domain/`          |
+| **Lookup Strategies**    | Four `LookupStrategy` implementations resolved at runtime by `DataSourceType`: `static` returns inline data; `scheduled` returns the pre-fetched cache; `webhook` makes a live HTTP call; `data-lake` queries BigQuery (stub).                       | `core/strategies/`      |
+| **Persistence Adapters** | MongoDB-backed and in-memory repository implementations for `Tenant` and `DataSource` aggregates. Driver is selected at startup via configuration.                                                                                                   | `adapters/persistence/` |
+| **Client Adapters**      | `LookupClient` fetches raw key-value rows from external HTTP endpoints for `scheduled` and `webhook` sources. `BigQueryDataLakeClient` is a stub pending implementation.                                                                             | `adapters/clients/`     |
+| **Data Sources Worker**  | Leader-elected background worker. On each tick, queries for `scheduled` data sources with an expired cache and delegates refresh to `DataSourceJobsAPI.Process`. Uses Redis-backed leader election to ensure a single active worker across replicas. | `adapters/workers/`     |
+
+#### 5.2.2 Whitebox: Forms Service
+
+The Forms Service follows the same Ports and Adapters structure as the Tenants Service, with two additional driven components: a Rule Evaluator that assesses visibility and required rules at submission time, and a richer set of Field Validator Strategies — one per field type.
+
+```mermaid
+C4Component
+  title Building Block View — Level 2: Forms Service
+
+  Container_Boundary(formsService, "Forms Service") {
+    Component(restHandlers, "REST Handlers", "chi / Go", "Translates inbound HTTP requests into application commands and queries. Returns JSON responses.")
+    Component(appServices, "Application Services", "Go", "Implements FormsAPI, SubmissionsAPI, SubmissionJobsAPI, and TagsAPI. Orchestrates form lifecycle, submission processing, and tag management.")
+    Component(domain, "Domain", "Go", "Form, FormVersion, Submission, Tag, and TagVersion aggregates with value objects. Enforces lifecycle state machines and business invariants.")
+    Component(fieldValidators, "Field Validator Strategies", "Go", "Five FieldValidatorStrategy implementations (text, number, select, checkbox, date) dispatched at runtime via a StrategyRegistry keyed by FieldType.")
+    Component(ruleEvaluator, "Rule Evaluator", "expr-lang/expr", "Evaluates visibility, required, and read-only rules against submitted field values using a sandboxed expression engine.")
+    Component(persistence, "Persistence Adapters", "MongoDB / In-Memory", "Repository implementations for Form, FormVersion, Submission, Tag, and TagVersion aggregates. Driver selected at startup.")
+    Component(worker, "Submissions Worker", "Go", "Leader-elected background worker. Picks up pending submissions, runs the validation and canonical tag mapping pipeline, and transitions submissions to accepted or rejected.")
+  }
+
+  Rel(restHandlers, appServices, "Invokes", "Go interface")
+  Rel(appServices, domain, "Creates and mutates")
+  Rel(appServices, fieldValidators, "Resolves validator by FieldType", "StrategyRegistry")
+  Rel(appServices, ruleEvaluator, "Evaluates visibility and required rules", "Go interface")
+  Rel(appServices, persistence, "Reads and writes aggregates", "Go interface")
+  Rel(worker, appServices, "Polls and processes pending submissions", "SubmissionJobsAPI")
+```
+
+| Building Block                 | Responsibility                                                                                                                                                                                                                                                                                                                                     | Source                  |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| **REST Handlers**              | Translates HTTP requests and responses to and from application commands and queries. Applies idempotency enforcement on submission intake.                                                                                                                                                                                                         | `adapters/rest/`        |
+| **Application Services**       | Implements `FormsAPI`, `SubmissionsAPI`, `SubmissionJobsAPI`, and `TagsAPI`. Orchestrates form version lifecycle, idempotent submission intake, async validation pipeline, and tag version transitions.                                                                                                                                            | `core/services/`        |
+| **Domain**                     | `Form`, `FormVersion`, `Submission`, `Tag`, and `TagVersion` aggregates with their value objects (`Page`, `Section`, `Field`, `Rule`, `FieldTagMapping`). Owns all lifecycle state machines (`draft → active → retired`, `draft → active → deprecated → retired`).                                                                                 | `core/domain/`          |
+| **Field Validator Strategies** | Five `FieldValidatorStrategy` implementations resolved at runtime by `FieldType`: `text` (string constraints), `number` (numeric bounds), `select`, `checkbox`, and `date` (partial; constraints pending).                                                                                                                                         | `core/strategies/`      |
+| **Rule Evaluator**             | `ExprRuleEvaluator` compiles rule expressions into type-safe boolean programs using `expr-lang/expr` and evaluates them against a `RuleEvaluationContext` (field key → submitted value map).                                                                                                                                                       | `adapters/evaluators/`  |
+| **Persistence Adapters**       | MongoDB-backed and in-memory repository implementations for all five aggregates. Driver is selected at startup via configuration.                                                                                                                                                                                                                  | `adapters/persistence/` |
+| **Submissions Worker**         | Leader-elected background worker. On each tick, fetches pending submissions and runs the full processing pipeline: rule evaluation, field validation, canonical tag mapping, and status transition to `accepted` or `rejected`. Retries with exponential backoff; non-retryable errors (validation failures, missing strategy) reject immediately. | `adapters/workers/`     |
+
+#### 5.2.3 Whitebox: `pkg/` Shared Library
+
+The shared library is a flat set of independent Go modules. Each package addresses a single cross-cutting concern and has no dependencies on other `pkg/` packages or on either service's domain.
+
+| Package                   | Responsibility                                                                                                                                                                                                                                                                                | Source                     |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| **`auth`**                | JWT bearer auth middleware and `Claims` context helpers. `NewMiddleware` iterates a list of `Authenticator` functions and responds 401 if all fail.                                                                                                                                           | `pkg/auth/`                |
+| **`auth/authenticators`** | `BearerAuthenticator` extracts and delegates `Authorization: Bearer` tokens. `PingFedTokenValidator` validates JWTs against PingFederate's JWKS endpoint. `PlaceholderTokenValidator` is a no-op used in development.                                                                         | `pkg/auth/authenticators/` |
+| **`cache`**               | `CacheManager` abstraction (`Get`, `Set`, `Del`) over Redis and in-memory backends. Also exposes `CacheLocker` primitives (`AcquireLock`, `RenewLock`, `ReleaseLock`) used by the distributed elector.                                                                                        | `pkg/cache/`               |
+| **`common`**              | Sentinel errors (`ErrNotFound`, `ErrExists`, `ErrInvalidID`, `ErrUnauthorized`), generic config file loaders, HTTP request/response utilities, chi middleware (`CorrelationID`, `RequestDate`, `Tenant`, `Idempotency`), structured logger, generic `StrategyRegistry`, and struct validator. | `pkg/common/`              |
+| **`database`**            | `Database` transaction interface (`BeginTx`, `CommitTx`, `RollbackTx`) over MongoDB and a no-op in-memory implementation. `MongoDBRepository` base struct with shared collection helpers.                                                                                                     | `pkg/database/`            |
+| **`worker`**              | Generic `BackgroundWorker[J Job]` with a ticker-driven leader-elected loop and a goroutine worker pool. Graceful 30-second shutdown. `WorkerContextHandler` injects `worker_id` into structured log records.                                                                                  | `pkg/worker/`              |
+| **`worker/elector`**      | `Elector` interface. `CacheElector` implements distributed leader election via Redis `SetNX` + Lua scripts with configurable TTL and renewal interval. `InMemoryElector` is a single-process no-op for local development.                                                                     | `pkg/worker/elector/`      |
 
 ## 6. Runtime View
 
