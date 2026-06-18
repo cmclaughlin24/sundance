@@ -495,6 +495,44 @@ stateDiagram-v2
 
 ## 8. Crosscutting Concepts
 
+### 8.1 Domain Model
+
+Forms Hub maintains two independent domain models — one per service — with no shared types between them. The only cross-domain reference is `DataSourceRef`, a value object on the Forms Service domain that holds a `DataSourceID` pointing to a data source owned by the Tenants Service.
+
+#### 8.1.1 Tenants Service Domain
+
+![Tenant Entity Relationship Diagram](imgs/Tenant%20Entity%20Relationship%20Diagram.png)
+
+| Entity                      | Description                                                                                                                                                                                                                                                                                                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`Tenant`**                | Root aggregate. Owns zero or more `DataSource` records. All data sources are deleted atomically within a transaction when their tenant is deleted.                                                                                                                                                                                                                                   |
+| **`DataSource`**            | Represents a named lookup source scoped to a tenant. Carries a polymorphic `DataSourceAttributes` interface — one concrete struct per `DataSourceType` (`static`, `scheduled`, `webhook`, `data-lake`).                                                                                                                                                                              |
+| **`DataSourceAttributes`**  | Interface with concrete implementations per `DataSourceType`: `StaticDataSourceAttributes` (inline `[]Lookup` data); `ScheduledDataSourceAttributes` (HTTP config + in-document `[]Lookup` cache refreshed by the worker); `WebhookDataSourceAttributes` (HTTP config + required binding keys); `DataLakeDataSourceAttributes` (BigQuery catalog, schema, and query — stub pending). |
+| **`DataSourceHTTPRequest`** | Value object embedded by `scheduled` and `webhook` attributes. Configures the URL, HTTP method, headers, and value/label field mappings for external HTTP calls.                                                                                                                                                                                                                     |
+| **`Lookup`**                | Value object. Uniform `{ value, label }` pair returned by all four strategies regardless of source type.                                                                                                                                                                                                                                                                             |
+
+#### 8.1.2 Forms Service Domain
+
+![Form Entity Relationship Diagram](imgs/Form%20Entity%20Relationship%20Diagram.png)
+
+| Entity                     | Description                                                                                                                                                                                                                                                                      |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`Form`**                 | Root aggregate for form design. Owns one or more `FormVersion` records. Cannot be deleted while any version is `active`.                                                                                                                                                         |
+| **`FormVersion`**          | Versioned snapshot of a form definition. Composed of a `Page → Section → Field` hierarchy. Follows the `draft → active → retired` lifecycle. Immutable once published.                                                                                                           |
+| **`Page`**                 | Top-level grouping within a version. Carries an optional `visible` rule. Contains one or more `Section` records ordered by position.                                                                                                                                             |
+| **`Section`**              | Grouping within a page. Carries an optional `visible` rule. Contains one or more `Field` records ordered by position.                                                                                                                                                            |
+| **`Field`**                | Leaf element of the form definition. Carries `visible`, `required`, and `readonly` rules. Holds a polymorphic `FieldAttributes` interface — one concrete struct per `FieldType`.                                                                                                 |
+| **`FieldAttributes`**      | Interface with concrete implementations per `FieldType`: `TextFieldAttributes` (min/max length, pattern); `NumberFieldAttributes` (min/max, step); `SelectFieldAttributes` (data source ref, min/max selected); `CheckboxFieldAttributes`; `DateFieldAttributes` (min/max date). |
+| **`DataSourceRef`**        | Value object on `SelectFieldAttributes`. Holds a `DataSourceID` referencing a data source in the Tenants Service and a `Bindings` map for resolving dynamic parameters at render and submission time.                                                                            |
+| **`Rule`**                 | Attaches to a `Page`, `Section`, or `Field`. Has a `type` (`visible`, `required`, `readonly`) and owns one or more `RuleExpression` records evaluated in sequence.                                                                                                               |
+| **`RuleExpression`**       | A single boolean predicate: `{ fieldKey, operator, value, joinWithPrevious }`. Joined with `and` / `or` to form a compound expression evaluated against the `RuleEvaluationContext`.                                                                                             |
+| **`FieldTagMapping`**      | Associates a `Field` with a `TagVersion` at a configurable priority. One field may map to multiple tag versions; the resolution policy selects the winning tag at submission processing time.                                                                                    |
+| **`Tag`**                  | Canonical reference entity scoped to a tenant. Owns one or more `TagVersion` records.                                                                                                                                                                                            |
+| **`TagVersion`**           | Versioned canonical tag. Follows the `draft → active → deprecated → retired` lifecycle. Active versions are the targets of `FieldTagMapping` resolution.                                                                                                                         |
+| **`Submission`**           | Records a form submission scoped to a tenant, form, and version. Holds `SubmissionFieldValue` entries and progresses through `pending → accepted / rejected / failed`. Identified externally by a `ReferenceID`; deduplicated by `IdempotencyID`.                                |
+| **`SubmissionFieldValue`** | A single submitted value keyed by `FieldID`.                                                                                                                                                                                                                                     |
+| **`SubmissionAttempt`**    | Records each processing attempt with its result and error details. Provides a full audit trail of retries.                                                                                                                                                                       |
+
 ## 9. Architecture Decisions
 
 ## 10. Quality Requirements
