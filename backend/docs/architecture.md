@@ -147,6 +147,84 @@ _Figure 4.1 — Ports & Adapters (Hexagonal) Architecture pattern. Each Forms Hu
 
 ## 5. Building Block View
 
+### 5.1 Whitebox System View
+
+Forms Hub is decomposed into two independently deployable services — **Tenants Service** and **Forms Service** — each owning a distinct domain and datastore, plus a shared **`pkg/` library** providing common infrastructure. This functional decomposition reflects that tenant/data-source configuration and form/submission processing are separate, independently evolvable concerns with no shared domain state.
+
+```mermaid
+C4Container
+  title Building Block View — Level 1: Forms Hub
+
+  Person(formDesigner, "Form Designer", "Creates and manages tenants, data sources, forms, tags, and validation rules.")
+  Person(endUser, "End User", "Renders active forms and submits responses.")
+
+  System_Boundary(formsHub, "Forms Hub") {
+    Container(tenantsService, "Tenants Service", "Go", "System of record for tenant configuration and data source management. Resolves dynamic lookup data for form fields.")
+    Container(formsService, "Forms Service", "Go", "System of record for form definitions, submissions, and canonical tags. Validates and normalizes submission data.")
+    Container(sharedLib, "pkg/ Shared Library", "Go", "Cross-cutting infrastructure: auth middleware, cache manager, database abstraction, generic background worker, and common utilities.")
+  }
+
+  System_Ext(mongodb, "MongoDB", "Primary datastore for all domain data.")
+  System_Ext(redis, "Redis", "Distributed cache and leader election locking.")
+  System_Ext(pingfederate, "PingFederate", "OAuth2/JWKS identity provider.")
+  System_Ext(messageBroker, "Message Broker", "Receives canonical submission events.")
+  System_Ext(externalHTTPAPIs, "External HTTP APIs", "Third-party endpoints for scheduled and webhook lookup sources.")
+  System_Ext(bigquery, "Google BigQuery", "Data lake for data-lake lookup sources.")
+
+  Rel(formDesigner, tenantsService, "Manages tenants and data sources", "REST/JSON HTTPS")
+  Rel(formDesigner, formsService, "Manages forms, tags, and versions", "REST/JSON HTTPS")
+  Rel(endUser, formsService, "Renders forms and submits responses", "REST/JSON HTTPS")
+  Rel(endUser, tenantsService, "Fetches lookup options at render time", "REST/JSON HTTPS")
+  Rel(formsService, tenantsService, "Validates lookup values at submission time", "REST/JSON HTTPS")
+  Rel(tenantsService, mongodb, "Reads/writes tenant and data source records", "MongoDB wire protocol")
+  Rel(formsService, mongodb, "Reads/writes forms, versions, submissions, tags", "MongoDB wire protocol")
+  Rel(tenantsService, redis, "Caches lookup data; leader election", "Redis protocol")
+  Rel(formsService, redis, "Leader election for submission worker", "Redis protocol")
+  Rel(tenantsService, pingfederate, "Validates JWT bearer tokens", "JWKS/HTTPS")
+  Rel(formsService, pingfederate, "Validates JWT bearer tokens", "JWKS/HTTPS")
+  Rel(formsService, messageBroker, "Publishes canonical submission events", "async")
+  Rel(tenantsService, externalHTTPAPIs, "Fetches lookup data for scheduled/webhook sources", "HTTP/HTTPS")
+  Rel(tenantsService, bigquery, "Queries lookup data for data-lake sources", "BigQuery API")
+```
+
+| Building Block            | Responsibility                                                                                                                                                                                                                                   | Source                      |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
+| **Tenants Service**       | System of record for tenant configuration and data source management. Provides CRUD for tenants and data sources, and resolves dynamic lookup key-value pairs via four configurable strategies (`static`, `scheduled`, `webhook`, `data-lake`).  | `backend/services/tenants/` |
+| **Forms Service**         | System of record for form definitions, versioned schemas, submissions, and canonical tags. Manages the full form design and submission processing pipeline, including async validation and canonical data normalization.                         | `backend/services/forms/`   |
+| **`pkg/` Shared Library** | Cross-cutting infrastructure shared by both services: JWT auth middleware, cache abstraction, MongoDB database abstraction, generic background worker with leader election, HTTP utilities, and the strategy registry. Contains no domain logic. | `backend/pkg/`              |
+
+#### 5.1.1 Blackbox: Tenants Service
+
+The Tenants Service owns all tenant and data source configuration. It exposes a REST API for managing tenants and data sources, resolves lookup key-value pairs on demand via a runtime strategy registry, and runs a background worker that periodically refreshes expired `scheduled` data source caches from their configured HTTP endpoints.
+
+| Interface                                  | Direction | Description                                                                     |
+| ------------------------------------------ | --------- | ------------------------------------------------------------------------------- |
+| `GET/POST/PUT/DELETE /api/v1/tenants`      | Inbound   | CRUD for tenant records                                                         |
+| `GET/POST/PUT/DELETE /api/v1/data-sources` | Inbound   | CRUD for data sources scoped to a tenant                                        |
+| `GET /api/v1/data-sources/{id}/look-ups`   | Inbound   | Resolves lookup key-value pairs for a given data source                         |
+| MongoDB                                    | Outbound  | Persists tenant and data source records                                         |
+| Redis                                      | Outbound  | Caches resolved lookup data; leader election for the data source refresh worker |
+| External HTTP APIs                         | Outbound  | Fetches lookup data for `scheduled` and `webhook` data sources                  |
+| Google BigQuery                            | Outbound  | Queries lookup data for `data-lake` data sources (planned)                      |
+
+#### 5.1.2 Blackbox: Forms Service
+
+The Forms Service owns all form definitions, versioned schemas, submissions, and canonical tags. It exposes a REST API for form design and submission intake, runs an async background worker that validates and normalizes pending submissions, and publishes canonical submission events to the message broker upon acceptance.
+
+| Interface                           | Direction | Description                                                                       |
+| ----------------------------------- | --------- | --------------------------------------------------------------------------------- |
+| `GET/POST/PUT/DELETE /api/v1/forms` | Inbound   | CRUD for forms and their versioned schemas                                        |
+| `GET/POST /api/v1/submissions`      | Inbound   | Submission intake (`202 Accepted`) and status retrieval                           |
+| `GET/POST/PUT/DELETE /api/v1/tags`  | Inbound   | CRUD for canonical tags and their versions                                        |
+| Tenants Service                     | Outbound  | Validates submitted lookup values against the live data source at processing time |
+| MongoDB                             | Outbound  | Persists forms, versions, submissions, and tags                                   |
+| Redis                               | Outbound  | Leader election for the submission processing worker                              |
+| Message Broker                      | Outbound  | Publishes canonical submission events upon acceptance (planned)                   |
+
+### 5.2
+
+### 5.3
+
 ## 6. Runtime View
 
 ### 6.1 Form Submission Flow

@@ -80,7 +80,7 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 		return nil
 	}
 
-	err = s.validate(ctx, submission)
+	err = s.sanitize(ctx, submission)
 
 	if err := s.recordAttempt(ctx, submission, err); err != nil {
 		return err
@@ -91,7 +91,7 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 	return err
 }
 
-func (s *submissionJobsService) validate(ctx context.Context, submission *domain.Submission) error {
+func (s *submissionJobsService) sanitize(ctx context.Context, submission *domain.Submission) error {
 	version, err := s.versionRepository.FindByID(ctx, submission.VersionID)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to retrieve version for submission job", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "error", err)
