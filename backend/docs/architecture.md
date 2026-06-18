@@ -296,6 +296,42 @@ The shared library is a flat set of independent Go modules. Each package address
 | **`worker`**              | Generic `BackgroundWorker[J Job]` with a ticker-driven leader-elected loop and a goroutine worker pool. Graceful 30-second shutdown. `WorkerContextHandler` injects `worker_id` into structured log records.                                                                                  | `pkg/worker/`              |
 | **`worker/elector`**      | `Elector` interface. `CacheElector` implements distributed leader election via Redis `SetNX` + Lua scripts with configurable TTL and renewal interval. `InMemoryElector` is a single-process no-op for local development.                                                                     | `pkg/worker/elector/`      |
 
+### 5.3 Level 3
+
+#### 5.3.1 Whitebox: Lookup Strategy Registry (Tenants Service)
+
+The `DataSourcesAPI.Lookup` method is the single entry point for all lookup resolution. Rather than a switch statement, it delegates to a `StrategyRegistry` — a generic map keyed by `DataSourceType` — which returns the appropriate `LookupStrategy` implementation at runtime. This means new data source types can be added by registering a new strategy without modifying the resolution path.
+
+```mermaid
+flowchart TD
+    A[DataSourcesAPI.Lookup] --> B[Load DataSource from repository]
+    B --> C[StrategyRegistry.Get DataSourceType]
+    C --> D{DataSourceType}
+    D -->|static| E[StaticLookupStrategy\nReturns inline data from\nStaticDataSourceAttributes.Data]
+    D -->|scheduled| F[ScheduledLookupStrategy\nReturns pre-fetched cache from\nScheduledDataSourceAttributes.Data]
+    D -->|webhook| G[WebhookLookupStrategy\nValidates required params\nCalls LookupClient.FetchLookups]
+    D -->|data-lake| H[DataLakeLookupStrategy\nValidates required params\nCalls DataLakeClient.Query stub]
+    E --> I[Return]
+    F --> I
+    G --> J[baseLookupStrategy.toLookups\nMaps raw rows to Lookup pairs]
+    H --> J
+    J --> I[Return]
+```
+
+| Building Block                | Responsibility                                                                                                                                                                                                | Source                                    |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| **`LookupStrategy`**          | Port interface. One method: `Lookup(ctx, *DataSource, params) ([]*Lookup, error)`. All four implementations satisfy this contract.                                                                            | `core/ports/secondary.go`                 |
+| **`StrategyRegistry`**        | Generic `StrategyRegistry[DataSourceType, LookupStrategy]` map. Returns `ErrStrategyNotFound` on an unregistered key. Populated at startup in `core/strategies/strategies.go`.                                | `pkg/common/stratreg/`                    |
+| **`StaticLookupStrategy`**    | Returns `StaticDataSourceAttributes.Data` directly. No external I/O; zero latency.                                                                                                                            | `core/strategies/static_lookup.go`        |
+| **`ScheduledLookupStrategy`** | Returns `ScheduledDataSourceAttributes.Data` — the cache populated by the Data Sources Worker. Trades freshness for low latency; staleness is bounded by the configured worker interval.                      | `core/strategies/scheduled_lookup.go`     |
+| **`WebhookLookupStrategy`**   | Validates required binding params, then calls `LookupClient.FetchLookups` on every request. Always current but adds per-request HTTP latency.                                                                 | `core/strategies/webhook_lookup.go`       |
+| **`DataLakeLookupStrategy`**  | Validates required binding params, then calls `DataLakeClient.Query`. Currently a stub; `BigQueryDataLakeClient` always returns `ErrBigQueryDataLakeNotConfigured`.                                           | `core/strategies/data_lake_lookup.go`     |
+| **`baseLookupStrategy`**      | Embedded base providing `toLookups()` (maps raw `[]map[string]any` rows to `[]*Lookup` by configured value/label field names) and `missingRequiredKeys()`. Used by `webhook` and `data-lake` strategies only. | `core/strategies/base_lookup_strategy.go` |
+
+#### 5.3.2 Submission Processing Pipeline (Forms Service)
+
+#### 5.3.3 Generic Background Worker (pkg/worker)
+
 ## 6. Runtime View
 
 ### 6.1 Form Submission Flow
