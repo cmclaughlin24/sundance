@@ -365,26 +365,64 @@ flowchart TD
     Z --> AA
 ```
 
-| Building Block | Responsibility | Source |
-| --- | --- | --- |
-| **`SubmissionJobsAPI.Process`** | Orchestrates the full pipeline for a single submission. Entry point called by the Submissions Worker. | `core/services/submission_jobs_service.go` |
-| **`RuleEvaluationContext`** | `map[string]any` of field key → submitted value. Built once per submission and passed to every rule evaluation call. | `core/ports/secondary.go` |
-| **`RuleEvaluator`** | `ExprRuleEvaluator` evaluates `visible` and `required` rules against the context. Returns `bool`. Determines whether a page, section, or field is processed at all. | `adapters/evaluators/expr_rule_evaluator.go` |
-| **`FieldValidatorRegistry`** | Generic `StrategyRegistry[FieldType, FieldValidatorStrategy]` map. Returns `ErrStrategyNotFound` on an unregistered key — treated as non-retryable. | `pkg/common/stratreg/` |
-| **`FieldValidatorStrategy`** | One implementation per `FieldType` (`text`, `number`, `select`, `checkbox`, `date`). Validates the submitted value against the field's configured constraints. | `core/strategies/` |
-| **Canonical Tag Mapping** | After all fields pass validation, submitted values are mapped through `FieldTagMapping` entries to their active `TagVersion`. Produces a normalized output keyed by canonical tag rather than form field key. | `core/services/submission_jobs_service.go` |
-| **`submission.Accept / Reject`** | Domain methods that transition `Submission` status to `accepted` or `rejected` and record a `SubmissionAttempt` as an audit entry. Persisted inside a database transaction. | `core/domain/submission.go` |
+| Building Block                   | Responsibility                                                                                                                                                                                                | Source                                       |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| **`SubmissionJobsAPI.Process`**  | Orchestrates the full pipeline for a single submission. Entry point called by the Submissions Worker.                                                                                                         | `core/services/submission_jobs_service.go`   |
+| **`RuleEvaluationContext`**      | `map[string]any` of field key → submitted value. Built once per submission and passed to every rule evaluation call.                                                                                          | `core/ports/secondary.go`                    |
+| **`RuleEvaluator`**              | `ExprRuleEvaluator` evaluates `visible` and `required` rules against the context. Returns `bool`. Determines whether a page, section, or field is processed at all.                                           | `adapters/evaluators/expr_rule_evaluator.go` |
+| **`FieldValidatorRegistry`**     | Generic `StrategyRegistry[FieldType, FieldValidatorStrategy]` map. Returns `ErrStrategyNotFound` on an unregistered key — treated as non-retryable.                                                           | `pkg/common/stratreg/`                       |
+| **`FieldValidatorStrategy`**     | One implementation per `FieldType` (`text`, `number`, `select`, `checkbox`, `date`). Validates the submitted value against the field's configured constraints.                                                | `core/strategies/`                           |
+| **Canonical Tag Mapping**        | After all fields pass validation, submitted values are mapped through `FieldTagMapping` entries to their active `TagVersion`. Produces a normalized output keyed by canonical tag rather than form field key. | `core/services/submission_jobs_service.go`   |
+| **`submission.Accept / Reject`** | Domain methods that transition `Submission` status to `accepted` or `rejected` and record a `SubmissionAttempt` as an audit entry. Persisted inside a database transaction.                                   | `core/domain/submission.go`                  |
 
 **Retry and error classification:**
 
-| Error | Classification | Outcome |
-| --- | --- | --- |
-| `ErrFieldValidation`, `ErrFieldRequired`, `ErrFieldTypeValue` | Non-retryable | Submission transitions to `rejected` immediately |
-| `ErrVersionStatus` (draft version) | Non-retryable | Submission transitions to `rejected` immediately |
-| `ErrStrategyNotFound` | Non-retryable | Submission transitions to `rejected` immediately |
-| Any other error (network, DB) | Retryable | Worker retries with exponential backoff up to `retryLimit`; transitions to `failed` on exhaustion |
+| Error                                                         | Classification | Outcome                                                                                           |
+| ------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------- |
+| `ErrFieldValidation`, `ErrFieldRequired`, `ErrFieldTypeValue` | Non-retryable  | Submission transitions to `rejected` immediately                                                  |
+| `ErrVersionStatus` (draft version)                            | Non-retryable  | Submission transitions to `rejected` immediately                                                  |
+| `ErrStrategyNotFound`                                         | Non-retryable  | Submission transitions to `rejected` immediately                                                  |
+| Any other error (network, DB)                                 | Retryable      | Worker retries with exponential backoff up to `retryLimit`; transitions to `failed` on exhaustion |
 
-#### 5.3.3 Generic Background Worker (pkg/worker)
+#### 5.3.3 Whitebox: Generic Background Worker (`pkg/worker`)
+
+`BackgroundWorker[J Job]` is a fully generic, reusable component shared by both services. It manages the full leader election state machine, job fetching, and goroutine pool dispatch — the consuming service only provides a `FetchJobsFn` and a `Job` implementation. The diagram shows the lifecycle from startup through graceful shutdown.
+
+```mermaid
+flowchart TD
+    A[BackgroundWorker.Start] --> B[Start ticker]
+    B --> C{On each tick}
+    C --> D{Is leader?}
+    D -->|no| E[Elector.TryAcquire]
+    E -->|failed| C
+    E -->|acquired| F[Start leader goroutine]
+    D -->|yes| G[Elector.Renew]
+    G -->|failed| H[Release leadership\nstop leader goroutine]
+    H --> C
+    G -->|renewed| I[FetchJobsFn]
+    I --> J[Dispatch jobs to Worker pool]
+    J --> K[Worker.Start\ngoroutine per job]
+    K --> L[Job.Process]
+    L --> M{Error?}
+    M -->|no| N[Done]
+    M -->|yes| O{Retryable?}
+    O -->|no| N
+    O -->|yes| P[Exponential backoff\nretry up to retryLimit]
+    P --> L
+    C -->|shutdown signal| Q[Wait up to 30s\nfor in-flight jobs]
+    Q --> R[Elector.Release]
+    R --> S[Stop]
+```
+
+| Building Block                | Responsibility                                                                                                                                                                                                                                           | Source                                   |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| **`BackgroundWorker[J Job]`** | Ticker-driven orchestrator. Manages leader election state, calls `FetchJobsFn` on each tick as leader, and dispatches jobs to the worker pool. Configured entirely via functional options.                                                               | `pkg/worker/background_worker.go`        |
+| **`Job`**                     | Interface with a single method: `Process(ctx) error`. Implemented per service — `dataSourceJob` in the Tenants Service and `submissionJob` in the Forms Service.                                                                                         | `pkg/worker/worker.go`                   |
+| **`Worker[J Job]`**           | Single goroutine that pulls a job from a channel and calls `Job.Process`. Supports an optional per-job timeout and recovers from panics.                                                                                                                 | `pkg/worker/worker.go`                   |
+| **`FetchJobsFn[J]`**          | `func(context.Context) ([]J, error)` supplied by the consuming service. Called on each tick by the leader to retrieve the current job set.                                                                                                               | `pkg/worker/background_worker.go`        |
+| **`Elector`**                 | Interface with `TryAcquire`, `Renew`, and `Release`. Abstracts leader election; two implementations exist.                                                                                                                                               | `pkg/worker/elector/elector.go`          |
+| **`CacheElector`**            | Distributed elector backed by Redis `SetNX` + Lua scripts. TTL of 2 minutes; renewed every 1 minute. Keyed per service (`service:tenants:elector`, `service:forms:elector`). Ensures only one replica runs the worker at a time across horizontal scale. | `pkg/worker/elector/cache_elector.go`    |
+| **`InMemoryElector`**         | Single-process no-op elector. Always acquires leadership. Used in local development and testing to avoid a Redis dependency.                                                                                                                             | `pkg/worker/elector/inmemory_elector.go` |
 
 ## 6. Runtime View
 
