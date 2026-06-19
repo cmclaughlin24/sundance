@@ -559,13 +559,84 @@ Both storage technologies have in-memory substitutes. The active driver is selec
 | MongoDB | `adapters/persistence/mongodb/`    | `adapters/persistence/inmemory/`      | `APP_DATABASE_DRIVER` |
 | Redis   | `pkg/cache/redis_cache_manager.go` | `pkg/cache/inmemory_cache_manager.go` | `APP_CACHE_TYPE`      |
 
-### 8.3 Authentication & Authorization
+### 8.3 Authentication and Authorization
+
+All inbound HTTP requests to both services are authenticated via JWT bearer tokens. The `pkg/auth` package provides a composable middleware chain that is applied to the `/api/v1` route group in both services.
+
+**Authentication Flow**
+
+1. The client authenticates against PingFederate and obtains a signed JWT
+2. The client includes the token as `Authorization: Bearer <token>` on each request
+3. `BearerAuthenticator` extracts the token from the header and delegates to `PingFedTokenValidator`
+4. `PingFedTokenValidator` fetches PingFederate's public signing keys from the configured JWKS URI and validates the token's signature, audience, issuer, expiry, and issued-at claims
+5. On success, the resolved `Claims` are stored in the request context via `auth.SetClaimsContext`; on failure the middleware responds `401 Unauthorized`
+
+**Configuration**
+
+| Setting  | Config Key                        | Description                                           |
+| -------- | --------------------------------- | ----------------------------------------------------- |
+| Audience | `APP_SERVER_AUTH_OAUTH2_AUDIENCE` | Expected `aud` claim value                            |
+| Issuer   | `APP_SERVER_AUTH_OAUTH2_ISSUER`   | Expected `iss` claim value                            |
+| JWKS URI | `APP_SERVER_AUTH_OAUTH2_JWK`      | PingFederate JWKS endpoint used to fetch signing keys |
+
+**Authorization**
+
+Authorization is currently enforced at the tenant level only. Every mutating operation in both services validates that the resource being accessed belongs to the tenant identified by the `X-Tenant-ID` header. No role-based access control is implemented at this time.
 
 ### 8.4 Tenant Scoping
 
+All resources in Forms Hub are scoped to a tenant. The `X-Tenant-ID` header is the mechanism by which the caller declares the tenant context for a request. It is enforced by `NewTenantMiddleware` — a chi middleware in `pkg/common/httputil` — which reads the header, rejects the request with `400 Bad Request` if it is absent, and stores the value in the request context via `SetTenantContext`. Handlers retrieve it downstream via `TenantFromContext`, which panics if called outside the middleware — making misconfigured routes a hard failure at development time rather than a silent data leak.
+
+The middleware is applied differently per service, reflecting their different access models:
+
+| Service         | Scope                       | Behaviour                                                                                                                                                                             |
+| --------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tenants Service | `/api/v1/data-sources` only | `X-Tenant-ID` is required for all data source operations. The `/api/v1/tenants` routes do not require it — tenant management is a privileged operation not scoped to a single tenant. |
+| Forms Service   | `/api/v1` (all routes)      | `X-Tenant-ID` is required on every request. All forms, versions, submissions, and tags are tenant-owned.                                                                              |
+
+Within the application services, tenant ownership is enforced on every operation — reads verify the requested resource belongs to the tenant in context; writes associate new resources with the tenant in context.
+
 ### 8.5 Idempotency
 
+Submission intake is idempotent. A client must include an `Idempotency-Key` header on every `POST /submissions` request. The key is an arbitrary client-generated string that uniquely identifies the intent to submit — if the same key is submitted more than once, the system returns the original submission rather than creating a duplicate.
+
+**Enforcement is two-layered:**
+
+1. `IdempotencyMiddleware` in `pkg/common/httputil` enforces the header's presence at the HTTP layer, rejecting requests without it with `400 Bad Request`. It stores the key in the request context via `SetIdempotencyContext`; `IdempotencyFromContext` panics if called outside the middleware.
+
+2. `submissionsService.Create` calls `FindByIdempotencyID` before creating a new submission. If a record with that key already exists, it is returned immediately — no new submission is created and no error is returned.
+
+This means idempotency is safe across retries and network failures: a client that never receives a response can safely resubmit with the same key without risk of double processing.
+
+The `Idempotency-Key` is stored on the `Submission` domain aggregate as `IdempotencyID` and is separate from the `ReferenceID` — the `ReferenceID` is system-generated and used for external tracking; the `IdempotencyID` is client-supplied and used only for deduplication.
+
 ### 8.6 Error Handling
+
+Both services use a uniform error handling strategy. Domain and application services return typed sentinel errors from `pkg/common`; the `SendErrorResponse` function in `pkg/common/httputil` maps them to HTTP status codes at the REST adapter boundary. Internal error details are never exposed to callers on `500` responses.
+
+**Sentinel Errors → HTTP Status Mapping**
+
+| Sentinel Error                                                                                          | HTTP Status                 | Trigger                                                                      |
+| ------------------------------------------------------------------------------------------------------- | --------------------------- | ---------------------------------------------------------------------------- |
+| `ErrInvalidID`, `ErrDecodeJSON`, `ErrMissingTenantID`, `ErrMissingIdempotencyHeader`, validation errors | `400 Bad Request`           | Malformed input or missing required headers                                  |
+| `ErrUnauthorized`                                                                                       | `401 Unauthorized`          | Resource belongs to a different tenant; auth middleware failure              |
+| `ErrNotFound`                                                                                           | `404 Not Found`             | Requested resource does not exist                                            |
+| `ErrExists`                                                                                             | `409 Conflict`              | Resource with the same identity already exists                               |
+| Any other error                                                                                         | `500 Internal Server Error` | Infrastructure failure; generic message returned, internal detail suppressed |
+
+All error responses follow a uniform JSON envelope:
+
+```json
+{
+  "message": "Not Found",
+  "error": "not found",
+  "statusCode": 404
+}
+```
+
+**Background Worker Error Classification**
+
+Errors in the submission processing pipeline are classified at the worker level into retryable and non-retryable. Domain errors (`ErrFieldValidation`, `ErrFieldRequired`, `ErrVersionStatus`, `ErrStrategyNotFound`) are non-retryable and transition the submission to `rejected` immediately. Infrastructure errors are retryable — the worker applies exponential backoff up to the configured `retryLimit` before transitioning the submission to `failed`.
 
 ### 8.7 Structured Logging
 
