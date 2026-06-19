@@ -640,6 +640,29 @@ Errors in the submission processing pipeline are classified at the worker level 
 
 ### 8.7 Structured Logging
 
+Both services use Go's `log/slog` for structured, context-aware logging throughout. All log records are emitted in OpenTelemetry schema format via `httplog.Options{Schema: httplog.SchemaOTEL}`.
+
+**Context Handlers**
+
+Rather than passing loggers explicitly, contextual attributes are injected automatically by two `slog.Handler` wrappers:
+
+| Handler                 | Location             | Attributes Injected                                                                     |
+| ----------------------- | -------------------- | --------------------------------------------------------------------------------------- |
+| `RequestContextHandler` | `pkg/common/logger/` | `request_id` (chi `middleware.RequestID`), `correlation_id` (`X-Correlation-ID` header) |
+| `WorkerContextHandler`  | `pkg/worker/`        | `worker_id` (unique ID assigned to each goroutine worker)                               |
+
+Each handler wraps the base `slog.Handler` and appends its attributes on every `Handle` call by reading from the request or worker context. This means any `logger.InfoContext(ctx, ...)` call in a handler, service, or worker automatically includes the correct trace identifiers without the caller needing to pass them explicitly.
+
+**Log Levels**
+
+Log level is configured via `APP_LOG_LEVEL` and defaults to `info`. Valid values are `debug`, `info`, `warn`, and `error`.
+
+**Conventions**
+
+- All application services receive a `*slog.Logger` via constructor injection
+- Log calls always use the context-aware variants (`DebugContext`, `InfoContext`, `WarnContext`, `ErrorContext`) to ensure handler enrichment fires
+- Background worker lifecycle events (leadership acquired/lost, jobs dispatched, shutdown) are logged at `Info`; job processing errors at `Error`; job completion at `Info` with `duration_ms`
+
 ## 9. Architecture Decisions
 
 ## 10. Quality Requirements
