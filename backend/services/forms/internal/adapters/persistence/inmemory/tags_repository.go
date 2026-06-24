@@ -39,6 +39,21 @@ func (r *inMemoryTagRepository) Find(ctx context.Context, filters ports.TagFilte
 	return tags, nil
 }
 
+func (r *inMemoryTagRepository) FindByIDs(ctx context.Context, ids []domain.TagID) ([]*domain.Tag, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	tags := make([]*domain.Tag, 0, len(ids))
+
+	for _, id := range ids {
+		if tag, ok := r.tags[string(id)]; ok {
+			tags = append(tags, tag)
+		}
+	}
+
+	return tags, nil
+}
+
 func (r *inMemoryTagRepository) FindByID(ctx context.Context, id domain.TagID) (*domain.Tag, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

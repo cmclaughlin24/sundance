@@ -54,6 +54,24 @@ func (r *inMemoryTagVersionsRepository) Find(ctx context.Context, filters ports.
 	return versions, nil
 }
 
+func (r *inMemoryTagVersionsRepository) FindByIDs(ctx context.Context, ids []domain.TagVersionID) ([]*domain.TagVersion, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	versions := make([]*domain.TagVersion, 0, len(ids))
+
+	for _, id := range ids {
+		for _, tagVersions := range r.versions {
+			if version, ok := tagVersions[string(id)]; ok {
+				versions = append(versions, version)
+				break
+			}
+		}
+	}
+
+	return versions, nil
+}
+
 func (r *inMemoryTagVersionsRepository) FindByID(ctx context.Context, id domain.TagVersionID) (*domain.TagVersion, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

@@ -48,15 +48,29 @@ func (r *mongoDBTagsRespository) migrate(ctx context.Context) error {
 	return err
 }
 
-func (r *mongoDBTagsRespository) Find(ctx context.Context, ctf ports.TagFilters) ([]*domain.Tag, error) {
+func (r *mongoDBTagsRespository) Find(ctx context.Context, tf ports.TagFilters) ([]*domain.Tag, error) {
 	filter := bson.M{}
 
-	if ctf.TenantID != "" {
-		filter["tenant_id"] = ctf.TenantID
+	if tf.TenantID != "" {
+		filter["tenant_id"] = tf.TenantID
 	}
 
 	docs, err := r.base.Find(ctx, filter)
 
+	if err != nil {
+		return nil, err
+	}
+
+	tags := make([]*domain.Tag, 0, len(docs))
+	for _, document := range docs {
+		tags = append(tags, documents.FromTagDocument(document))
+	}
+
+	return tags, nil
+}
+
+func (r *mongoDBTagsRespository) FindByIDs(ctx context.Context, ids []domain.TagID) ([]*domain.Tag, error) {
+	docs, err := r.base.Find(ctx, bson.M{"_id": bson.M{"$in": ids}})
 	if err != nil {
 		return nil, err
 	}

@@ -64,6 +64,20 @@ func (r *mongoDBTagVersionsRepository) Find(ctx context.Context, filters ports.T
 	return versions, nil
 }
 
+func (r *mongoDBTagVersionsRepository) FindByIDs(ctx context.Context, ids []domain.TagVersionID) ([]*domain.TagVersion, error) {
+	docs, err := r.base.Find(ctx, bson.M{"_id": bson.M{"$in": ids}})
+	if err != nil {
+		return nil, err
+	}
+
+	versions := make([]*domain.TagVersion, 0, len(docs))
+	for _, document := range docs {
+		versions = append(versions, documents.FromTagVersionDocument(document))
+	}
+
+	return versions, nil
+}
+
 func (r *mongoDBTagVersionsRepository) FindByID(ctx context.Context, id domain.TagVersionID) (*domain.TagVersion, error) {
 	doc, err := r.base.FindOne(ctx, bson.M{"_id": id})
 

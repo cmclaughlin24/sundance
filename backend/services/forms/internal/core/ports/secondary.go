@@ -17,20 +17,6 @@ type Repository struct {
 	Submissions  SubmissionsRepository
 }
 
-type TagsRepository interface {
-	Find(context.Context, TagFilters) ([]*domain.Tag, error)
-	FindByID(context.Context, domain.TagID) (*domain.Tag, error)
-	Upsert(context.Context, *domain.Tag) (*domain.Tag, error)
-	Delete(context.Context, domain.TagID) error
-}
-
-type TagVersionsRepository interface {
-	Find(context.Context, TagVersionFilters) ([]*domain.TagVersion, error)
-	FindByID(context.Context, domain.TagVersionID) (*domain.TagVersion, error)
-	FindNextVersionNumber(context.Context, domain.TagID) (int, error)
-	Upsert(context.Context, *domain.TagVersion) (*domain.TagVersion, error)
-}
-
 type FormsRepository interface {
 	Find(context.Context, *FormFilters) ([]*domain.Form, error)
 	FindByID(context.Context, domain.FormID) (*domain.Form, error)
@@ -52,6 +38,22 @@ type SubmissionsRepository interface {
 	FindByReferenceID(context.Context, domain.ReferenceID) (*domain.Submission, error)
 	FindByIdempotencyID(context.Context, domain.IdempotencyID) (*domain.Submission, error)
 	Upsert(context.Context, *domain.Submission) (*domain.Submission, error)
+}
+
+type TagsRepository interface {
+	Find(context.Context, TagFilters) ([]*domain.Tag, error)
+	FindByIDs(context.Context, []domain.TagID) ([]*domain.Tag, error)
+	FindByID(context.Context, domain.TagID) (*domain.Tag, error)
+	Upsert(context.Context, *domain.Tag) (*domain.Tag, error)
+	Delete(context.Context, domain.TagID) error
+}
+
+type TagVersionsRepository interface {
+	Find(context.Context, TagVersionFilters) ([]*domain.TagVersion, error)
+	FindByIDs(context.Context, []domain.TagVersionID) ([]*domain.TagVersion, error)
+	FindByID(context.Context, domain.TagVersionID) (*domain.TagVersion, error)
+	FindNextVersionNumber(context.Context, domain.TagID) (int, error)
+	Upsert(context.Context, *domain.TagVersion) (*domain.TagVersion, error)
 }
 
 type Strategies struct {

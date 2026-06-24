@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"maps"
+	"slices"
 
 	"sundance/backend/pkg/database"
 	"sundance/backend/services/forms/internal/core/domain"
@@ -12,20 +14,28 @@ import (
 	"sundance/backend/services/forms/internal/core/strategies"
 )
 
-var (
-	ErrVersionStatus = errors.New("invalid version status")
-)
-
 type ruleByTypeGetter interface {
 	GetRuleByType(domain.RuleType) *domain.Rule
+}
+
+type factCandidate struct {
+	ftm   domain.FieldTagMapping
+	value any
+}
+
+type tagAggregate struct {
+	tag      domain.Tag
+	versions []*domain.TagVersion
 }
 
 type submissionJobsService struct {
 	logger                   *slog.Logger
 	evaluator                ports.RuleEvaluator
 	database                 database.Database
-	versionRepository        ports.FormVersionRepository
-	submissionRepository     ports.SubmissionsRepository
+	formVersionsRepository   ports.FormVersionRepository
+	submissionsRepository    ports.SubmissionsRepository
+	tagsRepository           ports.TagsRepository
+	tagVersionsRepository    ports.TagVersionsRepository
 	fieldValidatorStrategies ports.FieldValidatorRegistry
 }
 
@@ -39,8 +49,10 @@ func NewSubmissionJobsService(
 		logger:                   logger,
 		evaluator:                evaluator,
 		database:                 repository.Database,
-		versionRepository:        repository.FormVersions,
-		submissionRepository:     repository.Submissions,
+		formVersionsRepository:   repository.FormVersions,
+		submissionsRepository:    repository.Submissions,
+		tagsRepository:           repository.Tags,
+		tagVersionsRepository:    repository.TagVersions,
 		fieldValidatorStrategies: strategies.FieldValidator,
 	}
 }
@@ -53,7 +65,7 @@ func (s *submissionJobsService) Find(ctx context.Context, query ports.FindSubmis
 		return nil, err
 	}
 
-	ids, err := s.submissionRepository.FindJobs(ctx, &ports.FindSubmissionsFilter{
+	ids, err := s.submissionsRepository.FindJobs(ctx, &ports.FindSubmissionsFilter{
 		Take:     query.Take,
 		Statuses: []domain.SubmissionStatus{domain.SubmissionStatusPending},
 	})
@@ -69,7 +81,7 @@ func (s *submissionJobsService) Find(ctx context.Context, query ports.FindSubmis
 func (s *submissionJobsService) Process(ctx context.Context, id domain.SubmissionID) error {
 	s.logger.DebugContext(ctx, "processing submission job", "submission_id", id)
 
-	submission, err := s.submissionRepository.FindByID(ctx, id)
+	submission, err := s.submissionsRepository.FindByID(ctx, id)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to retrieve submission job", "submission_id", id, "error", err)
 		return err
@@ -92,15 +104,28 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 }
 
 func (s *submissionJobsService) sanitize(ctx context.Context, submission *domain.Submission) error {
-	version, err := s.versionRepository.FindByID(ctx, submission.VersionID)
+	factCandidates, err := s.extractFactCandidates(ctx, submission)
+	if err != nil {
+		return err
+	}
+
+	if err := s.normalize(ctx, factCandidates); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *submissionJobsService) extractFactCandidates(ctx context.Context, submission *domain.Submission) ([]factCandidate, error) {
+	version, err := s.formVersionsRepository.FindByID(ctx, submission.VersionID)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to retrieve version for submission job", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "error", err)
-		return err
+		return nil, err
 	}
 
 	if version.Status == domain.FormVersionStatusDraft {
 		s.logger.WarnContext(ctx, "skipping submission job; invalid status", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "version_status", version.Status)
-		return ErrVersionStatus
+		return nil, domain.ErrInvalidVersionStatus
 	}
 
 	evalCtx := make(ports.RuleEvaluationContext, len(submission.Values))
@@ -110,12 +135,14 @@ func (s *submissionJobsService) sanitize(ctx context.Context, submission *domain
 		}
 	}
 
+	candidates := make([]factCandidate, 0)
+
 pageLoop:
 	for _, page := range version.GetPages() {
 		visible, err := s.shouldValidate(ctx, page, evalCtx)
 
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		if !visible {
@@ -127,7 +154,7 @@ pageLoop:
 			visible, err := s.shouldValidate(ctx, section, evalCtx)
 
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			if !visible {
@@ -139,7 +166,7 @@ pageLoop:
 				visible, err := s.shouldValidate(ctx, field, evalCtx)
 
 				if err != nil {
-					return err
+					return nil, err
 				}
 
 				if !visible {
@@ -148,7 +175,7 @@ pageLoop:
 
 				required, err := s.isRequired(ctx, field, evalCtx)
 				if err != nil {
-					return err
+					return nil, err
 				}
 
 				if required != nil {
@@ -156,10 +183,40 @@ pageLoop:
 				}
 
 				if err := s.validateField(ctx, field, submission); err != nil {
-					return err
+					return nil, err
+				}
+
+				for _, ftm := range field.GetTags() {
+					// NOTE: The second return fv (ok) from submission.GetFieldValue(field.ID) is ignored here
+					// because it was checked during the field validation.
+					fv, _ := submission.GetFieldValue(field.ID)
+					candidates = append(candidates, factCandidate{*ftm, fv.Value})
 				}
 			}
 		}
+	}
+
+	return candidates, nil
+}
+
+func (s *submissionJobsService) normalize(ctx context.Context, factCandidates []factCandidate) error {
+	candidatesByVersion := make(map[domain.TagVersionID][]factCandidate)
+	for _, fc := range factCandidates {
+		candidatesByVersion[fc.ftm.TagVersionID] = append(candidatesByVersion[fc.ftm.TagVersionID], fc)
+	}
+
+	tags, err := s.getTags(ctx, slices.Collect(maps.Keys(candidatesByVersion)))
+	if err != nil {
+		return err
+	}
+
+	for _, t := range tags {
+		_, err := s.filterTagVersions(ctx, t.versions)
+		if err != nil {
+			return err
+		}
+
+		// version := s.resolveByPriority(versions, candidatesByVersion)
 	}
 
 	return nil
@@ -230,7 +287,7 @@ func (s *submissionJobsService) recordAttempt(ctx context.Context, submission *d
 
 	defer s.database.RollbackTx(txCtx)
 
-	_, err = s.submissionRepository.Upsert(txCtx, submission)
+	_, err = s.submissionsRepository.Upsert(txCtx, submission)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to upsert submission", "submission_id", submission.ID, "error", err)
 		return err
@@ -244,8 +301,65 @@ func (s *submissionJobsService) recordAttempt(ctx context.Context, submission *d
 	return nil
 }
 
+func (s *submissionJobsService) getTags(ctx context.Context, ids []domain.TagVersionID) ([]tagAggregate, error) {
+	versions, err := s.tagVersionsRepository.FindByIDs(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+
+	versionsByTag := make(map[domain.TagID][]*domain.TagVersion)
+	for _, v := range versions {
+		versionsByTag[v.TagID] = append(versionsByTag[v.TagID], v)
+	}
+
+	tags, err := s.tagsRepository.FindByIDs(ctx, slices.Collect(maps.Keys(versionsByTag)))
+	if err != nil {
+		return nil, err
+	}
+
+	aggregates := make([]tagAggregate, 0, len(tags))
+	for _, t := range tags {
+		aggregates = append(aggregates, tagAggregate{*t, versionsByTag[t.ID]})
+	}
+
+	return aggregates, nil
+}
+
+func (s *submissionJobsService) filterTagVersions(ctx context.Context, versions []*domain.TagVersion) ([]*domain.TagVersion, error) {
+	var active, deprecated []*domain.TagVersion
+	for _, v := range versions {
+		switch v.Status {
+		case domain.TagStatusDraft, domain.TagStatusRetired:
+			s.logger.ErrorContext(ctx, "", "status", v.Status)
+		case domain.TagStatusDeprecated:
+			deprecated = append(deprecated, v)
+		case domain.TagStatusActive:
+			active = append(active, v)
+		}
+	}
+
+	pool := active
+	if len(pool) == 0 {
+		pool = deprecated
+	}
+
+	if len(pool) == 0 {
+		// FIXME: Submission should be rejected (e.g. a breaking change to the API contract has been introduced)
+		return nil, nil
+	}
+
+	return pool, nil
+}
+
+func (s *submissionJobsService) resolveByPriority(versions []*domain.TagVersion, factCandidates []factCandidate) *domain.TagVersion {
+	best := versions[0]
+	tied := []*domain.TagVersion{best}
+
+	return nil
+}
+
 func shouldReject(err error) bool {
-	return errors.Is(err, ErrVersionStatus) ||
+	return errors.Is(err, domain.ErrInvalidVersionStatus) ||
 		errors.Is(err, strategies.ErrFieldValidation) ||
 		errors.Is(err, strategies.ErrFieldRequired) ||
 		errors.Is(err, strategies.ErrFieldTypeValue)
