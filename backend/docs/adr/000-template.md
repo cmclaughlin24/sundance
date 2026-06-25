@@ -1,6 +1,6 @@
 <div align="center">
 
-# Archiecture Decision Record Template (ADR) #000
+# #000 Archiecture Decision Record (ADR) Template
 
 ##### A record that describes the architectural decision, its context, and its consequences.
 
