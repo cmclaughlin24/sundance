@@ -15,7 +15,8 @@ import (
 )
 
 var (
-	ErrNoEligibleTagVersion = errors.New("")
+	ErrNoEligibleTagVersion     = errors.New("")
+	ErrMultipleActiveTagVersion = errors.New("")
 )
 
 type ruleByTypeGetter interface {
@@ -217,15 +218,13 @@ func (s *submissionJobsService) normalize(ctx context.Context, factCandidates []
 
 	facts := make([]*domain.CanonicalFact, 0)
 	for _, t := range tags {
-		versions, err := s.filterTagVersions(ctx, t.versions)
+		version, err := s.selectTagVersion(ctx, t.versions)
 		if err != nil {
 			return nil, err
 		}
 
-		version := s.resolveByPriority(versions, candidatesByVersion)
-		candidates := candidatesByVersion[version.ID]
-
-		for _, c := range candidates {
+		for _, c := range candidatesByVersion[version.ID] {
+			// FIXME: Address Field Mapping Priority.
 			facts = append(facts, domain.NewCanonicalFact(
 				c.ftm.FieldID,
 				c.ftm.TagVersionID,
@@ -341,55 +340,34 @@ func (s *submissionJobsService) getTags(ctx context.Context, ids []domain.TagVer
 	return aggregates, nil
 }
 
-func (s *submissionJobsService) filterTagVersions(ctx context.Context, versions []*domain.TagVersion) ([]*domain.TagVersion, error) {
-	var active, deprecated []*domain.TagVersion
+func (s *submissionJobsService) selectTagVersion(ctx context.Context, versions []*domain.TagVersion) (*domain.TagVersion, error) {
+	var active *domain.TagVersion
+	var deprecated *domain.TagVersion
+
 	for _, v := range versions {
 		switch v.Status {
 		case domain.TagStatusDraft, domain.TagStatusRetired:
 			s.logger.ErrorContext(ctx, "invalid tag version status in form definition", "tag_version_id", v.ID, "status", v.Status)
 		case domain.TagStatusDeprecated:
-			deprecated = append(deprecated, v)
+			if deprecated != nil && deprecated.Version < v.Version {
+				deprecated = v
+			} else {
+				deprecated = v
+			}
 		case domain.TagStatusActive:
-			active = append(active, v)
+			if active != nil {
+				return nil, ErrMultipleActiveTagVersion
+			}
+
+			active = v
 		}
 	}
 
-	pool := active
-	if len(pool) == 0 {
-		pool = deprecated
+	if active != nil {
+		return active, nil
 	}
 
-	if len(pool) == 0 {
-		return nil, ErrNoEligibleTagVersion
-	}
-
-	return pool, nil
-}
-
-func (s *submissionJobsService) resolveByPriority(versions []*domain.TagVersion, candidatesByVersion map[domain.TagVersionID][]factCandidate) *domain.TagVersion {
-	best := versions[0]
-
-	for _, v := range versions[1:] {
-		// FIXME: How is the priority resolved if more than factCandidate exists in the candidatesByVersion?
-		vPriority := candidatesByVersion[v.ID][0].ftm.Priority
-		bPriority := candidatesByVersion[best.ID][0].ftm.Priority
-
-		switch {
-		case vPriority > bPriority:
-			best = v
-		case vPriority == bPriority:
-			best = applyTieBreaker(best, v)
-		}
-	}
-
-	return best
-}
-
-func applyTieBreaker(a *domain.TagVersion, b *domain.TagVersion) *domain.TagVersion {
-	if a.Version > b.Version {
-		return a
-	}
-	return b
+	return deprecated, nil
 }
 
 func shouldReject(err error) bool {
