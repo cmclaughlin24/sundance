@@ -385,7 +385,7 @@ flowchart TD
 | ------------------------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------- |
 | `ErrFieldValidation`, `ErrFieldRequired`, `ErrFieldTypeValue` | Non-retryable  | Submission transitions to `rejected` immediately                                                  |
 | `ErrVersionStatus` (draft version)                            | Non-retryable  | Submission transitions to `rejected` immediately                                                  |
-| `ErrStrategyNotFound`                                         | Non-retryable  | Submission transitions to `rejected` immediately                                                  |
+| `ErrStrategyNotFound`                                         | Non-retryable  | Submission transitions to `failed` immediately                                                    |
 | Any other error (network, DB)                                 | Retryable      | Worker retries with exponential backoff up to `retryLimit`; transitions to `failed` on exhaustion |
 
 #### 5.3.3 Whitebox: Generic Background Worker (`pkg/worker`)
@@ -442,7 +442,7 @@ Canonical normalization decouples the submission data from the form's field nami
 
 ![Tag Resolution Policy Table](imgs/Tag%20Resolution%20Policy%20Table.png)
 
-When a field maps to multiple tag versions, the winning tag version is selected through a two-phase resolution. First, `draft` and `retired` tag versions are excluded entirely. Among the remaining candidates, `active` tag versions always take precedence over `deprecated` ones. If multiple `deprecated` tag versions remain tied, the system selects the highest version number; if versions are still equal, the most recently updated tag version wins.
+When a field maps to multiple tag versions, the winning tag version is selected through a two-phase resolution. First, `draft` and `retired` tag versions are excluded entirely. Among the remaining candidates, `active` tag versions always take precedence over `deprecated` ones. If only `deprecated` tag versions remain, the system selects the one with the highest version number.
 
 ![Fact Mapping Policy Table](imgs/Fact%20Mapping%20Policy%20Table.png)
 
@@ -470,7 +470,6 @@ stateDiagram-v2
     draft --> draft : PUT /forms/{id}/versions/{versionId}
     draft --> active : POST .../publish
     active --> retired : POST .../retire
-    draft --> [*] : DELETE /forms/{id}/versions/{versionId}
 ```
 
 | Transition   | Endpoint                                            | Conditions                                                                                        |
@@ -482,7 +481,7 @@ stateDiagram-v2
 
 ### 6.4 Tag Version Lifecycle
 
-Tag versions follow a four-stage lifecycle: `draft → active → deprecated → retired`. Unlike form versions, the path to retirement requires passing through `deprecated` first — a tag cannot be retired directly from `active`. This enforces a grace period during which downstream systems can observe the deprecation before the tag is fully retired.
+Tag versions follow a four-stage lifecycle: `draft → active → deprecated → retired`. Unlike form versions, the path to retirement requires passing through `deprecated` first — a tag cannot be retired directly from `active`. This enforces a grace period during which downstream systems can observe the deprecation before the tag is fully retired. At most one `active` version per tag can exist at any given time; publishing a new version atomically deprecates any existing `active` version in the same transaction.
 
 ```mermaid
 stateDiagram-v2

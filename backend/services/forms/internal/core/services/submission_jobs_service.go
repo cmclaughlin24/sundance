@@ -349,9 +349,9 @@ func (s *submissionJobsService) selectTagVersion(ctx context.Context, versions [
 		case domain.TagStatusDraft, domain.TagStatusRetired:
 			s.logger.ErrorContext(ctx, "invalid tag version status in form definition", "tag_version_id", v.ID, "status", v.Status)
 		case domain.TagStatusDeprecated:
-			if deprecated != nil && deprecated.Version < v.Version {
+			if deprecated == nil {
 				deprecated = v
-			} else {
+			} else if deprecated.Version < v.Version {
 				deprecated = v
 			}
 		case domain.TagStatusActive:
