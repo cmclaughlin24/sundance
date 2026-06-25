@@ -672,6 +672,18 @@ Log level is configured via `APP_LOG_LEVEL` and defaults to `info`. Valid values
 
 ## 9. Architecture Decisions
 
+Architecture decisions are recorded as individual ADRs in `backend/docs/adr/`. Each ADR captures the context, decision, and consequences for a significant architectural choice.
+
+| ADR                                                                                | Title                                                        |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| [ADR-001](adr/001-hexagonal-architecture.md)                                       | Hexagonal (Ports and Adapters) Architecture                  |
+| [ADR-003](adr/003-asynchronous-submission-processing.md)                           | Asynchronous Submission Processing                           |
+| [ADR-004](adr/004-generic-background-worker-with-redis-leader-election.md)         | Generic Background Worker with Redis Leader Election         |
+| [ADR-005](adr/005-strategy-pattern-for-data-source-lookup-and-field-validation.md) | Strategy Pattern for Data Source Lookup and Field Validation |
+| [ADR-006](adr/006-mongodb-as-primary-datastore.md)                                 | MongoDB as Primary Datastore                                 |
+| [ADR-007](adr/007-expr-lang-for-rule-evaluation.md)                                | `expr-lang/expr` for Rule Evaluation                         |
+| [ADR-008](adr/008-canonical-tag-mapping-decoupled-from-form-field-naming.md)       | Canonical Tag Mapping Decoupled from Form Field Naming       |
+
 ## 10. Quality Requirements
 
 ## 11. Risks and Technical Debt

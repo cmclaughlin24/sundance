@@ -6,8 +6,6 @@
 
 <img src="../imgs/architecture-design-record-logo.png" style="width:175px;"/>
 
-#####
-
 </div>
 
 ## Context
