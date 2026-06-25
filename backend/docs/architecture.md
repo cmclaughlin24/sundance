@@ -688,4 +688,18 @@ Architecture decisions are recorded as individual ADRs in `backend/docs/adr/`. E
 
 ## 11. Risks and Technical Debt
 
+### 11.1 Runtime / Infrastructure Risks
+
+- **Single-leader submission processing throughput** — The Redis leader election model means only one replica processes submissions at a time. Under high submission volume this becomes a bottleneck. Mitigation path is a distributed queue (noted in ADR-004).
+- **Tenants Service availability** — The Forms Service submission processing pipeline has a synchronous runtime dependency on the Tenants Service for lookup validation. If the Tenants Service is unavailable, all submissions referencing data source-backed fields will fail and retry until the limit is exhausted.
+- **Redis as a single point of failure** — Both services depend on Redis for leader election. Loss of Redis stops all background job processing across both services.
+
+### 11.2 Security Risks
+
+- **Tenant scoping enforced in application code only** — Tenant isolation is enforced at the application service layer, not at the database layer. A bug in ownership checks could expose cross-tenant data.
+
+### 11.3 Data Risks
+
+- **`ReferenceID` is a UUID** — The `Submission.ReferenceID` is currently a UUID v7. There is an open TODO to investigate a more order-number style implementation. A UUID is not human-friendly for support and tracking workflows.
+
 ## 12. Glossary
