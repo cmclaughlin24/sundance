@@ -6,8 +6,10 @@ import (
 )
 
 type CreateTagRequest struct {
-	Key         string `json:"key"`
-	DisplayName string `json:"displayName"`
+	Key          string `json:"key"`
+	DisplayName  string `json:"displayName"`
+	ValueKind    string `json:"valueKind"`
+	IsCollection bool   `json:"isCollection"`
 }
 
 type UpdateTagRequest struct {
@@ -15,19 +17,23 @@ type UpdateTagRequest struct {
 }
 
 type TagResponse struct {
-	ID          domain.TagID `json:"id"`
-	Key         string       `json:"key"`
-	DisplayName string       `json:"displayName"`
-	CreatedAt   time.Time    `json:"createdAt"`
-	UpdatedAt   time.Time    `json:"updatedAt"`
+	ID           domain.TagID        `json:"id"`
+	Key          string              `json:"key"`
+	DisplayName  string              `json:"displayName"`
+	ValueKind    domain.TagValueKind `json:"valueKind"`
+	IsCollection bool                `json:"isCollection"`
+	CreatedAt    time.Time           `json:"createdAt"`
+	UpdatedAt    time.Time           `json:"updatedAt"`
 }
 
 func TagToResponse(ct *domain.Tag) TagResponse {
 	return TagResponse{
-		ID:          ct.ID,
-		Key:         ct.Key,
-		DisplayName: ct.DisplayName,
-		CreatedAt:   ct.CreatedAt,
-		UpdatedAt:   ct.UpdatedAt,
+		ID:           ct.ID,
+		Key:          ct.Key,
+		DisplayName:  ct.DisplayName,
+		ValueKind:    ct.ValueKind,
+		IsCollection: ct.IsCollection,
+		CreatedAt:    ct.CreatedAt,
+		UpdatedAt:    ct.UpdatedAt,
 	}
 }

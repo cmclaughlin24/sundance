@@ -2239,7 +2239,13 @@ const docTemplate = `{
                 "displayName": {
                     "type": "string"
                 },
+                "isCollection": {
+                    "type": "boolean"
+                },
                 "key": {
+                    "type": "string"
+                },
+                "valueKind": {
                     "type": "string"
                 }
             }
@@ -2743,11 +2749,17 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "isCollection": {
+                    "type": "boolean"
+                },
                 "key": {
                     "type": "string"
                 },
                 "updatedAt": {
                     "type": "string"
+                },
+                "valueKind": {
+                    "$ref": "#/definitions/TagValueKind"
                 }
             }
         },
@@ -2764,6 +2776,17 @@ const docTemplate = `{
                 "TagStatusActive",
                 "TagStatusDeprecated",
                 "TagStatusRetired"
+            ]
+        },
+        "TagValueKind": {
+            "type": "string",
+            "enum": [
+                "primitive",
+                "object"
+            ],
+            "x-enum-varnames": [
+                "TagValueKindPrimitive",
+                "TagValueKindObject"
             ]
         },
         "TagVersionResponse": {

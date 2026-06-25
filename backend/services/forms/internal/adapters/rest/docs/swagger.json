@@ -2228,7 +2228,13 @@
                 "displayName": {
                     "type": "string"
                 },
+                "isCollection": {
+                    "type": "boolean"
+                },
                 "key": {
+                    "type": "string"
+                },
+                "valueKind": {
                     "type": "string"
                 }
             }
@@ -2732,11 +2738,17 @@
                 "id": {
                     "type": "string"
                 },
+                "isCollection": {
+                    "type": "boolean"
+                },
                 "key": {
                     "type": "string"
                 },
                 "updatedAt": {
                     "type": "string"
+                },
+                "valueKind": {
+                    "$ref": "#/definitions/TagValueKind"
                 }
             }
         },
@@ -2753,6 +2765,17 @@
                 "TagStatusActive",
                 "TagStatusDeprecated",
                 "TagStatusRetired"
+            ]
+        },
+        "TagValueKind": {
+            "type": "string",
+            "enum": [
+                "primitive",
+                "object"
+            ],
+            "x-enum-varnames": [
+                "TagValueKindPrimitive",
+                "TagValueKindObject"
             ]
         },
         "TagVersionResponse": {

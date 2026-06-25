@@ -118,7 +118,13 @@ func (h *Handlers) CreateTag(w http.ResponseWriter, r *http.Request) {
 
 	tenantID := httputil.TenantFromContext(r.Context())
 	resultChan := make(chan result[*domain.Tag], 1)
-	command := commands.NewCreateTagCommand(tenantID, body.Key, body.DisplayName)
+	command := commands.NewCreateTagCommand(
+		tenantID,
+		body.Key,
+		body.DisplayName,
+		domain.TagValueKind(body.ValueKind),
+		body.IsCollection,
+	)
 
 	go func() {
 		defer close(resultChan)

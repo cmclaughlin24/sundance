@@ -15,9 +15,9 @@ var (
 
 type TagVersionID string
 
-type TagType string
-
 type TagStatus string
+
+type TagType string
 
 const (
 	TagStatusDraft      TagStatus = "draft"

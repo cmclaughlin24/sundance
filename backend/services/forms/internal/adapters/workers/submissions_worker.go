@@ -12,7 +12,6 @@ import (
 	"sundance/backend/services/forms/internal/core"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
-	"sundance/backend/services/forms/internal/core/services"
 	"sundance/backend/services/forms/internal/core/strategies"
 )
 
@@ -117,6 +116,6 @@ func isRetryableError(err error) bool {
 	return !errors.Is(err, strategies.ErrFieldValidation) &&
 		!errors.Is(err, strategies.ErrFieldRequired) &&
 		!errors.Is(err, strategies.ErrFieldTypeValue) &&
-		!errors.Is(err, services.ErrVersionStatus) &&
+		!errors.Is(err, domain.ErrInvalidVersionStatus) &&
 		!errors.Is(err, stratreg.ErrStrategyNotFound)
 }

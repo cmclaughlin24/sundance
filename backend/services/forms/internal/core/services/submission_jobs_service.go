@@ -224,7 +224,12 @@ func (s *submissionJobsService) normalize(ctx context.Context, factCandidates []
 		}
 
 		for _, c := range candidatesByVersion[version.ID] {
-			// FIXME: Address Field Mapping Priority.
+			if !t.tag.IsCollection {
+				// TODO: Need to decide if the tag is a scalar tag, then it should determine the priority. Otherwise, add ignore priority and
+				// add it to the collection.
+				continue
+			}
+
 			facts = append(facts, domain.NewCanonicalFact(
 				c.ftm.FieldID,
 				c.ftm.TagVersionID,

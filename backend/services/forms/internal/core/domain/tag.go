@@ -8,26 +8,42 @@ import (
 
 var (
 	ErrInvalidCanonicalTag = errors.New("invalid tag")
+	ErrInvalidTagValueKind = errors.New("invalid tag value kind")
 )
 
 type TagID string
 
+type TagValueKind string
+
+const (
+	TagValueKindPrimitive TagValueKind = "primitive"
+	TagValueKindObject    TagValueKind = "object"
+)
+
 type Tag struct {
-	ID          TagID
-	TenantID    string
-	Key         string
-	DisplayName string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID           TagID
+	TenantID     string
+	Key          string
+	DisplayName  string
+	ValueKind    TagValueKind
+	IsCollection bool
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
-func NewTag(tenantID, key, displayName string) (*Tag, error) {
+func NewTag(tenantID, key, displayName string, valueKind TagValueKind, isCollection bool) (*Tag, error) {
+	if !isTagValueKind(valueKind) {
+		return nil, ErrInvalidTagValueKind
+	}
+
 	ct := &Tag{
-		ID:          TagID(NewID()),
-		TenantID:    tenantID,
-		Key:         key,
-		DisplayName: displayName,
-		CreatedAt:   Now(),
+		ID:           TagID(NewID()),
+		TenantID:     tenantID,
+		Key:          key,
+		DisplayName:  displayName,
+		ValueKind:    valueKind,
+		IsCollection: isCollection,
+		CreatedAt:    Now(),
 	}
 
 	if err := validate.ValidateStruct(ct); err != nil {
@@ -37,14 +53,25 @@ func NewTag(tenantID, key, displayName string) (*Tag, error) {
 	return ct, nil
 }
 
-func HydrateTag(id TagID, tenantID, key, displayName string, createdAt, updatedAt time.Time) *Tag {
+func HydrateTag(
+	id TagID,
+	tenantID,
+	key,
+	displayName string,
+	valueKind TagValueKind,
+	isCollection bool,
+	createdAt,
+	updatedAt time.Time,
+) *Tag {
 	return &Tag{
-		ID:          id,
-		TenantID:    tenantID,
-		Key:         key,
-		DisplayName: displayName,
-		CreatedAt:   createdAt,
-		UpdatedAt:   updatedAt,
+		ID:           id,
+		TenantID:     tenantID,
+		Key:          key,
+		DisplayName:  displayName,
+		ValueKind:    valueKind,
+		IsCollection: isCollection,
+		CreatedAt:    createdAt,
+		UpdatedAt:    updatedAt,
 	}
 }
 
@@ -65,3 +92,8 @@ func (t *Tag) Update(displayName string) error {
 
 	return nil
 }
+
+var isTagValueKind = validate.NewTypeValidator([]TagValueKind{
+	TagValueKindPrimitive,
+	TagValueKindObject,
+})

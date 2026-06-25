@@ -47,7 +47,11 @@ definitions:
     properties:
       displayName:
         type: string
+      isCollection:
+        type: boolean
       key:
+        type: string
+      valueKind:
         type: string
     type: object
   FieldRequest:
@@ -390,10 +394,14 @@ definitions:
         type: string
       id:
         type: string
+      isCollection:
+        type: boolean
       key:
         type: string
       updatedAt:
         type: string
+      valueKind:
+        $ref: '#/definitions/TagValueKind'
     type: object
   TagStatus:
     enum:
@@ -407,6 +415,14 @@ definitions:
     - TagStatusActive
     - TagStatusDeprecated
     - TagStatusRetired
+  TagValueKind:
+    enum:
+    - primitive
+    - object
+    type: string
+    x-enum-varnames:
+    - TagValueKindPrimitive
+    - TagValueKindObject
   TagVersionResponse:
     properties:
       createdAt:
