@@ -14,6 +14,10 @@ import (
 	"sundance/backend/services/forms/internal/core/strategies"
 )
 
+var (
+	ErrNoEligibleTagVersion = errors.New("")
+)
+
 type ruleByTypeGetter interface {
 	GetRuleByType(domain.RuleType) *domain.Rule
 }
@@ -92,7 +96,7 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 		return nil
 	}
 
-	err = s.sanitize(ctx, submission)
+	_, err = s.sanitize(ctx, submission)
 
 	if err := s.recordAttempt(ctx, submission, err); err != nil {
 		return err
@@ -103,17 +107,18 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 	return err
 }
 
-func (s *submissionJobsService) sanitize(ctx context.Context, submission *domain.Submission) error {
+func (s *submissionJobsService) sanitize(ctx context.Context, submission *domain.Submission) ([]*domain.CanonicalFact, error) {
 	factCandidates, err := s.extractFactCandidates(ctx, submission)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	if err := s.normalize(ctx, factCandidates); err != nil {
-		return err
+	facts, err := s.normalize(ctx, factCandidates)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	return facts, nil
 }
 
 func (s *submissionJobsService) extractFactCandidates(ctx context.Context, submission *domain.Submission) ([]factCandidate, error) {
@@ -199,7 +204,7 @@ pageLoop:
 	return candidates, nil
 }
 
-func (s *submissionJobsService) normalize(ctx context.Context, factCandidates []factCandidate) error {
+func (s *submissionJobsService) normalize(ctx context.Context, factCandidates []factCandidate) ([]*domain.CanonicalFact, error) {
 	candidatesByVersion := make(map[domain.TagVersionID][]factCandidate)
 	for _, fc := range factCandidates {
 		candidatesByVersion[fc.ftm.TagVersionID] = append(candidatesByVersion[fc.ftm.TagVersionID], fc)
@@ -207,19 +212,30 @@ func (s *submissionJobsService) normalize(ctx context.Context, factCandidates []
 
 	tags, err := s.getTags(ctx, slices.Collect(maps.Keys(candidatesByVersion)))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	facts := make([]*domain.CanonicalFact, 0)
 	for _, t := range tags {
-		_, err := s.filterTagVersions(ctx, t.versions)
+		versions, err := s.filterTagVersions(ctx, t.versions)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		// version := s.resolveByPriority(versions, candidatesByVersion)
+		version := s.resolveByPriority(versions, candidatesByVersion)
+		candidates := candidatesByVersion[version.ID]
+
+		for _, c := range candidates {
+			facts = append(facts, domain.NewCanonicalFact(
+				c.ftm.FieldID,
+				c.ftm.TagVersionID,
+				t.tag.Key,
+				c.value,
+			))
+		}
 	}
 
-	return nil
+	return facts, nil
 }
 
 func (s *submissionJobsService) validateField(ctx context.Context, field *domain.Field, submission *domain.Submission) error {
@@ -330,7 +346,7 @@ func (s *submissionJobsService) filterTagVersions(ctx context.Context, versions 
 	for _, v := range versions {
 		switch v.Status {
 		case domain.TagStatusDraft, domain.TagStatusRetired:
-			s.logger.ErrorContext(ctx, "", "status", v.Status)
+			s.logger.ErrorContext(ctx, "invalid tag version status in form definition", "tag_version_id", v.ID, "status", v.Status)
 		case domain.TagStatusDeprecated:
 			deprecated = append(deprecated, v)
 		case domain.TagStatusActive:
@@ -344,18 +360,36 @@ func (s *submissionJobsService) filterTagVersions(ctx context.Context, versions 
 	}
 
 	if len(pool) == 0 {
-		// FIXME: Submission should be rejected (e.g. a breaking change to the API contract has been introduced)
-		return nil, nil
+		return nil, ErrNoEligibleTagVersion
 	}
 
 	return pool, nil
 }
 
-func (s *submissionJobsService) resolveByPriority(versions []*domain.TagVersion, factCandidates []factCandidate) *domain.TagVersion {
+func (s *submissionJobsService) resolveByPriority(versions []*domain.TagVersion, candidatesByVersion map[domain.TagVersionID][]factCandidate) *domain.TagVersion {
 	best := versions[0]
-	tied := []*domain.TagVersion{best}
 
-	return nil
+	for _, v := range versions[1:] {
+		// FIXME: How is the priority resolved if more than factCandidate exists in the candidatesByVersion?
+		vPriority := candidatesByVersion[v.ID][0].ftm.Priority
+		bPriority := candidatesByVersion[best.ID][0].ftm.Priority
+
+		switch {
+		case vPriority > bPriority:
+			best = v
+		case vPriority == bPriority:
+			best = applyTieBreaker(best, v)
+		}
+	}
+
+	return best
+}
+
+func applyTieBreaker(a *domain.TagVersion, b *domain.TagVersion) *domain.TagVersion {
+	if a.Version > b.Version {
+		return a
+	}
+	return b
 }
 
 func shouldReject(err error) bool {

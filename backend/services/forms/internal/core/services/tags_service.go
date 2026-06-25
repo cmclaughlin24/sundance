@@ -241,9 +241,54 @@ func (s *tagsService) CreateVersion(ctx context.Context, cmd commands.CreateTagV
 }
 
 func (s *tagsService) PublishVersion(ctx context.Context, cmd commands.TransitionTagVersionCommand) (*domain.TagVersion, error) {
-	return s.transitionVersion(ctx, cmd, func(tv *domain.TagVersion) error {
-		return tv.Publish()
-	})
+	s.logger.DebugContext(ctx, "transitioning tag version", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", cmd.VersionID)
+
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "tag version transition failed; invalid command", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", cmd.VersionID, "error", err)
+		return nil, err
+	}
+
+	if err := s.isValidAccess(ctx, cmd.TenantID, cmd.TagID); err != nil {
+		return nil, err
+	}
+
+	txCtx, err := s.database.BeginTx(ctx)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to begin transaction", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", cmd.VersionID, "error", err)
+		return nil, err
+	}
+
+	defer s.database.RollbackTx(txCtx)
+
+	if err := s.deprecateActiveVersions(txCtx, cmd.TagID); err != nil {
+		return nil, err
+	}
+
+	version, err := s.versionsRepository.FindByID(txCtx, cmd.VersionID)
+	if err != nil {
+		s.logFindTagVersionByIDError(ctx, err, cmd.TagID, cmd.VersionID)
+		return nil, err
+	}
+
+	if err := version.Publish(); err != nil {
+		s.logger.WarnContext(ctx, "tag version transition failed; domain invariant violation", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", cmd.VersionID, "error", err)
+		return nil, err
+	}
+
+	version, err = s.versionsRepository.Upsert(txCtx, version)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to persist tag version", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", cmd.VersionID, "error", err)
+		return nil, err
+	}
+
+	if err := s.database.CommitTx(txCtx); err != nil {
+		s.logger.ErrorContext(ctx, "failed to commit publish transaction", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", cmd.VersionID, "error", err)
+		return nil, err
+	}
+
+	s.logger.InfoContext(ctx, "tag version transitioned", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", cmd.VersionID)
+
+	return version, nil
 }
 
 func (s *tagsService) DeprecateVersion(ctx context.Context, cmd commands.TransitionTagVersionCommand) (*domain.TagVersion, error) {
@@ -277,7 +322,7 @@ func (s *tagsService) transitionVersion(ctx context.Context, cmd commands.Transi
 	}
 
 	if err := transition(version); err != nil {
-		s.logger.WarnContext(ctx, "tag version transition failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.TagID, "version_id", cmd.VersionID, "error", err)
+		s.logger.WarnContext(ctx, "tag version transition failed; domain invariant violation", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
 
@@ -290,6 +335,33 @@ func (s *tagsService) transitionVersion(ctx context.Context, cmd commands.Transi
 	s.logger.InfoContext(ctx, "tag version transitioned", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "version_id", cmd.VersionID)
 
 	return version, nil
+}
+
+func (s *tagsService) deprecateActiveVersions(ctx context.Context, tagID domain.TagID) error {
+	versions, err := s.versionsRepository.Find(ctx, ports.TagVersionFilters{
+		TagID:    tagID,
+		Statuses: []domain.TagStatus{domain.TagStatusActive},
+	})
+
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to retrieve tag versions", "tag_id", tagID, "error", err)
+		return err
+	}
+
+	for _, v := range versions {
+		if err := v.Deprecate(); err != nil {
+			s.logger.WarnContext(ctx, "tag version deprecation failed; domain invariant violation", "tag_id", v.TagID, "version_id", v.ID, "error", err)
+			return err
+		}
+
+		v, err = s.versionsRepository.Upsert(ctx, v)
+		if err != nil {
+			s.logger.ErrorContext(ctx, "failed to persist tag version", "tag_id", tagID, "version_id", v.ID, "error", err)
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *tagsService) logFindTagByIDError(ctx context.Context, err error, tagID domain.TagID) {

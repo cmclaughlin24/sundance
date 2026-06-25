@@ -27,6 +27,18 @@ func (r *inMemoryTagVersionsRepository) Find(ctx context.Context, filters ports.
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
+	matchesStatus := func(v *domain.TagVersion) bool {
+		if len(filters.Statuses) == 0 {
+			return true
+		}
+		for _, s := range filters.Statuses {
+			if v.Status == s {
+				return true
+			}
+		}
+		return false
+	}
+
 	if filters.TagID != "" {
 		tagVersions, ok := r.versions[string(filters.TagID)]
 
@@ -37,7 +49,9 @@ func (r *inMemoryTagVersionsRepository) Find(ctx context.Context, filters ports.
 		versions := make([]*domain.TagVersion, 0, len(tagVersions))
 
 		for _, version := range tagVersions {
-			versions = append(versions, version)
+			if matchesStatus(version) {
+				versions = append(versions, version)
+			}
 		}
 
 		return versions, nil
@@ -47,7 +61,9 @@ func (r *inMemoryTagVersionsRepository) Find(ctx context.Context, filters ports.
 
 	for _, tagVersions := range r.versions {
 		for _, version := range tagVersions {
-			versions = append(versions, version)
+			if matchesStatus(version) {
+				versions = append(versions, version)
+			}
 		}
 	}
 

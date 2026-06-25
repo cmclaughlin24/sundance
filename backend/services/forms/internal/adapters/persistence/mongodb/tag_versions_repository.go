@@ -50,7 +50,17 @@ func (r *mongoDBTagVersionsRepository) migrate(ctx context.Context) error {
 }
 
 func (r *mongoDBTagVersionsRepository) Find(ctx context.Context, filters ports.TagVersionFilters) ([]*domain.TagVersion, error) {
-	docs, err := r.base.Find(ctx, bson.M{"tag_id": filters.TagID})
+	f := bson.M{}
+
+	if filters.TagID != "" {
+		f["tag_id"] = filters.TagID
+	}
+
+	if len(filters.Statuses) != 0 {
+		f["status"] = bson.M{"$in": filters.Statuses}
+	}
+
+	docs, err := r.base.Find(ctx, f)
 
 	if err != nil {
 		return nil, err

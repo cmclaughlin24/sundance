@@ -8,8 +8,8 @@ import (
 type BindingSourceType string
 
 const (
-	BindingSourceTypeField BindingSourceType = "field"
-	BindSourceTypeStatic   BindingSourceType = "static"
+	BindingSourceTypeField  BindingSourceType = "field"
+	BindingSourceTypeStatic BindingSourceType = "static"
 )
 
 var (
@@ -38,7 +38,7 @@ func NewBindingSourceType(sourceType BindingSourceType, key string, value any) (
 
 var isValidBindingSourceType = validate.NewTypeValidator([]BindingSourceType{
 	BindingSourceTypeField,
-	BindSourceTypeStatic,
+	BindingSourceTypeStatic,
 })
 
 type DataSourceRef struct {
