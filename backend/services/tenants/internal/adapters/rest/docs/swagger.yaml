@@ -155,12 +155,6 @@ paths:
         name: X-Tenant-ID
         required: true
         type: string
-      - description: Create Data Source
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/DataSourceRequest'
       - description: Client-supplied request trace ID (generated if absent)
         in: header
         name: X-Request-ID
@@ -174,6 +168,12 @@ paths:
         in: header
         name: X-Request-Date
         type: string
+      - description: Create Data Source
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/DataSourceRequest'
       produces:
       - application/json
       responses:
@@ -204,11 +204,6 @@ paths:
         name: X-Tenant-ID
         required: true
         type: string
-      - description: Data Source ID
-        in: path
-        name: id
-        required: true
-        type: string
       - description: Client-supplied request trace ID (generated if absent)
         in: header
         name: X-Request-ID
@@ -221,6 +216,11 @@ paths:
         format: date
         in: header
         name: X-Request-Date
+        type: string
+      - description: Data Source ID
+        in: path
+        name: id
+        required: true
         type: string
       produces:
       - application/json
@@ -249,11 +249,6 @@ paths:
         name: X-Tenant-ID
         required: true
         type: string
-      - description: Data Source ID
-        in: path
-        name: id
-        required: true
-        type: string
       - description: Client-supplied request trace ID (generated if absent)
         in: header
         name: X-Request-ID
@@ -266,6 +261,11 @@ paths:
         format: date
         in: header
         name: X-Request-Date
+        type: string
+      - description: Data Source ID
+        in: path
+        name: id
+        required: true
         type: string
       produces:
       - application/json
@@ -298,17 +298,6 @@ paths:
         name: X-Tenant-ID
         required: true
         type: string
-      - description: Data Source ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Update Data Source
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/DataSourceRequest'
       - description: Client-supplied request trace ID (generated if absent)
         in: header
         name: X-Request-ID
@@ -322,6 +311,17 @@ paths:
         in: header
         name: X-Request-Date
         type: string
+      - description: Data Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update Data Source
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/DataSourceRequest'
       produces:
       - application/json
       responses:
@@ -358,16 +358,6 @@ paths:
         name: X-Tenant-ID
         required: true
         type: string
-      - description: Data Source ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Optional parameters for look-up retrieval, such as query parameters
-          for external fetches or payload for webhook calls.
-        in: query
-        name: params
-        type: object
       - description: Client-supplied request trace ID (generated if absent)
         in: header
         name: X-Request-ID
@@ -381,6 +371,16 @@ paths:
         in: header
         name: X-Request-Date
         type: string
+      - description: Data Source ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Optional parameters for look-up retrieval, such as query parameters
+          for external fetches or payload for webhook calls.
+        in: query
+        name: params
+        type: object
       produces:
       - application/json
       responses:

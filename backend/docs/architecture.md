@@ -94,7 +94,7 @@ C4Context
   Rel(formsHub, messageBroker, "Publishes canonical submission events", "async")
   Rel(downstreamSystem, messageBroker, "Subscribes to submission events", "async")
   Rel(formsHub, mongodb, "Reads/writes domain data", "MongoDB wire protocol")
-  Rel(formsHub, redis, "Caches lookup data; distributed leader election", "Redis protocol")
+  Rel(formsHub, redis, "Distributed leader election for background workers", "Redis protocol")
   Rel(frontend, pingfederate, "Authenticates users, obtains JWT", "OAuth2/HTTPS")
   Rel(formsHub, pingfederate, "Validates JWT bearer tokens", "JWKS/HTTPS")
   Rel(formsHub, externalHTTPAPIs, "Fetches lookup data for scheduled and webhook sources", "HTTP/HTTPS")
@@ -126,15 +126,15 @@ _Figure 4.1 — Ports & Adapters (Hexagonal) Architecture pattern. Each Forms Hu
 
 ### 4.2 Technology Decisions
 
-| Technology       | Decision                   | Rationale                                                                                                                                                                                |
-| ---------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Go               | Implementation language    | Statically typed, high concurrency, fast startup, and a small runtime footprint suited for independently deployable services.                                                            |
-| MongoDB          | Database                   | The deeply nested, polymorphic form definition hierarchy — pages, sections, fields, and per-type attributes — maps naturally to documents without requiring a complex relational schema. |
-| Redis            | Cache and distributed lock | Serves a dual purpose without an additional coordination service: lookup data cache in the Tenants Service and distributed leader election for background workers in both services.      |
-| chi              | HTTP router                | Lightweight and idiomatic Go; composable middleware chain supports cross-cutting concerns (auth, tenant extraction, idempotency, correlation ID) without framework lock-in.              |
-| `expr-lang/expr` | Rule evaluation            | Provides safe, sandboxed evaluation of runtime rule expressions (visibility, required, read-only) without the risks of `eval`-style execution.                                           |
-| UUID v7          | Entity identifiers         | Time-ordered UUIDs provide natural chronological sort order in MongoDB without a separate sequence or auto-increment mechanism.                                                          |
-| PingFederate     | Identity provider          | Enterprise OAuth2/JWKS integration; JWT validation is implemented and ready to activate when authentication is enforced.                                                                 |
+| Technology       | Decision                | Rationale                                                                                                                                                                                |
+| ---------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Go               | Implementation language | Statically typed, high concurrency, fast startup, and a small runtime footprint suited for independently deployable services.                                                            |
+| MongoDB          | Database                | The deeply nested, polymorphic form definition hierarchy — pages, sections, fields, and per-type attributes — maps naturally to documents without requiring a complex relational schema. |
+| Redis            | Distributed lock        | Provides distributed leader election for background workers in both services without an additional coordination service.                                                                 |
+| chi              | HTTP router             | Lightweight and idiomatic Go; composable middleware chain supports cross-cutting concerns (auth, tenant extraction, idempotency, correlation ID) without framework lock-in.              |
+| `expr-lang/expr` | Rule evaluation         | Provides safe, sandboxed evaluation of runtime rule expressions (visibility, required, read-only) without the risks of `eval`-style execution.                                           |
+| UUID v7          | Entity identifiers      | Time-ordered UUIDs provide natural chronological sort order in MongoDB without a separate sequence or auto-increment mechanism.                                                          |
+| PingFederate     | Identity provider       | Enterprise OAuth2/JWKS integration; JWT validation is implemented and ready to activate when authentication is enforced.                                                                 |
 
 ### 4.3 Key Design Decisions
 
@@ -184,29 +184,32 @@ C4Container
 
 The Tenants Service owns all tenant and data source configuration. It exposes a REST API for managing tenants and data sources, resolves lookup key-value pairs on demand via a runtime strategy registry, and runs a background worker that periodically refreshes expired `scheduled` data source caches from their configured HTTP endpoints.
 
-| Interface                                  | Direction | Description                                                                     |
-| ------------------------------------------ | --------- | ------------------------------------------------------------------------------- |
-| `GET/POST/PUT/DELETE /api/v1/tenants`      | Inbound   | CRUD for tenant records                                                         |
-| `GET/POST/PUT/DELETE /api/v1/data-sources` | Inbound   | CRUD for data sources scoped to a tenant                                        |
-| `GET /api/v1/data-sources/{id}/look-ups`   | Inbound   | Resolves lookup key-value pairs for a given data source                         |
-| MongoDB                                    | Outbound  | Persists tenant and data source records                                         |
-| Redis                                      | Outbound  | Caches resolved lookup data; leader election for the data source refresh worker |
-| External HTTP APIs                         | Outbound  | Fetches lookup data for `scheduled` and `webhook` data sources                  |
-| Google BigQuery                            | Outbound  | Queries lookup data for `data-lake` data sources (planned)                      |
+| Interface                                  | Direction | Description                                                    |
+| ------------------------------------------ | --------- | -------------------------------------------------------------- |
+| `GET/POST/PUT/DELETE /api/v1/tenants`      | Inbound   | CRUD for tenant records                                        |
+| `GET/POST/PUT/DELETE /api/v1/data-sources` | Inbound   | CRUD for data sources scoped to a tenant                       |
+| `GET /api/v1/data-sources/{id}/look-ups`   | Inbound   | Resolves lookup key-value pairs for a given data source        |
+| MongoDB                                    | Outbound  | Persists tenant and data source records                        |
+| Redis                                      | Outbound  | Leader election for the data source refresh worker             |
+| External HTTP APIs                         | Outbound  | Fetches lookup data for `scheduled` and `webhook` data sources |
+| Google BigQuery                            | Outbound  | Queries lookup data for `data-lake` data sources (planned)     |
 
 #### 5.1.2 Blackbox: Forms Service
 
 The Forms Service owns all form definitions, versioned schemas, submissions, and canonical tags. It exposes a REST API for form design and submission intake, runs an async background worker that validates and normalizes pending submissions, and publishes canonical submission events to the message broker upon acceptance.
 
-| Interface                           | Direction | Description                                                                       |
-| ----------------------------------- | --------- | --------------------------------------------------------------------------------- |
-| `GET/POST/PUT/DELETE /api/v1/forms` | Inbound   | CRUD for forms and their versioned schemas                                        |
-| `GET/POST /api/v1/submissions`      | Inbound   | Submission intake (`202 Accepted`) and status retrieval                           |
-| `GET/POST/PUT/DELETE /api/v1/tags`  | Inbound   | CRUD for canonical tags and their versions                                        |
-| Tenants Service                     | Outbound  | Validates submitted lookup values against the live data source at processing time |
-| MongoDB                             | Outbound  | Persists forms, versions, submissions, and tags                                   |
-| Redis                               | Outbound  | Leader election for the submission processing worker                              |
-| Message Broker                      | Outbound  | Publishes canonical submission events upon acceptance (planned)                   |
+| Interface                                                   | Direction | Description                                                                        |
+| ----------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------- |
+| `GET/POST/PUT/DELETE /api/v1/forms`                         | Inbound   | CRUD for forms and their versioned schemas                                         |
+| `GET/POST /api/v1/submissions`                              | Inbound   | Submission intake (`202 Accepted`) and listing                                     |
+| `POST /api/v1/submissions/{submissionId}/replay`            | Inbound   | Resets a terminal submission to `pending` for reprocessing; returns `202 Accepted` |
+| `GET /api/v1/submissions/by-reference/{referenceId}`        | Inbound   | Retrieves a submission by its external reference ID                                |
+| `GET /api/v1/submissions/by-reference/{referenceId}/status` | Inbound   | Returns the current status of a submission by reference ID                         |
+| `GET/POST/PUT/DELETE /api/v1/tags`                          | Inbound   | CRUD for canonical tags and their versions                                         |
+| Tenants Service                                             | Outbound  | Validates submitted lookup values against the live data source at processing time  |
+| MongoDB                                                     | Outbound  | Persists forms, versions, submissions, and tags                                    |
+| Redis                                                       | Outbound  | Leader election for the submission processing worker                               |
+| Message Broker                                              | Outbound  | Publishes canonical submission events upon acceptance (planned)                    |
 
 ### 5.2 Level 2
 
@@ -438,7 +441,11 @@ Canonical normalization decouples the submission data from the form's field nami
 
 ![Tag Resolution Policy Table](imgs/Tag%20Resolution%20Policy%20Table.png)
 
-When a field maps to multiple tag versions, the winning tag is selected through a three-phase resolution: first, `draft` and `retired` tag versions are excluded; then, among the remaining candidates, the highest priority mapping wins; if priorities are tied, the system selects the highest version within the same lineage, or falls back to the most recently updated tag across different lineages.
+When a field maps to multiple tag versions, the winning tag version is selected through a two-phase resolution. First, `draft` and `retired` tag versions are excluded entirely. Among the remaining candidates, `active` tag versions always take precedence over `deprecated` ones. If multiple `deprecated` tag versions remain tied, the system selects the highest version number; if versions are still equal, the most recently updated tag version wins.
+
+![Fact Mapping Policy Table](imgs/Fact%20Mapping%20Policy%20Table.png)
+
+Once the winning tag version has been selected, the system evaluates all `FieldTagMapping` entries associated with that tag version across the form's fields. The `priority` value on each mapping represents the relative importance of that field as a source for the canonical fact. The mapping with the highest priority wins and its submitted value is used to produce the `CanonicalFact`. If multiple mappings share the same priority, tiebreaker rules are applied to ensure a single deterministic value is selected.
 
 #### 6.1.1 Example: Requesting a Form-based Catalog Item
 
@@ -484,12 +491,12 @@ stateDiagram-v2
     deprecated --> retired : POST .../retire
 ```
 
-| Transition   | Endpoint                                            | Conditions                                                         |
-| ------------ | --------------------------------------------------- | ------------------------------------------------------------------ |
-| Create draft | `POST /tags/{tagId}/versions`                       | Always allowed; auto-increments version number                     |
-| Publish      | `POST /tags/{tagId}/versions/{versionId}/publish`   | Transitions `draft → active`; only allowed from `draft`            |
-| Deprecate    | `POST /tags/{tagId}/versions/{versionId}/deprecate` | Transitions `active → deprecated`; only allowed from `active`      |
-| Retire       | `POST /tags/{tagId}/versions/{versionId}/retire`    | Transitions `deprecated → retired`; only allowed from `deprecated` |
+| Transition   | Endpoint                                            | Conditions                                                                                                                           |
+| ------------ | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Create draft | `POST /tags/{tagId}/versions`                       | Always allowed; auto-increments version number                                                                                       |
+| Publish      | `POST /tags/{tagId}/versions/{versionId}/publish`   | Transitions `draft → active`; only allowed from `draft`; atomically deprecates any existing `active` version in the same transaction |
+| Deprecate    | `POST /tags/{tagId}/versions/{versionId}/deprecate` | Transitions `active → deprecated`; only allowed from `active`                                                                        |
+| Retire       | `POST /tags/{tagId}/versions/{versionId}/retire`    | Transitions `deprecated → retired`; only allowed from `deprecated`                                                                   |
 
 ## 7. Deployment View
 

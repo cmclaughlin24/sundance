@@ -381,7 +381,7 @@ func (h *Handlers) CreateTagVersion(w http.ResponseWriter, r *http.Request) {
 }
 
 // @summary		Publish a tag version
-// @description	Transitions a draft tag version to active status, making it the live version for the tag. Only one version per tag can be active at a time.
+// @description	Transitions a draft tag version to active status, making it the live version for the tag. If another version is currently active, it is automatically transitioned to deprecated within the same transaction. Only one version per tag can be active at a time.
 // @tags		Tags
 // @accept		json
 // @produce		json

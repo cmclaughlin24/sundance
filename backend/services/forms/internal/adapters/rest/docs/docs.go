@@ -103,15 +103,6 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Create Form",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/UpsertFormRequest"
-                        }
-                    },
-                    {
                         "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
@@ -129,6 +120,15 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "description": "Create Form",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpsertFormRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -180,13 +180,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Form ID",
-                        "name": "formId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -203,6 +196,13 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -252,22 +252,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Form ID",
-                        "name": "formId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update Form",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/UpsertFormRequest"
-                        }
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -284,6 +268,22 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Form",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpsertFormRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -340,13 +340,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Form ID",
-                        "name": "formId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -363,6 +356,13 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -417,13 +417,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Form ID",
-                        "name": "formId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -440,6 +433,13 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -487,22 +487,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Form ID",
-                        "name": "formId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Create Version",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/UpsertFormVersionRequest"
-                        }
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -519,6 +503,22 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create Version",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpsertFormVersionRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -570,20 +570,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Form ID",
-                        "name": "formId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Version ID",
-                        "name": "versionId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -600,6 +586,20 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "versionId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -650,6 +650,25 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
                         "description": "Form ID",
                         "name": "formId",
                         "in": "path",
@@ -670,25 +689,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/UpsertFormVersionRequest"
                         }
-                    },
-                    {
-                        "type": "string",
-                        "description": "Client-supplied request trace ID (generated if absent)",
-                        "name": "X-Request-ID",
-                        "in": "header"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Client-supplied correlation ID for tracing",
-                        "name": "X-Correlation-ID",
-                        "in": "header"
-                    },
-                    {
-                        "type": "string",
-                        "format": "date",
-                        "description": "Client-supplied request date in ISO 8601 format",
-                        "name": "X-Request-Date",
-                        "in": "header"
                     }
                 ],
                 "responses": {
@@ -747,20 +747,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Form ID",
-                        "name": "formId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Version ID",
-                        "name": "versionId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -777,6 +763,20 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "versionId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -835,20 +835,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Form ID",
-                        "name": "formId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Version ID",
-                        "name": "versionId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -865,6 +851,20 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Form ID",
+                        "name": "formId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "versionId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -985,22 +985,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Idempotency Key",
-                        "name": "Idempotency-Key",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "Create Submission",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/SubmissionRequest"
-                        }
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -1017,6 +1001,22 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Idempotency Key",
+                        "name": "Idempotency-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Create Submission",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/SubmissionRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -1068,13 +1068,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Reference ID",
-                        "name": "referenceId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -1091,6 +1084,13 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Reference ID",
+                        "name": "referenceId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1142,13 +1142,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Reference ID",
-                        "name": "referenceId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -1165,6 +1158,13 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Reference ID",
+                        "name": "referenceId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1222,13 +1222,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Submission ID",
-                        "name": "submissionId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -1245,6 +1238,13 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Submission ID",
+                        "name": "submissionId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1358,15 +1358,6 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Create Tag",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/CreateTagRequest"
-                        }
-                    },
-                    {
                         "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
@@ -1384,6 +1375,15 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "description": "Create Tag",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/CreateTagRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -1435,13 +1435,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Tag ID",
-                        "name": "tagId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -1458,6 +1451,13 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1508,22 +1508,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Tag ID",
-                        "name": "tagId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update Tag",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/UpdateTagRequest"
-                        }
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -1540,6 +1524,22 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Tag",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpdateTagRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -1596,13 +1596,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Tag ID",
-                        "name": "tagId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -1619,6 +1612,13 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1679,13 +1679,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Tag ID",
-                        "name": "tagId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -1702,6 +1695,13 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1755,22 +1755,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Tag ID",
-                        "name": "tagId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Create Tag Version",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/UpsertTagVersionRequest"
-                        }
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -1787,6 +1771,22 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create Tag Version",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/UpsertTagVersionRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -1844,20 +1844,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Tag ID",
-                        "name": "tagId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Version ID",
-                        "name": "versionId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -1874,6 +1860,20 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "versionId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1926,20 +1926,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Tag ID",
-                        "name": "tagId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Version ID",
-                        "name": "versionId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -1956,6 +1942,20 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "versionId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1993,7 +1993,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Transitions a draft tag version to active status, making it the live version for the tag. Only one version per tag can be active at a time.",
+                "description": "Transitions a draft tag version to active status, making it the live version for the tag. If another version is currently active, it is automatically transitioned to deprecated within the same transaction. Only one version per tag can be active at a time.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2014,20 +2014,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Tag ID",
-                        "name": "tagId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Version ID",
-                        "name": "versionId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -2044,6 +2030,20 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "versionId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -2102,20 +2102,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Tag ID",
-                        "name": "tagId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Version ID",
-                        "name": "versionId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -2132,6 +2118,20 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Tag ID",
+                        "name": "tagId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Version ID",
+                        "name": "versionId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {

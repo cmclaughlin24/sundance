@@ -104,15 +104,6 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Create Data Source",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/DataSourceRequest"
-                        }
-                    },
-                    {
                         "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
@@ -130,6 +121,15 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "description": "Create Data Source",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DataSourceRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -181,13 +181,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Data Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -204,6 +197,13 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Data Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -254,22 +254,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Data Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update Data Source",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/DataSourceRequest"
-                        }
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -286,6 +270,22 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Data Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Data Source",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DataSourceRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -341,13 +341,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Data Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -364,6 +357,13 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Data Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -413,19 +413,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Data Source ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "object",
-                        "description": "Optional parameters for look-up retrieval, such as query parameters for external fetches or payload for webhook calls.",
-                        "name": "params",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
                         "description": "Client-supplied request trace ID (generated if absent)",
                         "name": "X-Request-ID",
                         "in": "header"
@@ -442,6 +429,19 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Data Source ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "object",
+                        "description": "Optional parameters for look-up retrieval, such as query parameters for external fetches or payload for webhook calls.",
+                        "name": "params",
+                        "in": "query"
                     }
                 ],
                 "responses": {
