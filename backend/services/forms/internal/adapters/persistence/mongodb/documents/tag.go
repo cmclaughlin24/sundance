@@ -6,36 +6,51 @@ import (
 )
 
 type TagDocument struct {
-	ID           string    `bson:"_id"`
-	TenantID     string    `bson:"tenant_id"`
-	Key          string    `bson:"key"`
-	DisplayName  string    `bson:"display_name"`
-	ValueKind    string    `bson:"value_kind"`
-	IsCollection bool      `bson:"is_collection"`
-	CreatedAt    time.Time `bson:"created_at"`
-	UpdatedAt    time.Time `bson:"updated_at"`
+	ID            string    `bson:"_id"`
+	TenantID      string    `bson:"tenant_id"`
+	Key           string    `bson:"key"`
+	DisplayName   string    `bson:"display_name"`
+	NodeType      string    `bson:"node_type"`
+	PrimitiveType *string   `bson:"primitive_type"`
+	IsCollection  bool      `bson:"is_collection"`
+	CreatedAt     time.Time `bson:"created_at"`
+	UpdatedAt     time.Time `bson:"updated_at"`
 }
 
 func ToTagDocument(d *domain.Tag) TagDocument {
+	var primitiveType *string
+	if d.PrimitiveType != nil {
+		pt := string(*d.PrimitiveType)
+		primitiveType = &pt
+	}
+
 	return TagDocument{
-		ID:           string(d.ID),
-		TenantID:     d.TenantID,
-		Key:          d.Key,
-		DisplayName:  d.DisplayName,
-		ValueKind:    string(d.ValueKind),
-		IsCollection: d.IsCollection,
-		CreatedAt:    d.CreatedAt,
-		UpdatedAt:    d.UpdatedAt,
+		ID:            string(d.ID),
+		TenantID:      d.TenantID,
+		Key:           d.Key,
+		DisplayName:   d.DisplayName,
+		NodeType:      string(d.NodeType),
+		PrimitiveType: primitiveType,
+		IsCollection:  d.IsCollection,
+		CreatedAt:     d.CreatedAt,
+		UpdatedAt:     d.UpdatedAt,
 	}
 }
 
 func FromTagDocument(d TagDocument) *domain.Tag {
+	var primitiveType *domain.TagPrimitiveType
+	if d.PrimitiveType != nil {
+		pt := domain.TagPrimitiveType(*d.PrimitiveType)
+		primitiveType = &pt
+	}
+
 	return domain.HydrateTag(
 		domain.TagID(d.ID),
 		d.TenantID,
 		d.Key,
 		d.DisplayName,
-		domain.TagValueKind(d.ValueKind),
+		domain.TagNodeType(d.NodeType),
+		primitiveType,
 		d.IsCollection,
 		d.CreatedAt,
 		d.UpdatedAt,

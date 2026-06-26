@@ -76,7 +76,7 @@ func (s *tagsService) Create(ctx context.Context, cmd commands.CreateTagCommand)
 		return nil, err
 	}
 
-	tag, err := domain.NewTag(cmd.TenantID, cmd.Key, cmd.DisplayName, cmd.ValueKind, false)
+	tag, err := domain.NewTag(cmd.TenantID, cmd.Key, cmd.DisplayName, cmd.NodeType, cmd.PrimitiveType, false)
 	if err != nil {
 		s.logger.WarnContext(ctx, "tag creation failed; domain invariant violation", "tenant_id", cmd.TenantID, "error", err)
 		return nil, err
@@ -218,7 +218,7 @@ func (s *tagsService) CreateVersion(ctx context.Context, cmd commands.CreateTagV
 		return nil, err
 	}
 
-	version, err := domain.NewTagVersion(cmd.TagID, versionNum, cmd.Type)
+	version, err := domain.NewTagVersion(cmd.TagID, versionNum)
 	if err != nil {
 		s.logger.WarnContext(ctx, "version creation failed; domain invariant violation", "tenant_id", cmd.TenantID, "tag_id", cmd.TagID, "error", err)
 		return nil, err

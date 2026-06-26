@@ -118,11 +118,19 @@ func (h *Handlers) CreateTag(w http.ResponseWriter, r *http.Request) {
 
 	tenantID := httputil.TenantFromContext(r.Context())
 	resultChan := make(chan result[*domain.Tag], 1)
+
+	var primitiveType *domain.TagPrimitiveType
+	if body.PrimitiveType != nil {
+		pt := domain.TagPrimitiveType(*body.PrimitiveType)
+		primitiveType = &pt
+	}
+
 	command := commands.NewCreateTagCommand(
 		tenantID,
 		body.Key,
 		body.DisplayName,
-		domain.TagValueKind(body.ValueKind),
+		domain.TagNodeType(body.NodeType),
+		primitiveType,
 		body.IsCollection,
 	)
 
@@ -361,7 +369,7 @@ func (h *Handlers) CreateTagVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultChan := make(chan result[*domain.TagVersion], 1)
-	command := commands.NewCreateTagVersionCommand(tenantID, tagID, body.Type)
+	command := commands.NewCreateTagVersionCommand(tenantID, tagID)
 
 	go func() {
 		defer close(resultChan)

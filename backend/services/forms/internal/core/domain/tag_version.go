@@ -17,7 +17,7 @@ type TagVersionID string
 
 type TagStatus string
 
-type TagType string
+type TagPrimitiveType string
 
 const (
 	TagStatusDraft      TagStatus = "draft"
@@ -30,7 +30,6 @@ type TagVersion struct {
 	ID           TagVersionID
 	TagID        TagID
 	Version      int
-	Type         TagType
 	Status       TagStatus
 	CreatedAt    time.Time
 	DeprecatedAt time.Time
@@ -38,13 +37,12 @@ type TagVersion struct {
 	RetiredAt    time.Time
 }
 
-func NewTagVersion(tagID TagID, version int, tagType TagType) (*TagVersion, error) {
+func NewTagVersion(tagID TagID, version int) (*TagVersion, error) {
 	ctv := &TagVersion{
 		ID:        TagVersionID(NewID()),
 		TagID:     tagID,
 		Version:   version,
 		Status:    TagStatusDraft,
-		Type:      tagType,
 		CreatedAt: Now(),
 	}
 
@@ -59,7 +57,6 @@ func HydrateTagVersion(
 	id TagVersionID,
 	tagID TagID,
 	version int,
-	tagType TagType,
 	status TagStatus,
 	createdAt,
 	deprecatedAt,
@@ -70,7 +67,6 @@ func HydrateTagVersion(
 		ID:           id,
 		TagID:        tagID,
 		Version:      version,
-		Type:         tagType,
 		Status:       status,
 		CreatedAt:    createdAt,
 		DeprecatedAt: deprecatedAt,

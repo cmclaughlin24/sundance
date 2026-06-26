@@ -6,20 +6,22 @@ import (
 )
 
 type CreateTagCommand struct {
-	TenantID     string              `validate:"required"`
-	Key          string              `validate:"required,nowhitespace"`
-	DisplayName  string              `validate:"required"`
-	ValueKind    domain.TagValueKind `validate:"required"`
-	IsCollection bool
+	TenantID      string             `validate:"required"`
+	Key           string             `validate:"required,nowhitespace"`
+	DisplayName   string             `validate:"required"`
+	NodeType      domain.TagNodeType `validate:"required"`
+	PrimitiveType *domain.TagPrimitiveType
+	IsCollection  bool
 }
 
-func NewCreateTagCommand(tenantID, key, displayName string, valueKind domain.TagValueKind, isCollection bool) CreateTagCommand {
+func NewCreateTagCommand(tenantID, key, displayName string, nodeType domain.TagNodeType, primitiveType *domain.TagPrimitiveType, isCollection bool) CreateTagCommand {
 	return CreateTagCommand{
-		TenantID:     tenantID,
-		Key:          key,
-		DisplayName:  displayName,
-		ValueKind:    valueKind,
-		IsCollection: isCollection,
+		TenantID:      tenantID,
+		Key:           key,
+		DisplayName:   displayName,
+		NodeType:      nodeType,
+		PrimitiveType: primitiveType,
+		IsCollection:  isCollection,
 	}
 }
 

@@ -13,37 +13,39 @@ var (
 
 type TagID string
 
-type TagValueKind string
+type TagNodeType string
 
 const (
-	TagValueKindPrimitive TagValueKind = "primitive"
-	TagValueKindObject    TagValueKind = "object"
+	TagValueKindPrimitive TagNodeType = "primitive"
+	TagValueKindObject    TagNodeType = "object"
 )
 
 type Tag struct {
-	ID           TagID
-	TenantID     string
-	Key          string
-	DisplayName  string
-	ValueKind    TagValueKind
-	IsCollection bool
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID            TagID
+	TenantID      string
+	Key           string
+	DisplayName   string
+	NodeType      TagNodeType
+	PrimitiveType *TagPrimitiveType
+	IsCollection  bool
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
-func NewTag(tenantID, key, displayName string, valueKind TagValueKind, isCollection bool) (*Tag, error) {
-	if !isTagValueKind(valueKind) {
+func NewTag(tenantID, key, displayName string, nodeType TagNodeType, primitiveType *TagPrimitiveType, isCollection bool) (*Tag, error) {
+	if !isTagValueKind(nodeType) {
 		return nil, ErrInvalidTagValueKind
 	}
 
 	ct := &Tag{
-		ID:           TagID(NewID()),
-		TenantID:     tenantID,
-		Key:          key,
-		DisplayName:  displayName,
-		ValueKind:    valueKind,
-		IsCollection: isCollection,
-		CreatedAt:    Now(),
+		ID:            TagID(NewID()),
+		TenantID:      tenantID,
+		Key:           key,
+		DisplayName:   displayName,
+		NodeType:      nodeType,
+		PrimitiveType: primitiveType,
+		IsCollection:  isCollection,
+		CreatedAt:     Now(),
 	}
 
 	if err := validate.ValidateStruct(ct); err != nil {
@@ -58,20 +60,22 @@ func HydrateTag(
 	tenantID,
 	key,
 	displayName string,
-	valueKind TagValueKind,
+	nodeType TagNodeType,
+	primitiveType *TagPrimitiveType,
 	isCollection bool,
 	createdAt,
 	updatedAt time.Time,
 ) *Tag {
 	return &Tag{
-		ID:           id,
-		TenantID:     tenantID,
-		Key:          key,
-		DisplayName:  displayName,
-		ValueKind:    valueKind,
-		IsCollection: isCollection,
-		CreatedAt:    createdAt,
-		UpdatedAt:    updatedAt,
+		ID:            id,
+		TenantID:      tenantID,
+		Key:           key,
+		DisplayName:   displayName,
+		NodeType:      nodeType,
+		PrimitiveType: primitiveType,
+		IsCollection:  isCollection,
+		CreatedAt:     createdAt,
+		UpdatedAt:     updatedAt,
 	}
 }
 
@@ -93,7 +97,7 @@ func (t *Tag) Update(displayName string) error {
 	return nil
 }
 
-var isTagValueKind = validate.NewTypeValidator([]TagValueKind{
+var isTagValueKind = validate.NewTypeValidator([]TagNodeType{
 	TagValueKindPrimitive,
 	TagValueKindObject,
 })

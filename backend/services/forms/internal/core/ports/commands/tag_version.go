@@ -6,16 +6,14 @@ import (
 )
 
 type CreateTagVersionCommand struct {
-	TenantID string         `validate:"required"`
-	TagID    domain.TagID   `validate:"required"`
-	Type     domain.TagType `validate:"required"`
+	TenantID string       `validate:"required"`
+	TagID    domain.TagID `validate:"required"`
 }
 
-func NewCreateTagVersionCommand(tenantID string, tagID domain.TagID, tagType domain.TagType) CreateTagVersionCommand {
+func NewCreateTagVersionCommand(tenantID string, tagID domain.TagID) CreateTagVersionCommand {
 	return CreateTagVersionCommand{
 		TenantID: tenantID,
 		TagID:    tagID,
-		Type:     tagType,
 	}
 }
 

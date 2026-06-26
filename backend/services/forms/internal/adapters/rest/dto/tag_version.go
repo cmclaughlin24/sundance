@@ -5,15 +5,12 @@ import (
 	"time"
 )
 
-type UpsertTagVersionRequest struct {
-	Type domain.TagType `json:"type" validate:"required"`
-}
+type UpsertTagVersionRequest struct{}
 
 type TagVersionResponse struct {
 	ID           domain.TagVersionID `json:"id"`
 	TagID        domain.TagID        `json:"tagId"`
 	Version      int                 `json:"version"`
-	Type         domain.TagType      `json:"type"`
 	Status       domain.TagStatus    `json:"status"`
 	CreatedAt    time.Time           `json:"createdAt"`
 	DeprecatedAt time.Time           `json:"deprecatedAt"`
@@ -26,7 +23,6 @@ func TagVersionToResponse(tv *domain.TagVersion) TagVersionResponse {
 		ID:           tv.ID,
 		TagID:        tv.TagID,
 		Version:      tv.Version,
-		Type:         tv.Type,
 		Status:       tv.Status,
 		CreatedAt:    tv.CreatedAt,
 		DeprecatedAt: tv.DeprecatedAt,
