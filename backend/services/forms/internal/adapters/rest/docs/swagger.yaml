@@ -51,7 +51,9 @@ definitions:
         type: boolean
       key:
         type: string
-      valueKind:
+      nodeType:
+        type: string
+      primitiveType:
         type: string
     type: object
   FieldRequest:
@@ -386,6 +388,14 @@ definitions:
     - SubmissionStatusAccepted
     - SubmissionStatusRejected
     - SubmissionStatusFailed
+  TagNodeType:
+    enum:
+    - primitive
+    - object
+    type: string
+    x-enum-varnames:
+    - TagValueKindPrimitive
+    - TagValueKindObject
   TagResponse:
     properties:
       createdAt:
@@ -398,10 +408,12 @@ definitions:
         type: boolean
       key:
         type: string
+      nodeType:
+        $ref: '#/definitions/TagNodeType'
+      primitiveType:
+        type: string
       updatedAt:
         type: string
-      valueKind:
-        $ref: '#/definitions/TagValueKind'
     type: object
   TagStatus:
     enum:
@@ -415,14 +427,6 @@ definitions:
     - TagStatusActive
     - TagStatusDeprecated
     - TagStatusRetired
-  TagValueKind:
-    enum:
-    - primitive
-    - object
-    type: string
-    x-enum-varnames:
-    - TagValueKindPrimitive
-    - TagValueKindObject
   TagVersionResponse:
     properties:
       createdAt:
@@ -438,8 +442,6 @@ definitions:
       status:
         $ref: '#/definitions/TagStatus'
       tagId:
-        type: string
-      type:
         type: string
       version:
         type: integer
@@ -468,11 +470,6 @@ definitions:
         type: array
     type: object
   UpsertTagVersionRequest:
-    properties:
-      type:
-        type: string
-    required:
-    - type
     type: object
   upsertFieldTagMappingRequest:
     properties:

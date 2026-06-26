@@ -2245,7 +2245,10 @@ const docTemplate = `{
                 "key": {
                     "type": "string"
                 },
-                "valueKind": {
+                "nodeType": {
+                    "type": "string"
+                },
+                "primitiveType": {
                     "type": "string"
                 }
             }
@@ -2737,6 +2740,17 @@ const docTemplate = `{
                 "SubmissionStatusFailed"
             ]
         },
+        "TagNodeType": {
+            "type": "string",
+            "enum": [
+                "primitive",
+                "object"
+            ],
+            "x-enum-varnames": [
+                "TagValueKindPrimitive",
+                "TagValueKindObject"
+            ]
+        },
         "TagResponse": {
             "type": "object",
             "properties": {
@@ -2755,11 +2769,14 @@ const docTemplate = `{
                 "key": {
                     "type": "string"
                 },
-                "updatedAt": {
+                "nodeType": {
+                    "$ref": "#/definitions/TagNodeType"
+                },
+                "primitiveType": {
                     "type": "string"
                 },
-                "valueKind": {
-                    "$ref": "#/definitions/TagValueKind"
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         },
@@ -2776,17 +2793,6 @@ const docTemplate = `{
                 "TagStatusActive",
                 "TagStatusDeprecated",
                 "TagStatusRetired"
-            ]
-        },
-        "TagValueKind": {
-            "type": "string",
-            "enum": [
-                "primitive",
-                "object"
-            ],
-            "x-enum-varnames": [
-                "TagValueKindPrimitive",
-                "TagValueKindObject"
             ]
         },
         "TagVersionResponse": {
@@ -2811,9 +2817,6 @@ const docTemplate = `{
                     "$ref": "#/definitions/TagStatus"
                 },
                 "tagId": {
-                    "type": "string"
-                },
-                "type": {
                     "type": "string"
                 },
                 "version": {
@@ -2857,15 +2860,7 @@ const docTemplate = `{
             }
         },
         "UpsertTagVersionRequest": {
-            "type": "object",
-            "required": [
-                "type"
-            ],
-            "properties": {
-                "type": {
-                    "type": "string"
-                }
-            }
+            "type": "object"
         },
         "upsertFieldTagMappingRequest": {
             "type": "object",
