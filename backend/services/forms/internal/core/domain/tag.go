@@ -2,13 +2,15 @@ package domain
 
 import (
 	"errors"
+	"fmt"
 	"sundance/backend/pkg/common/validate"
 	"time"
 )
 
 var (
-	ErrInvalidCanonicalTag = errors.New("invalid tag")
-	ErrInvalidTagValueKind = errors.New("invalid tag value kind")
+	ErrInvalidTag                  = errors.New("invalid tag")
+	ErrInvalidTagNodeType          = fmt.Errorf("%w; node type", ErrInvalidTag)
+	ErrNodeTypeObjectPrimitiveType = fmt.Errorf("%w; node type object cannot have a primitive type", ErrInvalidTag)
 )
 
 type TagID string
@@ -16,8 +18,8 @@ type TagID string
 type TagNodeType string
 
 const (
-	TagValueKindPrimitive TagNodeType = "primitive"
-	TagValueKindObject    TagNodeType = "object"
+	TagNodeTypePrimitive TagNodeType = "primitive"
+	TagNodeTypeObject    TagNodeType = "object"
 )
 
 type Tag struct {
@@ -34,7 +36,11 @@ type Tag struct {
 
 func NewTag(tenantID, key, displayName string, nodeType TagNodeType, primitiveType *TagPrimitiveType, isCollection bool) (*Tag, error) {
 	if !isTagValueKind(nodeType) {
-		return nil, ErrInvalidTagValueKind
+		return nil, ErrInvalidTagNodeType
+	}
+
+	if nodeType == TagNodeTypeObject && primitiveType != nil {
+		return nil, ErrNodeTypeObjectPrimitiveType
 	}
 
 	ct := &Tag{
@@ -81,7 +87,7 @@ func HydrateTag(
 
 func (t *Tag) Update(displayName string) error {
 	if t == nil {
-		return ErrInvalidCanonicalTag
+		return ErrInvalidTag
 	}
 
 	cpy := *t
@@ -98,6 +104,6 @@ func (t *Tag) Update(displayName string) error {
 }
 
 var isTagValueKind = validate.NewTypeValidator([]TagNodeType{
-	TagValueKindPrimitive,
-	TagValueKindObject,
+	TagNodeTypePrimitive,
+	TagNodeTypeObject,
 })

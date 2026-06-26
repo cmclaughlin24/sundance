@@ -217,26 +217,18 @@ func (s *submissionJobsService) normalize(ctx context.Context, factCandidates []
 	}
 
 	facts := make([]*domain.CanonicalFact, 0)
-	for _, t := range tags {
-		version, err := s.selectTagVersion(ctx, t.versions)
+	for _, ta := range tags {
+		version, err := s.selectTagVersion(ctx, ta.versions)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, c := range candidatesByVersion[version.ID] {
-			if !t.tag.IsCollection {
-				// TODO: Need to decide if the tag is a scalar tag, then it should determine the priority. Otherwise, add ignore priority and
-				// add it to the collection.
-				continue
-			}
-
-			facts = append(facts, domain.NewCanonicalFact(
-				c.ftm.FieldID,
-				c.ftm.TagVersionID,
-				t.tag.Key,
-				c.value,
-			))
+		f, err := s.evaluateCandidates(ctx, ta.tag, *version, candidatesByVersion[version.ID])
+		if err != nil {
+			return nil, err
 		}
+
+		facts = append(facts, f...)
 	}
 
 	return facts, nil
@@ -373,6 +365,17 @@ func (s *submissionJobsService) selectTagVersion(ctx context.Context, versions [
 	}
 
 	return deprecated, nil
+}
+
+func (s *submissionJobsService) evaluateCandidates(
+	ctx context.Context,
+	tag domain.Tag,
+	version domain.TagVersion,
+	candidates []factCandidate,
+) ([]*domain.CanonicalFact, error) {
+	facts := make([]*domain.CanonicalFact, 0)
+
+	return facts, nil
 }
 
 func shouldReject(err error) bool {
