@@ -8,7 +8,7 @@ import (
 type TagDocument struct {
 	ID            string    `bson:"_id"`
 	TenantID      string    `bson:"tenant_id"`
-	Key           string    `bson:"key"`
+	KeyPath       string    `bson:"key_path"`
 	DisplayName   string    `bson:"display_name"`
 	NodeType      string    `bson:"node_type"`
 	PrimitiveType *string   `bson:"primitive_type"`
@@ -26,7 +26,7 @@ func ToTagDocument(d *domain.Tag) TagDocument {
 	return TagDocument{
 		ID:            string(d.ID),
 		TenantID:      d.TenantID,
-		Key:           d.Key,
+		KeyPath:       d.KeyPath,
 		DisplayName:   d.DisplayName,
 		NodeType:      string(d.NodeType),
 		PrimitiveType: primitiveType,
@@ -45,7 +45,7 @@ func FromTagDocument(d TagDocument) *domain.Tag {
 	return domain.HydrateTag(
 		domain.TagID(d.ID),
 		d.TenantID,
-		d.Key,
+		d.KeyPath,
 		d.DisplayName,
 		domain.TagNodeType(d.NodeType),
 		primitiveType,

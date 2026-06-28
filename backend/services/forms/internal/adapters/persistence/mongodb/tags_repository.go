@@ -17,8 +17,8 @@ var (
 	tagIndexes = []mongo.IndexModel{
 		{
 			Keys: bson.D{
-				{Key: "tenant_id", Value: 1},
-				{Key: "key", Value: 1},
+			{Key: "tenant_id", Value: 1},
+			{Key: "key_path", Value: 1},
 			},
 			Options: options.Index().SetUnique(true),
 		},

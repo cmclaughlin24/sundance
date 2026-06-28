@@ -127,7 +127,7 @@ func (h *Handlers) CreateTag(w http.ResponseWriter, r *http.Request) {
 
 	command := commands.NewCreateTagCommand(
 		tenantID,
-		body.Key,
+		body.KeyPath,
 		body.DisplayName,
 		domain.TagNodeType(body.NodeType),
 		primitiveType,

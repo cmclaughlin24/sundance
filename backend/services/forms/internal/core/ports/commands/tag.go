@@ -7,17 +7,17 @@ import (
 
 type CreateTagCommand struct {
 	TenantID      string             `validate:"required"`
-	Key           string             `validate:"required,nowhitespace"`
+	KeyPath       string             `validate:"required,nowhitespace"`
 	DisplayName   string             `validate:"required"`
 	NodeType      domain.TagNodeType `validate:"required"`
 	PrimitiveType *domain.TagPrimitiveType
 	IsCollection  bool
 }
 
-func NewCreateTagCommand(tenantID, key, displayName string, nodeType domain.TagNodeType, primitiveType *domain.TagPrimitiveType, isCollection bool) CreateTagCommand {
+func NewCreateTagCommand(tenantID, keyPath, displayName string, nodeType domain.TagNodeType, primitiveType *domain.TagPrimitiveType, isCollection bool) CreateTagCommand {
 	return CreateTagCommand{
 		TenantID:      tenantID,
-		Key:           key,
+		KeyPath:       keyPath,
 		DisplayName:   displayName,
 		NodeType:      nodeType,
 		PrimitiveType: primitiveType,

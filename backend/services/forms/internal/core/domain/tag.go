@@ -27,7 +27,7 @@ const (
 type Tag struct {
 	ID            TagID
 	TenantID      string
-	Key           string
+	KeyPath       string
 	DisplayName   string
 	NodeType      TagNodeType
 	PrimitiveType *TagPrimitiveType
@@ -35,7 +35,7 @@ type Tag struct {
 	UpdatedAt     time.Time
 }
 
-func NewTag(tenantID, key, displayName string, nodeType TagNodeType, primitiveType *TagPrimitiveType) (*Tag, error) {
+func NewTag(tenantID, keyPath, displayName string, nodeType TagNodeType, primitiveType *TagPrimitiveType) (*Tag, error) {
 	if !isTagValueKind(nodeType) {
 		return nil, ErrInvalidTagNodeType
 	}
@@ -47,7 +47,7 @@ func NewTag(tenantID, key, displayName string, nodeType TagNodeType, primitiveTy
 	ct := &Tag{
 		ID:            TagID(NewID()),
 		TenantID:      tenantID,
-		Key:           key,
+		KeyPath:       keyPath,
 		DisplayName:   displayName,
 		NodeType:      nodeType,
 		PrimitiveType: primitiveType,
@@ -64,7 +64,7 @@ func NewTag(tenantID, key, displayName string, nodeType TagNodeType, primitiveTy
 func HydrateTag(
 	id TagID,
 	tenantID,
-	key,
+	keyPath,
 	displayName string,
 	nodeType TagNodeType,
 	primitiveType *TagPrimitiveType,
@@ -74,7 +74,7 @@ func HydrateTag(
 	return &Tag{
 		ID:            id,
 		TenantID:      tenantID,
-		Key:           key,
+		KeyPath:       keyPath,
 		DisplayName:   displayName,
 		NodeType:      nodeType,
 		PrimitiveType: primitiveType,
@@ -102,7 +102,7 @@ func (t *Tag) Update(displayName string) error {
 }
 
 func (t *Tag) HasCollectionAncestor() bool {
-	return strings.Contains(t.Key, collectionSegment)
+	return strings.Contains(t.KeyPath, collectionSegment)
 }
 
 var isTagValueKind = validate.NewTypeValidator([]TagNodeType{

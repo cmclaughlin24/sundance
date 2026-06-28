@@ -355,7 +355,7 @@ func (s *submissionJobsService) evaluateCollectionCandidates(tag domain.Tag, ver
 		facts = append(facts, domain.NewCanonicalFact(
 			winner.ftm.FieldID,
 			version.ID,
-			tag.Key,
+			tag.KeyPath,
 			winner.value,
 			&idx,
 		))
@@ -370,7 +370,7 @@ func (s *submissionJobsService) evaluateScalarCandidates(tag domain.Tag, version
 	facts = append(facts, domain.NewCanonicalFact(
 		winner.ftm.FieldID,
 		version.ID,
-		tag.Key,
+		tag.KeyPath,
 		winner.value,
 		nil,
 	))

@@ -6,7 +6,7 @@ import (
 )
 
 type CreateTagRequest struct {
-	Key           string  `json:"key"`
+	KeyPath       string  `json:"keyPath"`
 	DisplayName   string  `json:"displayName"`
 	NodeType      string  `json:"nodeType"`
 	PrimitiveType *string `json:"primitiveType"`
@@ -19,7 +19,7 @@ type UpdateTagRequest struct {
 
 type TagResponse struct {
 	ID            domain.TagID             `json:"id"`
-	Key           string                   `json:"key"`
+	KeyPath       string                   `json:"keyPath"`
 	DisplayName   string                   `json:"displayName"`
 	NodeType      domain.TagNodeType       `json:"nodeType"`
 	PrimitiveType *domain.TagPrimitiveType `json:"primitiveType"`
@@ -30,7 +30,7 @@ type TagResponse struct {
 func TagToResponse(ct *domain.Tag) TagResponse {
 	return TagResponse{
 		ID:            ct.ID,
-		Key:           ct.Key,
+		KeyPath:       ct.KeyPath,
 		DisplayName:   ct.DisplayName,
 		NodeType:      ct.NodeType,
 		PrimitiveType: ct.PrimitiveType,
