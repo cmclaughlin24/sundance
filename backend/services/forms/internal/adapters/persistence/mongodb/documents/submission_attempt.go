@@ -35,17 +35,19 @@ func fromSubmissionAttemptDocument(att *submissionAttemptDocument) *domain.Submi
 }
 
 type submissionFieldValueDocument struct {
-	FieldID string `bson:"field_id"`
-	Value   any    `bson:"value"`
+	FieldID         string `bson:"field_id"`
+	Value           any    `bson:"value"`
+	CollectionIndex *int   `bson:"collection_index,omitempty"`
 }
 
 func toSubmissionFieldValueDocument(fv *domain.SubmissionFieldValue) *submissionFieldValueDocument {
 	return &submissionFieldValueDocument{
-		FieldID: string(fv.FieldID),
-		Value:   fv.Value,
+		FieldID:         string(fv.FieldID),
+		Value:           fv.Value,
+		CollectionIndex: fv.CollectionIndex,
 	}
 }
 
 func fromSubmissionFieldValueDocument(doc *submissionFieldValueDocument) *domain.SubmissionFieldValue {
-	return domain.HydrateSubmissionFieldValue(domain.FieldID(doc.FieldID), doc.Value)
+	return domain.HydrateSubmissionFieldValue(domain.FieldID(doc.FieldID), doc.Value, doc.CollectionIndex)
 }

@@ -18,14 +18,13 @@ type UpdateTagRequest struct {
 }
 
 type TagResponse struct {
-	ID            domain.TagID            `json:"id"`
-	Key           string                  `json:"key"`
-	DisplayName   string                  `json:"displayName"`
-	NodeType      domain.TagNodeType      `json:"nodeType"`
+	ID            domain.TagID             `json:"id"`
+	Key           string                   `json:"key"`
+	DisplayName   string                   `json:"displayName"`
+	NodeType      domain.TagNodeType       `json:"nodeType"`
 	PrimitiveType *domain.TagPrimitiveType `json:"primitiveType"`
-	IsCollection  bool                    `json:"isCollection"`
-	CreatedAt     time.Time               `json:"createdAt"`
-	UpdatedAt     time.Time               `json:"updatedAt"`
+	CreatedAt     time.Time                `json:"createdAt"`
+	UpdatedAt     time.Time                `json:"updatedAt"`
 }
 
 func TagToResponse(ct *domain.Tag) TagResponse {
@@ -35,7 +34,6 @@ func TagToResponse(ct *domain.Tag) TagResponse {
 		DisplayName:   ct.DisplayName,
 		NodeType:      ct.NodeType,
 		PrimitiveType: ct.PrimitiveType,
-		IsCollection:  ct.IsCollection,
 		CreatedAt:     ct.CreatedAt,
 		UpdatedAt:     ct.UpdatedAt,
 	}

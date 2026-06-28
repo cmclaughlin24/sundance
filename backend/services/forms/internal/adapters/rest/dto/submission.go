@@ -13,15 +13,16 @@ type SubmissionRequest struct {
 }
 
 type SubmissionFieldValueDto struct {
-	FieldID domain.FieldID `json:"fieldId" validate:"required"`
-	Value   any            `json:"value" validate:"required"`
+	FieldID         domain.FieldID `json:"fieldId" validate:"required"`
+	Value           any            `json:"value" validate:"required"`
+	CollectionIndex *int           `json:"collectionIndex,omitempty"`
 }
 
 type SubmissionResponse struct {
 	ID          domain.SubmissionID       `json:"id"`
 	TenantID    string                    `json:"tenantId"`
 	FormID      domain.FormID             `json:"formId"`
-	VersionID   domain.FormVersionID          `json:"versionId"`
+	VersionID   domain.FormVersionID      `json:"versionId"`
 	ReferenceID domain.ReferenceID        `json:"referenceId"`
 	Status      domain.SubmissionStatus   `json:"status"`
 	Values      []SubmissionFieldValueDto `json:"values"`
@@ -32,7 +33,7 @@ type SubmissionResponse struct {
 func SubmissionToResponse(s *domain.Submission) *SubmissionResponse {
 	values := make([]SubmissionFieldValueDto, 0, len(s.Values))
 	for _, value := range s.Values {
-		values = append(values, SubmissionFieldValueDto{value.FieldID, value.Value})
+		values = append(values, SubmissionFieldValueDto{FieldID: value.FieldID, Value: value.Value, CollectionIndex: value.CollectionIndex})
 	}
 
 	return &SubmissionResponse{

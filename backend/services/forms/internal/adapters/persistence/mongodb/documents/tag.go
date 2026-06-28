@@ -12,7 +12,6 @@ type TagDocument struct {
 	DisplayName   string    `bson:"display_name"`
 	NodeType      string    `bson:"node_type"`
 	PrimitiveType *string   `bson:"primitive_type"`
-	IsCollection  bool      `bson:"is_collection"`
 	CreatedAt     time.Time `bson:"created_at"`
 	UpdatedAt     time.Time `bson:"updated_at"`
 }
@@ -31,7 +30,6 @@ func ToTagDocument(d *domain.Tag) TagDocument {
 		DisplayName:   d.DisplayName,
 		NodeType:      string(d.NodeType),
 		PrimitiveType: primitiveType,
-		IsCollection:  d.IsCollection,
 		CreatedAt:     d.CreatedAt,
 		UpdatedAt:     d.UpdatedAt,
 	}
@@ -51,7 +49,6 @@ func FromTagDocument(d TagDocument) *domain.Tag {
 		d.DisplayName,
 		domain.TagNodeType(d.NodeType),
 		primitiveType,
-		d.IsCollection,
 		d.CreatedAt,
 		d.UpdatedAt,
 	)

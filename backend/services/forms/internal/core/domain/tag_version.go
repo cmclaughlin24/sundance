@@ -8,9 +8,11 @@ import (
 )
 
 var (
-	ErrInvalidTagVersion       = errors.New("invalid tag version")
-	ErrDuplicateTagVersion     = errors.New("duplicate tag version")
-	ErrInvalidTagVersionStatus = errors.New("invalid tag version status invariant")
+	ErrInvalidTagVersion        = errors.New("invalid tag version")
+	ErrDuplicateTagVersion      = errors.New("duplicate tag version")
+	ErrInvalidTagVersionStatus  = errors.New("invalid tag version status invariant")
+	ErrNoEligibleTagVersion     = errors.New("")
+	ErrMultipleActiveTagVersion = errors.New("")
 )
 
 type TagVersionID string
@@ -118,4 +120,37 @@ func (tv *TagVersion) Retire() error {
 	tv.RetiredAt = Now()
 
 	return nil
+}
+
+func ResolveTagVersion(versions []*TagVersion) (*TagVersion, error) {
+	var active *TagVersion
+	var deprecated *TagVersion
+
+	for _, v := range versions {
+		switch v.Status {
+		case TagStatusDraft, TagStatusRetired:
+		case TagStatusDeprecated:
+			if deprecated == nil {
+				deprecated = v
+			} else if deprecated.Version < v.Version {
+				deprecated = v
+			}
+		case TagStatusActive:
+			if active != nil {
+				return nil, ErrMultipleActiveTagVersion
+			}
+
+			active = v
+		}
+	}
+
+	if active == nil && deprecated == nil {
+		return nil, ErrNoEligibleTagVersion
+	}
+
+	if active != nil {
+		return active, nil
+	}
+
+	return deprecated, nil
 }

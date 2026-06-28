@@ -3,6 +3,7 @@ package domain
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"sundance/backend/pkg/common/validate"
 	"time"
 )
@@ -20,6 +21,7 @@ type TagNodeType string
 const (
 	TagNodeTypePrimitive TagNodeType = "primitive"
 	TagNodeTypeObject    TagNodeType = "object"
+	collectionSegment    string      = "[*]"
 )
 
 type Tag struct {
@@ -29,12 +31,11 @@ type Tag struct {
 	DisplayName   string
 	NodeType      TagNodeType
 	PrimitiveType *TagPrimitiveType
-	IsCollection  bool
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
 
-func NewTag(tenantID, key, displayName string, nodeType TagNodeType, primitiveType *TagPrimitiveType, isCollection bool) (*Tag, error) {
+func NewTag(tenantID, key, displayName string, nodeType TagNodeType, primitiveType *TagPrimitiveType) (*Tag, error) {
 	if !isTagValueKind(nodeType) {
 		return nil, ErrInvalidTagNodeType
 	}
@@ -50,7 +51,6 @@ func NewTag(tenantID, key, displayName string, nodeType TagNodeType, primitiveTy
 		DisplayName:   displayName,
 		NodeType:      nodeType,
 		PrimitiveType: primitiveType,
-		IsCollection:  isCollection,
 		CreatedAt:     Now(),
 	}
 
@@ -68,7 +68,6 @@ func HydrateTag(
 	displayName string,
 	nodeType TagNodeType,
 	primitiveType *TagPrimitiveType,
-	isCollection bool,
 	createdAt,
 	updatedAt time.Time,
 ) *Tag {
@@ -79,7 +78,6 @@ func HydrateTag(
 		DisplayName:   displayName,
 		NodeType:      nodeType,
 		PrimitiveType: primitiveType,
-		IsCollection:  isCollection,
 		CreatedAt:     createdAt,
 		UpdatedAt:     updatedAt,
 	}
@@ -101,6 +99,10 @@ func (t *Tag) Update(displayName string) error {
 	t.UpdatedAt = Now()
 
 	return nil
+}
+
+func (t *Tag) HasCollectionAncestor() bool {
+	return strings.Contains(t.Key, collectionSegment)
 }
 
 var isTagValueKind = validate.NewTypeValidator([]TagNodeType{

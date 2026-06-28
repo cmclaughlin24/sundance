@@ -1,6 +1,7 @@
 package services
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -14,18 +15,14 @@ import (
 	"sundance/backend/services/forms/internal/core/strategies"
 )
 
-var (
-	ErrNoEligibleTagVersion     = errors.New("")
-	ErrMultipleActiveTagVersion = errors.New("")
-)
-
 type ruleByTypeGetter interface {
 	GetRuleByType(domain.RuleType) *domain.Rule
 }
 
 type factCandidate struct {
-	ftm   domain.FieldTagMapping
-	value any
+	ftm             domain.FieldTagMapping
+	value           any
+	collectionIndex *int
 }
 
 type tagAggregate struct {
@@ -193,10 +190,15 @@ pageLoop:
 				}
 
 				for _, ftm := range field.GetTags() {
-					// NOTE: The second return fv (ok) from submission.GetFieldValue(field.ID) is ignored here
-					// because it was checked during the field validation.
-					fv, _ := submission.GetFieldValue(field.ID)
-					candidates = append(candidates, factCandidate{*ftm, fv.Value})
+					fc := factCandidate{ftm: *ftm}
+					fv, ok := submission.GetFieldValue(field.ID)
+
+					if ok {
+						fc.value = fv.Value
+						fc.collectionIndex = fv.CollectionIndex
+					}
+
+					candidates = append(candidates, fc)
 				}
 			}
 		}
@@ -218,16 +220,19 @@ func (s *submissionJobsService) normalize(ctx context.Context, factCandidates []
 
 	facts := make([]*domain.CanonicalFact, 0)
 	for _, ta := range tags {
-		version, err := s.selectTagVersion(ctx, ta.versions)
+		version, err := domain.ResolveTagVersion(ta.versions)
 		if err != nil {
 			return nil, err
 		}
 
-		f, err := s.evaluateCandidates(ctx, ta.tag, *version, candidatesByVersion[version.ID])
-		if err != nil {
-			return nil, err
+		var evalFn func(domain.Tag, domain.TagVersion, []factCandidate) []*domain.CanonicalFact
+		if ta.tag.HasCollectionAncestor() {
+			evalFn = s.evaluateCollectionCandidates
+		} else {
+			evalFn = s.evaluateScalarCandidates
 		}
 
+		f := evalFn(ta.tag, *version, candidatesByVersion[version.ID])
 		facts = append(facts, f...)
 	}
 
@@ -337,45 +342,47 @@ func (s *submissionJobsService) getTags(ctx context.Context, ids []domain.TagVer
 	return aggregates, nil
 }
 
-func (s *submissionJobsService) selectTagVersion(ctx context.Context, versions []*domain.TagVersion) (*domain.TagVersion, error) {
-	var active *domain.TagVersion
-	var deprecated *domain.TagVersion
-
-	for _, v := range versions {
-		switch v.Status {
-		case domain.TagStatusDraft, domain.TagStatusRetired:
-			s.logger.ErrorContext(ctx, "invalid tag version status in form definition", "tag_version_id", v.ID, "status", v.Status)
-		case domain.TagStatusDeprecated:
-			if deprecated == nil {
-				deprecated = v
-			} else if deprecated.Version < v.Version {
-				deprecated = v
-			}
-		case domain.TagStatusActive:
-			if active != nil {
-				return nil, ErrMultipleActiveTagVersion
-			}
-
-			active = v
-		}
-	}
-
-	if active != nil {
-		return active, nil
-	}
-
-	return deprecated, nil
-}
-
-func (s *submissionJobsService) evaluateCandidates(
-	ctx context.Context,
-	tag domain.Tag,
-	version domain.TagVersion,
-	candidates []factCandidate,
-) ([]*domain.CanonicalFact, error) {
+func (s *submissionJobsService) evaluateCollectionCandidates(tag domain.Tag, version domain.TagVersion, candidates []factCandidate) []*domain.CanonicalFact {
 	facts := make([]*domain.CanonicalFact, 0)
 
-	return facts, nil
+	byCollectionIdx := make(map[int][]factCandidate)
+	for _, fc := range candidates {
+		byCollectionIdx[*fc.collectionIndex] = append(byCollectionIdx[*fc.collectionIndex], fc)
+	}
+
+	for idx, group := range byCollectionIdx {
+		winner := rankCandiates(group)
+		facts = append(facts, domain.NewCanonicalFact(
+			winner.ftm.FieldID,
+			version.ID,
+			tag.Key,
+			winner.value,
+			&idx,
+		))
+	}
+
+	return facts
+}
+
+func (s *submissionJobsService) evaluateScalarCandidates(tag domain.Tag, version domain.TagVersion, candidates []factCandidate) []*domain.CanonicalFact {
+	facts := make([]*domain.CanonicalFact, 0)
+	winner := rankCandiates(candidates)
+	facts = append(facts, domain.NewCanonicalFact(
+		winner.ftm.FieldID,
+		version.ID,
+		tag.Key,
+		winner.value,
+		nil,
+	))
+
+	return facts
+}
+
+func rankCandiates(candidates []factCandidate) factCandidate {
+	slices.SortFunc(candidates, func(fc1, fc2 factCandidate) int {
+		return cmp.Compare(fc2.ftm.Priority, fc1.ftm.Priority)
+	})
+	return candidates[0]
 }
 
 func shouldReject(err error) bool {

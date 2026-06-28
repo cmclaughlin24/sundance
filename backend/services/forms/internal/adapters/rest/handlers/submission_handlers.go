@@ -120,7 +120,7 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 
 	values := make([]*domain.SubmissionFieldValue, 0, len(body.Values))
 	for _, fv := range body.Values {
-		values = append(values, domain.NewSubmissionFieldValue(fv.FieldID, fv.Value))
+		values = append(values, domain.NewSubmissionFieldValue(fv.FieldID, fv.Value, fv.CollectionIndex))
 	}
 
 	tenantID := httputil.TenantFromContext(r.Context())
