@@ -351,7 +351,7 @@ func (s *submissionJobsService) evaluateCollectionCandidates(tag domain.Tag, ver
 	}
 
 	for idx, group := range byCollectionIdx {
-		winner := rankCandiates(group)
+		winner := rankCandidates(group)
 		facts = append(facts, domain.NewCanonicalFact(
 			winner.ftm.FieldID,
 			version.ID,
@@ -366,7 +366,7 @@ func (s *submissionJobsService) evaluateCollectionCandidates(tag domain.Tag, ver
 
 func (s *submissionJobsService) evaluateScalarCandidates(tag domain.Tag, version domain.TagVersion, candidates []factCandidate) []*domain.CanonicalFact {
 	facts := make([]*domain.CanonicalFact, 0)
-	winner := rankCandiates(candidates)
+	winner := rankCandidates(candidates)
 	facts = append(facts, domain.NewCanonicalFact(
 		winner.ftm.FieldID,
 		version.ID,
@@ -378,7 +378,7 @@ func (s *submissionJobsService) evaluateScalarCandidates(tag domain.Tag, version
 	return facts
 }
 
-func rankCandiates(candidates []factCandidate) factCandidate {
+func rankCandidates(candidates []factCandidate) factCandidate {
 	slices.SortFunc(candidates, func(fc1, fc2 factCandidate) int {
 		return cmp.Compare(fc2.ftm.Priority, fc1.ftm.Priority)
 	})

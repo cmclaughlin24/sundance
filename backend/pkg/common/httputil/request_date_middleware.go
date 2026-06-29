@@ -14,8 +14,8 @@ var (
 	ErrInvalidRequestDateFormat = errors.New("invalid request date format, must be in RFC3339 format")
 )
 
-func SetRequestDateContext(ctx context.Context, correlationID string) context.Context {
-	return context.WithValue(ctx, correlationIDKey, correlationID)
+func SetRequestDateContext(ctx context.Context, requestDate string) context.Context {
+	return context.WithValue(ctx, requestDateKey, requestDate)
 }
 
 func RequestDateFromContext(ctx context.Context) string {

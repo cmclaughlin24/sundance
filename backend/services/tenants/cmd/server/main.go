@@ -104,16 +104,16 @@ func main() {
 
 	select {
 	case err := <-serverErrChan:
-		app.Logger.Error(fmt.Sprintf("server error: %v\n", err))
+		app.Logger.Error(fmt.Sprintf("server error: %v", err))
 	case sig := <-signalChan:
-		app.Logger.Info(fmt.Sprintf("application received shutdown signal: %v\n", sig))
+		app.Logger.Info(fmt.Sprintf("application received shutdown signal: %v", sig))
 	}
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer shutdownCancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		app.Logger.Info(fmt.Sprintf("application shutdown failed: %v\n", err))
+		app.Logger.Info(fmt.Sprintf("application shutdown failed: %v", err))
 		return
 	}
 
