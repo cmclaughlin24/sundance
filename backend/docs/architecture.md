@@ -503,6 +503,71 @@ stateDiagram-v2
 
 ## 7. Deployment View
 
+Forms Hub is deployed to Wells Fargo's internal OpenShift Container Platform (OCP) via Harness pipelines using Helm charts. The two services are independently deployable and co-located in the same Kubernetes cluster and namespace. CI is managed through GitHub Actions; CD is managed through Harness.
+
+### 7.1 Environments
+
+| Environment | Description |
+| --- | --- |
+| **Local** | Docker Compose. All external dependencies (MongoDB, Redis) run as containers. In-memory adapters available as an alternative via configuration. |
+| **Dev** | Deployed to OCP. First integration environment; used for active development verification. |
+| **Test** | Deployed to OCP. Used for automated integration and end-to-end testing. |
+| **QA** | Deployed to OCP. Used for business and acceptance testing prior to production promotion. |
+| **Production** | Deployed to OCP across multiple Wells Fargo internal data centers. |
+
+### 7.2 Deployment Architecture
+
+Each service is packaged as a Docker image and deployed as a Kubernetes `Deployment`. Multiple replicas may run simultaneously; Redis leader election ensures only one replica per service runs the background worker at any given time.
+
+```mermaid
+C4Deployment
+  title Deployment View — Forms Hub (OCP)
+
+  Deployment_Node(ocp, "OpenShift Container Platform", "Kubernetes") {
+    Deployment_Node(ns, "Shared Namespace") {
+      Deployment_Node(tenantsNs, "Tenants Service") {
+        Container(tenantsReplica1, "Tenants Service", "Docker / Go", "Replica")
+        Container(tenantsReplica2, "Tenants Service", "Docker / Go", "Replica")
+      }
+      Deployment_Node(formsNs, "Forms Service") {
+        Container(formsReplica1, "Forms Service", "Docker / Go", "Replica")
+        Container(formsReplica2, "Forms Service", "Docker / Go", "Replica")
+      }
+    }
+  }
+
+  Deployment_Node(infra, "Wells Fargo Platform Infrastructure") {
+    ContainerDb(mongo, "MongoDB", "Replica Set", "Primary datastore — hosted by Wells Fargo platform team")
+    ContainerDb(redis, "Redis", "Managed", "Distributed leader election — hosted by Wells Fargo platform team")
+  }
+
+  Rel(tenantsReplica1, mongo, "Reads/writes", "MongoDB wire protocol")
+  Rel(tenantsReplica1, redis, "Leader election", "Redis protocol")
+  Rel(formsReplica1, mongo, "Reads/writes", "MongoDB wire protocol")
+  Rel(formsReplica1, redis, "Leader election", "Redis protocol")
+  Rel(formsReplica1, tenantsReplica1, "Validates lookups", "REST/HTTPS")
+```
+
+### 7.3 Configuration and Secrets
+
+All runtime configuration is provided via environment variables injected into the Kubernetes cluster from Vault prior to deployment. No secrets are stored in Helm charts or image artifacts.
+
+| Concern | Mechanism |
+| --- | --- |
+| Application config | Environment variables (`APP_*` prefix) |
+| Secrets (DB credentials, Redis, OAuth2) | Vault → Kubernetes Secrets → environment variables |
+| Auth (PingFederate JWKS) | `APP_SERVER_AUTH_OAUTH2_JWK`, `APP_SERVER_AUTH_OAUTH2_AUDIENCE`, `APP_SERVER_AUTH_OAUTH2_ISSUER` |
+| Database driver selection | `APP_DATABASE_DRIVER` (`mongodb` or `inmemory`) |
+| Cache type selection | `APP_CACHE_TYPE` (`redis` or `inmemory`) |
+
+### 7.4 CI/CD Pipeline
+
+| Stage | Tooling | Description |
+| --- | --- | --- |
+| Build & Test | GitHub Actions | Compiles both services, runs unit tests, and produces Docker images on each push. |
+| Image Publishing | GitHub Actions | Pushes versioned Docker images to the Wells Fargo container registry. |
+| Deployment | Harness + Helm | Deploys the Helm chart to the target OCP environment. Promotion through dev → test → QA → production is managed via Harness pipelines. |
+
 ## 8. Crosscutting Concepts
 
 ### 8.1 Domain Model
