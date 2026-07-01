@@ -9,10 +9,10 @@ import (
 
 var (
 	ErrInvalidTagVersion        = errors.New("invalid tag version")
-	ErrDuplicateTagVersion      = errors.New("duplicate tag version")
-	ErrInvalidTagVersionStatus  = errors.New("invalid tag version status invariant")
-	ErrNoEligibleTagVersion     = errors.New("")
-	ErrMultipleActiveTagVersion = errors.New("")
+	ErrDuplicateTagVersion      = fmt.Errorf("%w; duplicate tag version", ErrInvalidTagVersion)
+	ErrInvalidTagVersionStatus  = fmt.Errorf("%w; invalid tag version status invariant", ErrInvalidTagVersion)
+	ErrNoEligibleTagVersion     = fmt.Errorf("%w; no eligible tag versions", ErrInvalidTagVersion)
+	ErrMultipleActiveTagVersion = fmt.Errorf("%w; multiple active tag versions", ErrInvalidTagVersion)
 )
 
 type TagVersionID string

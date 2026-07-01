@@ -17,3 +17,13 @@ func NewCanonicalFact(fieldID FieldID, tagVersionID TagVersionID, tagKey string,
 		CollectionIndex: collectionIndex,
 	}
 }
+
+func HydrateCanonicalFact(fieldID FieldID, tagVersionID TagVersionID, tagKey string, value any, collectionIndex *int) *CanonicalFact {
+	return &CanonicalFact{
+		FieldID:         fieldID,
+		TagVersionID:    tagVersionID,
+		TagKey:          tagKey,
+		Value:           value,
+		CollectionIndex: collectionIndex,
+	}
+}

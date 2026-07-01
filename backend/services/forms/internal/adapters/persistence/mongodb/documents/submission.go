@@ -16,6 +16,7 @@ type SubmissionDocument struct {
 	CreatedAt     time.Time                       `bson:"created_at"`
 	UpdatedAt     time.Time                       `bson:"updated_at"`
 	Attempts      []*submissionAttemptDocument    `bson:"attempts"`
+	Facts         []*canonicalFact                `bson:"facts"`
 	Values        []*submissionFieldValueDocument `bson:"values"`
 }
 
@@ -36,6 +37,11 @@ func ToSubmissionDocument(s *domain.Submission) (*SubmissionDocument, error) {
 		attempts = append(attempts, doc)
 	}
 
+	facts := make([]*canonicalFact, 0, len(s.Facts))
+	for _, f := range s.Facts {
+		facts = append(facts, toCanonicalFactDocument(f))
+	}
+
 	return &SubmissionDocument{
 		ID:            string(s.ID),
 		TenantID:      s.TenantID,
@@ -47,6 +53,7 @@ func ToSubmissionDocument(s *domain.Submission) (*SubmissionDocument, error) {
 		CreatedAt:     s.CreatedAt,
 		UpdatedAt:     s.UpdatedAt,
 		Attempts:      attempts,
+		Facts:         facts,
 		Values:        values,
 	}, nil
 }
@@ -62,6 +69,11 @@ func FromSubmissionDocument(s *SubmissionDocument) (*domain.Submission, error) {
 		attempts = append(attempts, fromSubmissionAttemptDocument(doc))
 	}
 
+	facts := make([]*domain.CanonicalFact, 0, len(s.Facts))
+	for _, doc := range s.Facts {
+		facts = append(facts, fromCanonicalFactDocument(doc))
+	}
+
 	return domain.HydrateSubmission(
 		domain.SubmissionID(s.ID),
 		s.TenantID,
@@ -71,6 +83,7 @@ func FromSubmissionDocument(s *SubmissionDocument) (*domain.Submission, error) {
 		domain.IdempotencyID(s.IdempotencyID),
 		domain.SubmissionStatus(s.Status),
 		values,
+		facts,
 		attempts,
 		s.CreatedAt,
 		s.UpdatedAt,

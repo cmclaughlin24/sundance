@@ -38,6 +38,7 @@ type Submission struct {
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 	Values        []*SubmissionFieldValue
+	Facts         []*CanonicalFact
 	Attempts      []*SubmissionAttempt
 }
 
@@ -57,6 +58,7 @@ func NewSubmission(
 		IdempotencyID: idempotencyID,
 		Status:        SubmissionStatusPending,
 		Values:        values,
+		Facts:         make([]*CanonicalFact, 0),
 		Attempts:      make([]*SubmissionAttempt, 0),
 		CreatedAt:     Now(),
 	}
@@ -77,6 +79,7 @@ func HydrateSubmission(
 	idempotencyID IdempotencyID,
 	status SubmissionStatus,
 	values []*SubmissionFieldValue,
+	facts []*CanonicalFact,
 	attempts []*SubmissionAttempt,
 	createdAt time.Time,
 	updatedAt time.Time,
@@ -90,6 +93,7 @@ func HydrateSubmission(
 		IdempotencyID: idempotencyID,
 		Status:        status,
 		Values:        values,
+		Facts:         facts,
 		Attempts:      attempts,
 		CreatedAt:     createdAt,
 		UpdatedAt:     updatedAt,
@@ -108,8 +112,9 @@ func (s *Submission) GetFieldValue(id FieldID) (*SubmissionFieldValue, bool) {
 	return s.Values[idx], true
 }
 
-func (s *Submission) Accept() {
+func (s *Submission) Accept(facts []*CanonicalFact) {
 	s.Status = SubmissionStatusAccepted
+	s.Facts = facts
 	s.UpdatedAt = Now()
 }
 
@@ -126,6 +131,10 @@ func (s *Submission) Reject(err error) {
 func (s *Submission) Reset() {
 	s.Status = SubmissionStatusPending
 	s.UpdatedAt = Now()
+}
+
+func (s *Submission) ToFactMap() map[string]any {
+	return nil
 }
 
 type SubmissionFieldValue struct {

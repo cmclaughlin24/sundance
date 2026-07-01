@@ -12,6 +12,7 @@ var (
 	ErrInvalidTag                  = errors.New("invalid tag")
 	ErrInvalidTagNodeType          = fmt.Errorf("%w; node type", ErrInvalidTag)
 	ErrNodeTypeObjectPrimitiveType = fmt.Errorf("%w; node type object cannot have a primitive type", ErrInvalidTag)
+	ErrCollectionCount             = fmt.Errorf("%w; tag cannot contain more than one collection segment", ErrInvalidTag)
 )
 
 type TagID string
@@ -42,6 +43,10 @@ func NewTag(tenantID, keyPath, displayName string, nodeType TagNodeType, primiti
 
 	if nodeType == TagNodeTypeObject && primitiveType != nil {
 		return nil, ErrNodeTypeObjectPrimitiveType
+	}
+
+	if strings.Count(keyPath, collectionSegment) > 1 {
+		return nil, ErrCollectionCount
 	}
 
 	ct := &Tag{

@@ -9,7 +9,6 @@ import (
 	"maps"
 	"slices"
 
-	"sundance/backend/pkg/database"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
 	"sundance/backend/services/forms/internal/core/strategies"
@@ -33,11 +32,7 @@ type tagAggregate struct {
 type submissionJobsService struct {
 	logger                   *slog.Logger
 	evaluator                ports.RuleEvaluator
-	database                 database.Database
-	formVersionsRepository   ports.FormVersionRepository
-	submissionsRepository    ports.SubmissionsRepository
-	tagsRepository           ports.TagsRepository
-	tagVersionsRepository    ports.TagVersionsRepository
+	repository               *ports.Repository
 	fieldValidatorStrategies ports.FieldValidatorRegistry
 }
 
@@ -50,11 +45,7 @@ func NewSubmissionJobsService(
 	return &submissionJobsService{
 		logger:                   logger,
 		evaluator:                evaluator,
-		database:                 repository.Database,
-		formVersionsRepository:   repository.FormVersions,
-		submissionsRepository:    repository.Submissions,
-		tagsRepository:           repository.Tags,
-		tagVersionsRepository:    repository.TagVersions,
+		repository:               repository,
 		fieldValidatorStrategies: strategies.FieldValidator,
 	}
 }
@@ -67,7 +58,7 @@ func (s *submissionJobsService) Find(ctx context.Context, query ports.FindSubmis
 		return nil, err
 	}
 
-	ids, err := s.submissionsRepository.FindJobs(ctx, &ports.FindSubmissionsFilter{
+	ids, err := s.repository.Submissions.FindJobs(ctx, &ports.FindSubmissionsFilter{
 		Take:     query.Take,
 		Statuses: []domain.SubmissionStatus{domain.SubmissionStatusPending},
 	})
@@ -83,7 +74,7 @@ func (s *submissionJobsService) Find(ctx context.Context, query ports.FindSubmis
 func (s *submissionJobsService) Process(ctx context.Context, id domain.SubmissionID) error {
 	s.logger.DebugContext(ctx, "processing submission job", "submission_id", id)
 
-	submission, err := s.submissionsRepository.FindByID(ctx, id)
+	submission, err := s.repository.Submissions.FindByID(ctx, id)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to retrieve submission job", "submission_id", id, "error", err)
 		return err
@@ -94,15 +85,23 @@ func (s *submissionJobsService) Process(ctx context.Context, id domain.Submissio
 		return nil
 	}
 
-	_, err = s.sanitize(ctx, submission)
+	facts, err := s.sanitize(ctx, submission)
 
-	if err := s.recordAttempt(ctx, submission, err); err != nil {
+	if err == nil {
+		submission.Accept(facts)
+	} else if shouldReject(err) {
+		submission.Reject(err)
+	} else {
+		submission.Fail(err)
+	}
+
+	if err := s.updateSubmission(ctx, submission); err != nil {
 		return err
 	}
 
 	s.logger.InfoContext(ctx, "submission job recorded", "submission_id", submission.ID, "status", submission.Status)
 
-	return err
+	return nil
 }
 
 func (s *submissionJobsService) sanitize(ctx context.Context, submission *domain.Submission) ([]*domain.CanonicalFact, error) {
@@ -120,7 +119,7 @@ func (s *submissionJobsService) sanitize(ctx context.Context, submission *domain
 }
 
 func (s *submissionJobsService) extractFactCandidates(ctx context.Context, submission *domain.Submission) ([]factCandidate, error) {
-	version, err := s.formVersionsRepository.FindByID(ctx, submission.VersionID)
+	version, err := s.repository.FormVersions.FindByID(ctx, submission.VersionID)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to retrieve version for submission job", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "error", err)
 		return nil, err
@@ -287,30 +286,22 @@ func (s *submissionJobsService) shouldValidate(ctx context.Context, rg ruleByTyp
 	return s.evaluator.Evaluate(ctx, rule, evalCtx)
 }
 
-func (s *submissionJobsService) recordAttempt(ctx context.Context, submission *domain.Submission, err error) error {
-	if err == nil {
-		submission.Accept()
-	} else if shouldReject(err) {
-		submission.Reject(err)
-	} else {
-		submission.Fail(err)
-	}
-
-	txCtx, err := s.database.BeginTx(ctx)
+func (s *submissionJobsService) updateSubmission(ctx context.Context, submission *domain.Submission) error {
+	txCtx, err := s.repository.Database.BeginTx(ctx)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to begin transaction", "submission_id", submission.ID, "error", err)
 		return err
 	}
 
-	defer s.database.RollbackTx(txCtx)
+	defer s.repository.Database.RollbackTx(txCtx)
 
-	_, err = s.submissionsRepository.Upsert(txCtx, submission)
+	_, err = s.repository.Submissions.Upsert(txCtx, submission)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to upsert submission", "submission_id", submission.ID, "error", err)
 		return err
 	}
 
-	if err := s.database.CommitTx(txCtx); err != nil {
+	if err := s.repository.Database.CommitTx(txCtx); err != nil {
 		s.logger.ErrorContext(ctx, "failed to commit transaction", "submission_id", submission.ID, "error", err)
 		return err
 	}
@@ -319,7 +310,7 @@ func (s *submissionJobsService) recordAttempt(ctx context.Context, submission *d
 }
 
 func (s *submissionJobsService) getTags(ctx context.Context, ids []domain.TagVersionID) ([]tagAggregate, error) {
-	versions, err := s.tagVersionsRepository.FindByIDs(ctx, ids)
+	versions, err := s.repository.TagVersions.FindByIDs(ctx, ids)
 	if err != nil {
 		return nil, err
 	}
@@ -329,7 +320,7 @@ func (s *submissionJobsService) getTags(ctx context.Context, ids []domain.TagVer
 		versionsByTag[v.TagID] = append(versionsByTag[v.TagID], v)
 	}
 
-	tags, err := s.tagsRepository.FindByIDs(ctx, slices.Collect(maps.Keys(versionsByTag)))
+	tags, err := s.repository.Tags.FindByIDs(ctx, slices.Collect(maps.Keys(versionsByTag)))
 	if err != nil {
 		return nil, err
 	}
