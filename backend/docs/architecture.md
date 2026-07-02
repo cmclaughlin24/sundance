@@ -111,7 +111,7 @@ C4Context
 | **PingFederate**         | Outbound  | JWKS over HTTPS              | Both services   | Both services validate inbound JWT bearer tokens by fetching signing keys from PingFederate's JWKS URI. Audience, issuer, expiry, and issued-at claims are verified.                                                      | Active              |
 | **External HTTP APIs**   | Outbound  | HTTP/HTTPS                   | Tenants Service | The Tenants Service calls arbitrary third-party HTTP endpoints to fetch lookup key-value pairs for `scheduled` and `webhook` data sources. Supports `GET`, `POST`, `PUT`, and `PATCH` with configurable headers and body. | Active              |
 | **Google BigQuery**      | Outbound  | BigQuery API                 | Tenants Service | The Tenants Service queries a configured data lake to resolve lookup data for `data-lake` data sources, using configurable catalog, schema, query, and field mappings.                                                    | Planned (stub only) |
-| **Message Broker**       | Outbound  | Async messaging (e.g. Kafka) | Forms Service   | After a submission is accepted and canonical tag mapping is applied, the Forms Service publishes a canonical submission event for downstream consumption.                                                                 | Planned             |
+| **Message Broker**       | Outbound  | Async messaging (e.g. Kafka) | Forms Service   | After a submission is accepted and canonical tag mapping is applied, the Forms Service publishes a canonical submission event for downstream consumption.                                                                 | Active              |
 
 ## 4. Solution Strategy
 
@@ -144,6 +144,7 @@ _Figure 4.1 — Ports & Adapters (Hexagonal) Architecture pattern. Each Forms Hu
 - **Generic background worker** — `BackgroundWorker[J Job]` is fully generic and reused by both services for completely different job types (data source refresh and submission processing). Redis-backed leader election ensures only one replica processes jobs at a time across horizontal scale.
 - **In-memory adapters for all infrastructure** — Every repository, cache, and elector has an in-memory implementation. No external dependencies are required for local development or unit testing.
 - **Explicit inter-service boundary** — The Forms Service holds a `DataSourceRef` on certain fields and calls the Tenants Service at submission time to validate that the submitted value is a member of the current valid lookup set. The Frontend also calls the Tenants Service independently at render time to populate the field options. Outside of this integration point the services share no runtime state, simplifying failure isolation and independent deployment.
+- **Polling-based outbox relay** — Once a submission is accepted and its canonical facts are produced, a domain event is written to a dedicated `outbox` collection transactionally with the status update. A separate Outbox Relay Worker polls that collection for undelivered events and publishes each as a canonical submission event to the message broker. This reuses the existing `BackgroundWorker[J Job]` pattern rather than introducing MongoDB change streams. See ADR-009.
 
 ## 5. Building Block View
 
@@ -196,20 +197,20 @@ The Tenants Service owns all tenant and data source configuration. It exposes a 
 
 #### 5.1.2 Blackbox: Forms Service
 
-The Forms Service owns all form definitions, versioned schemas, submissions, and canonical tags. It exposes a REST API for form design and submission intake, runs an async background worker that validates and normalizes pending submissions, and publishes canonical submission events to the message broker upon acceptance.
+The Forms Service owns all form definitions, versioned schemas, submissions, and canonical tags. It exposes a REST API for form design and submission intake, and runs two background workers: a submissions worker that validates and normalizes pending submissions, and an outbox relay worker that polls for undelivered accepted submission events and publishes each as a canonical event to the message broker.
 
-| Interface                                                   | Direction | Description                                                                        |
-| ----------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------- |
-| `GET/POST/PUT/DELETE /api/v1/forms`                         | Inbound   | CRUD for forms and their versioned schemas                                         |
-| `GET/POST /api/v1/submissions`                              | Inbound   | Submission intake (`202 Accepted`) and listing                                     |
-| `POST /api/v1/submissions/{submissionId}/replay`            | Inbound   | Resets a terminal submission to `pending` for reprocessing; returns `202 Accepted` |
-| `GET /api/v1/submissions/by-reference/{referenceId}`        | Inbound   | Retrieves a submission by its external reference ID                                |
-| `GET /api/v1/submissions/by-reference/{referenceId}/status` | Inbound   | Returns the current status of a submission by reference ID                         |
-| `GET/POST/PUT/DELETE /api/v1/tags`                          | Inbound   | CRUD for canonical tags and their versions                                         |
-| Tenants Service                                             | Outbound  | Validates submitted lookup values against the live data source at processing time  |
-| MongoDB                                                     | Outbound  | Persists forms, versions, submissions, and tags                                    |
-| Redis                                                       | Outbound  | Leader election for the submission processing worker                               |
-| Message Broker                                              | Outbound  | Publishes canonical submission events upon acceptance (planned)                    |
+| Interface                                                   | Direction | Description                                                                                                                     |
+| ----------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `GET/POST/PUT/DELETE /api/v1/forms`                         | Inbound   | CRUD for forms and their versioned schemas                                                                                      |
+| `GET/POST /api/v1/submissions`                              | Inbound   | Submission intake (`202 Accepted`) and listing                                                                                  |
+| `POST /api/v1/submissions/{submissionId}/replay`            | Inbound   | Resets a terminal submission to `pending` for reprocessing; returns `202 Accepted`                                              |
+| `GET /api/v1/submissions/by-reference/{referenceId}`        | Inbound   | Retrieves a submission by its external reference ID                                                                             |
+| `GET /api/v1/submissions/by-reference/{referenceId}/status` | Inbound   | Returns the current status of a submission by reference ID                                                                      |
+| `GET/POST/PUT/DELETE /api/v1/tags`                          | Inbound   | CRUD for canonical tags and their versions                                                                                      |
+| Tenants Service                                             | Outbound  | Validates submitted lookup values against the live data source at processing time                                               |
+| MongoDB                                                     | Outbound  | Persists forms, versions, submissions, and tags                                                                                 |
+| Redis                                                       | Outbound  | Leader election for the submission processing worker                                                                            |
+| Message Broker                                              | Outbound  | The Outbox Relay Worker polls the `outbox` collection for undelivered events and publishes each as a canonical submission event |
 
 ### 5.2 Level 2
 
@@ -259,12 +260,13 @@ C4Component
 
   Container_Boundary(formsService, "Forms Service") {
     Component(restHandlers, "REST Handlers", "chi / Go", "Translates inbound HTTP requests into application commands and queries. Returns JSON responses.")
-    Component(appServices, "Application Services", "Go", "Implements FormsAPI, SubmissionsAPI, SubmissionJobsAPI, and TagsAPI. Orchestrates form lifecycle, submission processing, and tag management.")
+    Component(appServices, "Application Services", "Go", "Implements FormsAPI, SubmissionsAPI, SubmissionJobsAPI, OutboxJobsAPI, and TagsAPI. Orchestrates form lifecycle, submission processing, outbox relay, and tag management.")
     Component(domain, "Domain", "Go", "Form, FormVersion, Submission, Tag, and TagVersion aggregates with value objects. Enforces lifecycle state machines and business invariants.")
     Component(fieldValidators, "Field Validator Strategies", "Go", "Five FieldValidatorStrategy implementations (text, number, select, checkbox, date) dispatched at runtime via a StrategyRegistry keyed by FieldType.")
     Component(ruleEvaluator, "Rule Evaluator", "expr-lang/expr", "Evaluates visibility, required, and read-only rules against submitted field values using a sandboxed expression engine.")
-    Component(persistence, "Persistence Adapters", "MongoDB / In-Memory", "Repository implementations for Form, FormVersion, Submission, Tag, and TagVersion aggregates. Driver selected at startup.")
+    Component(persistence, "Persistence Adapters", "MongoDB / In-Memory", "Repository implementations for Form, FormVersion, Submission, Tag, TagVersion, and Outbox aggregates. Driver selected at startup.")
     Component(worker, "Submissions Worker", "Go", "Leader-elected background worker. Picks up pending submissions, runs the validation and canonical tag mapping pipeline, and transitions submissions to accepted or rejected.")
+    Component(outboxWorker, "Outbox Relay Worker", "Go", "Leader-elected background worker. Polls the outbox collection for undelivered accepted submission events and publishes each to the message broker.")
   }
 
   Rel(restHandlers, appServices, "Invokes", "Go interface")
@@ -273,17 +275,19 @@ C4Component
   Rel(appServices, ruleEvaluator, "Evaluates visibility and required rules", "Go interface")
   Rel(appServices, persistence, "Reads and writes aggregates", "Go interface")
   Rel(worker, appServices, "Polls and processes pending submissions", "SubmissionJobsAPI")
+  Rel(outboxWorker, appServices, "Polls and relays accepted submission events", "OutboxJobsAPI")
 ```
 
 | Building Block                 | Responsibility                                                                                                                                                                                                                                                                                                                                     | Source                  |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
 | **REST Handlers**              | Translates HTTP requests and responses to and from application commands and queries. Applies idempotency enforcement on submission intake.                                                                                                                                                                                                         | `adapters/rest/`        |
-| **Application Services**       | Implements `FormsAPI`, `SubmissionsAPI`, `SubmissionJobsAPI`, and `TagsAPI`. Orchestrates form version lifecycle, idempotent submission intake, async validation pipeline, and tag version transitions.                                                                                                                                            | `core/services/`        |
+| **Application Services**       | Implements `FormsAPI`, `SubmissionsAPI`, `SubmissionJobsAPI`, `OutboxJobsAPI`, and `TagsAPI`. Orchestrates form version lifecycle, idempotent submission intake, async validation pipeline, outbox relay, and tag version transitions.                                                                                                             | `core/services/`        |
 | **Domain**                     | `Form`, `FormVersion`, `Submission`, `Tag`, and `TagVersion` aggregates with their value objects (`Page`, `Section`, `Field`, `Rule`, `FieldTagMapping`). Owns all lifecycle state machines (`draft → active → retired`, `draft → active → deprecated → retired`).                                                                                 | `core/domain/`          |
 | **Field Validator Strategies** | Five `FieldValidatorStrategy` implementations resolved at runtime by `FieldType`: `text` (string constraints), `number` (numeric bounds), `select`, `checkbox`, and `date` (partial; constraints pending).                                                                                                                                         | `core/strategies/`      |
 | **Rule Evaluator**             | `ExprRuleEvaluator` compiles rule expressions into type-safe boolean programs using `expr-lang/expr` and evaluates them against a `RuleEvaluationContext` (field key → submitted value map).                                                                                                                                                       | `adapters/evaluators/`  |
-| **Persistence Adapters**       | MongoDB-backed and in-memory repository implementations for all five aggregates. Driver is selected at startup via configuration.                                                                                                                                                                                                                  | `adapters/persistence/` |
+| **Persistence Adapters**       | MongoDB-backed and in-memory repository implementations for all aggregates. Driver is selected at startup via configuration.                                                                                                                                                                                                                       | `adapters/persistence/` |
 | **Submissions Worker**         | Leader-elected background worker. On each tick, fetches pending submissions and runs the full processing pipeline: rule evaluation, field validation, canonical tag mapping, and status transition to `accepted` or `rejected`. Retries with exponential backoff; non-retryable errors (validation failures, missing strategy) reject immediately. | `adapters/workers/`     |
+| **Outbox Relay Worker**        | Leader-elected background worker. On each tick, polls the `outbox` collection for undelivered accepted submission events and publishes each to the message broker. Retries on broker failure with exponential backoff. Uses Redis-backed leader election to ensure a single active relay across replicas.                                          | `adapters/workers/`     |
 
 #### 5.2.3 Whitebox: `pkg/` Shared Library
 
@@ -333,7 +337,7 @@ flowchart TD
 
 #### 5.3.2 Whitebox: Submission Processing Pipeline (Forms Service)
 
-The submission processing pipeline is the most complex flow in the system. `SubmissionJobsAPI.Process` is called by the Submissions Worker for each pending submission and executes six sequential steps: fetch, sanitize, build context, traverse the form definition, validate, and record the outcome.
+The submission processing pipeline is the most complex flow in the system. `SubmissionJobsAPI.Process` is called by the Submissions Worker for each pending submission and executes six sequential steps: fetch, sanitize, build context, traverse the form definition, validate, and record the outcome. On acceptance, a domain event is written to the `outbox` collection transactionally with the status update, to be relayed by the Outbox Relay Worker (see Section 5.3.4).
 
 ```mermaid
 flowchart TD
@@ -368,7 +372,8 @@ flowchart TD
     X4 --> Y
     V --> Z[submission.Reject]
     G --> Z
-    Y --> AA[Persist inside transaction]
+    Y --> AB[Outbox.Upsert\nWrite domain event to\noutbox collection]
+    AB --> AA[Persist inside transaction]
     Z --> AA
 ```
 
@@ -431,13 +436,40 @@ flowchart TD
 | **`CacheElector`**            | Distributed elector backed by Redis `SetNX` + Lua scripts. TTL of 2 minutes; renewed every 1 minute. Keyed per service (`service:tenants:elector`, `service:forms:elector`). Ensures only one replica runs the worker at a time across horizontal scale. | `pkg/worker/elector/cache_elector.go`    |
 | **`InMemoryElector`**         | Single-process no-op elector. Always acquires leadership. Used in local development and testing to avoid a Redis dependency.                                                                                                                             | `pkg/worker/elector/inmemory_elector.go` |
 
+#### 5.3.4 Whitebox: Outbox Relay Worker (Forms Service)
+
+Once the Submissions Worker transitions a submission to `accepted` and writes a domain event to the `outbox` collection, the Outbox Relay Worker takes over. On each tick it polls the `outbox` collection for undelivered events and publishes each to the message broker as a canonical submission event.
+
+```mermaid
+flowchart TD
+    A[OutboxJobsAPI.Process] --> B[Poll outbox collection\nfor undelivered events]
+    B --> C{Events found?}
+    C -->|no| D[No-op — wait for next tick]
+    C -->|yes| E[For each Event]
+    E --> F[Publish canonical submission event\nto message broker]
+    F --> G{Publish error?}
+    G -->|no| H[Mark event as delivered\nin outbox collection]
+    G -->|yes| I{Retryable?}
+    I -->|yes| J[Exponential backoff\nretry up to retryLimit]
+    J --> F
+    I -->|no| K[Mark event as failed]
+    H --> L[Done]
+    K --> L
+```
+
+| Building Block              | Responsibility                                                                                                                                                                              | Source                                    |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| **`OutboxJobsAPI.Process`** | Orchestrates the relay for a single outbox event. Entry point called by the Outbox Relay Worker.                                                                                            | `core/services/outbox_relay_service.go`   |
+| **`Outbox` port**           | Secondary port. `Find` returns undelivered events; `Upsert` marks events as delivered or failed.                                                                                            | `core/ports/secondary.go`                 |
+| **`OutboxRelayWorker`**     | Leader-elected background worker. Calls `OutboxJobsAPI.Process` on each tick for each undelivered event. Uses Redis-backed leader election to ensure a single active relay across replicas. | `adapters/workers/outbox_relay_worker.go` |
+
 ## 6. Runtime View
 
 ### 6.1 Form Submission Flow
 
 ![Form Submission (SRI)](imgs/Form%20Submission%20%28SRI%29.png)
 
-A client submits a form by sending `POST /api/v1/submissions` with an `Idempotency-Key` header. The Forms Service persists the submission with a status of `pending` and immediately returns `202 Accepted` with a reference ID — no validation occurs synchronously. A background worker (leader-elected via Redis) picks up pending submissions, loads the associated form version, and evaluates visibility, required, and read-only rules against the submitted values. For `select` fields backed by a `DataSourceRef`, the Forms Service calls the Tenants Service to resolve the current valid lookup set and validate that the submitted value is a member of it. Note that the Frontend also calls the Tenants Service independently at render time to populate the dropdown options — the validation call at submission time is a server-side confirmation that the selected value remains valid. On success the submission transitions to `accepted` and a canonical submission event is published to the message broker for downstream consumption; on validation failure it transitions to `rejected`. Failed attempts are retried with exponential backoff up to the configured retry limit.
+A client submits a form by sending `POST /api/v1/submissions` with an `Idempotency-Key` header. The Forms Service persists the submission with a status of `pending` and immediately returns `202 Accepted` with a reference ID — no validation occurs synchronously. A background worker (leader-elected via Redis) picks up pending submissions, loads the associated form version, and evaluates visibility, required, and read-only rules against the submitted values. For `select` fields backed by a `DataSourceRef`, the Forms Service calls the Tenants Service to resolve the current valid lookup set and validate that the submitted value is a member of it. Note that the Frontend also calls the Tenants Service independently at render time to populate the dropdown options — the validation call at submission time is a server-side confirmation that the selected value remains valid. On success the submission transitions to `accepted`, its canonical facts are stored, and a domain event is written to the `outbox` collection transactionally with the status update. The Outbox Relay Worker subsequently polls for undelivered outbox events and publishes each as a canonical submission event to the message broker — introducing a tick-interval delay between acceptance and delivery. On validation failure the submission transitions to `rejected`. Failed attempts are retried with exponential backoff up to the configured retry limit.
 
 ![Normalized Submission Architecture](imgs/Normalized%20Submission%20Architecture.png)
 
@@ -604,9 +636,10 @@ Forms Hub maintains two independent domain models — one per service — with n
 | **`FieldTagMapping`**      | Associates a `Field` with a `TagVersion` at a configurable priority. One field may map to multiple tag versions; the resolution policy selects the winning tag at submission processing time.                                                                                                                                                                                                                                                                                                                                                |
 | **`Tag`**                  | Canonical reference entity scoped to a tenant. Owns one or more `TagVersion` records. Carries a `NodeType` (`primitive` or `object`) describing whether the tag represents a scalar value or a structured object, and an optional `PrimitiveType` qualifying the scalar type when `NodeType` is `primitive`. Collection ancestry is inferred from the tag's `Key` — if the key contains the segment `[*]`, `HasCollectionAncestor()` returns `true`, indicating the tag maps to elements of a repeated structure rather than a single value. |
 | **`TagVersion`**           | Versioned canonical tag. Follows the `draft → active → deprecated → retired` lifecycle. Active versions are the targets of `FieldTagMapping` resolution.                                                                                                                                                                                                                                                                                                                                                                                     |
-| **`Submission`**           | Records a form submission scoped to a tenant, form, and version. Holds `SubmissionFieldValue` entries and progresses through `pending → accepted / rejected / failed`. Identified externally by a `ReferenceID`; deduplicated by `IdempotencyID`.                                                                                                                                                                                                                                                                                            |
+| **`Submission`**           | Records a form submission scoped to a tenant, form, and version. Holds `SubmissionFieldValue` entries and progresses through `pending → accepted / rejected / failed`. Identified externally by a `ReferenceID`; deduplicated by `IdempotencyID`. Upon acceptance, the aggregate emits a domain event via the embedded `withEvents` mixin; this event is written to the `outbox` collection transactionally with the status update, enabling the Outbox Relay Worker to deliver the canonical event to the message broker.                   |
 | **`SubmissionFieldValue`** | A single submitted value keyed by `FieldID`. Carries an optional `CollectionIndex` — when present, associates the value with a specific element in a collection-backed field, enabling per-element canonical fact production during processing.                                                                                                                                                                                                                                                                                              |
 | **`SubmissionAttempt`**    | Records each processing attempt with its result and error details. Provides a full audit trail of retries.                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| **`Event`**                | Domain event produced by the `Submission` aggregate upon acceptance. Written to the `outbox` collection transactionally with the submission status update. Carries `AggregateType` (`submission`), `EventType` (`accepted`), and the aggregate payload. Consumed by the Outbox Relay Worker and marked as delivered once successfully published to the message broker.                                                                                                                                                                       |
 
 ### 8.2 Persistency
 
@@ -751,6 +784,7 @@ Architecture decisions are recorded as individual ADRs in `backend/docs/adr/`. E
 | [ADR-006](adr/006-mongodb-as-primary-datastore.md)                                 | MongoDB as Primary Datastore                                 |
 | [ADR-007](adr/007-expr-lang-for-rule-evaluation.md)                                | `expr-lang/expr` for Rule Evaluation                         |
 | [ADR-008](adr/008-canonical-tag-mapping-decoupled-from-form-field-naming.md)       | Canonical Tag Mapping Decoupled from Form Field Naming       |
+| [ADR-009](adr/009-outbox-pattern-polling-vs-streaming.md)                          | Outbox Pattern: Polling vs. Streaming                        |
 
 ## 10. Quality Requirements
 
@@ -771,6 +805,7 @@ Architecture decisions are recorded as individual ADRs in `backend/docs/adr/`. E
 - **Single-leader submission processing throughput** — The Redis leader election model means only one replica processes submissions at a time. Under high submission volume this becomes a bottleneck. Mitigation path is a distributed queue (noted in ADR-004).
 - **Tenants Service availability** — The Forms Service submission processing pipeline has a synchronous runtime dependency on the Tenants Service for lookup validation. If the Tenants Service is unavailable, all submissions referencing data source-backed fields will fail and retry until the limit is exhausted.
 - **Redis as a single point of failure** — Both services depend on Redis for leader election. Loss of Redis stops all background job processing across both services.
+- **Outbox relay delivery latency** — The polling-based outbox relay introduces a tick-interval gap between a submission being accepted and its canonical event being delivered to the message broker. Under high submission volume the relay worker may fall behind, increasing delivery lag. If near-real-time delivery becomes a requirement, a MongoDB change stream relay should be evaluated as a replacement (see ADR-009).
 
 ### 11.2 Security Risks
 

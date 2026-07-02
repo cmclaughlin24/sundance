@@ -10,6 +10,7 @@ import (
 func Bootstrap(logger *slog.Logger) *ports.Repository {
 	return &ports.Repository{
 		Database:     database.NewInMemoryDatabase(),
+		Outbox:       newInMemoryOutbox(logger),
 		Tags:         newInMemoryTagRepository(logger),
 		TagVersions:  newInMemoryTagVersionsRepository(logger),
 		Forms:        newInMemoryFormsRepository(logger),

@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"iter"
 	"time"
 )
@@ -21,20 +22,19 @@ const (
 	EventStatusError     EventStatus = "error"
 )
 
-type EventPayload map[string]any
-
 type Event struct {
 	ID            EventID
 	AggregateID   string
 	AggregateType AggregateType
 	Type          EventType
 	Status        EventStatus
-	Payload       EventPayload
+	Payload       json.RawMessage
+	Attempts      int
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
 
-func NewEvent(aggregateType AggregateType, aggregateID string, eventType EventType, payload EventPayload) Event {
+func NewEvent(aggregateType AggregateType, aggregateID string, eventType EventType, payload json.RawMessage) Event {
 	return Event{
 		ID:            EventID(NewID()),
 		AggregateID:   aggregateID,
@@ -42,8 +42,33 @@ func NewEvent(aggregateType AggregateType, aggregateID string, eventType EventTy
 		Type:          eventType,
 		Status:        EventStatusPending,
 		Payload:       payload,
+		Attempts:      0,
 		CreatedAt:     Now(),
 		UpdatedAt:     Now(),
+	}
+}
+
+func HydrateEvent(
+	id EventID,
+	aggregateType AggregateType,
+	aggregateID string,
+	eventType EventType,
+	status EventStatus,
+	payload json.RawMessage,
+	attempts int,
+	createdAt,
+	updatedAt time.Time,
+) Event {
+	return Event{
+		ID:            id,
+		AggregateID:   aggregateID,
+		AggregateType: aggregateType,
+		Type:          eventType,
+		Status:        status,
+		Payload:       payload,
+		Attempts:      attempts,
+		CreatedAt:     createdAt,
+		UpdatedAt:     updatedAt,
 	}
 }
 

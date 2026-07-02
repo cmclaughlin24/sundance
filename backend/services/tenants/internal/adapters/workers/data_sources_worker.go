@@ -37,7 +37,7 @@ func newDataSourcesBackgroundWorker(app *core.Application, opts ...func(*WorkerO
 		worker.BgWithSize[*dataSourceJob](options.PoolSize),
 		worker.BgWithFetchJobsFn(newDataSourceWorkFn(app, options.RetryLimit)),
 		worker.BgWithElector[*dataSourceJob](elector.NewCacheElector(
-			elector.CacheElectorWithKey("service:tenants:elector"),
+			elector.CacheElectorWithKey("service:tenants:elector:data-sources"),
 			elector.CacheElectorWithLocker(app.Cache),
 			elector.CacheElectorWithInterval(1*time.Minute),
 			elector.CacheElectorWithTTL(2*time.Minute),

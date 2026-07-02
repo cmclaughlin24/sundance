@@ -76,7 +76,7 @@ func newSubmissionsBackgroundWorker(app *core.Application, opts ...func(*WorkerO
 			backoff:    time.Second,
 		})),
 		worker.BgWithElector[*submissionJob](elector.NewCacheElector(
-			elector.CacheElectorWithKey("service:forms:elector"),
+			elector.CacheElectorWithKey("service:forms:elector:submissions"),
 			elector.CacheElectorWithLocker(app.Cache),
 			elector.CacheElectorWithInterval(1*time.Minute),
 			elector.CacheElectorWithTTL(2*time.Minute),

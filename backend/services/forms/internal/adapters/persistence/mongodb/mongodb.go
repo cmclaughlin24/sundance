@@ -12,6 +12,11 @@ import (
 func Bootstrap(client *mongo.Client, logger *slog.Logger, databaseName string) (*ports.Repository, error) {
 	db := client.Database(databaseName)
 
+	outbox, err := newMongoDBOutbox(db, logger)
+	if err != nil {
+		return nil, err
+	}
+
 	forms, err := newMongoDBFormsRepository(db, logger)
 	if err != nil {
 		return nil, err
@@ -39,6 +44,7 @@ func Bootstrap(client *mongo.Client, logger *slog.Logger, databaseName string) (
 
 	return &ports.Repository{
 		Database:     database.NewMongoDBDatabase(client, db, logger),
+		Outbox:       outbox,
 		Forms:        forms,
 		FormVersions: formVersions,
 		Submissions:  submissions,
