@@ -21,6 +21,10 @@ const (
 	SubmissionStatusAccepted SubmissionStatus = "accepted"
 	SubmissionStatusRejected SubmissionStatus = "rejected"
 	SubmissionStatusFailed   SubmissionStatus = "failed"
+
+	AggregateTypeSubmission     AggregateType = "submission"
+	EventTypeSubmissionAccepted EventType     = "accepted"
+	EventTypeSubmissionRejected EventType     = "rejected"
 )
 
 var (
@@ -40,6 +44,7 @@ type Submission struct {
 	Values        []*SubmissionFieldValue
 	Facts         []*CanonicalFact
 	Attempts      []*SubmissionAttempt
+	withEvents
 }
 
 func NewSubmission(
@@ -116,21 +121,30 @@ func (s *Submission) Accept(facts []*CanonicalFact) {
 	s.Status = SubmissionStatusAccepted
 	s.Facts = facts
 	s.UpdatedAt = Now()
+	s.addAttempt(s.Status, nil)
+	// FIXME: Add domain event that the submission was accepted.
 }
 
 func (s *Submission) Fail(err error) {
 	s.Status = SubmissionStatusFailed
 	s.UpdatedAt = Now()
+	s.addAttempt(s.Status, err)
 }
 
 func (s *Submission) Reject(err error) {
 	s.Status = SubmissionStatusRejected
 	s.UpdatedAt = Now()
+	s.addAttempt(s.Status, err)
+	// FIXME: Add domain event that the submission was rejected.
 }
 
 func (s *Submission) Reset() {
 	s.Status = SubmissionStatusPending
 	s.UpdatedAt = Now()
+}
+
+func (s *Submission) addAttempt(status SubmissionStatus, err error) {
+	s.Attempts = append(s.Attempts, NewSubmissionAttempt(len(s.Attempts)+1, string(status), err))
 }
 
 func (s *Submission) ToFactMap() map[string]any {

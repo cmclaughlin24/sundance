@@ -10,6 +10,7 @@ import (
 
 type Repository struct {
 	Database     database.Database
+	Outbox       Outbox
 	Tags         TagsRepository
 	TagVersions  TagVersionsRepository
 	Forms        FormsRepository
@@ -54,6 +55,11 @@ type TagVersionsRepository interface {
 	FindByID(context.Context, domain.TagVersionID) (*domain.TagVersion, error)
 	FindNextVersionNumber(context.Context, domain.TagID) (int, error)
 	Upsert(context.Context, *domain.TagVersion) (*domain.TagVersion, error)
+}
+
+type Outbox interface {
+	Find(context.Context) ([]*domain.Event, error)
+	Upsert(context.Context, *domain.Event) (*domain.Event, error)
 }
 
 type Strategies struct {
