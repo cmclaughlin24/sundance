@@ -14,6 +14,11 @@ require (
 )
 
 require (
+	github.com/pierrec/lz4/v4 v4.1.15 // indirect
+	github.com/segmentio/kafka-go v0.4.51 // indirect
+)
+
+require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/go-chi/cors v1.2.2
 	github.com/go-openapi/jsonpointer v0.23.1 // indirect

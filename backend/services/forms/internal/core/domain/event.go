@@ -89,7 +89,7 @@ func (e *Event) Error(err string) {
 
 type HasEvents interface {
 	PeekEvents() iter.Seq[Event]
-	DrainEvents() 
+	DrainEvents()
 }
 
 type withEvents struct {

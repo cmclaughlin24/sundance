@@ -18,6 +18,12 @@
       "port": 6379
     }
   },
+  "publisher": {
+    "type": "kafka",
+    "kafka": {
+      "addr": ["kafka:9092"]
+    }
+  },
   "worker": {
     "interval": 1,
     "poolSize": 10,

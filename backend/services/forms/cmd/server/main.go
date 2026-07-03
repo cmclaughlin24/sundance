@@ -34,6 +34,7 @@ type settings struct {
 	LogLevel    string                          `json:"logLevel" env:"APP_LOG_LEVEL"`
 	Worker      workers.WorkerOptions           `json:"worker" envPrefix:"APP_WORKER_"`
 	Server      rest.ServerOptions              `json:"server" envPrefix:"APP_SERVER_"`
+	Publisher   publishers.PublisherOptions     `json:"publisher" envPrefix:"APP_PUBLISHER_"`
 }
 
 func main() {
@@ -67,6 +68,12 @@ func main() {
 	}
 	defer cacheClose()
 
+	p, err := publishers.Bootstrap(l, settings.Publisher)
+	if err != nil {
+		l.Error("failed to bootstrap publisher", "error", err.Error())
+		panic(err)
+	}
+
 	ev := evaluators.NewExprRuleEvaluator(l)
 	st := strategies.Bootstrap(strategies.WithLogger(l))
 	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithStrategies(st), services.WithRuleEvaluator(ev))
@@ -76,7 +83,7 @@ func main() {
 		core.WithRepository(r),
 		core.WithAPI(s),
 		core.WithCache(cm.(core.Cache)),
-		core.WithPublisher(publishers.NewInMemoryPublisher(l)),
+		core.WithPublisher(p),
 	)
 
 	defer app.Close(context.Background())

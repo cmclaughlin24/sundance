@@ -1,17 +1,22 @@
 port: 80
-logLevel: 'debug'
+logLevel: "debug"
 server:
-  host: 'http://localhost:8080'
+  host: "http://localhost:8080"
 database:
-  driver: 'mongodb'
+  driver: "mongodb"
   mongodb:
-    uri: 'mongodb://mongo:27017'
-    databaseName: 'forms'
+    uri: "mongodb://mongo:27017"
+    databaseName: "forms"
 cache:
-  type: 'redis'
+  type: "redis"
   redis:
-    host: 'redis'
+    host: "redis"
     port: 6379
+publisher:
+  type: "kafka"
+  kafka:
+    addr:
+      - "kafka:9092"
 worker:
   interval: 1
   poolSize: 10
