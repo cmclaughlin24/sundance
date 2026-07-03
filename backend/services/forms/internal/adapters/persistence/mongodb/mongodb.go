@@ -12,7 +12,7 @@ import (
 func Bootstrap(client *mongo.Client, logger *slog.Logger, databaseName string) (*ports.Repository, error) {
 	db := client.Database(databaseName)
 
-	outbox, err := newMongoDBOutbox(db, logger)
+	outbox, err := newMongoDBOutboxRepository(db, logger)
 	if err != nil {
 		return nil, err
 	}

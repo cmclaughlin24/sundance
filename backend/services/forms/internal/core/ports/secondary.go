@@ -10,7 +10,7 @@ import (
 
 type Repository struct {
 	Database     database.Database
-	Outbox       Outbox
+	Outbox       OutboxRepository
 	Tags         TagsRepository
 	TagVersions  TagVersionsRepository
 	Forms        FormsRepository
@@ -57,9 +57,13 @@ type TagVersionsRepository interface {
 	Upsert(context.Context, *domain.TagVersion) (*domain.TagVersion, error)
 }
 
-type Outbox interface {
+type OutboxRepository interface {
 	Find(context.Context) ([]*domain.Event, error)
 	Upsert(context.Context, *domain.Event) (*domain.Event, error)
+}
+
+type Publisher interface {
+	Publish(context.Context) error
 }
 
 type Strategies struct {

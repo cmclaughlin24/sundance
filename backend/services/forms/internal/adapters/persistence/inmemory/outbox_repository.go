@@ -9,20 +9,20 @@ import (
 	"sundance/backend/services/forms/internal/core/ports"
 )
 
-type inMemoryOutbox struct {
+type inMemoryOutboxRepository struct {
 	mu     sync.RWMutex
 	events map[string]*domain.Event
 	logger *slog.Logger
 }
 
-func newInMemoryOutbox(logger *slog.Logger) ports.Outbox {
-	return &inMemoryOutbox{
+func newInMemoryOutbox(logger *slog.Logger) ports.OutboxRepository {
+	return &inMemoryOutboxRepository{
 		events: make(map[string]*domain.Event),
 		logger: logger,
 	}
 }
 
-func (r *inMemoryOutbox) Find(ctx context.Context) ([]*domain.Event, error) {
+func (r *inMemoryOutboxRepository) Find(ctx context.Context) ([]*domain.Event, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -35,7 +35,7 @@ func (r *inMemoryOutbox) Find(ctx context.Context) ([]*domain.Event, error) {
 	return events, nil
 }
 
-func (r *inMemoryOutbox) Upsert(ctx context.Context, event *domain.Event) (*domain.Event, error) {
+func (r *inMemoryOutboxRepository) Upsert(ctx context.Context, event *domain.Event) (*domain.Event, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

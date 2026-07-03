@@ -13,24 +13,24 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
-type mongoDBOutbox struct {
+type mongoDBOutboxRepository struct {
 	base *database.MongoDBRepository[documents.EventDocument]
 }
 
-func newMongoDBOutbox(db *mongo.Database, logger *slog.Logger) (ports.Outbox, error) {
+func newMongoDBOutboxRepository(db *mongo.Database, logger *slog.Logger) (ports.OutboxRepository, error) {
 	base := database.NewMongoDBRepository[documents.EventDocument](
 		db.Collection("outbox"),
 		logger,
 	)
-	repository := &mongoDBOutbox{base}
+	repository := &mongoDBOutboxRepository{base}
 
 	return repository, nil
 }
 
-func (o *mongoDBOutbox) Find(ctx context.Context) ([]*domain.Event, error) {
+func (r *mongoDBOutboxRepository) Find(ctx context.Context) ([]*domain.Event, error) {
 	opts := options.Find()
 
-	docs, err := o.base.Find(ctx, nil, opts)
+	docs, err := r.base.Find(ctx, nil, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -43,8 +43,8 @@ func (o *mongoDBOutbox) Find(ctx context.Context) ([]*domain.Event, error) {
 	return events, nil
 }
 
-func (o *mongoDBOutbox) Upsert(ctx context.Context, e *domain.Event) (*domain.Event, error) {
-	o.base.Logger().DebugContext(ctx, "upsert event", "event", e.ID)
+func (r *mongoDBOutboxRepository) Upsert(ctx context.Context, e *domain.Event) (*domain.Event, error) {
+	r.base.Logger().DebugContext(ctx, "upsert event", "event", e.ID)
 
 	doc := documents.ToEventDocument(e)
 	filter := bson.M{"_id": doc.ID}
@@ -53,11 +53,11 @@ func (o *mongoDBOutbox) Upsert(ctx context.Context, e *domain.Event) (*domain.Ev
 
 	var result documents.EventDocument
 	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
-		return o.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
+		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
 	})
 
 	if err != nil {
-		o.base.Logger().ErrorContext(ctx, "mongo upsert failed", "event_id", e.ID, "error", err)
+		r.base.Logger().ErrorContext(ctx, "mongo upsert failed", "event_id", e.ID, "error", err)
 		return nil, err
 	}
 

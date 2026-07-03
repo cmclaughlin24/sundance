@@ -72,6 +72,16 @@ func HydrateEvent(
 	}
 }
 
+func (e *Event) Complete() {
+	e.Status = EventStatusCompleted
+	e.Attempts += 1
+}
+
+func (e *Event) Error() {
+	e.Status = EventStatusError
+	e.Attempts += 1
+}
+
 type withEvents struct {
 	events []Event
 }

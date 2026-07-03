@@ -23,8 +23,20 @@ func Bootstrap(app *core.Application, settings WorkerOptions) (func(context.Cont
 		return nil, err
 	}
 
+	ow, err := newOutboxRelayBackgroundWorker(
+		app,
+		WithInterval(settings.Interval),
+		WithPoolSize(settings.PoolSize),
+		WithRetryLimit(settings.RetryLimit),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return func(ctx context.Context) {
 		go sw.Start(ctx)
+		go ow.Start(ctx)
 	}, nil
 }
 

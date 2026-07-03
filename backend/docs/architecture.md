@@ -260,7 +260,7 @@ C4Component
 
   Container_Boundary(formsService, "Forms Service") {
     Component(restHandlers, "REST Handlers", "chi / Go", "Translates inbound HTTP requests into application commands and queries. Returns JSON responses.")
-    Component(appServices, "Application Services", "Go", "Implements FormsAPI, SubmissionsAPI, SubmissionJobsAPI, OutboxJobsAPI, and TagsAPI. Orchestrates form lifecycle, submission processing, outbox relay, and tag management.")
+    Component(appServices, "Application Services", "Go", "Implements FormsAPI, SubmissionsAPI, SubmissionJobsAPI, and TagsAPI. Orchestrates form lifecycle, submission processing, and tag management.")
     Component(domain, "Domain", "Go", "Form, FormVersion, Submission, Tag, and TagVersion aggregates with value objects. Enforces lifecycle state machines and business invariants.")
     Component(fieldValidators, "Field Validator Strategies", "Go", "Five FieldValidatorStrategy implementations (text, number, select, checkbox, date) dispatched at runtime via a StrategyRegistry keyed by FieldType.")
     Component(ruleEvaluator, "Rule Evaluator", "expr-lang/expr", "Evaluates visibility, required, and read-only rules against submitted field values using a sandboxed expression engine.")
@@ -275,13 +275,14 @@ C4Component
   Rel(appServices, ruleEvaluator, "Evaluates visibility and required rules", "Go interface")
   Rel(appServices, persistence, "Reads and writes aggregates", "Go interface")
   Rel(worker, appServices, "Polls and processes pending submissions", "SubmissionJobsAPI")
-  Rel(outboxWorker, appServices, "Polls and relays accepted submission events", "OutboxJobsAPI")
+  Rel(outboxWorker, persistence, "Polls outbox and marks events delivered", "OutboxRepository")
+  Rel(outboxWorker, persistence, "Publishes canonical events", "Publisher")
 ```
 
 | Building Block                 | Responsibility                                                                                                                                                                                                                                                                                                                                     | Source                  |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
 | **REST Handlers**              | Translates HTTP requests and responses to and from application commands and queries. Applies idempotency enforcement on submission intake.                                                                                                                                                                                                         | `adapters/rest/`        |
-| **Application Services**       | Implements `FormsAPI`, `SubmissionsAPI`, `SubmissionJobsAPI`, `OutboxJobsAPI`, and `TagsAPI`. Orchestrates form version lifecycle, idempotent submission intake, async validation pipeline, outbox relay, and tag version transitions.                                                                                                             | `core/services/`        |
+| **Application Services**       | Implements `FormsAPI`, `SubmissionsAPI`, `SubmissionJobsAPI`, and `TagsAPI`. Orchestrates form version lifecycle, idempotent submission intake, async validation pipeline, and tag version transitions.                                                                                                                            | `core/services/`        |
 | **Domain**                     | `Form`, `FormVersion`, `Submission`, `Tag`, and `TagVersion` aggregates with their value objects (`Page`, `Section`, `Field`, `Rule`, `FieldTagMapping`). Owns all lifecycle state machines (`draft → active → retired`, `draft → active → deprecated → retired`).                                                                                 | `core/domain/`          |
 | **Field Validator Strategies** | Five `FieldValidatorStrategy` implementations resolved at runtime by `FieldType`: `text` (string constraints), `number` (numeric bounds), `select`, `checkbox`, and `date` (partial; constraints pending).                                                                                                                                         | `core/strategies/`      |
 | **Rule Evaluator**             | `ExprRuleEvaluator` compiles rule expressions into type-safe boolean programs using `expr-lang/expr` and evaluates them against a `RuleEvaluationContext` (field key → submitted value map).                                                                                                                                                       | `adapters/evaluators/`  |
@@ -442,7 +443,7 @@ Once the Submissions Worker transitions a submission to `accepted` and writes a 
 
 ```mermaid
 flowchart TD
-    A[OutboxJobsAPI.Process] --> B[Poll outbox collection\nfor undelivered events]
+    A[OutboxRelayWorker — on each tick] --> B[OutboxRepository.Find\nPoll outbox collection\nfor undelivered events]
     B --> C{Events found?}
     C -->|no| D[No-op — wait for next tick]
     C -->|yes| E[For each Event]
@@ -459,9 +460,9 @@ flowchart TD
 
 | Building Block              | Responsibility                                                                                                                                                                              | Source                                    |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| **`OutboxJobsAPI.Process`** | Orchestrates the relay for a single outbox event. Entry point called by the Outbox Relay Worker.                                                                                            | `core/services/outbox_relay_service.go`   |
-| **`Outbox` port**           | Secondary port. `Find` returns undelivered events; `Upsert` marks events as delivered or failed.                                                                                            | `core/ports/secondary.go`                 |
-| **`OutboxRelayWorker`**     | Leader-elected background worker. Calls `OutboxJobsAPI.Process` on each tick for each undelivered event. Uses Redis-backed leader election to ensure a single active relay across replicas. | `adapters/workers/outbox_relay_worker.go` |
+| **`OutboxRepository`**      | Secondary port. `Find` returns undelivered outbox events; `Upsert` marks each event as delivered or failed after a publish attempt.                                                          | `core/ports/secondary.go`                 |
+| **`Publisher`**             | Secondary port. `Publish` sends the canonical submission event to the message broker. Called directly by the Outbox Relay Worker per event.                                                  | `core/ports/secondary.go`                 |
+| **`OutboxRelayWorker`**     | Leader-elected background worker. On each tick calls `OutboxRepository.Find` to fetch undelivered events, calls `Publisher.Publish` for each, and calls `OutboxRepository.Upsert` to record the outcome. Bypasses the primary port layer — operates entirely on secondary ports via the `core.Application` struct. Uses Redis-backed leader election to ensure a single active relay across replicas. | `adapters/workers/outbox_relay_worker.go` |
 
 ## 6. Runtime View
 
