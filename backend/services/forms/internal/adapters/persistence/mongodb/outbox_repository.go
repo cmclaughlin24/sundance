@@ -52,7 +52,7 @@ func (r *mongoDBOutboxRepository) Upsert(ctx context.Context, e *domain.Event) (
 	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
 	var result documents.EventDocument
-	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
+	err := r.base.WithSession(ctx, func(sctx context.Context) error {
 		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
 	})
 

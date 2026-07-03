@@ -141,7 +141,7 @@ func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Sub
 	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
 	var result documents.SubmissionDocument
-	err = mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
+	err = r.base.WithSession(ctx, func(sctx context.Context) error {
 		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
 	})
 

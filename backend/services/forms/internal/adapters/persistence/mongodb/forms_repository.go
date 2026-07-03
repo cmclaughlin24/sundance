@@ -66,7 +66,7 @@ func (r *mongoDBFormsRepository) Upsert(ctx context.Context, f *domain.Form) (*d
 	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
 	var result documents.FormDocument
-	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
+	err := r.base.WithSession(ctx, func(sctx context.Context) error {
 		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
 	})
 

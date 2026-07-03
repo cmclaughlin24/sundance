@@ -105,7 +105,7 @@ func (r *mongoDBTagVersionsRepository) FindNextVersionNumber(ctx context.Context
 	opts := options.Find().SetSort(bson.M{"version": -1}).SetLimit(1).SetProjection(bson.M{"version": 1})
 
 	var lv int
-	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
+	err := r.base.WithSession(ctx, func(sctx context.Context) error {
 		cursor, err := r.base.Collection().Find(sctx, filter, opts)
 
 		if err != nil {
@@ -145,7 +145,7 @@ func (r *mongoDBTagVersionsRepository) Upsert(ctx context.Context, v *domain.Tag
 	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
 	var result documents.TagVersionDocument
-	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
+	err := r.base.WithSession(ctx, func(sctx context.Context) error {
 		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
 	})
 

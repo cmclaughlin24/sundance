@@ -7,6 +7,7 @@ import (
 	"log/slog"
 
 	"sundance/backend/pkg/common"
+
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -129,4 +130,32 @@ func (r *MongoDBRepository[T]) Delete(ctx context.Context, filter bson.M) error 
 	}
 
 	return err
+}
+
+func (r *MongoDBRepository[T]) WithSession(ctx context.Context, fn func(context.Context) error, opts ...options.Lister[options.SessionOptions]) error {
+	session := mongo.SessionFromContext(ctx)
+	if session != nil {
+		return fn(ctx)
+	}
+
+	session, err := r.collection.Database().Client().StartSession(opts...)
+	if err != nil {
+		r.logger.ErrorContext(ctx, "mongodb session failed", "collection", r.collection.Name(), "error", err)
+		return err
+	}
+
+	defer session.EndSession(ctx)
+	sctx := mongo.NewSessionContext(ctx, session)
+
+	if err := session.StartTransaction(); err != nil {
+		r.logger.ErrorContext(ctx, "mongodb start transaction failed", "collection", r.collection.Name(), "error", err)
+		return err
+	}
+
+	if err := fn(sctx); err != nil {
+		_ = session.AbortTransaction(sctx)
+		return err
+	}
+
+	return session.CommitTransaction(sctx)
 }

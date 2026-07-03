@@ -111,7 +111,7 @@ func (r *mongoDBDataSourcesRepository) Upsert(ctx context.Context, ds *domain.Da
 	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
 	var result documents.DataSourceDocument
-	err = mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
+	err = r.base.WithSession(ctx, func(sctx context.Context) error {
 		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
 	})
 
@@ -130,7 +130,7 @@ func (r *mongoDBDataSourcesRepository) Delete(ctx context.Context, tenantID doma
 func (r *mongoDBDataSourcesRepository) DeleteAll(ctx context.Context, tenantID domain.TenantID) error {
 	r.base.Logger().DebugContext(ctx, "deleting all data sources for tenant", "tenant_id", tenantID)
 
-	err := mongo.WithSession(ctx, mongo.SessionFromContext(ctx), func(sctx context.Context) error {
+	err := r.base.WithSession(ctx, func(sctx context.Context) error {
 		_, err := r.base.Collection().DeleteMany(sctx, bson.M{"tenant_id": tenantID})
 
 		if err != nil {
