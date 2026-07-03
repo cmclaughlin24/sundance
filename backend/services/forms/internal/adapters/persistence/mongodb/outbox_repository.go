@@ -27,10 +27,24 @@ func newMongoDBOutboxRepository(db *mongo.Database, logger *slog.Logger) (ports.
 	return repository, nil
 }
 
-func (r *mongoDBOutboxRepository) Find(ctx context.Context) ([]*domain.Event, error) {
+func (r *mongoDBOutboxRepository) Find(ctx context.Context, filters ports.FindEventsFilter) ([]*domain.Event, error) {
 	opts := options.Find()
+	if filters.Take > 0 {
+		opts.SetLimit(int64(filters.Take))
+	}
 
-	docs, err := r.base.Find(ctx, nil, opts)
+	f := bson.M{
+		"attempts": bson.M{"$lt": filters.RetryLimit},
+		"$or": []bson.M{
+			{"created_at": bson.M{"$gte": filters.CreatedAfter}},
+		},
+	}
+
+	if len(filters.Statuses) > 0 {
+		f["status"] = bson.M{"$in": filters.Statuses}
+	}
+
+	docs, err := r.base.Find(ctx, f, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +60,7 @@ func (r *mongoDBOutboxRepository) Find(ctx context.Context) ([]*domain.Event, er
 func (r *mongoDBOutboxRepository) Upsert(ctx context.Context, e *domain.Event) (*domain.Event, error) {
 	r.base.Logger().DebugContext(ctx, "upsert event", "event", e.ID)
 
-	doc := documents.ToEventDocument(e)
+	doc := documents.ToEventDocument(*e)
 	filter := bson.M{"_id": doc.ID}
 	update := bson.M{"$set": doc}
 	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)

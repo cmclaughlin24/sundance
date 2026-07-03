@@ -8,13 +8,15 @@ import (
 )
 
 func Bootstrap(logger *slog.Logger) *ports.Repository {
+	outbox := newInMemoryOutbox(logger)
+
 	return &ports.Repository{
 		Database:     database.NewInMemoryDatabase(),
-		Outbox:       newInMemoryOutbox(logger),
+		Outbox:       outbox,
 		Tags:         newInMemoryTagRepository(logger),
 		TagVersions:  newInMemoryTagVersionsRepository(logger),
 		Forms:        newInMemoryFormsRepository(logger),
 		FormVersions: newInMemoryFormVersionsRepository(logger),
-		Submissions:  newInMemorySubmissionsRepository(logger),
+		Submissions:  newInMemorySubmissionsRepository(logger, outbox),
 	}
 }

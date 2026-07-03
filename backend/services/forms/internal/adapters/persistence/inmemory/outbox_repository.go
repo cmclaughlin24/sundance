@@ -3,6 +3,7 @@ package inmemory
 import (
 	"context"
 	"log/slog"
+	"slices"
 	"sync"
 
 	"sundance/backend/services/forms/internal/core/domain"
@@ -22,14 +23,30 @@ func newInMemoryOutbox(logger *slog.Logger) ports.OutboxRepository {
 	}
 }
 
-func (r *inMemoryOutboxRepository) Find(ctx context.Context) ([]*domain.Event, error) {
+func (r *inMemoryOutboxRepository) Find(ctx context.Context, filter ports.FindEventsFilter) ([]*domain.Event, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	events := make([]*domain.Event, 0, len(r.events))
 
 	for _, event := range r.events {
+		if len(filter.Statuses) > 0 && !slices.Contains(filter.Statuses, event.Status) {
+			continue
+		}
+
+		if filter.RetryLimit > 0 && event.Attempts >= filter.RetryLimit {
+			continue
+		}
+
+		if !filter.CreatedAfter.IsZero() && event.CreatedAt.Before(filter.CreatedAfter) {
+			continue
+		}
+
 		events = append(events, event)
+	}
+
+	if filter.Take > 0 && len(events) > filter.Take {
+		events = events[:filter.Take]
 	}
 
 	return events, nil

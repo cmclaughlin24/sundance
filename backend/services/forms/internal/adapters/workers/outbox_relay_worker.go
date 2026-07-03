@@ -62,7 +62,11 @@ func newOutboxWorkFn(app *core.Application, retryLimit int) worker.FetchJobsFn[*
 
 		app.Logger.DebugContext(ctx, "listing outbox messages")
 
-		events, err := outbox.Find(ctx)
+		events, err := outbox.Find(ctx, ports.FindEventsFilter{
+			RetryLimit: retryLimit,
+			Statuses:   []domain.EventStatus{domain.EventStatusPending, domain.EventStatusError},
+			CreatedAfter: time.Now().Add(-24 * time.Hour),
+		})
 		if err != nil {
 			app.Logger.ErrorContext(ctx, "failed to retrieve outbox messages", "error", err)
 			return nil, err

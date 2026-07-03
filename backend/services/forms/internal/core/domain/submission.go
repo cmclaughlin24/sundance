@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"errors"
 	"slices"
 	"time"
@@ -122,7 +123,8 @@ func (s *Submission) Accept(facts []*CanonicalFact) {
 	s.Facts = facts
 	s.UpdatedAt = Now()
 	s.addAttempt(s.Status, nil)
-	// FIXME: Add domain event that the submission was accepted.
+	// FIXME: Create event payload.
+	s.addEvent(EventTypeSubmissionAccepted, nil)
 }
 
 func (s *Submission) Fail(err error) {
@@ -135,7 +137,8 @@ func (s *Submission) Reject(err error) {
 	s.Status = SubmissionStatusRejected
 	s.UpdatedAt = Now()
 	s.addAttempt(s.Status, err)
-	// FIXME: Add domain event that the submission was rejected.
+	// FIXME: Create event payload.
+	s.addEvent(EventTypeSubmissionRejected, nil)
 }
 
 func (s *Submission) Reset() {
@@ -143,12 +146,17 @@ func (s *Submission) Reset() {
 	s.UpdatedAt = Now()
 }
 
+func (s *Submission) ToFactMap() map[string]any {
+	return nil
+}
+
 func (s *Submission) addAttempt(status SubmissionStatus, err error) {
 	s.Attempts = append(s.Attempts, NewSubmissionAttempt(len(s.Attempts)+1, string(status), err))
 }
 
-func (s *Submission) ToFactMap() map[string]any {
-	return nil
+func (s *Submission) addEvent(eventType EventType, payload json.RawMessage) {
+	e := NewEvent(AggregateTypeSubmission, string(s.ID), eventType, payload)
+	s.AddEvent(e)
 }
 
 type SubmissionFieldValue struct {

@@ -1,6 +1,9 @@
 package ports
 
-import "sundance/backend/services/forms/internal/core/domain"
+import (
+	"sundance/backend/services/forms/internal/core/domain"
+	"time"
+)
 
 type FormFilters struct {
 	TenantID string
@@ -19,4 +22,11 @@ type TagFilters struct {
 type TagVersionFilters struct {
 	TagID    domain.TagID
 	Statuses []domain.TagStatus
+}
+
+type FindEventsFilter struct {
+	Statuses     []domain.EventStatus
+	RetryLimit   int
+	CreatedAfter time.Time
+	Take         int
 }

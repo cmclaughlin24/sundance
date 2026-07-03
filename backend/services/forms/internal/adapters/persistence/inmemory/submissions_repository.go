@@ -14,12 +14,14 @@ import (
 type inMemorySubmissionsRepository struct {
 	mu          sync.RWMutex
 	submissions map[string]*domain.Submission
+	outbox      ports.OutboxRepository
 	logger      *slog.Logger
 }
 
-func newInMemorySubmissionsRepository(logger *slog.Logger) ports.SubmissionsRepository {
+func newInMemorySubmissionsRepository(logger *slog.Logger, outbox ports.OutboxRepository) ports.SubmissionsRepository {
 	return &inMemorySubmissionsRepository{
 		submissions: make(map[string]*domain.Submission),
+		outbox:      outbox,
 		logger:      logger,
 	}
 }
@@ -119,5 +121,21 @@ func (r *inMemorySubmissionsRepository) Upsert(ctx context.Context, submission *
 
 	r.submissions[string(submission.ID)] = submission
 
+	if err := r.WriteEvents(ctx, submission); err != nil {
+		return nil, err
+	}
+
+	submission.DrainEvents()
+
 	return submission, nil
+}
+
+func (r *inMemorySubmissionsRepository) WriteEvents(ctx context.Context, e domain.HasEvents) error {
+	for event := range e.PeekEvents() {
+		if _, err := r.outbox.Upsert(ctx, &event); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
