@@ -30,6 +30,7 @@ type Event struct {
 	Status        EventStatus
 	Payload       json.RawMessage
 	Attempts      int
+	LastError     *string
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
@@ -56,6 +57,7 @@ func HydrateEvent(
 	status EventStatus,
 	payload json.RawMessage,
 	attempts int,
+	lastError *string,
 	createdAt,
 	updatedAt time.Time,
 ) Event {
@@ -67,6 +69,7 @@ func HydrateEvent(
 		Status:        status,
 		Payload:       payload,
 		Attempts:      attempts,
+		LastError:     lastError,
 		CreatedAt:     createdAt,
 		UpdatedAt:     updatedAt,
 	}
@@ -74,11 +77,13 @@ func HydrateEvent(
 
 func (e *Event) Complete() {
 	e.Status = EventStatusCompleted
+	e.LastError = nil
 	e.Attempts += 1
 }
 
-func (e *Event) Error() {
+func (e *Event) Error(err string) {
 	e.Status = EventStatusError
+	e.LastError = &err
 	e.Attempts += 1
 }
 

@@ -63,7 +63,7 @@ type OutboxRepository interface {
 }
 
 type Publisher interface {
-	Publish(context.Context) error
+	Publish(context.Context, domain.Event) error
 }
 
 type Strategies struct {

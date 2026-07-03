@@ -19,13 +19,14 @@ type outboxMessage struct {
 }
 
 func (j *outboxMessage) Process(ctx context.Context) error {
-	if err := j.publisher.Publish(ctx); err != nil {
-		j.event.Error()
+	if err := j.publisher.Publish(ctx, *j.event); err != nil {
+		j.event.Error(err.Error())
 	} else {
 		j.event.Complete()
 	}
 
 	if _, err := j.outbox.Upsert(ctx, j.event); err != nil {
+		j.logger.ErrorContext(ctx, "failed to persist outbox event", "event_id", j.event.ID, "attempt", j.event.Attempts, "error", err)
 		return err
 	}
 

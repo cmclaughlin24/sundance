@@ -14,6 +14,7 @@ type EventDocument struct {
 	Status        string    `bson:"status"`
 	Payload       string    `bson:"payload"`
 	Attempts      int       `bson:"attempts"`
+	LastError     *string   `bson:"error,omitempty"`
 	CreatedAt     time.Time `bson:"created_at"`
 	UpdatedAt     time.Time `bson:"updated_at"`
 }
@@ -27,6 +28,7 @@ func ToEventDocument(e *domain.Event) *EventDocument {
 		Status:        string(e.Status),
 		Payload:       string(e.Payload),
 		Attempts:      e.Attempts,
+		LastError:     e.LastError,
 		CreatedAt:     e.CreatedAt,
 		UpdatedAt:     e.UpdatedAt,
 	}
@@ -41,6 +43,7 @@ func FromEventDocument(doc *EventDocument) *domain.Event {
 		domain.EventStatus(doc.Status),
 		json.RawMessage(doc.Payload),
 		doc.Attempts,
+		doc.LastError,
 		doc.CreatedAt,
 		doc.UpdatedAt,
 	)

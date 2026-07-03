@@ -17,6 +17,7 @@ import (
 	"sundance/backend/pkg/worker"
 	"sundance/backend/services/forms/internal/adapters/evaluators"
 	"sundance/backend/services/forms/internal/adapters/persistence"
+	"sundance/backend/services/forms/internal/adapters/publishers"
 	"sundance/backend/services/forms/internal/adapters/rest"
 	"sundance/backend/services/forms/internal/adapters/workers"
 	"sundance/backend/services/forms/internal/core"
@@ -69,7 +70,14 @@ func main() {
 	ev := evaluators.NewExprRuleEvaluator(l)
 	st := strategies.Bootstrap(strategies.WithLogger(l))
 	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithStrategies(st), services.WithRuleEvaluator(ev))
-	app := core.NewApplication(core.WithLogger(l), core.WithRepository(r), core.WithAPI(s), core.WithCache(cm.(core.Cache)))
+
+	app := core.NewApplication(
+		core.WithLogger(l),
+		core.WithRepository(r),
+		core.WithAPI(s),
+		core.WithCache(cm.(core.Cache)),
+		core.WithPublisher(publishers.NewInMemoryPublisher(l)),
+	)
 
 	defer app.Close(context.Background())
 	mux := rest.NewRoutes(app, settings.Server)
