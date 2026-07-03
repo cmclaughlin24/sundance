@@ -27,7 +27,7 @@ func Bootstrap(client *mongo.Client, logger *slog.Logger, databaseName string) (
 		return nil, err
 	}
 
-	submissions, err := newMongoDBSubmissionsRepository(db, logger)
+	submissions, err := newMongoDBSubmissionsRepository(db, outbox.(*mongoDBOutboxRepository), logger)
 	if err != nil {
 		return nil, err
 	}

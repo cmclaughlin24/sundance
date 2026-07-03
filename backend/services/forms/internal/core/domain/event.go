@@ -87,6 +87,11 @@ func (e *Event) Error(err string) {
 	e.Attempts += 1
 }
 
+type HasEvents interface {
+	PeekEvents() iter.Seq[Event]
+	DrainEvents() 
+}
+
 type withEvents struct {
 	events []Event
 }
@@ -95,14 +100,16 @@ func (we *withEvents) AddEvent(e Event) {
 	we.events = append(we.events, e)
 }
 
-func (we *withEvents) DrainEvents() iter.Seq[Event] {
-	events := we.events
-	we.events = nil
+func (we *withEvents) PeekEvents() iter.Seq[Event] {
 	return func(yield func(Event) bool) {
-		for _, e := range events {
+		for _, e := range we.events {
 			if !yield(e) {
 				return
 			}
 		}
 	}
+}
+
+func (we *withEvents) DrainEvents() {
+	we.events = nil
 }

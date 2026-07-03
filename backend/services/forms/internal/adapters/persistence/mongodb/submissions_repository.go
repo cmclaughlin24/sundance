@@ -26,15 +26,19 @@ var (
 )
 
 type mongoDBSubmissionsRepository struct {
-	base *database.MongoDBRepository[documents.SubmissionDocument]
+	base   *database.MongoDBRepository[documents.SubmissionDocument]
+	outbox *mongoDBOutboxRepository
 }
 
-func newMongoDBSubmissionsRepository(db *mongo.Database, logger *slog.Logger) (ports.SubmissionsRepository, error) {
+func newMongoDBSubmissionsRepository(db *mongo.Database, outbox *mongoDBOutboxRepository, logger *slog.Logger) (ports.SubmissionsRepository, error) {
 	base := database.NewMongoDBRepository[documents.SubmissionDocument](
 		db.Collection("submissions"),
 		logger,
 	)
-	repository := &mongoDBSubmissionsRepository{base}
+	repository := &mongoDBSubmissionsRepository{
+		base:   base,
+		outbox: outbox,
+	}
 
 	if err := repository.migrate(context.Background()); err != nil {
 		return nil, err
@@ -142,7 +146,11 @@ func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Sub
 
 	var result documents.SubmissionDocument
 	err = r.base.WithSession(ctx, func(sctx context.Context) error {
-		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
+		if err := r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result); err != nil {
+			return err
+		}
+
+		return r.WriteEvents(sctx, s)
 	})
 
 	if err != nil {
@@ -154,7 +162,19 @@ func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Sub
 		return nil, err
 	}
 
+	s.DrainEvents()
+
 	return documents.FromSubmissionDocument(&result)
+}
+
+func (r *mongoDBSubmissionsRepository) WriteEvents(ctx context.Context, e domain.HasEvents) error {
+	for event := range e.PeekEvents() {
+		if _, err := r.outbox.Upsert(ctx, &event); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func newSubmissionFilter(filter *ports.FindSubmissionsFilter) bson.M {

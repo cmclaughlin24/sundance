@@ -19,7 +19,7 @@ type EventDocument struct {
 	UpdatedAt     time.Time `bson:"updated_at"`
 }
 
-func ToEventDocument(e *domain.Event) *EventDocument {
+func ToEventDocument(e domain.Event) *EventDocument {
 	return &EventDocument{
 		ID:            string(e.ID),
 		AggregateID:   e.AggregateID,
