@@ -14,6 +14,10 @@ import (
 	"sundance/backend/services/forms/internal/core/strategies"
 )
 
+var (
+	ErrMissingCollectionIndex = errors.New("missing collection index")
+)
+
 type ruleByTypeGetter interface {
 	GetRuleByType(domain.RuleType) *domain.Rule
 }
@@ -224,14 +228,18 @@ func (s *submissionJobsService) normalize(ctx context.Context, factCandidates []
 			return nil, err
 		}
 
-		var evalFn func(domain.Tag, domain.TagVersion, []factCandidate) []*domain.CanonicalFact
+		var evalFn func(domain.Tag, domain.TagVersion, []factCandidate) ([]*domain.CanonicalFact, error)
 		if ta.tag.HasCollectionAncestor() {
 			evalFn = s.evaluateCollectionCandidates
 		} else {
 			evalFn = s.evaluateScalarCandidates
 		}
 
-		f := evalFn(ta.tag, *version, candidatesByVersion[version.ID])
+		f, err := evalFn(ta.tag, *version, candidatesByVersion[version.ID])
+		if err != nil {
+			return nil, err
+		}
+
 		facts = append(facts, f...)
 	}
 
@@ -333,11 +341,15 @@ func (s *submissionJobsService) getTags(ctx context.Context, ids []domain.TagVer
 	return aggregates, nil
 }
 
-func (s *submissionJobsService) evaluateCollectionCandidates(tag domain.Tag, version domain.TagVersion, candidates []factCandidate) []*domain.CanonicalFact {
+func (s *submissionJobsService) evaluateCollectionCandidates(tag domain.Tag, version domain.TagVersion, candidates []factCandidate) ([]*domain.CanonicalFact, error) {
 	facts := make([]*domain.CanonicalFact, 0)
 
 	byCollectionIdx := make(map[int][]factCandidate)
 	for _, fc := range candidates {
+		if fc.collectionIndex == nil {
+			return nil, ErrMissingCollectionIndex
+		}
+
 		byCollectionIdx[*fc.collectionIndex] = append(byCollectionIdx[*fc.collectionIndex], fc)
 	}
 
@@ -352,10 +364,10 @@ func (s *submissionJobsService) evaluateCollectionCandidates(tag domain.Tag, ver
 		))
 	}
 
-	return facts
+	return facts, nil
 }
 
-func (s *submissionJobsService) evaluateScalarCandidates(tag domain.Tag, version domain.TagVersion, candidates []factCandidate) []*domain.CanonicalFact {
+func (s *submissionJobsService) evaluateScalarCandidates(tag domain.Tag, version domain.TagVersion, candidates []factCandidate) ([]*domain.CanonicalFact, error) {
 	facts := make([]*domain.CanonicalFact, 0)
 	winner := rankCandidates(candidates)
 	facts = append(facts, domain.NewCanonicalFact(
@@ -366,7 +378,7 @@ func (s *submissionJobsService) evaluateScalarCandidates(tag domain.Tag, version
 		nil,
 	))
 
-	return facts
+	return facts, nil
 }
 
 func rankCandidates(candidates []factCandidate) factCandidate {
@@ -380,5 +392,6 @@ func shouldReject(err error) bool {
 	return errors.Is(err, domain.ErrInvalidVersionStatus) ||
 		errors.Is(err, strategies.ErrFieldValidation) ||
 		errors.Is(err, strategies.ErrFieldRequired) ||
-		errors.Is(err, strategies.ErrFieldTypeValue)
+		errors.Is(err, strategies.ErrFieldTypeValue) ||
+		errors.Is(err, ErrMissingCollectionIndex)
 }

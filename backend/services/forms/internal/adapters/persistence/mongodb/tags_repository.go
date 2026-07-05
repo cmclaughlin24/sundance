@@ -25,7 +25,7 @@ var (
 	}
 )
 
-type mongoDBTagsRespository struct {
+type mongoDBTagsRepository struct {
 	base *database.MongoDBRepository[documents.TagDocument]
 }
 
@@ -34,7 +34,7 @@ func newMongoDBTagsRepository(db *mongo.Database, logger *slog.Logger) (ports.Ta
 		db.Collection("tags"),
 		logger,
 	)
-	repository := &mongoDBTagsRespository{base}
+	repository := &mongoDBTagsRepository{base}
 
 	if err := repository.migrate(context.Background()); err != nil {
 		return nil, err
@@ -43,12 +43,12 @@ func newMongoDBTagsRepository(db *mongo.Database, logger *slog.Logger) (ports.Ta
 	return repository, nil
 }
 
-func (r *mongoDBTagsRespository) migrate(ctx context.Context) error {
+func (r *mongoDBTagsRepository) migrate(ctx context.Context) error {
 	_, err := r.base.Collection().Indexes().CreateMany(ctx, tagIndexes)
 	return err
 }
 
-func (r *mongoDBTagsRespository) Find(ctx context.Context, tf ports.TagFilters) ([]*domain.Tag, error) {
+func (r *mongoDBTagsRepository) Find(ctx context.Context, tf ports.TagFilters) ([]*domain.Tag, error) {
 	filter := bson.M{}
 
 	if tf.TenantID != "" {
@@ -69,7 +69,7 @@ func (r *mongoDBTagsRespository) Find(ctx context.Context, tf ports.TagFilters) 
 	return tags, nil
 }
 
-func (r *mongoDBTagsRespository) FindByIDs(ctx context.Context, ids []domain.TagID) ([]*domain.Tag, error) {
+func (r *mongoDBTagsRepository) FindByIDs(ctx context.Context, ids []domain.TagID) ([]*domain.Tag, error) {
 	docs, err := r.base.Find(ctx, bson.M{"_id": bson.M{"$in": ids}})
 	if err != nil {
 		return nil, err
@@ -83,7 +83,7 @@ func (r *mongoDBTagsRespository) FindByIDs(ctx context.Context, ids []domain.Tag
 	return tags, nil
 }
 
-func (r *mongoDBTagsRespository) FindByID(ctx context.Context, id domain.TagID) (*domain.Tag, error) {
+func (r *mongoDBTagsRepository) FindByID(ctx context.Context, id domain.TagID) (*domain.Tag, error) {
 	doc, err := r.base.FindOne(ctx, bson.M{"_id": id})
 
 	if err != nil {
@@ -93,8 +93,8 @@ func (r *mongoDBTagsRespository) FindByID(ctx context.Context, id domain.TagID) 
 	return documents.FromTagDocument(doc), nil
 }
 
-func (r *mongoDBTagsRespository) Upsert(ctx context.Context, t *domain.Tag) (*domain.Tag, error) {
-	r.base.Logger().DebugContext(ctx, "upsert canonical tag", "canonical_tag_id", t.ID)
+func (r *mongoDBTagsRepository) Upsert(ctx context.Context, t *domain.Tag) (*domain.Tag, error) {
+	r.base.Logger().DebugContext(ctx, "upsert tag", "tag_id", t.ID)
 
 	doc := documents.ToTagDocument(t)
 	filter := bson.M{"_id": doc.ID}
@@ -107,13 +107,13 @@ func (r *mongoDBTagsRespository) Upsert(ctx context.Context, t *domain.Tag) (*do
 	})
 
 	if err != nil {
-		r.base.Logger().ErrorContext(ctx, "mongo upsert failed", "canonical_tag_id", t.ID, "error", err)
+		r.base.Logger().ErrorContext(ctx, "mongo upsert failed", "tag_id", t.ID, "error", err)
 		return nil, err
 	}
 
 	return documents.FromTagDocument(result), nil
 }
 
-func (r *mongoDBTagsRespository) Delete(ctx context.Context, id domain.TagID) error {
+func (r *mongoDBTagsRepository) Delete(ctx context.Context, id domain.TagID) error {
 	return r.base.Delete(ctx, bson.M{"_id": id})
 }
