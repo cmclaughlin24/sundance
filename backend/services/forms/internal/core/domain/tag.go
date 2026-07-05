@@ -23,6 +23,7 @@ const (
 	TagNodeTypePrimitive TagNodeType = "primitive"
 	TagNodeTypeObject    TagNodeType = "object"
 	collectionSegment    string      = "[*]"
+	pathSeparator        string      = "."
 )
 
 type Tag struct {

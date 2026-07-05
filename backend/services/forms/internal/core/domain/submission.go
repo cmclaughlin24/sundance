@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"slices"
+	"strings"
 	"time"
 
 	"sundance/backend/pkg/common/validate"
@@ -123,8 +124,9 @@ func (s *Submission) Accept(facts []*CanonicalFact) {
 	s.Facts = facts
 	s.UpdatedAt = Now()
 	s.addAttempt(s.Status, nil)
-	// FIXME: Create event payload.
-	s.addEvent(EventTypeSubmissionAccepted, nil)
+
+	p, _ := json.Marshal(s.ToFactMap())
+	s.addEvent(EventTypeSubmissionAccepted, p)
 }
 
 func (s *Submission) Fail(err error) {
@@ -147,7 +149,14 @@ func (s *Submission) Reset() {
 }
 
 func (s *Submission) ToFactMap() map[string]any {
-	return nil
+	result := make(map[string]any)
+
+	for _, fact := range s.Facts {
+		segments := strings.Split(fact.TagKey, pathSeparator)
+		setNestedValue(result, segments, fact.Value, fact.CollectionIndex)
+	}
+
+	return result
 }
 
 func (s *Submission) addAttempt(status SubmissionStatus, err error) {
@@ -159,24 +168,40 @@ func (s *Submission) addEvent(eventType EventType, payload json.RawMessage) {
 	s.AddEvent(e)
 }
 
-type SubmissionFieldValue struct {
-	FieldID         FieldID
-	Value           any
-	CollectionIndex *int
-}
+func setNestedValue(node map[string]any, segments []string, value any, collectionIndex *int) {
+	raw := segments[0]
+	isCollection := strings.HasSuffix(raw, collectionSegment)
+	key := strings.TrimSuffix(raw, collectionSegment)
 
-func NewSubmissionFieldValue(fieldID FieldID, value any, collectionIndex *int) *SubmissionFieldValue {
-	return &SubmissionFieldValue{
-		FieldID:         fieldID,
-		Value:           value,
-		CollectionIndex: collectionIndex,
+	if len(segments) == 1 {
+		node[key] = value
+		return
 	}
-}
 
-func HydrateSubmissionFieldValue(fieldID FieldID, value any, collectionIndex *int) *SubmissionFieldValue {
-	return &SubmissionFieldValue{
-		FieldID:         fieldID,
-		Value:           value,
-		CollectionIndex: collectionIndex,
+	if isCollection {
+		if collectionIndex == nil {
+			return
+		}
+
+		idx := *collectionIndex
+		if _, ok := node[key]; !ok {
+			node[key] = make([]map[string]any, 0)
+		}
+
+		slice := node[key].([]map[string]any)
+		for len(slice) <= idx {
+			slice = append(slice, make(map[string]any))
+		}
+
+		node[key] = slice
+
+		setNestedValue(slice[idx], segments[1:], value, collectionIndex)
+		return
 	}
+
+	if _, ok := node[key]; !ok {
+		node[key] = make(map[string]any)
+	}
+
+	setNestedValue(node[key].(map[string]any), segments[1:], value, collectionIndex)
 }
