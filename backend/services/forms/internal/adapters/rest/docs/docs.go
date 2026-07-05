@@ -1115,6 +1115,81 @@ const docTemplate = `{
                 }
             }
         },
+        "/submissions/by-reference/{referenceId}/facts": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the canonical fact map for an accepted submission, keyed by tag paths.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Submissions"
+                ],
+                "summary": "Get submission facts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Reference ID",
+                        "name": "referenceId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Canonical fact map keyed by tag paths",
+                        "schema": {
+                            "type": "object"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/submissions/by-reference/{referenceId}/status": {
             "get": {
                 "security": [
@@ -2242,7 +2317,7 @@ const docTemplate = `{
                 "isCollection": {
                     "type": "boolean"
                 },
-                "key": {
+                "keyPath": {
                     "type": "string"
                 },
                 "nodeType": {
@@ -2663,6 +2738,9 @@ const docTemplate = `{
                 "value"
             ],
             "properties": {
+                "collectionIndex": {
+                    "type": "integer"
+                },
                 "fieldId": {
                     "type": "string"
                 },
@@ -2747,8 +2825,8 @@ const docTemplate = `{
                 "object"
             ],
             "x-enum-varnames": [
-                "TagValueKindPrimitive",
-                "TagValueKindObject"
+                "TagNodeTypePrimitive",
+                "TagNodeTypeObject"
             ]
         },
         "TagResponse": {
@@ -2763,10 +2841,7 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "isCollection": {
-                    "type": "boolean"
-                },
-                "key": {
+                "keyPath": {
                     "type": "string"
                 },
                 "nodeType": {

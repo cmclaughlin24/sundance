@@ -18,6 +18,8 @@ type IdempotencyID string
 
 type SubmissionStatus string
 
+type FactMap map[string]any
+
 const (
 	SubmissionStatusPending  SubmissionStatus = "pending"
 	SubmissionStatusAccepted SubmissionStatus = "accepted"
@@ -148,8 +150,8 @@ func (s *Submission) Reset() {
 	s.UpdatedAt = Now()
 }
 
-func (s *Submission) ToFactMap() map[string]any {
-	result := make(map[string]any)
+func (s *Submission) ToFactMap() FactMap {
+	result := make(FactMap)
 
 	for _, fact := range s.Facts {
 		segments := strings.Split(fact.TagKey, pathSeparator)

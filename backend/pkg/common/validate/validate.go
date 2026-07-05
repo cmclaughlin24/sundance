@@ -2,6 +2,7 @@ package validate
 
 import (
 	"errors"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -25,11 +26,23 @@ func ValidateStruct(s any) error {
 	return v.Struct(s)
 }
 
+func RegisterValidation(tag string, fn validator.Func) {
+	v.RegisterValidation(tag, fn)
+}
+
 func NewTypeValidator[T comparable](types []T) func(T) bool {
 	cpy := slices.Clone(types)
 
 	return func(t T) bool {
 		return slices.Contains(cpy, t)
+	}
+}
+
+func NewRegexValidator(pattern string) validator.Func {
+	re := regexp.MustCompile(pattern)
+
+	return func(fl validator.FieldLevel) bool {
+		return re.MatchString(fl.Field().String())
 	}
 }
 

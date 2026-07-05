@@ -136,7 +136,14 @@ func (s *tagsService) Delete(ctx context.Context, cmd commands.DeleteCommand[dom
 		return err
 	}
 
-	// FIXME: A tag should not be deletable if it has ever had an active version to ensure audit history can be maintained.
+	versions, err := s.versionsRepository.Find(ctx, ports.TagVersionFilters{TagID: cmd.ID})
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to retrieve versions", "tenant_id", cmd.TenantID, "tag_id", cmd.ID, "error", err)
+		return err
+	} else if len(versions) > 0 {
+		s.logger.WarnContext(ctx, "tag deletion failed; tag has active version", "tenant_id", cmd.TenantID, "tag_id", cmd.ID)
+		return domain.ErrTagHasActiveVersions
+	}
 
 	if err := s.tagsRepository.Delete(ctx, cmd.ID); err != nil {
 		s.logger.ErrorContext(ctx, "failed to delete tag", "tenant_id", cmd.TenantID, "tag_id", cmd.ID, "error", err)

@@ -157,6 +157,53 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Get submission facts
+// @description	Returns the canonical fact map for an accepted submission, keyed by tag paths.
+// @tags		Submissions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		referenceId path string true "Reference ID"
+// @success		200 {object} object "Canonical fact map keyed by tag paths"
+// @failure		404 {object} httputil.APIErrorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
+// @Router		/submissions/by-reference/{referenceId}/facts [get]
+func (h *Handlers) GetSubmissionFacts(w http.ResponseWriter, r *http.Request) {
+	tenantID := httputil.TenantFromContext(r.Context())
+	referenceID := h.getReferenceIDPathValue(r)
+	query := ports.NewFindSubmissionByIDQuery(tenantID, referenceID)
+	resultChan := make(chan result[domain.FactMap], 1)
+
+	go func() {
+		defer close(resultChan)
+
+		submission, err := h.app.API.Submissions.FindByReferenceID(r.Context(), query)
+		if err != nil {
+			resultChan <- result[domain.FactMap]{nil, err}
+			return
+		}
+
+		resultChan <- result[domain.FactMap]{submission.ToFactMap(), nil}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusOK, res.data)
+	}
+}
+
 // @summary		Get a submission status
 // @tags		Submissions
 // @accept		json

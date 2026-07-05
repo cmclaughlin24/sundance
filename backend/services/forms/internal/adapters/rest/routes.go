@@ -85,6 +85,7 @@ func NewRoutes(app *core.Application, options ServerOptions) http.Handler {
 
 			submissionsRoutes.Route("/by-reference/{referenceId}", func(submissionRoutes chi.Router) {
 				submissionRoutes.Get("/", h.GetSubmissionByReferenceID)
+				submissionRoutes.Get("/facts", h.GetSubmissionFacts) 
 				submissionRoutes.Get("/status", h.GetSubmissionStatus)
 			})
 		})

@@ -49,7 +49,7 @@ definitions:
         type: string
       isCollection:
         type: boolean
-      key:
+      keyPath:
         type: string
       nodeType:
         type: string
@@ -332,6 +332,8 @@ definitions:
     type: object
   SubmissionFieldValueDto:
     properties:
+      collectionIndex:
+        type: integer
       fieldId:
         type: string
       value: {}
@@ -394,8 +396,8 @@ definitions:
     - object
     type: string
     x-enum-varnames:
-    - TagValueKindPrimitive
-    - TagValueKindObject
+    - TagNodeTypePrimitive
+    - TagNodeTypeObject
   TagResponse:
     properties:
       createdAt:
@@ -404,9 +406,7 @@ definitions:
         type: string
       id:
         type: string
-      isCollection:
-        type: boolean
-      key:
+      keyPath:
         type: string
       nodeType:
         $ref: '#/definitions/TagNodeType'
@@ -1253,6 +1253,56 @@ paths:
       security:
       - BearerAuth: []
       summary: Get a submission by reference ID
+      tags:
+      - Submissions
+  /submissions/by-reference/{referenceId}/facts:
+    get:
+      consumes:
+      - application/json
+      description: Returns the canonical fact map for an accepted submission, keyed
+        by tag paths.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
+      - description: Reference ID
+        in: path
+        name: referenceId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Canonical fact map keyed by tag paths
+          schema:
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get submission facts
       tags:
       - Submissions
   /submissions/by-reference/{referenceId}/status:

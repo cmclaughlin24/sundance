@@ -5,9 +5,13 @@ import (
 	"sundance/backend/services/forms/internal/core/domain"
 )
 
+func init() {
+	validate.RegisterValidation("keypath", validate.NewRegexValidator(`^[a-zA-Z_][a-zA-Z0-9_-]*(\[\*\])?(\.[a-zA-Z_][a-zA-Z0-9_-]*(\[\*\])?)*$`))
+}
+
 type CreateTagCommand struct {
 	TenantID      string             `validate:"required"`
-	KeyPath       string             `validate:"required,nowhitespace"`
+	KeyPath       string             `validate:"required,nowhitespace,keypath"`
 	DisplayName   string             `validate:"required"`
 	NodeType      domain.TagNodeType `validate:"required"`
 	PrimitiveType *domain.TagPrimitiveType
