@@ -142,7 +142,7 @@ func (s *tagsService) Delete(ctx context.Context, cmd commands.DeleteCommand[dom
 		return err
 	} else if len(versions) > 0 {
 		s.logger.WarnContext(ctx, "tag deletion failed; tag has active version", "tenant_id", cmd.TenantID, "tag_id", cmd.ID)
-		return domain.ErrTagHasActiveVersions
+		return domain.ErrTagHasVersions
 	}
 
 	if err := s.tagsRepository.Delete(ctx, cmd.ID); err != nil {

@@ -58,5 +58,6 @@ func isBadRequest(err error) bool {
 		errors.Is(err, domain.ErrInvalidExprOperator) ||
 		errors.Is(err, domain.ErrInvalidJoinOperator) ||
 		errors.Is(err, services.ErrDuplicateFormKey) ||
-		errors.Is(err, services.ErrInvalidExpressionKey)
+		errors.Is(err, services.ErrInvalidExpressionKey) ||
+		errors.Is(err, errSubmissionStatus)
 }

@@ -13,7 +13,7 @@ var (
 	ErrInvalidTagNodeType          = fmt.Errorf("%w; node type", ErrInvalidTag)
 	ErrNodeTypeObjectPrimitiveType = fmt.Errorf("%w; node type object cannot have a primitive type", ErrInvalidTag)
 	ErrCollectionCount             = fmt.Errorf("%w; tag cannot contain more than one collection segment", ErrInvalidTag)
-	ErrTagHasActiveVersions        = fmt.Errorf("%w; form has at least one active version", ErrInvalidTag)
+	ErrTagHasVersions              = fmt.Errorf("%w; tag has at least one version", ErrInvalidTag)
 )
 
 type TagID string
@@ -30,8 +30,8 @@ const (
 type Tag struct {
 	ID            TagID
 	TenantID      string `validate:"required"`
-	KeyPath       string
-	DisplayName   string
+	KeyPath       string `validate:"required"`
+	DisplayName   string `validate:"required"`
 	NodeType      TagNodeType
 	PrimitiveType *TagPrimitiveType
 	CreatedAt     time.Time

@@ -1122,7 +1122,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Returns the canonical fact map for an accepted submission, keyed by tag paths.",
+                "description": "Returns the canonical fact map for an accepted submission, keyed by tag paths.\nA 400 is returned if the submission status is not ` + "`" + `accepted` + "`" + ` (e.g. pending, rejected, or failed).",
                 "consumes": [
                     "application/json"
                 ],
@@ -1173,6 +1173,12 @@ const docTemplate = `{
                         "description": "Canonical fact map keyed by tag paths",
                         "schema": {
                             "type": "object"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "404": {

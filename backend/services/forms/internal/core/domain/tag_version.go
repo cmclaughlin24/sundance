@@ -30,7 +30,7 @@ const (
 
 type TagVersion struct {
 	ID           TagVersionID
-	TagID        TagID
+	TagID        TagID `validate:"required"`
 	Version      int
 	Status       TagStatus
 	CreatedAt    time.Time

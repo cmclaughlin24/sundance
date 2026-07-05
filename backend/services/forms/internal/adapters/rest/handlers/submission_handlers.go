@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"sundance/backend/pkg/common/httputil"
@@ -10,6 +11,11 @@ import (
 	"sundance/backend/services/forms/internal/core/ports/commands"
 
 	"github.com/go-chi/chi/v5"
+)
+
+var (
+	errSubmissionStatus        = errors.New("submission status")
+	errSubmissionStatusPending = fmt.Errorf("%w; submission pending", errSubmissionStatus)
 )
 
 // @summary		Get all Submissions
@@ -159,6 +165,7 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 
 // @summary		Get submission facts
 // @description	Returns the canonical fact map for an accepted submission, keyed by tag paths.
+// @description	A 400 is returned if the submission status is not `accepted` (e.g. pending, rejected, or failed).
 // @tags		Submissions
 // @accept		json
 // @produce		json
@@ -168,6 +175,7 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
 // @param		referenceId path string true "Reference ID"
 // @success		200 {object} object "Canonical fact map keyed by tag paths"
+// @failure		400 {object} httputil.APIErrorResponse
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
@@ -184,6 +192,15 @@ func (h *Handlers) GetSubmissionFacts(w http.ResponseWriter, r *http.Request) {
 		submission, err := h.app.API.Submissions.FindByReferenceID(r.Context(), query)
 		if err != nil {
 			resultChan <- result[domain.FactMap]{nil, err}
+			return
+		}
+
+		switch submission.Status {
+		case domain.SubmissionStatusPending:
+			resultChan <- result[domain.FactMap]{nil, errSubmissionStatusPending}
+			return
+		case domain.SubmissionStatusRejected, domain.SubmissionStatusFailed:
+			resultChan <- result[domain.FactMap]{nil, errSubmissionStatus}
 			return
 		}
 
