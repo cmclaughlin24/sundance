@@ -8,12 +8,10 @@
 
 ---
 
-- **Feature Name:** (fill me in with a unique identifier, e.g. `forms-hub-request-portal-integration`)
 - **Start Date:** YYYY-MM-DD
 - **Status:** Draft | Under Review | Accepted | Rejected | Superseded
 - **Author(s):**
-- **Related ADRs:** (e.g. ADR-003, ADR-009)
-- **Related RFCs:** (e.g. RFC-0001)
+- **Related:** (e.g. ADR-003, ADR-009, RFC-0001)
 
 ---
 
@@ -28,27 +26,27 @@ What problem does this solve? What is the current state, and why is
 it insufficient? Include concrete use cases that illustrate the need
 for this change.
 
-## Changes Required
-
-Explicit list of behavioral or structural changes required by each
-system involved. This is the consumer/provider obligation checklist.
-
-### [System A]
-
-- Change 1
-- Change 2
-
-### [System B]
-
-- Change 1
-- Change 2
-
 ## Design
 
 ### Sequence
 
 Embed or reference the sequence diagram and provide a numbered
 walkthrough of each step.
+
+### Changes Required
+
+Explicit list of behavioral or structural changes required by each
+system involved. This is the consumer/provider obligation checklist.
+
+#### [System A]
+
+- Change 1
+- Change 2
+
+#### [System B]
+
+- Change 1
+- Change 2
 
 ### API Contracts
 
@@ -62,7 +60,7 @@ each asynchronous interaction.
 
 ## Drawbacks
 
-Why should we *not* do this? What are the risks, costs, or
+Why should we _not_ do this? What are the risks, costs, or
 complexities introduced by this proposal?
 
 ## Rationale and Alternatives
