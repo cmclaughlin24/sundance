@@ -127,13 +127,20 @@ func (s *Submission) Accept(facts []*CanonicalFact) {
 	s.UpdatedAt = Now()
 	s.addAttempt(s.Status, nil)
 
-	p, _ := json.Marshal(s.ToFactMap())
+	p, _ := json.Marshal(submissionAcceptedPayload{
+		ReferenceID: s.ReferenceID,
+		TenantID:    s.TenantID,
+		FormID:      s.FormID,
+		VersionID:   s.VersionID,
+		Facts:       s.ToFactMap(),
+	})
 	s.addEvent(EventTypeSubmissionAccepted, p)
 }
 
 func (s *Submission) Fail(err error) {
 	s.Status = SubmissionStatusFailed
 	s.UpdatedAt = Now()
+
 	s.addAttempt(s.Status, err)
 }
 
@@ -141,8 +148,15 @@ func (s *Submission) Reject(err error) {
 	s.Status = SubmissionStatusRejected
 	s.UpdatedAt = Now()
 	s.addAttempt(s.Status, err)
-	// FIXME: Create event payload.
-	s.addEvent(EventTypeSubmissionRejected, nil)
+
+	p, _ := json.Marshal(submissionRejectedPayload{
+		ReferenceID: s.ReferenceID,
+		TenantID:    s.TenantID,
+		FormID:      s.FormID,
+		VersionID:   s.VersionID,
+		Reason:      err.Error(),
+	})
+	s.addEvent(EventTypeSubmissionRejected, p)
 }
 
 func (s *Submission) Reset() {
@@ -206,4 +220,20 @@ func setNestedValue(node map[string]any, segments []string, value any, collectio
 	}
 
 	setNestedValue(node[key].(map[string]any), segments[1:], value, collectionIndex)
+}
+
+type submissionAcceptedPayload struct {
+	ReferenceID ReferenceID   `json:"referenceId"`
+	TenantID    string        `json:"tenantId"`
+	FormID      FormID        `json:"formId"`
+	VersionID   FormVersionID `json:"versionId"`
+	Facts       FactMap       `json:"facts"`
+}
+
+type submissionRejectedPayload struct {
+	ReferenceID ReferenceID   `json:"referenceId"`
+	TenantID    string        `json:"tenantId"`
+	FormID      FormID        `json:"formId"`
+	VersionID   FormVersionID `json:"versionId"`
+	Reason      string        `json:"reason"`
 }
