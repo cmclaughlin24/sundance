@@ -200,9 +200,31 @@ complexities introduced by this proposal?
 
 ## Rationale and Alternatives
 
-- Why is this design the best in the space of possible designs?
-- What other designs were considered and why were they not chosen?
-- What is the impact of not doing this?
+The two-phase asynchronous integration — synchronous intake via `POST /v1/api/submissions` followed by event-driven result delivery — was chosen for the following reasons:
+
+- **Reusability:** Forms Hub is purpose-built for form definition, validation, and canonical mapping. The legacy tooling it replaces undergoes approximately 100 changes per month, making a dedicated, independently deployable forms service a strategic necessity rather than an implementation convenience. Delegating form concerns to Forms Hub avoids duplicating this complexity in the Request Portal.
+
+- **Separation of concerns:** Form validation, data source lookup, and canonical tag mapping are owned by Forms Hub. Embedding this logic in the Request Portal would couple two distinct domains and create a maintenance burden as form requirements evolve.
+
+- **Decoupled throughput:** The asynchronous model ensures that Request Portal cart item creation is not blocked by the latency of submission processing. Validation, data source lookups, and canonical mapping can be slow and variable; holding the intake request open until processing completes would expose the Request Portal to that variability.
+
+### Alternatives Considered
+
+**Synchronous submission endpoint (`POST /v1/api/submissions/sync`)**
+
+A synchronous variant of the submissions endpoint was considered — one that performs validation and canonical mapping inline before returning, rather than deferring to a background worker. This would simplify the Request Portal integration by eliminating the need to handle an asynchronous result.
+
+This was not chosen for two reasons: first, if asynchronous validation steps (e.g. external data source lookups) are introduced in the future, a synchronous endpoint would couple intake throughput directly to that latency; second, it would tightly couple the Request Portal's cart creation flow to Forms Hub's processing time, introducing operational risk if Forms Hub degrades.
+
+**Polling for submission status**
+
+Rather than consuming result events, the Request Portal could poll `GET /v1/api/submissions/by-reference/{referenceId}/status` until a terminal status is reached. This would eliminate the need for the Request Portal to implement an event consumer or webhook receiver.
+
+This was not chosen because it places a heavier burden on the Request Portal — it must manage polling intervals, handle timeouts, and deal with long-running submissions gracefully. Event-driven delivery inverts this burden: Forms Hub notifies the Request Portal when processing is complete, with no polling overhead.
+
+### Impact of Not Integrating
+
+Without this integration, Form Catalog Items cannot be supported in the request cart. There is no current workaround — this is a feature gap that blocks the Request Portal from consuming form-based catalog items entirely.
 
 ## Unresolved Questions
 
