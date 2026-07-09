@@ -82,6 +82,59 @@ No changes are required. The delivery mechanism for submission results is unreso
 
 ### API Contracts
 
+#### `POST /api/cart/items`
+
+**Headers**
+
+| Header              | Required | Description                      |
+| ------------------- | -------- | -------------------------------- |
+| `X-WF-REQUEST-DATE` | Yes      | Request date in ISO 8601 format  |
+| `X-REQUEST-DATE`    | Yes      | Unique request identifier (UUID) |
+| `X-CORRELATION-ID`  | Yes      | Correlation identifier (UUID)    |
+| `X=WF-CLIENT-ID`    | Yes      | Client identifier (e.g. `iamx`   |
+
+**Request**
+
+```json
+{
+  "requesteeElid": "<string>",
+  "parentCartDetails": {
+    "<key>": "<string>"
+  },
+  "items": [
+    {
+      "type": "form",
+      "payload": {
+        "fieldId": "<string>",
+        "versionId": "<string>",
+        "values": [
+          {
+            "fieldId": "<string>",
+            "value": "<any>",
+            "collectionIndex": "<int | omitted>"
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+> **Note**: The `payload` field is a freeform map in the existing schema (`"key": "string"`). If the Request Portal implementation stringifies the submission data on intake and unmarshals it before forwarding to Forms Hub, the wire format for the `payload` may remain a flat string map rather than the structured object shown above. The internal representation is an implementation detail of Request Portal; what matters for this contract is that the extracted `formId`, `versionId`, and `values` are forwarded correctly to `POST /v1/api/submissions`.
+
+**Response - `200 OK`**
+
+The response schema (`AddCartItemsResponse`) is defined by Request Portal. At minimum it must include a reference to the submission for each Form Catalog Item so the actor can track its status.
+
+**Error Responses**
+
+| Status | Condition                                                 |
+| ------ | --------------------------------------------------------- |
+| `400`  | Missing or invalid request body or required headers       |
+| `500`  | Unexpected server error, including Forms Hub call failure |
+
+---
+
 #### `POST /v1/api/submissions`
 
 **Headers**
@@ -144,12 +197,15 @@ No changes are required. The delivery mechanism for submission results is unreso
 
 ### Event Contracts
 
-Events are published to Kafka by the Forms Hub outbox relay. The partition key for all events is the `SubmissionID`.
+Events are published to Kafka by the Forms Hub outbox relay. All submission events share a single topic. The event type is communicated via a Kafka message header.
+
+**Topic:** `submission`
+**Partition key:** `SubmissionID`
+**Event type header:** `eventType: accepted | rejected | failed`
 
 #### `submission.accepted`
 
-**Topic:** `submission.accepted`
-**Partition key:** `SubmissionID`
+**Header:** `eventType: accepted`
 
 ```json
 {
@@ -176,8 +232,7 @@ The `facts` field is a nested map built from dot-delimited canonical tag key pat
 
 #### `submission.rejected`
 
-**Topic:** `submission.rejected`
-**Partition key:** `SubmissionID`
+**Header:** `eventType: rejected`
 
 ```json
 {
@@ -191,7 +246,19 @@ The `facts` field is a nested map built from dot-delimited canonical tag key pat
 
 #### `submission.failed`
 
-The `failed` status does not currently produce a Kafka event — see [Unresolved Question #3](#unresolved-questions).
+**Header:** `eventType: failed`
+
+> **Note:** The `submissionFailedPayload` struct is defined in Forms Hub but the event is not yet emitted — `Fail()` does not call `addEvent` and no `EventTypeSubmissionFailed` constant exists. This is an incomplete implementation. See [Unresolved Question #2](#unresolved-questions).
+
+```json
+{
+  "referenceId": "<UUIDv7>",
+  "tenantId": "<string>",
+  "formId": "<UUIDv7>",
+  "versionId": "<UUIDv7>",
+  "reason": "<string>"
+}
+```
 
 ## Drawbacks
 
@@ -235,7 +302,7 @@ Without this integration, Form Catalog Items cannot be supported in the request 
 
 2. **Outbound authentication from Request Portal to Forms Hub**: The mechanism by which the Request Portal authenticates its calls to `POST /v1/api/submissions` is not yet decided. Candidates include service-to-service JWT (client credentials flow via PingFederate), mTLS, or an API key. The chosen approach must align with the enterprise security posture and the authentication infrastructure available to the Request Portal.
 
-3. **`submission.failed` event**: A `failed` submission does not currently emit a Kafka event. Forms Hub records the failure internally and exposes a replay endpoint (`POST /v1/api/submissions/{submissionId}/replay`). For the Request Portal to react to a `failed` outcome, either a `submission.failed` Kafka event must be introduced, or an alternative notification mechanism must be defined.
+3. **`submission.failed` event**: The `submissionFailedPayload` struct is defined in Forms Hub but the event is not yet emitted — `Fail()` does not call `addEvent` and no `EventTypeSubmissionFailed` constant exists. The implementation must be completed before the Request Portal can react to a `failed` outcome.
 
 4. **Orphaned submission recovery:** If the Request Portal fails to persist the `submissionReferenceId` after a successful `POST /v1/api/submissions` call, the submission is orphaned in Forms Hub with no corresponding cart item link. A recovery or reconciliation strategy for this state has not been defined.
 

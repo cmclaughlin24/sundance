@@ -3,7 +3,6 @@ package publishers
 import (
 	"context"
 	"log/slog"
-	"strings"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
 
@@ -31,9 +30,10 @@ func NewKafkaPublisher(logger *slog.Logger, options *KafkaOptions) ports.Publish
 
 func (p *KafkaPublisher) Publish(ctx context.Context, event domain.Event) error {
 	message := kafka.Message{
-		Topic: topic(event),
-		Key:   []byte(event.AggregateID),
-		Value: event.Payload,
+		Topic:   string(event.AggregateType),
+		Headers: []kafka.Header{{Key: "eventType", Value: []byte(event.Type)}},
+		Key:     []byte(event.AggregateID),
+		Value:   event.Payload,
 	}
 
 	if err := p.writer.WriteMessages(ctx, message); err != nil {
@@ -42,8 +42,4 @@ func (p *KafkaPublisher) Publish(ctx context.Context, event domain.Event) error 
 	}
 
 	return nil
-}
-
-func topic(event domain.Event) string {
-	return strings.Join([]string{string(event.AggregateType), string(event.Type)}, ".")
 }

@@ -230,6 +230,14 @@ type submissionAcceptedPayload struct {
 	Facts       FactMap       `json:"facts"`
 }
 
+type submissionFailedPayload struct {
+	ReferenceID ReferenceID   `json:"referenceId"`
+	TenantID    string        `json:"tenantId"`
+	FormID      FormID        `json:"formId"`
+	VersionID   FormVersionID `json:"versionId"`
+	Reason      string        `json:"reason"`
+}
+
 type submissionRejectedPayload struct {
 	ReferenceID ReferenceID   `json:"referenceId"`
 	TenantID    string        `json:"tenantId"`
