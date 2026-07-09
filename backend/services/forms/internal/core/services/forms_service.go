@@ -227,7 +227,7 @@ func (s *formsService) CreateVersion(ctx context.Context, cmd *commands.CreateFo
 		return nil, err
 	}
 
-	version, err := domain.NewFormVersion(cmd.FormID, versionNum, domain.FormVersionStatusDraft)
+	version, err := domain.NewFormVersion(cmd.FormID, versionNum, domain.FormVersionStatusDraft, cmd.Metadata)
 	if err != nil {
 		s.logger.WarnContext(ctx, "version creation failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "error", err)
 		return nil, err
@@ -287,6 +287,11 @@ func (s *formsService) UpdateVersion(ctx context.Context, cmd *commands.UpdateFo
 	}
 
 	if err := version.ReplacePages(pages...); err != nil {
+		s.logger.WarnContext(ctx, "version update failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
+		return nil, err
+	}
+
+	if err := version.Update(cmd.Metadata); err != nil {
 		s.logger.WarnContext(ctx, "version update failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}

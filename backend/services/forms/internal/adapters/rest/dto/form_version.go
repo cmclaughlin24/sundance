@@ -7,7 +7,8 @@ import (
 )
 
 type UpsertFormVersionRequest struct {
-	Pages []PageRequest `json:"pages" validate:"dive"`
+	Metadata map[string]string `json:"metadata,omitempty"`
+	Pages    []PageRequest     `json:"pages" validate:"dive"`
 }
 
 type FormVersionResponse struct {
@@ -15,6 +16,7 @@ type FormVersionResponse struct {
 	FormID        domain.FormID            `json:"formId"`
 	Version       int                      `json:"version"`
 	Status        domain.FormVersionStatus `json:"status"`
+	Metadata      map[string]string        `json:"metadata"`
 	PublishedByID string                   `json:"publishedById"`
 	PublishedAt   time.Time                `json:"publishedAt"`
 	RetiredByID   string                   `json:"retiredById"`
@@ -41,6 +43,7 @@ func FormVersionToResponse(version *domain.FormVersion) *FormVersionResponse {
 		FormID:        version.FormID,
 		Version:       version.Version,
 		Status:        version.Status,
+		Metadata:      version.Metadata,
 		PublishedByID: version.PublishedBy,
 		PublishedAt:   version.PublishedAt,
 		RetiredByID:   version.RetiredBy,

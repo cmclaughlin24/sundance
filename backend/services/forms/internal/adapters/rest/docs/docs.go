@@ -2472,6 +2472,12 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "pages": {
                     "type": "array",
                     "items": {
@@ -2932,6 +2938,12 @@ const docTemplate = `{
         "UpsertFormVersionRequest": {
             "type": "object",
             "properties": {
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "pages": {
                     "type": "array",
                     "items": {

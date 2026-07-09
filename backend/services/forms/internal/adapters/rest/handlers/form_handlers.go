@@ -357,7 +357,7 @@ func (h *Handlers) CreateFormVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultChan := make(chan result[*domain.FormVersion], 1)
-	command := commands.NewCreateFormVersionCommand(tenantID, formID, pages)
+	command := commands.NewCreateFormVersionCommand(tenantID, formID, body.Metadata, pages)
 
 	go func() {
 		defer close(resultChan)
@@ -419,7 +419,7 @@ func (h *Handlers) UpdateFormVersion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resultChan := make(chan result[*domain.FormVersion], 1)
-	command := commands.NewUpdateFormVersionCommand(tenantID, versionID, formID, pages)
+	command := commands.NewUpdateFormVersionCommand(tenantID, versionID, formID, body.Metadata, pages)
 
 	go func() {
 		defer close(resultChan)

@@ -2461,6 +2461,12 @@
                 "id": {
                     "type": "string"
                 },
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "pages": {
                     "type": "array",
                     "items": {
@@ -2921,6 +2927,12 @@
         "UpsertFormVersionRequest": {
             "type": "object",
             "properties": {
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
                 "pages": {
                     "type": "array",
                     "items": {

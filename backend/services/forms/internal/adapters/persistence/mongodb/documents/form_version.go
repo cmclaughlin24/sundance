@@ -6,17 +6,18 @@ import (
 )
 
 type FormVersionDocument struct {
-	ID          string          `bson:"_id"`
-	FormID      string          `bson:"form_id"`
-	Version     int             `bson:"version"`
-	Status      string          `bson:"status"`
-	PublishedBy string          `bson:"published_by"`
-	PublishedAt time.Time       `bson:"published_at"`
-	RetiredBy   string          `bson:"retired_by"`
-	RetiredAt   time.Time       `bson:"retired_at"`
-	CreatedAt   time.Time       `bson:"created_at"`
-	UpdatedAt   time.Time       `bson:"updated_at"`
-	Pages       []*PageDocument `bson:"pages"`
+	ID          string            `bson:"_id"`
+	FormID      string            `bson:"form_id"`
+	Version     int               `bson:"version"`
+	Status      string            `bson:"status"`
+	Metadata    map[string]string `bson:"metadata"`
+	PublishedBy string            `bson:"published_by"`
+	PublishedAt time.Time         `bson:"published_at"`
+	RetiredBy   string            `bson:"retired_by"`
+	RetiredAt   time.Time         `bson:"retired_at"`
+	CreatedAt   time.Time         `bson:"created_at"`
+	UpdatedAt   time.Time         `bson:"updated_at"`
+	Pages       []*PageDocument   `bson:"pages"`
 }
 
 func ToFormVersionDocument(v *domain.FormVersion) (*FormVersionDocument, error) {
@@ -38,6 +39,7 @@ func ToFormVersionDocument(v *domain.FormVersion) (*FormVersionDocument, error) 
 		FormID:      string(v.FormID),
 		Version:     v.Version,
 		Status:      string(v.Status),
+		Metadata:    v.Metadata,
 		PublishedBy: v.PublishedBy,
 		PublishedAt: v.PublishedAt,
 		RetiredBy:   v.RetiredBy,
@@ -54,6 +56,7 @@ func FromFormVersionDocument(v *FormVersionDocument) (*domain.FormVersion, error
 		domain.FormID(v.FormID),
 		v.Version,
 		domain.FormVersionStatus(v.Status),
+		v.Metadata,
 		v.PublishedBy,
 		v.PublishedAt,
 		v.RetiredBy,

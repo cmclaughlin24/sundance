@@ -368,8 +368,8 @@ func Test_handlers_GetFormVersions(t *testing.T) {
 		{
 			"should yield OK if the request is successful with results",
 			func(ctx context.Context, query ports.FindFormVersionsQuery) ([]*domain.FormVersion, error) {
-				v1, _ := domain.NewFormVersion("form-1", 1, domain.FormVersionStatusDraft)
-				v2, _ := domain.NewFormVersion("form-1", 2, domain.FormVersionStatusActive)
+			v1, _ := domain.NewFormVersion("form-1", 1, domain.FormVersionStatusDraft, nil)
+			v2, _ := domain.NewFormVersion("form-1", 2, domain.FormVersionStatusActive, nil)
 				return []*domain.FormVersion{v1, v2}, nil
 			},
 			http.StatusOK,
@@ -442,7 +442,7 @@ func Test_handlers_GetFormVersion(t *testing.T) {
 		{
 			"should yield OK if the request is successful",
 			func(ctx context.Context, query ports.FindFormVersionByIDQuery) (*domain.FormVersion, error) {
-				v, _ := domain.NewFormVersion(query.ID, 1, domain.FormVersionStatusDraft)
+				v, _ := domain.NewFormVersion(query.ID, 1, domain.FormVersionStatusDraft, nil)
 				return v, nil
 			},
 			http.StatusOK,
@@ -503,8 +503,8 @@ func Test_handlers_CreateFormVersion(t *testing.T) {
 		{
 			"should yield CREATED if the request is successful",
 			func(ctx context.Context, command *commands.CreateFormVersionCommand) (*domain.FormVersion, error) {
-				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusDraft)
-				return v, nil
+			v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusDraft, nil)
+			return v, nil
 			},
 			http.StatusCreated,
 			dto.UpsertFormVersionRequest{
@@ -564,8 +564,8 @@ func Test_handlers_UpdateFormVersion(t *testing.T) {
 		{
 			"should yield OK if the request is successful",
 			func(ctx context.Context, command *commands.UpdateFormVersionCommand) (*domain.FormVersion, error) {
-				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusDraft)
-				return v, nil
+			v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusDraft, nil)
+			return v, nil
 			},
 			http.StatusOK,
 			dto.UpsertFormVersionRequest{
@@ -625,7 +625,7 @@ func Test_handlers_PublishFormVersion(t *testing.T) {
 		{
 			"should yield OK if the request is successful",
 			func(ctx context.Context, command commands.PublishFormVersionCommand) (*domain.FormVersion, error) {
-				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusActive)
+				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusActive, nil)
 				return v, nil
 			},
 			http.StatusOK,
@@ -676,7 +676,7 @@ func Test_handlers_RetireFormVersion(t *testing.T) {
 		{
 			"should yield OK if the request is successful",
 			func(ctx context.Context, command commands.RetireFormVersionCommand) (*domain.FormVersion, error) {
-				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusRetired)
+				v, _ := domain.NewFormVersion(command.FormID, 1, domain.FormVersionStatusRetired, nil)
 				return v, nil
 			},
 			http.StatusOK,

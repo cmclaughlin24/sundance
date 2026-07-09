@@ -149,6 +149,10 @@ definitions:
         type: string
       id:
         type: string
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
       pages:
         items:
           $ref: '#/definitions/PageResponse'
@@ -464,6 +468,10 @@ definitions:
     type: object
   UpsertFormVersionRequest:
     properties:
+      metadata:
+        additionalProperties:
+          type: string
+        type: object
       pages:
         items:
           $ref: '#/definitions/PageRequest'

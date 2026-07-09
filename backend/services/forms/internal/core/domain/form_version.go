@@ -32,6 +32,7 @@ type FormVersion struct {
 	FormID      FormID            `validate:"required"`
 	Version     int               `validate:"required,min=1"`
 	Status      FormVersionStatus `validate:"required"`
+	Metadata    map[string]string
 	PublishedBy string
 	PublishedAt time.Time
 	RetiredBy   string
@@ -41,7 +42,7 @@ type FormVersion struct {
 	pages       PositionElements[*Page]
 }
 
-func NewFormVersion(formID FormID, version int, status FormVersionStatus) (*FormVersion, error) {
+func NewFormVersion(formID FormID, version int, status FormVersionStatus, metadata map[string]string) (*FormVersion, error) {
 	if !isValidFormVersionStatus(status) {
 		return nil, ErrInvalidVersionStatus
 	}
@@ -51,6 +52,7 @@ func NewFormVersion(formID FormID, version int, status FormVersionStatus) (*Form
 		FormID:    formID,
 		Version:   version,
 		Status:    status,
+		Metadata:  metadata,
 		pages:     make(PositionElements[*Page], 0),
 		CreatedAt: Now(),
 	}
@@ -67,6 +69,7 @@ func HydrateFormVersion(
 	formID FormID,
 	version int,
 	status FormVersionStatus,
+	metadata map[string]string,
 	publishedBy string,
 	publishedAt time.Time,
 	retiredBy string,
@@ -79,6 +82,7 @@ func HydrateFormVersion(
 		FormID:      formID,
 		Version:     version,
 		Status:      status,
+		Metadata:    metadata,
 		PublishedBy: publishedBy,
 		PublishedAt: publishedAt,
 		RetiredBy:   retiredBy,
@@ -152,6 +156,13 @@ func (v *FormVersion) ReplacePages(pages ...*Page) error {
 		return err
 	}
 
+	v.UpdatedAt = Now()
+
+	return nil
+}
+
+func (v *FormVersion) Update(metadata map[string]string) error {
+	v.Metadata = metadata
 	v.UpdatedAt = Now()
 
 	return nil
