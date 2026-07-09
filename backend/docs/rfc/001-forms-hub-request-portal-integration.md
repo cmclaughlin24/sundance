@@ -195,8 +195,11 @@ The `failed` status does not currently produce a Kafka event — see [Unresolved
 
 ## Drawbacks
 
-Why should we _not_ do this? What are the risks, costs, or
-complexities introduced by this proposal?
+- **Forms Hub availability dependency:** Path B introduces a runtime dependency on Forms Hub at cart item creation time. If Forms Hub is unavailable, `POST /api/cart/items` will fail for Form Catalog Items. Standard Catalog Items (Path A) are unaffected. The Request Portal must handle this failure gracefully and surface a meaningful error to the actor.
+
+- **Orphaned submission risk:** If the Request Portal successfully calls `POST /v1/api/submissions` but fails to persist the `submissionReferenceId` against the cart item (step 3), the submission exists in Forms Hub but is unlinked from the cart. There is currently no recovery strategy for this state — see [Unresolved Question #4](#unresolved-questions).
+
+- **Pending cart item timeout:** A Form Catalog Item cart item remains in a `pending` state until a submission result event is received. If the event is never delivered — due to a processing failure or delivery gap — the cart item remains pending indefinitely. A timeout strategy is not yet defined — see [Unresolved Question #5](#unresolved-questions).
 
 ## Rationale and Alternatives
 
@@ -234,7 +237,16 @@ Without this integration, Form Catalog Items cannot be supported in the request 
 
 3. **`submission.failed` event**: A `failed` submission does not currently emit a Kafka event. Forms Hub records the failure internally and exposes a replay endpoint (`POST /v1/api/submissions/{submissionId}/replay`). For the Request Portal to react to a `failed` outcome, either a `submission.failed` Kafka event must be introduced, or an alternative notification mechanism must be defined.
 
+4. **Orphaned submission recovery:** If the Request Portal fails to persist the `submissionReferenceId` after a successful `POST /v1/api/submissions` call, the submission is orphaned in Forms Hub with no corresponding cart item link. A recovery or reconciliation strategy for this state has not been defined.
+
+5. **Pending cart item timeout:** A cart item in `pending` state will remain so indefinitely if a submission result event is never received. A timeout threshold and ownership (likely the Request Portal) have not been defined.
+
+6. **Tag format requirements for `submission.accepted` facts:** The `facts` map in the `submission.accepted` payload is built from canonical tag key paths defined in Forms Hub. For the Request Portal to correctly consume this payload, the tag keys and structure must be agreed upon and standardized between the two teams. Specifically: which tag keys are required, what value types are expected at each leaf, and how collection segments (`[]`) map to the Request Portal's internal data model must be formally defined before implementation begins.
+
+7. **Submission amendment:** An actor may need to update form field values after a Form Catalog Item has been added to the cart. For this release, an amendment is handled by creating a new submission via `POST /v1/api/submissions`, replacing the existing `submissionReferenceId` on the cart item, and returning the cart item to `pending` state while the new submission is processed. The design of the cart item update endpoint and the handling of the superseded submission in Forms Hub must be defined.
+
 ## Future Possibilities
 
-What natural extensions or follow-on work does this proposal enable?
-This is not a commitment — just a space to capture related ideas.
+- **Submission amendments:** For this release, amendments are handled by creating a new submission. A dedicated amendment endpoint in Forms Hub (e.g. `POST /v1/api/submissions/{submissionId}/amend`) could provide a more explicit contract in future releases, preserving the submission history and reducing ambiguity around which submission is authoritative for a given cart item.
+
+- **Audit system consumers:** The `submission.accepted` and `submission.rejected` Kafka events are published to named topics and may be consumed by additional downstream systems in the future, such as audit or compliance services, without requiring changes to either Forms Hub or the Request Portal.
