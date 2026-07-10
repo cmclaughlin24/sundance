@@ -295,24 +295,13 @@ func (s *submissionJobsService) shouldValidate(ctx context.Context, rg ruleByTyp
 }
 
 func (s *submissionJobsService) updateSubmission(ctx context.Context, submission *domain.Submission) error {
-	txCtx, err := s.repository.Database.BeginTx(ctx)
-	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to begin transaction", "submission_id", submission.ID, "error", err)
-		return err
-	}
-
-	defer s.repository.Database.RollbackTx(txCtx)
-
-	_, err = s.repository.Submissions.Upsert(txCtx, submission)
+	_, err := s.repository.Submissions.Upsert(ctx, submission)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to upsert submission", "submission_id", submission.ID, "error", err)
 		return err
 	}
 
-	if err := s.repository.Database.CommitTx(txCtx); err != nil {
-		s.logger.ErrorContext(ctx, "failed to commit transaction", "submission_id", submission.ID, "error", err)
-		return err
-	}
+	submission.DrainEvents()
 
 	return nil
 }

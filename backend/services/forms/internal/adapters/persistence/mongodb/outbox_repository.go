@@ -13,6 +13,19 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
 )
 
+var (
+	outboxIndexes = []mongo.IndexModel{
+		{
+			Keys: bson.D{
+				{Key: "status", Value: 1},
+				{Key: "attempts", Value: 1},
+				{Key: "created_at", Value: 1},
+			},
+			Options: options.Index(),
+		},
+	}
+)
+
 type mongoDBOutboxRepository struct {
 	base *database.MongoDBRepository[documents.EventDocument]
 }
@@ -24,7 +37,16 @@ func newMongoDBOutboxRepository(db *mongo.Database, logger *slog.Logger) (ports.
 	)
 	repository := &mongoDBOutboxRepository{base}
 
+	if err := repository.migrate(context.Background()); err != nil {
+		return nil, err
+	}
+
 	return repository, nil
+}
+
+func (r *mongoDBOutboxRepository) migrate(ctx context.Context) error {
+	_, err := r.base.Collection().Indexes().CreateMany(ctx, outboxIndexes)
+	return err
 }
 
 func (r *mongoDBOutboxRepository) Find(ctx context.Context, filters ports.FindEventsFilter) ([]*domain.Event, error) {
@@ -34,10 +56,8 @@ func (r *mongoDBOutboxRepository) Find(ctx context.Context, filters ports.FindEv
 	}
 
 	f := bson.M{
-		"attempts": bson.M{"$lt": filters.RetryLimit},
-		"$or": []bson.M{
-			{"created_at": bson.M{"$gte": filters.CreatedAfter}},
-		},
+		"attempts":   bson.M{"$lt": filters.RetryLimit},
+		"created_at": bson.M{"$gte": filters.CreatedAfter},
 	}
 
 	if len(filters.Statuses) > 0 {

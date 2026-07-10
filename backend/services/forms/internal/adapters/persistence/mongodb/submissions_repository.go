@@ -162,7 +162,6 @@ func (r *mongoDBSubmissionsRepository) Upsert(ctx context.Context, s *domain.Sub
 		return nil, err
 	}
 
-	s.DrainEvents()
 
 	return documents.FromSubmissionDocument(&result)
 }
