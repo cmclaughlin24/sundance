@@ -288,7 +288,7 @@ C4Component
 | **Rule Evaluator**             | `ExprRuleEvaluator` compiles rule expressions into type-safe boolean programs using `expr-lang/expr` and evaluates them against a `RuleEvaluationContext` (field key → submitted value map).                                                                                                                                                       | `adapters/evaluators/`  |
 | **Persistence Adapters**       | MongoDB-backed and in-memory repository implementations for all aggregates. Driver is selected at startup via configuration.                                                                                                                                                                                                                       | `adapters/persistence/` |
 | **Submissions Worker**         | Leader-elected background worker. On each tick, fetches pending submissions and runs the full processing pipeline: rule evaluation, field validation, canonical tag mapping, and status transition to `accepted` or `rejected`. Retries with exponential backoff; non-retryable errors (validation failures, missing strategy) reject immediately. | `adapters/workers/`     |
-| **Outbox Relay Worker**        | Background worker running on all replicas concurrently (currently using `InMemoryElector`). On each tick, calls `OutboxRepository.Claim` to atomically acquire a batch (default: 10) of eligible outbox events under a 5-minute distributed lease, then publishes each to the message broker. Mutual exclusion is enforced at the document level by the claim lease rather than by leader election. Retries on broker failure with exponential backoff.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | `adapters/workers/`     |
+| **Outbox Relay Worker**        | Background worker running on all replicas concurrently (currently using `InMemoryElector`). On each tick, calls `OutboxRepository.Claim` to atomically acquire a batch (default: 10) of eligible outbox events under a 5-minute distributed lease, then publishes each to the message broker. Mutual exclusion is enforced at the document level by the claim lease rather than by leader election. On publish failure, marks the event as `error` and clears the lease; the event is reclaimed on the next tick subject to `retryLimit`.                                                                                                                                                                                                                                                                                                                                                                                                                     | `adapters/workers/`     |
 
 #### 5.2.3 Whitebox: `pkg/` Shared Library
 
@@ -450,19 +450,16 @@ flowchart TD
     E --> F[Publish canonical submission event\nto message broker]
     F --> G{Publish error?}
     G -->|no| H[Mark event as delivered\nin outbox collection]
-    G -->|yes| I{Retryable?}
-    I -->|yes| J[Exponential backoff\nretry up to retryLimit]
-    J --> F
-    I -->|no| K[Mark event as failed]
+    G -->|yes| I[Mark event as error\nclear lease via Upsert\neligible for reclaim on next tick]
     H --> L[Done]
-    K --> L
+    I --> L
 ```
 
 | Building Block              | Responsibility                                                                                                                                                                              | Source                                    |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
 | **`OutboxRepository`**      | Secondary port. `Claim` atomically transitions a batch of eligible events to `processing` and stamps a `locked_until` lease, returning only those events. Eligibility: status `pending` or `error`, or status `processing` with `locked_until` in the past. `Upsert` persists the outcome (delivered or failed) and clears the `locked_until` field via `$unset`. | `core/ports/secondary.go`                 |
 | **`Publisher`**             | Secondary port. `Publish` sends the canonical submission event to the message broker. Called directly by the Outbox Relay Worker per event.                                                  | `core/ports/secondary.go`                 |
-| **`OutboxRelayWorker`**     | Background worker. Runs on all replicas concurrently using `InMemoryElector` (all replicas act as leaders); mutual exclusion is delegated entirely to the `Claim` lease. On each tick calls `OutboxRepository.Claim` to atomically acquire a batch (default: 10) of eligible events under a 5-minute lease, calls `Publisher.Publish` for each, and calls `OutboxRepository.Upsert` to record the outcome and clear the lease. Bypasses the primary port layer — operates entirely on secondary ports via the `core.Application` struct. | `adapters/workers/outbox_relay_worker.go` |
+| **`OutboxRelayWorker`**     | Background worker. Runs on all replicas concurrently using `InMemoryElector` (all replicas act as leaders); mutual exclusion is delegated entirely to the `Claim` lease. On each tick calls `OutboxRepository.Claim` to atomically acquire a batch (default: 10) of eligible events under a 5-minute lease, calls `Publisher.Publish` for each, and calls `OutboxRepository.Upsert` to record the outcome and clear the lease. On publish failure, marks the event as `error` and clears the lease; the event becomes eligible for reclaim on the next tick subject to `retryLimit`. Bypasses the primary port layer — operates entirely on secondary ports via the `core.Application` struct. | `adapters/workers/outbox_relay_worker.go` |
 
 ## 6. Runtime View
 
