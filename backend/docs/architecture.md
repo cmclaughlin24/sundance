@@ -443,7 +443,7 @@ Once the Submissions Worker transitions a submission to `accepted` and writes a 
 
 ```mermaid
 flowchart TD
-    A[OutboxRelayWorker — on each tick\nall replicas run concurrently] --> B[OutboxRepository.Claim\nAtomically claim batch of eligible events\n(pending / error / processing with expired lease)\nStamp locked_until lease]
+    A[OutboxRelayWorker — on each tick\nall replicas run concurrently] --> B["OutboxRepository.Claim\nAtomically claim batch of eligible events\npending / error / processing with expired lease\nStamp locked_until lease"]
     B --> C{Events found?}
     C -->|no| D[No-op — wait for next tick]
     C -->|yes| E[For each Event]
