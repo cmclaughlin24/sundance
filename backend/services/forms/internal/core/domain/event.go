@@ -17,9 +17,10 @@ type EventType string
 type EventStatus string
 
 const (
-	EventStatusPending   EventStatus = "pending"
-	EventStatusCompleted EventStatus = "completed"
-	EventStatusError     EventStatus = "error"
+	EventStatusPending    EventStatus = "pending"
+	EventStatusProcessing EventStatus = "processing"
+	EventStatusCompleted  EventStatus = "completed"
+	EventStatusError      EventStatus = "error"
 )
 
 type Event struct {

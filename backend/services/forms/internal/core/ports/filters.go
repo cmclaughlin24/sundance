@@ -24,9 +24,9 @@ type TagVersionFilters struct {
 	Statuses []domain.TagStatus
 }
 
-type FindEventsFilter struct {
-	Statuses     []domain.EventStatus
-	RetryLimit   int
-	CreatedAfter time.Time
-	Take         int
+type ClaimEventsOptions struct {
+	RetryLimit    int
+	BatchSize     int
+	CreatedAfter  time.Time
+	LeaseDuration time.Duration
 }

@@ -3,60 +3,80 @@ package inmemory
 import (
 	"context"
 	"log/slog"
-	"slices"
 	"sync"
+	"time"
 
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
 )
 
+type outboxEntry struct {
+	event       *domain.Event
+	lockedUntil time.Time
+}
+
 type inMemoryOutboxRepository struct {
 	mu     sync.RWMutex
-	events map[string]*domain.Event
+	events map[string]*outboxEntry
 	logger *slog.Logger
 }
 
 func newInMemoryOutbox(logger *slog.Logger) ports.OutboxRepository {
 	return &inMemoryOutboxRepository{
-		events: make(map[string]*domain.Event),
+		events: make(map[string]*outboxEntry),
 		logger: logger,
 	}
 }
 
-func (r *inMemoryOutboxRepository) Find(ctx context.Context, filter ports.FindEventsFilter) ([]*domain.Event, error) {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+func (r *inMemoryOutboxRepository) Claim(ctx context.Context, o ports.ClaimEventsOptions) ([]*domain.Event, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
-	events := make([]*domain.Event, 0, len(r.events))
+	now := time.Now()
+	lockedUntil := now.Add(o.LeaseDuration)
+	claimed := make([]*domain.Event, 0, o.BatchSize)
 
-	for _, event := range r.events {
-		if len(filter.Statuses) > 0 && !slices.Contains(filter.Statuses, event.Status) {
+	for _, entry := range r.events {
+		if len(claimed) >= o.BatchSize {
+			break
+		}
+
+		e := entry.event
+
+		if o.RetryLimit > 0 && e.Attempts >= o.RetryLimit {
 			continue
 		}
 
-		if filter.RetryLimit > 0 && event.Attempts >= filter.RetryLimit {
+		if !o.CreatedAfter.IsZero() && e.CreatedAt.Before(o.CreatedAfter) {
 			continue
 		}
 
-		if !filter.CreatedAfter.IsZero() && event.CreatedAt.Before(filter.CreatedAfter) {
+		eligible := e.Status == domain.EventStatusPending ||
+			e.Status == domain.EventStatusError ||
+			(e.Status == domain.EventStatusProcessing && entry.lockedUntil.Before(now))
+
+		if !eligible {
 			continue
 		}
 
-		events = append(events, event)
+		e.Status = domain.EventStatusProcessing
+		entry.lockedUntil = lockedUntil
+		claimed = append(claimed, e)
 	}
 
-	if filter.Take > 0 && len(events) > filter.Take {
-		events = events[:filter.Take]
-	}
-
-	return events, nil
+	return claimed, nil
 }
 
 func (r *inMemoryOutboxRepository) Upsert(ctx context.Context, event *domain.Event) (*domain.Event, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.events[string(event.ID)] = event
+	existing, ok := r.events[string(event.ID)]
+	if ok {
+		existing.event = event
+	} else {
+		r.events[string(event.ID)] = &outboxEntry{event: event}
+	}
 
 	return event, nil
 }

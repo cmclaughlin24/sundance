@@ -40,7 +40,7 @@ func newOutboxRelayBackgroundWorker(app *core.Application, opts ...func(*WorkerO
 		worker.BgWithInterval[*outboxMessage](time.Duration(options.Interval)*time.Minute),
 		worker.BgWithLogger[*outboxMessage](app.Logger),
 		worker.BgWithSize[*outboxMessage](options.PoolSize),
-		worker.BgWithFetchJobsFn(newOutboxWorkFn(app, options.RetryLimit)),
+		worker.BgWithFetchJobsFn(newOutboxWorkFn(app, 10, options.RetryLimit)),
 		worker.BgWithElector[*outboxMessage](elector.NewCacheElector(
 			elector.CacheElectorWithKey("service:forms:elector:outbox"),
 			elector.CacheElectorWithLocker(app.Cache),
@@ -56,16 +56,17 @@ func newOutboxRelayBackgroundWorker(app *core.Application, opts ...func(*WorkerO
 	return bw, nil
 }
 
-func newOutboxWorkFn(app *core.Application, retryLimit int) worker.FetchJobsFn[*outboxMessage] {
+func newOutboxWorkFn(app *core.Application, batchSize, retryLimit int) worker.FetchJobsFn[*outboxMessage] {
 	return func(ctx context.Context) ([]*outboxMessage, error) {
 		outbox := app.Outbox()
 
 		app.Logger.DebugContext(ctx, "listing outbox messages")
 
-		events, err := outbox.Find(ctx, ports.FindEventsFilter{
-			RetryLimit: retryLimit,
-			Statuses:   []domain.EventStatus{domain.EventStatusPending, domain.EventStatusError},
-			CreatedAfter: time.Now().Add(-24 * time.Hour),
+		events, err := outbox.Claim(ctx, ports.ClaimEventsOptions{
+			RetryLimit:    retryLimit,
+			CreatedAfter:  time.Now().Add(-24 * time.Hour),
+			BatchSize:     batchSize,
+			LeaseDuration: 5 * time.Minute,
 		})
 		if err != nil {
 			app.Logger.ErrorContext(ctx, "failed to retrieve outbox messages", "error", err)

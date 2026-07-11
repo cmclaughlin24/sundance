@@ -58,7 +58,7 @@ type TagVersionsRepository interface {
 }
 
 type OutboxRepository interface {
-	Find(context.Context, FindEventsFilter) ([]*domain.Event, error)
+	Claim(context.Context, ClaimEventsOptions) ([]*domain.Event, error)
 	Upsert(context.Context, *domain.Event) (*domain.Event, error)
 }
 

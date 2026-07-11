@@ -2,11 +2,13 @@ package mongodb
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"sundance/backend/pkg/database"
 	"sundance/backend/services/forms/internal/adapters/persistence/mongodb/documents"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
+	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -49,23 +51,44 @@ func (r *mongoDBOutboxRepository) migrate(ctx context.Context) error {
 	return err
 }
 
-func (r *mongoDBOutboxRepository) Find(ctx context.Context, filters ports.FindEventsFilter) ([]*domain.Event, error) {
-	opts := options.Find()
-	if filters.Take > 0 {
-		opts.SetLimit(int64(filters.Take))
+func (r *mongoDBOutboxRepository) Claim(ctx context.Context, o ports.ClaimEventsOptions) ([]*domain.Event, error) {
+	now := time.Now()
+	filters := bson.M{
+		"attempts":   bson.M{"$lt": o.RetryLimit},
+		"created_at": bson.M{"$gte": o.CreatedAfter},
+		"$or": bson.A{
+			bson.M{"status": bson.M{"$in": []domain.EventStatus{domain.EventStatusPending, domain.EventStatusError}}},
+			bson.M{"status": domain.EventStatusProcessing, "locked_until": bson.M{"$lt": now}},
+		},
 	}
-
-	f := bson.M{
-		"attempts":   bson.M{"$lt": filters.RetryLimit},
-		"created_at": bson.M{"$gte": filters.CreatedAfter},
+	update := bson.M{
+		"$set": bson.M{
+			"status":       domain.EventStatusProcessing,
+			"locked_until": now.Add(o.LeaseDuration),
+		},
 	}
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+	docs := make([]documents.EventDocument, 0)
 
-	if len(filters.Statuses) > 0 {
-		f["status"] = bson.M{"$in": filters.Statuses}
-	}
+	err := r.base.WithSession(ctx, func(sctx context.Context) error {
+		for range o.BatchSize {
+			var doc documents.EventDocument
 
-	docs, err := r.base.Find(ctx, f, opts)
+			err := r.base.Collection().FindOneAndUpdate(sctx, filters, update, opts).Decode(&doc)
+			if errors.Is(err, mongo.ErrNoDocuments) {
+				break
+			} else if err != nil {
+				return err
+			}
+
+			docs = append(docs, doc)
+		}
+
+		return nil
+	})
+
 	if err != nil {
+		r.base.Logger().ErrorContext(ctx, "mongo find and update failed", "error", err)
 		return nil, err
 	}
 
@@ -82,7 +105,7 @@ func (r *mongoDBOutboxRepository) Upsert(ctx context.Context, e *domain.Event) (
 
 	doc := documents.ToEventDocument(*e)
 	filter := bson.M{"_id": doc.ID}
-	update := bson.M{"$set": doc}
+	update := bson.M{"$set": doc, "$unset": bson.M{"locked_until": ""}}
 	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
 
 	var result documents.EventDocument
