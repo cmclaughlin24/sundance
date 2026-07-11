@@ -2,12 +2,15 @@ package mongodb
 
 import (
 	"log/slog"
+	"time"
 
 	"sundance/backend/pkg/database"
 	"sundance/backend/services/forms/internal/core/ports"
 
 	"go.mongodb.org/mongo-driver/v2/mongo"
 )
+
+var Now = time.Now
 
 func Bootstrap(client *mongo.Client, logger *slog.Logger, databaseName string) (*ports.Repository, error) {
 	db := client.Database(databaseName)

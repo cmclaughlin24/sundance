@@ -8,7 +8,6 @@ import (
 	"sundance/backend/services/forms/internal/adapters/persistence/mongodb/documents"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
-	"time"
 
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
@@ -52,7 +51,7 @@ func (r *mongoDBOutboxRepository) migrate(ctx context.Context) error {
 }
 
 func (r *mongoDBOutboxRepository) Claim(ctx context.Context, o ports.ClaimEventsOptions) ([]*domain.Event, error) {
-	now := time.Now()
+	now := Now()
 	filters := bson.M{
 		"attempts":   bson.M{"$lt": o.RetryLimit},
 		"created_at": bson.M{"$gte": o.CreatedAfter},

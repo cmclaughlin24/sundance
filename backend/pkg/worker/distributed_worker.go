@@ -10,10 +10,6 @@ import (
 	"sundance/backend/pkg/worker/elector"
 )
 
-var (
-)
-
-
 func NewDistributedWorker[J Job](opts ...func(*DistributedWorker[J])) (*DistributedWorker[J], error) {
 	dw := &DistributedWorker[J]{
 		elector:      elector.NewInMemoryElector(1 * time.Minute),
