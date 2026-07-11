@@ -64,18 +64,18 @@ func (j *submissionJob) Process(ctx context.Context) error {
 	return nil
 }
 
-func newSubmissionsBackgroundWorker(app *core.Application, opts ...func(*WorkerOptions)) (*worker.BackgroundWorker[*submissionJob], error) {
+func newSubmissionsDistributedWorker(app *core.Application, opts ...func(*WorkerOptions)) (*worker.DistributedWorker[*submissionJob], error) {
 	options := newWorkerOptions(opts...)
 
-	bw, err := worker.NewBackgroundWorker(
-		worker.BgWithInterval[*submissionJob](time.Duration(options.Interval)*time.Minute),
-		worker.BgWithLogger[*submissionJob](app.Logger),
-		worker.BgWithSize[*submissionJob](options.PoolSize),
-		worker.BgWithFetchJobsFn(newSubmissionWorkFn(app, submissionJobOptions{
+	bw, err := worker.NewDistributedWorker(
+		worker.DistributedWithInterval[*submissionJob](time.Duration(options.Interval)*time.Minute),
+		worker.DistributedWithLogger[*submissionJob](app.Logger),
+		worker.DistributedWithSize[*submissionJob](options.PoolSize),
+		worker.DistributedWithFetchJobsFn(newSubmissionWorkFn(app, submissionJobOptions{
 			retryLimit: options.RetryLimit,
 			backoff:    time.Second,
 		})),
-		worker.BgWithElector[*submissionJob](elector.NewCacheElector(
+		worker.DistributedWithElector[*submissionJob](elector.NewCacheElector(
 			elector.CacheElectorWithKey("service:forms:elector:submissions"),
 			elector.CacheElectorWithLocker(app.Cache),
 			elector.CacheElectorWithInterval(1*time.Minute),

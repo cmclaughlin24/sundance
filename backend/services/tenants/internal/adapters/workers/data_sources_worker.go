@@ -28,15 +28,15 @@ func (j *dataSourceJob) Process(ctx context.Context) error {
 	return j.api.Process(ctx, commands.NewProcessDataSourceJobCommand(j.ds))
 }
 
-func newDataSourcesBackgroundWorker(app *core.Application, opts ...func(*WorkerOptions)) (*worker.BackgroundWorker[*dataSourceJob], error) {
+func newDataSourcesDistributedWorker(app *core.Application, opts ...func(*WorkerOptions)) (*worker.DistributedWorker[*dataSourceJob], error) {
 	options := newWorkerOptions(opts...)
 
-	bw, err := worker.NewBackgroundWorker(
-		worker.BgWithInterval[*dataSourceJob](time.Duration(options.Interval)*time.Minute),
-		worker.BgWithLogger[*dataSourceJob](app.Logger),
-		worker.BgWithSize[*dataSourceJob](options.PoolSize),
-		worker.BgWithFetchJobsFn(newDataSourceWorkFn(app, options.RetryLimit)),
-		worker.BgWithElector[*dataSourceJob](elector.NewCacheElector(
+	bw, err := worker.NewDistributedWorker(
+		worker.DistributedWithInterval[*dataSourceJob](time.Duration(options.Interval)*time.Minute),
+		worker.DistributedWithLogger[*dataSourceJob](app.Logger),
+		worker.DistributedWithSize[*dataSourceJob](options.PoolSize),
+		worker.DistributedWithFetchJobsFn(newDataSourceWorkFn(app, options.RetryLimit)),
+		worker.DistributedWithElector[*dataSourceJob](elector.NewCacheElector(
 			elector.CacheElectorWithKey("service:tenants:elector:data-sources"),
 			elector.CacheElectorWithLocker(app.Cache),
 			elector.CacheElectorWithInterval(1*time.Minute),

@@ -4,7 +4,6 @@ import (
 	"context"
 	"log/slog"
 	"sundance/backend/pkg/worker"
-	"sundance/backend/pkg/worker/elector"
 	"sundance/backend/services/forms/internal/core"
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
@@ -33,27 +32,21 @@ func (j *outboxMessage) Process(ctx context.Context) error {
 	return nil
 }
 
-func newOutboxRelayBackgroundWorker(app *core.Application, opts ...func(*WorkerOptions)) (*worker.BackgroundWorker[*outboxMessage], error) {
+func newOutboxRelayPeriodicWorker(app *core.Application, opts ...func(*WorkerOptions)) (*worker.PeriodicWorker[*outboxMessage], error) {
 	options := newWorkerOptions(opts...)
 
-	bw, err := worker.NewBackgroundWorker(
-		worker.BgWithInterval[*outboxMessage](time.Duration(options.Interval)*time.Minute),
-		worker.BgWithLogger[*outboxMessage](app.Logger),
-		worker.BgWithSize[*outboxMessage](options.PoolSize),
-		worker.BgWithFetchJobsFn(newOutboxWorkFn(app, 10, options.RetryLimit)),
-		worker.BgWithElector[*outboxMessage](elector.NewCacheElector(
-			elector.CacheElectorWithKey("service:forms:elector:outbox"),
-			elector.CacheElectorWithLocker(app.Cache),
-			elector.CacheElectorWithInterval(1*time.Minute),
-			elector.CacheElectorWithTTL(2*time.Minute),
-		)),
+	pw, err := worker.NewPeriodicWorker(
+		worker.PeriodicWithInterval[*outboxMessage](time.Duration(options.Interval)*time.Minute),
+		worker.PeriodicWithLogger[*outboxMessage](app.Logger),
+		worker.PeriodicWithSize[*outboxMessage](options.PoolSize),
+		worker.PeriodicWithFetchJobsFn(newOutboxWorkFn(app, 10, options.RetryLimit)),
 	)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return bw, nil
+	return pw, nil
 }
 
 func newOutboxWorkFn(app *core.Application, batchSize, retryLimit int) worker.FetchJobsFn[*outboxMessage] {

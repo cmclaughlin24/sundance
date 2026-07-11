@@ -12,7 +12,7 @@ type WorkerOptions struct {
 }
 
 func Bootstrap(app *core.Application, settings WorkerOptions) (func(context.Context), error) {
-	dsw, err := newDataSourcesBackgroundWorker(
+	dsw, err := newDataSourcesDistributedWorker(
 		app,
 		WithInterval(settings.Interval),
 		WithPoolSize(settings.PoolSize),

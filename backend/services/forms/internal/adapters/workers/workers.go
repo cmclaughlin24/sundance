@@ -12,7 +12,7 @@ type WorkerOptions struct {
 }
 
 func Bootstrap(app *core.Application, settings WorkerOptions) (func(context.Context), error) {
-	sw, err := newSubmissionsBackgroundWorker(
+	sw, err := newSubmissionsDistributedWorker(
 		app,
 		WithInterval(settings.Interval),
 		WithPoolSize(settings.PoolSize),
@@ -23,7 +23,7 @@ func Bootstrap(app *core.Application, settings WorkerOptions) (func(context.Cont
 		return nil, err
 	}
 
-	ow, err := newOutboxRelayBackgroundWorker(
+	ow, err := newOutboxRelayPeriodicWorker(
 		app,
 		WithInterval(settings.Interval),
 		WithPoolSize(settings.PoolSize),
