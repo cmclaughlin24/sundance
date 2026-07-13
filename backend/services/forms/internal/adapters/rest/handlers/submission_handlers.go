@@ -163,6 +163,66 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Normalize a submission
+// @description	Validates and normalizes a form submission synchronously, returning a canonical fact map. No data is persisted.
+// @tags		Submissions
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		body body dto.SubmissionRequest true "Normalize Submission"
+// @success		200 {object} httputil.APIResponse[domain.FactMap] "Canonical fact map keyed by tag paths"
+// @failure		400 {object} httputil.APIErrorResponse "Validation failure or invalid form version status"
+// @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
+// @Router		/submissions/normalize [post]
+func (h *Handlers) NormalizeSubmission(w http.ResponseWriter, r *http.Request) {
+	var body dto.SubmissionRequest
+	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
+		h.app.Logger.WarnContext(r.Context(), "invalid request body", "error", err)
+		h.sendErrorResponse(w, err)
+		return
+	}
+
+	values := make([]*domain.SubmissionFieldValue, 0, len(body.Values))
+	for _, fv := range body.Values {
+		values = append(values, domain.NewSubmissionFieldValue(fv.FieldID, fv.Value, fv.CollectionIndex))
+	}
+
+	tenantID := httputil.TenantFromContext(r.Context())
+	command := commands.NewNormalizeSubmissionCommand(
+		tenantID,
+		domain.FormID(body.FormID),
+		domain.FormVersionID(body.VersionID),
+		values,
+	)
+	resultChan := make(chan result[domain.FactMap], 1)
+
+	go func() {
+		defer close(resultChan)
+		facts, err := h.app.API.Submissions.Normalize(r.Context(), command)
+		resultChan <- result[domain.FactMap]{data: facts, err: err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusOK, httputil.APIResponse[domain.FactMap]{
+			Message: "Ok!",
+			Data:    res.data,
+		})
+	}
+}
+
 // @summary		Get submission facts
 // @description	Returns the canonical fact map for an accepted submission, keyed by tag paths.
 // @description	A 400 is returned if the submission status is not `accepted` (e.g. pending, rejected, or failed).

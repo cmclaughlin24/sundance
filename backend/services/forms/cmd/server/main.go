@@ -21,6 +21,7 @@ import (
 	"sundance/backend/services/forms/internal/adapters/rest"
 	"sundance/backend/services/forms/internal/adapters/workers"
 	"sundance/backend/services/forms/internal/core"
+	"sundance/backend/services/forms/internal/core/processors"
 	"sundance/backend/services/forms/internal/core/services"
 	"sundance/backend/services/forms/internal/core/strategies"
 
@@ -68,7 +69,7 @@ func main() {
 	}
 	defer cacheClose()
 
-	p, err := publishers.Bootstrap(l, settings.Publisher)
+	pbr, err := publishers.Bootstrap(l, settings.Publisher)
 	if err != nil {
 		l.Error("failed to bootstrap publisher", "error", err.Error())
 		panic(err)
@@ -76,14 +77,15 @@ func main() {
 
 	ev := evaluators.NewExprRuleEvaluator(l)
 	st := strategies.Bootstrap(strategies.WithLogger(l))
-	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithStrategies(st), services.WithRuleEvaluator(ev))
+	prs := processors.Bootstrap(processors.WithLogger(l), processors.WithRepository(r), processors.WithStrategies(st), processors.WithRuleEvaluator(ev))
+	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithProcessors(prs))
 
 	app := core.NewApplication(
 		core.WithLogger(l),
 		core.WithRepository(r),
 		core.WithAPI(s),
 		core.WithCache(cm.(core.Cache)),
-		core.WithPublisher(p),
+		core.WithPublisher(pbr),
 	)
 
 	defer app.Close(context.Background())

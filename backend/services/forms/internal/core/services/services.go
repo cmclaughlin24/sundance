@@ -8,9 +8,8 @@ import (
 
 type serviceOptions struct {
 	logger     *slog.Logger
-	evaluator  ports.RuleEvaluator
 	repository *ports.Repository
-	strategies *ports.Strategies
+	processors *ports.Processors
 }
 
 func Bootstrap(opts ...func(*serviceOptions)) *ports.API {
@@ -20,10 +19,10 @@ func Bootstrap(opts ...func(*serviceOptions)) *ports.API {
 	}
 
 	return &ports.API{
-		Tags:  NewTagsService(so.logger, so.repository),
+		Tags:           NewTagsService(so.logger, so.repository),
 		Forms:          NewFormsService(so.logger, so.repository),
-		Submissions:    NewSubmissionsService(so.logger, so.repository),
-		SubmissionJobs: NewSubmissionJobsService(so.logger, so.evaluator, so.repository, so.strategies),
+		Submissions:    NewSubmissionsService(so.logger, so.processors, so.repository),
+		SubmissionJobs: NewSubmissionJobsService(so.logger, so.processors, so.repository),
 	}
 }
 
@@ -33,20 +32,14 @@ func WithLogger(logger *slog.Logger) func(*serviceOptions) {
 	}
 }
 
-func WithRuleEvaluator(evaluator ports.RuleEvaluator) func(*serviceOptions) {
+func WithProcessors(processors *ports.Processors) func(*serviceOptions) {
 	return func(so *serviceOptions) {
-		so.evaluator = evaluator
+		so.processors = processors
 	}
 }
 
 func WithRepository(repository *ports.Repository) func(*serviceOptions) {
 	return func(so *serviceOptions) {
 		so.repository = repository
-	}
-}
-
-func WithStrategies(strategies *ports.Strategies) func(*serviceOptions) {
-	return func(so *serviceOptions) {
-		so.strategies = strategies
 	}
 }

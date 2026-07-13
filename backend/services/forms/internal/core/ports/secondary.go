@@ -66,6 +66,14 @@ type Publisher interface {
 	Publish(context.Context, domain.Event) error
 }
 
+type Processors struct {
+	Submission SubmissionProcessor
+}
+
+type SubmissionProcessor interface {
+	Process(context.Context, *domain.Submission) ([]*domain.CanonicalFact, error)
+}
+
 type Strategies struct {
 	FieldValidator FieldValidatorRegistry
 }

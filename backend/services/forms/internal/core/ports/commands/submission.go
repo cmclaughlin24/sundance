@@ -33,6 +33,31 @@ func (c *CreateSubmissionCommand) Validate() error {
 	return validate.ValidateStruct(*c)
 }
 
+type NormalizeSubmissionCommand struct {
+	TenantID  string                         `validate:"required"`
+	FormID    domain.FormID                  `validate:"required"`
+	VersionID domain.FormVersionID           `validate:"required"`
+	Values    []*domain.SubmissionFieldValue `validate:"required,min=1"`
+}
+
+func NewNormalizeSubmissionCommand(
+	tenantID string,
+	formID domain.FormID,
+	versionID domain.FormVersionID,
+	values []*domain.SubmissionFieldValue,
+) *NormalizeSubmissionCommand {
+	return &NormalizeSubmissionCommand{
+		TenantID:  tenantID,
+		FormID:    formID,
+		VersionID: versionID,
+		Values:    values,
+	}
+}
+
+func (c *NormalizeSubmissionCommand) Validate() error {
+	return validate.ValidateStruct(*c)
+}
+
 type ReplaySubmissionCommand struct {
 	TenantID string              `validate:"required"`
 	ID       domain.SubmissionID `validate:"required"`

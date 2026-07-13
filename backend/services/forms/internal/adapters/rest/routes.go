@@ -78,6 +78,7 @@ func NewRoutes(app *core.Application, options ServerOptions) http.Handler {
 		routes.Route("/submissions", func(submissionsRoutes chi.Router) {
 			submissionsRoutes.Get("/", h.GetSubmissions)
 			submissionsRoutes.With(httputil.IdempotencyMiddleware).Post("/", h.CreateSubmission)
+			submissionsRoutes.Post("/normalize", h.NormalizeSubmission)
 
 			submissionsRoutes.Route("/{submissionId}", func(submissionRoutes chi.Router) {
 				submissionRoutes.Post("/replay", h.ReplaySubmission)

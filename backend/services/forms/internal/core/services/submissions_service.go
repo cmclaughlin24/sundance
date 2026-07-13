@@ -13,12 +13,14 @@ import (
 
 type submissionsService struct {
 	logger     *slog.Logger
+	processor  ports.SubmissionProcessor
 	repository ports.SubmissionsRepository
 }
 
-func NewSubmissionsService(logger *slog.Logger, repository *ports.Repository) ports.SubmissionsAPI {
+func NewSubmissionsService(logger *slog.Logger, processor *ports.Processors, repository *ports.Repository) ports.SubmissionsAPI {
 	return &submissionsService{
 		logger:     logger,
+		processor:  processor.Submission,
 		repository: repository.Submissions,
 	}
 }
@@ -126,6 +128,36 @@ func (s *submissionsService) Create(ctx context.Context, cmd *commands.CreateSub
 	s.logger.InfoContext(ctx, "submission created", "tenant_id", cmd.TenantID, "submission_id", submission.ID)
 
 	return submission, nil
+}
+
+func (s *submissionsService) Normalize(ctx context.Context, cmd *commands.NormalizeSubmissionCommand) (domain.FactMap, error) {
+	s.logger.DebugContext(ctx, "normalizing submission", "tenant_id", cmd.TenantID)
+
+	if err := cmd.Validate(); err != nil {
+		s.logger.WarnContext(ctx, "submission normalization failed; invalid command", "tenant_id", cmd.TenantID, "error", err)
+		return nil, err
+	}
+
+	submission, err := domain.NewSubmission(
+		cmd.TenantID,
+		cmd.FormID,
+		cmd.VersionID,
+		domain.IdempotencyID(domain.NewID()),
+		cmd.Values,
+	)
+	if err != nil {
+		s.logger.WarnContext(ctx, "submission normalization failed; domain invariant violation", "tenant_id", cmd.TenantID, "error", err)
+		return nil, err
+	}
+
+	facts, err := s.processor.Process(ctx, submission)
+	if err != nil {
+		return nil, err
+	}
+
+	s.logger.InfoContext(ctx, "submission normalized", "tenant_id", cmd.TenantID, "submission_id", submission.ID)
+
+	return domain.ToFactMap(facts), nil
 }
 
 func (s *submissionsService) Replay(ctx context.Context, cmd commands.ReplaySubmissionCommand) error {

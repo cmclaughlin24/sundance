@@ -165,14 +165,7 @@ func (s *Submission) Reset() {
 }
 
 func (s *Submission) ToFactMap() FactMap {
-	result := make(FactMap)
-
-	for _, fact := range s.Facts {
-		segments := strings.Split(fact.TagKey, pathSeparator)
-		setNestedValue(result, segments, fact.Value, fact.CollectionIndex)
-	}
-
-	return result
+	return ToFactMap(s.Facts)
 }
 
 func (s *Submission) addAttempt(status SubmissionStatus, err error) {
@@ -182,6 +175,17 @@ func (s *Submission) addAttempt(status SubmissionStatus, err error) {
 func (s *Submission) addEvent(eventType EventType, payload json.RawMessage) {
 	e := NewEvent(AggregateTypeSubmission, string(s.ID), eventType, payload)
 	s.AddEvent(e)
+}
+
+func ToFactMap(facts []*CanonicalFact) FactMap {
+	result := make(FactMap)
+
+	for _, fact := range facts {
+		segments := strings.Split(fact.TagKey, pathSeparator)
+		setNestedValue(result, segments, fact.Value, fact.CollectionIndex)
+	}
+
+	return result
 }
 
 func setNestedValue(node map[string]any, segments []string, value any, collectionIndex *int) {

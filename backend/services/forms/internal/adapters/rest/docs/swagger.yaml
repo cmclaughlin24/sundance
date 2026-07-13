@@ -43,6 +43,13 @@ definitions:
       message:
         type: string
     type: object
+  APIResponse-sundance_backend_services_forms_internal_core_domain_FactMap:
+    properties:
+      data:
+        $ref: '#/definitions/FactMap'
+      message:
+        type: string
+    type: object
   CreateTagRequest:
     properties:
       displayName:
@@ -55,6 +62,9 @@ definitions:
         type: string
       primitiveType:
         type: string
+    type: object
+  FactMap:
+    additionalProperties: {}
     type: object
   FieldRequest:
     properties:
@@ -1367,6 +1377,57 @@ paths:
       security:
       - BearerAuth: []
       summary: Get a submission status
+      tags:
+      - Submissions
+  /submissions/normalize:
+    post:
+      consumes:
+      - application/json
+      description: Validates and normalizes a form submission synchronously, returning
+        a canonical fact map. No data is persisted.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
+      - description: Normalize Submission
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/SubmissionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Canonical fact map keyed by tag paths
+          schema:
+            $ref: '#/definitions/APIResponse-sundance_backend_services_forms_internal_core_domain_FactMap'
+        "400":
+          description: Validation failure or invalid form version status
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Normalize a submission
       tags:
       - Submissions
   /tags:

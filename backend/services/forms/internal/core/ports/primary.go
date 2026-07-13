@@ -33,6 +33,7 @@ type SubmissionsAPI interface {
 	FindByID(context.Context, FindSubmissionByIDQuery[domain.SubmissionID]) (*domain.Submission, error)
 	FindByReferenceID(context.Context, FindSubmissionByIDQuery[domain.ReferenceID]) (*domain.Submission, error)
 	Create(context.Context, *commands.CreateSubmissionCommand) (*domain.Submission, error)
+	Normalize(context.Context, *commands.NormalizeSubmissionCommand) (domain.FactMap, error)
 	Replay(context.Context, commands.ReplaySubmissionCommand) error
 }
 

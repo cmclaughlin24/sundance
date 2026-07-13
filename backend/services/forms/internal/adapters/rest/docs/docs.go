@@ -1275,6 +1275,83 @@ const docTemplate = `{
                 }
             }
         },
+        "/submissions/normalize": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Validates and normalizes a form submission synchronously, returning a canonical fact map. No data is persisted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Submissions"
+                ],
+                "summary": "Normalize a submission",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Normalize Submission",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/SubmissionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Canonical fact map keyed by tag paths",
+                        "schema": {
+                            "$ref": "#/definitions/APIResponse-sundance_backend_services_forms_internal_core_domain_FactMap"
+                        }
+                    },
+                    "400": {
+                        "description": "Validation failure or invalid form version status",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/submissions/{submissionId}/replay": {
             "post": {
                 "security": [
@@ -2314,6 +2391,17 @@ const docTemplate = `{
                 }
             }
         },
+        "APIResponse-sundance_backend_services_forms_internal_core_domain_FactMap": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/FactMap"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "CreateTagRequest": {
             "type": "object",
             "properties": {
@@ -2333,6 +2421,10 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "FactMap": {
+            "type": "object",
+            "additionalProperties": {}
         },
         "FieldRequest": {
             "type": "object",
