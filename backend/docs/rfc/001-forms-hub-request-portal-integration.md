@@ -17,19 +17,19 @@
 
 ## Summary
 
-This RFC proposes the backend integration between the Request Portal and Forms Hub to support form-based catalog items in the request cart. When an actor adds a Form Catalog Item to their cart, the Request Portal must coordinate with Forms Hub to create a form submission, associate it with the cart item, and react to the asynchronous submission result (Accepted, Rejected, or Failed) published by Forms Hub. This integration introduces a new execution path in the Request Portal alongside the existing Standard Catalog Item path, and establishes a bidirectional contract between the two systems via synchronous REST and asynchronous events.
+This RFC proposes the backend integration between the Request Portal and Forms Hub to support form-based catalog items in the request cart. When an actor adds a Form Catalog Item to their cart, the Request Portal must coordinate with Forms Hub to synchronously normalize the form submission — validating field values and producing a canonical fact map — and link the result to the cart item before returning to the actor. This integration introduces a new execution path in the Request Portal alongside the existing Standard Catalog Item path, and establishes a unidirectional synchronous contract between the two systems via REST.
 
 ## Motivation
 
-The Request Portal currently supports a single cart item type — the Standard Catalog Item — which requires no coordination with an external service at the time of cart creation. As the platform evolves to support form-based catalog items, a new execution path is needed: one where adding an item to the cart requires the Request Portal to initiate a form submission in Forms Hub and remain responsive to its asynchronous outcome.
+The Request Portal currently supports a single cart item type — the Standard Catalog Item — which requires no coordination with an external service at the time of cart creation. As the platform evolves to support form-based catalog items, a new execution path is needed: one where adding an item to the cart requires the Request Portal to validate and normalize form submission data through Forms Hub before the cart item is finalized.
 
-Forms Hub processes submissions asynchronously by design (ADR-003). `POST /v1/api/submissions` returns immediately with a reference ID and a `pending` status; the actual validation, canonical tag mapping, and rule evaluation occur in a background worker. The final outcome — `accepted`, `rejected`, or `failed` — is published via a polling-based outbox relay (ADR-009). This means the Request Portal cannot treat form submission as a synchronous, fire-and-forget operation; it must store the submission reference, receive the result, and update the cart item accordingly.
+Forms Hub exposes `POST /v1/api/submissions/normalize` — a synchronous endpoint that validates a submission against a form version, applies canonical tag mapping, and returns a canonical fact map inline without persisting any data. This enables the Request Portal to delegate all form validation and normalization concerns to Forms Hub within a single request cycle, providing immediate feedback to the actor at cart creation time.
 
-Without this integration, Form Catalog Items cannot be supported in the request cart. With it, the Request Portal gains the ability to attach structured, validated form data to cart items — enabling downstream policy evaluation and fulfillment workflows to operate on a canonical, trusted representation of the request.
+Without this integration, Form Catalog Items cannot be supported in the request cart. With it, the Request Portal gains the ability to attach structured, validated canonical data to cart items — enabling downstream policy evaluation and fulfillment workflows to operate on a canonical, trusted representation of the request.
 
 ## Design
 
-The integration between the Request Portal and Forms Hub follows a two-phase interaction model. In the first phase, the Request Portal synchronously initiates a form submission via the Forms Hub REST API and associates the returned reference with the cart item. In the second phase, Forms Hub asynchronously processes the submission and publishes the result, which the Request Portal receives and uses to finalize the cart item state and trigger downstream policy evaluation.
+The integration between the Request Portal and Forms Hub follows a single-phase synchronous model. The Request Portal calls `POST /v1/api/submissions/normalize` on Forms Hub inline during cart item creation. Forms Hub validates the submission and returns a canonical fact map in the same request; the Request Portal links the result to the cart item and proceeds to policy evaluation. No data is persisted in Forms Hub as part of this flow.
 
 ### Sequence
 
@@ -39,46 +39,35 @@ The diagram above illustrates the full interaction for Path B (Form Catalog Item
 
 1. **Create cart item**: The actor submits `POST /api/cart/items` to the Request Portal. The request payload identifies the catalog item type, branching execution into Path A or Path B.
 
-2. **Create form submission** _(Path B only)_: The Request Portal calls `POST /v1/api/submissions` on Forms Hub. Forms Hub persists the submission with a status of `pending` and returns `202 Accepted` with a submission reference ID. The Request Portal returns this response to the actor immediately.
+2. **Normalize form submission** _(Path B only)_: The Request Portal calls `POST /v1/api/submissions/normalize` on Forms Hub, forwarding the `formId`, `versionId`, and `values` extracted from the item payload. Forms Hub validates the submission inline and returns `200 OK` with a canonical fact map. If validation fails, Forms Hub returns `400`; the Request Portal propagates this to the actor and the cart item is not created.
 
-3. **Associate cart item with submission reference**: The Request Portal stores the submission reference ID against the cart item, linking the two records internally.
+3. **Validate submission and produce canonical representation** _(Forms Hub internal)_: Forms Hub evaluates visibility and required rules, validates each resolved field, and maps field values to canonical tags. This step executes synchronously within the `POST /v1/api/submissions/normalize` request. No data is persisted.
 
-4. **Validate submission and produce canonical representation** _(async, Forms Hub internal)_: A background worker validates the submission, resolves data source lookups, and maps fields to canonical tags. This step is internal to Forms Hub and runs concurrently with step 3.
+4. **Link canonical submission to cart item**: The Request Portal attaches the canonical fact map returned by Forms Hub to the cart item and persists the record.
 
-5. **Publish submission result**: Forms Hub publishes the final outcome (`accepted`, `rejected`, or `failed`) to the Request Portal. The delivery mechanism for this step is unresolved — see Unresolved Questions.
-
-6. **Finalize cart item**: On `accepted`, the Request Portal links the canonical submission data to the cart item. On `rejected` or `failed`, the cart item is marked as invalid.
-
-7. **Expand request and evaluate policy checks** _(on `accepted` only)_: The Request Portal expands the request and runs policy evaluation against the now-complete cart item.
+5. **Expand request and evaluate policy checks**: The Request Portal expands the request and runs policy evaluation against the now-complete cart item, consistent with Path A behavior.
 
 ### Changes Required
 
-Explicit list of behavioral or structural changes required by each
-system involved. This is the consumer/provider obligation checklist.
+Explicit list of behavioral or structural changes required by each system involved. This is the consumer/provider obligation checklist.
 
 #### Request Portal
 
 - **Define `form` as a new value for the existing `items[].type` discriminator**: `POST /api/cart/items` already accepts a `type` field on each item. The Request Portal must define `form` as a new valid value alongside existing types, routing execution into Path B when present. No schema change is required; the routing logic in the handler must be extended.
 
-- **Define the Path B `items[].payload` contract**: When `item[].type` is `form`, the freeform `payload` object must carry `formId`, `versionId`, and a `values` array (field ID -> value pairs, with optional `collectionIndex` for repeating fields). These fields are extracted from `payload` and proxied directly to `POST /v1/api/submissions` on Forms Hub.
+- **Define the Path B `items[].payload` contract**: When `item[].type` is `form`, the freeform `payload` object must carry `formId`, `versionId`, and a `values` array (field ID → value pairs, with optional `collectionIndex` for repeating fields). These fields are extracted from `payload` and proxied directly to `POST /v1/api/submissions/normalize` on Forms Hub.
 
-- **Call Forms Hub on cart item creation (Path B)**: The cart item creation handler must issue a synchronous `POST /v1/api/submissions` call to Forms Hub immediately after validating the request. The `202 Accepted` response and its `referenceId` must be captured before the handler returns to the caller.
+- **Call Forms Hub on cart item creation (Path B)**: The cart item creation handler must issue a synchronous `POST /v1/api/submissions/normalize` call to Forms Hub immediately after validating the request. If Forms Hub returns `400`, the handler must propagate the failure to the actor without creating the cart item. The `200 OK` response and its canonical fact map must be captured before proceeding.
 
-- **Extend the cart item data model**: The cart item data model must be extended with three new fields: `submissionReferenceId` (populated at creation from Forms Hub response), `submissionStatus` (`pending` | `accepted` | `rejected` | `failed`, updated when the result is received), and `canonicalData` (the canonical fact set linked to the cart item on acceptance.
+- **Extend the cart item data model**: The cart item data model must be extended with one new field: `canonicalData` — the canonical fact map returned by Forms Hub and linked to the cart item on creation.
 
-- **Implement a result receiver for Forms Hub**: The Request Portal must implement the inbound side of step 5 to receive the submission result from Forms Hub. The delivery mechanism is unresolved (see Unresolved Questions); the receiver must handle all three terminal statuses: `accepted`, `rejected`, and `failed`.
-
-- **Finalize cart item state on result receipt**: On `accepted`, the receiver must update `submissionStatus`, attach the canonical data to the cart item, and trigger policy evaluation. On `rejected` or `failed`, the receiver must mark the cart item as invalid and update `submissionStatus` accordingly.
-
-- **Defer policy evaluation for Form Catalog Items**: Policy evaluation is currently triggered synchronously on cart item creation. For Path B, this trigger must be suppressed at creation time and rewired to fire only after an `accepted` result is received and the cart item is finalized.
-
-- **Define outbound auth strategy for Forms Hub calls**: The mechanism by which the Request Portal authenticates calls to `POST /v1/api/submissions` is not yet decided (see Unresolved Questions).
+- **Define outbound auth strategy for Forms Hub calls**: The mechanism by which the Request Portal authenticates calls to `POST /v1/api/submissions/normalize` is not yet decided (see Unresolved Questions).
 
 #### Forms Hub
 
-No changes are required. The delivery mechanism for submission results is unresolved — see [Unresolved Question #1](#unresolved-questions).
+No changes are required. `POST /v1/api/submissions/normalize` is already implemented and returns a canonical fact map synchronously without persisting data.
 
-> **Note:** The canonical facts in the `submission.accepted` event payload are mapped into the Request Portal's data structure by the Forms Hub tagging mechanism.
+> **Note:** The canonical facts in the normalize response are built from dot-delimited canonical tag key paths (e.g. `applicant.address[].city`) defined in Forms Hub. The structure of the returned fact map is determined by the tag definitions configured for the form version.
 
 ### API Contracts
 
@@ -105,7 +94,7 @@ No changes are required. The delivery mechanism for submission results is unreso
     {
       "type": "form",
       "payload": {
-        "fieldId": "<string>",
+        "formId": "<string>",
         "versionId": "<string>",
         "values": [
           {
@@ -120,30 +109,29 @@ No changes are required. The delivery mechanism for submission results is unreso
 }
 ```
 
-> **Note**: The `payload` field is a freeform map in the existing schema (`"key": "string"`). If the Request Portal implementation stringifies the submission data on intake and unmarshals it before forwarding to Forms Hub, the wire format for the `payload` may remain a flat string map rather than the structured object shown above. The internal representation is an implementation detail of Request Portal; what matters for this contract is that the extracted `formId`, `versionId`, and `values` are forwarded correctly to `POST /v1/api/submissions`.
+> **Note**: The `payload` field is a freeform map in the existing schema (`"key": "string"`). If the Request Portal implementation stringifies the submission data on intake and unmarshals it before forwarding to Forms Hub, the wire format for the `payload` may remain a flat string map rather than the structured object shown above. The internal representation is an implementation detail of Request Portal; what matters for this contract is that the extracted `formId`, `versionId`, and `values` are forwarded correctly to `POST /v1/api/submissions/normalize`.
 
-**Response - `200 OK`**
+**Response — `200 OK`**
 
-The response schema (`AddCartItemsResponse`) is defined by Request Portal. At minimum it must include a reference to the submission for each Form Catalog Item so the actor can track its status.
+The response schema (`AddCartItemsResponse`) is defined by Request Portal.
 
 **Error Responses**
 
-| Status | Condition                                                 |
-| ------ | --------------------------------------------------------- |
-| `400`  | Missing or invalid request body or required headers       |
-| `500`  | Unexpected server error, including Forms Hub call failure |
+| Status | Condition                                                                                   |
+| ------ | ------------------------------------------------------------------------------------------- |
+| `400`  | Missing or invalid request body or required headers; or Forms Hub normalization failure     |
+| `500`  | Unexpected server error, including Forms Hub call failure                                   |
 
 ---
 
-#### `POST /v1/api/submissions`
+#### `POST /v1/api/submissions/normalize`
 
 **Headers**
 
-| Header            | Required | Description                                                      |
-| ----------------- | -------- | ---------------------------------------------------------------- |
-| `X-Tenant-ID`     | Yes      | Tenant identifier                                                |
-| `Idempotency-Key` | Yes      | Client-generated UUIDv7; prevents duplicate submissions on retry |
-| `Authorization`   | Yes      | `Bearer <token>` — PingFederate client credentials token         |
+| Header          | Required | Description                                              |
+| --------------- | -------- | -------------------------------------------------------- |
+| `X-Tenant-ID`   | Yes      | Tenant identifier                                        |
+| `Authorization` | Yes      | `Bearer <token>` — PingFederate client credentials token |
 
 **Request**
 
@@ -161,59 +149,12 @@ The response schema (`AddCartItemsResponse`) is defined by Request Portal. At mi
 }
 ```
 
-**Response — `202 Accepted`**
+**Response — `200 OK`**
 
 ```json
 {
-  "message": "Accepted!",
+  "message": "Ok!",
   "data": {
-    "id": "<UUIDv7>",
-    "tenantId": "<string>",
-    "formId": "<UUIDv7>",
-    "versionId": "<UUIDv7>",
-    "referenceId": "<UUIDv7>",
-    "status": "pending",
-    "values": [
-      {
-        "fieldId": "<string>",
-        "value": "<any>",
-        "collectionIndex": "<int | omitted>"
-      }
-    ],
-    "createdAt": "<RFC3339>",
-    "updatedAt": "<RFC3339>"
-  }
-}
-```
-
-**Error Responses**
-
-| Status | Condition                                                                                                        |
-| ------ | ---------------------------------------------------------------------------------------------------------------- |
-| `400`  | Missing/invalid body, missing `X-Tenant-ID`, missing `Idempotency-Key`, validation failure, empty `values` array |
-| `401`  | Missing or invalid bearer token                                                                                  |
-| `409`  | Duplicate submission — same `Idempotency-Key` already exists                                                     |
-| `500`  | Unexpected server error                                                                                          |
-
-### Event Contracts
-
-Events are published to Kafka by the Forms Hub outbox relay. All submission events share a single topic. The event type is communicated via a Kafka message header.
-
-**Topic:** `submission`
-**Partition key:** `SubmissionID`
-**Event type header:** `eventType: accepted | rejected | failed`
-
-#### `submission.accepted`
-
-**Header:** `eventType: accepted`
-
-```json
-{
-  "referenceId": "<UUIDv7>",
-  "tenantId": "<string>",
-  "formId": "<UUIDv7>",
-  "versionId": "<UUIDv7>",
-  "facts": {
     "applicant": {
       "firstName": "Jane",
       "lastName": "Doe",
@@ -228,69 +169,47 @@ Events are published to Kafka by the Forms Hub outbox relay. All submission even
 }
 ```
 
-The `facts` field is a nested map built from dot-delimited canonical tag key paths (e.g. `applicant.address[].city`). Array segments (`[]`) produce arrays of objects. Leaf values are the submitted field values after canonical mapping via the Forms Hub tagging mechanism.
+The `data` field is a nested fact map built from dot-delimited canonical tag key paths (e.g. `applicant.address[].city`). Array segments (`[]`) produce arrays of objects. Leaf values are the submitted field values after canonical mapping. No data is persisted by this endpoint.
 
-#### `submission.rejected`
+**Error Responses**
 
-**Header:** `eventType: rejected`
-
-```json
-{
-  "referenceId": "<UUIDv7>",
-  "tenantId": "<string>",
-  "formId": "<UUIDv7>",
-  "versionId": "<UUIDv7>",
-  "reason": "<string>"
-}
-```
-
-#### `submission.failed`
-
-**Header:** `eventType: failed`
-
-> **Note:** The `submissionFailedPayload` struct is defined in Forms Hub but the event is not yet emitted — `Fail()` does not call `addEvent` and no `EventTypeSubmissionFailed` constant exists. This is an incomplete implementation. See [Unresolved Question #2](#unresolved-questions).
-
-```json
-{
-  "referenceId": "<UUIDv7>",
-  "tenantId": "<string>",
-  "formId": "<UUIDv7>",
-  "versionId": "<UUIDv7>",
-  "reason": "<string>"
-}
-```
+| Status | Condition                                                                             |
+| ------ | ------------------------------------------------------------------------------------- |
+| `400`  | Missing/invalid body, missing `X-Tenant-ID`, validation failure, empty `values` array, or invalid form version status |
+| `401`  | Missing or invalid bearer token                                                       |
+| `500`  | Unexpected server error                                                               |
 
 ## Drawbacks
 
-- **Forms Hub availability dependency:** Path B introduces a runtime dependency on Forms Hub at cart item creation time. If Forms Hub is unavailable, `POST /api/cart/items` will fail for Form Catalog Items. Standard Catalog Items (Path A) are unaffected. The Request Portal must handle this failure gracefully and surface a meaningful error to the actor.
+- **Forms Hub availability dependency:** Path B introduces a synchronous runtime dependency on Forms Hub at cart item creation time. If Forms Hub is unavailable or degraded, `POST /api/cart/items` will fail for Form Catalog Items. Standard Catalog Items (Path A) are unaffected. The Request Portal must handle this failure gracefully and surface a meaningful error to the actor.
 
-- **Orphaned submission risk:** If the Request Portal successfully calls `POST /v1/api/submissions` but fails to persist the `submissionReferenceId` against the cart item (step 3), the submission exists in Forms Hub but is unlinked from the cart. There is currently no recovery strategy for this state — see [Unresolved Question #4](#unresolved-questions).
-
-- **Pending cart item timeout:** A Form Catalog Item cart item remains in a `pending` state until a submission result event is received. If the event is never delivered — due to a processing failure or delivery gap — the cart item remains pending indefinitely. A timeout strategy is not yet defined — see [Unresolved Question #5](#unresolved-questions).
+- **I/O latency on cart creation:** `POST /api/cart/items` for Path B blocks on Forms Hub's inline validation and canonical mapping. Validation, data source lookups, and rule evaluation execute synchronously within the request. This latency is an accepted trade-off for real-time feedback and integration simplicity in this release.
 
 ## Rationale and Alternatives
 
-The two-phase asynchronous integration — synchronous intake via `POST /v1/api/submissions` followed by event-driven result delivery — was chosen for the following reasons:
+The synchronous normalize integration — `POST /v1/api/submissions/normalize` inline during cart item creation — was chosen for the following reasons:
+
+- **Real-time feedback:** The synchronous model surfaces validation results to the actor immediately at cart creation time. An actor submitting a Form Catalog Item with invalid or incomplete field values receives a `400` response in the same request, rather than discovering the failure asynchronously after the cart item has already been created.
+
+- **First-release simplicity:** Eliminating async infrastructure — a broker consumer, outbox events, pending state management, and a result receiver — significantly reduces the implementation surface for both teams in the initial release of both products. Both the Request Portal and Forms Hub can deliver and validate the integration without a message broker dependency.
 
 - **Reusability:** Forms Hub is purpose-built for form definition, validation, and canonical mapping. The legacy tooling it replaces undergoes approximately 100 changes per month, making a dedicated, independently deployable forms service a strategic necessity rather than an implementation convenience. Delegating form concerns to Forms Hub avoids duplicating this complexity in the Request Portal.
 
 - **Separation of concerns:** Form validation, data source lookup, and canonical tag mapping are owned by Forms Hub. Embedding this logic in the Request Portal would couple two distinct domains and create a maintenance burden as form requirements evolve.
 
-- **Decoupled throughput:** The asynchronous model ensures that Request Portal cart item creation is not blocked by the latency of submission processing. Validation, data source lookups, and canonical mapping can be slow and variable; holding the intake request open until processing completes would expose the Request Portal to that variability.
-
 ### Alternatives Considered
 
-**Synchronous submission endpoint (`POST /v1/api/submissions/sync`)**
+**Asynchronous submission via `POST /v1/api/submissions`**
 
-A synchronous variant of the submissions endpoint was considered — one that performs validation and canonical mapping inline before returning, rather than deferring to a background worker. This would simplify the Request Portal integration by eliminating the need to handle an asynchronous result.
+An asynchronous integration was considered — the Request Portal calls `POST /v1/api/submissions`, which returns `202 Accepted` with a `referenceId`, and Forms Hub processes the submission in a background worker before publishing the result via a Kafka outbox event. This would decouple cart item creation from Forms Hub processing latency.
 
-This was not chosen for two reasons: first, if asynchronous validation steps (e.g. external data source lookups) are introduced in the future, a synchronous endpoint would couple intake throughput directly to that latency; second, it would tightly couple the Request Portal's cart creation flow to Forms Hub's processing time, introducing operational risk if Forms Hub degrades.
+This was not chosen for the first release for two reasons: first, it delays validation feedback to the actor, who would not know whether their form submission was accepted or rejected until the event is processed and delivered; second, it requires both teams to implement async infrastructure (broker consumer, result receiver, pending state management, orphan recovery) that adds significant scope to an initial integration.
 
 **Polling for submission status**
 
-Rather than consuming result events, the Request Portal could poll `GET /v1/api/submissions/by-reference/{referenceId}/status` until a terminal status is reached. This would eliminate the need for the Request Portal to implement an event consumer or webhook receiver.
+Rather than consuming result events, the Request Portal could poll `GET /v1/api/submissions/by-reference/{referenceId}/status` until a terminal status is reached. This would avoid implementing an event consumer.
 
-This was not chosen because it places a heavier burden on the Request Portal — it must manage polling intervals, handle timeouts, and deal with long-running submissions gracefully. Event-driven delivery inverts this burden: Forms Hub notifies the Request Portal when processing is complete, with no polling overhead.
+This was not chosen because it still defers validation feedback to the actor, requires the Request Portal to manage polling intervals and timeouts, and provides no simplicity advantage over the synchronous normalize approach.
 
 ### Impact of Not Integrating
 
@@ -298,22 +217,10 @@ Without this integration, Form Catalog Items cannot be supported in the request 
 
 ## Unresolved Questions
 
-1. **Result delivery mechanism (step 5)**: The mechanism by which Forms Hub delivers the submission result to the Request Portal is not yet decided. The long-term goal is delivery via a message broker. A webhook-based approach may be required as a short-term solution pending broker infrastructure availability.
-
-2. **Outbound authentication from Request Portal to Forms Hub**: The mechanism by which the Request Portal authenticates its calls to `POST /v1/api/submissions` is not yet decided. Candidates include service-to-service JWT (client credentials flow via PingFederate), mTLS, or an API key. The chosen approach must align with the enterprise security posture and the authentication infrastructure available to the Request Portal.
-
-3. **`submission.failed` event**: The `submissionFailedPayload` struct is defined in Forms Hub but the event is not yet emitted — `Fail()` does not call `addEvent` and no `EventTypeSubmissionFailed` constant exists. The implementation must be completed before the Request Portal can react to a `failed` outcome.
-
-4. **Orphaned submission recovery:** If the Request Portal fails to persist the `submissionReferenceId` after a successful `POST /v1/api/submissions` call, the submission is orphaned in Forms Hub with no corresponding cart item link. A recovery or reconciliation strategy for this state has not been defined.
-
-5. **Pending cart item timeout:** A cart item in `pending` state will remain so indefinitely if a submission result event is never received. A timeout threshold and ownership (likely the Request Portal) have not been defined.
-
-6. **Tag format requirements for `submission.accepted` facts:** The `facts` map in the `submission.accepted` payload is built from canonical tag key paths defined in Forms Hub. For the Request Portal to correctly consume this payload, the tag keys and structure must be agreed upon and standardized between the two teams. Specifically: which tag keys are required, what value types are expected at each leaf, and how collection segments (`[]`) map to the Request Portal's internal data model must be formally defined before implementation begins.
-
-7. **Submission amendment:** An actor may need to update form field values after a Form Catalog Item has been added to the cart. For this release, an amendment is handled by creating a new submission via `POST /v1/api/submissions`, replacing the existing `submissionReferenceId` on the cart item, and returning the cart item to `pending` state while the new submission is processed. The design of the cart item update endpoint and the handling of the superseded submission in Forms Hub must be defined.
+1. **Outbound authentication from Request Portal to Forms Hub**: The mechanism by which the Request Portal authenticates its calls to `POST /v1/api/submissions/normalize` is not yet decided. Candidates include service-to-service JWT (client credentials flow via PingFederate), mTLS, or an API key. The chosen approach must align with the enterprise security posture and the authentication infrastructure available to the Request Portal.
 
 ## Future Possibilities
 
-- **Submission amendments:** For this release, amendments are handled by creating a new submission. A dedicated amendment endpoint in Forms Hub (e.g. `POST /v1/api/submissions/{submissionId}/amend`) could provide a more explicit contract in future releases, preserving the submission history and reducing ambiguity around which submission is authoritative for a given cart item.
+- **Asynchronous submission for high-latency forms:** If future form versions introduce long-running validation steps (e.g. external data source lookups with significant latency), a migration to the asynchronous `POST /v1/api/submissions` path — with broker-based result delivery — could be adopted without changing the `POST /api/cart/items` interface. The `normalize` endpoint would remain available for forms where synchronous latency is acceptable.
 
-- **Audit system consumers:** The `submission.accepted` and `submission.rejected` Kafka events are published to named topics and may be consumed by additional downstream systems in the future, such as audit or compliance services, without requiring changes to either Forms Hub or the Request Portal.
+- **Submission amendments:** An actor may need to update form field values after a Form Catalog Item has been added to the cart. Under the synchronous model, an amendment is handled by re-calling `POST /v1/api/submissions/normalize` with the updated values and replacing the `canonicalData` on the cart item. The design of the cart item update endpoint must be defined.
