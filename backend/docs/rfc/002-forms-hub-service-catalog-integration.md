@@ -145,11 +145,29 @@ Emitted by the Forms Service when a form version is transitioned from `active` t
 
 ## Drawbacks
 
+- **Eventual consistency** — There is a tick-interval gap between a form version being published or retired and the corresponding catalog entry reflecting that state. During this window, Service Catalog may present options to actors that do not yet match the current state of Forms Hub. This is an accepted trade-off of the asynchronous design.
+
+- **At-least-once delivery** — The outbox relay provides at-least-once delivery guarantees. Service Catalog must implement idempotent handlers for both `published` and `retired` events to avoid producing duplicate or inconsistent catalog state on redelivery.
+
+- **No feedback to Forms Hub** — Forms Hub has no visibility into whether Service Catalog successfully processed an event. A bug or outage in the Service Catalog consumer will not surface as an error in Forms Hub — catalog state will silently diverge until the consumer recovers.
+
 ## Rationale and Alternatives
+
+The asynchronous, event-driven design was chosen because it preserves the independent deployability of both systems. Forms Hub publishes to a topic it owns; Service Catalog consumes at its own pace. Neither system has a synchronous runtime dependency on the other, meaning a degraded Service Catalog does not affect the availability of form publish and retire operations in Forms Hub.
 
 ### Alternatives Considered
 
+**Synchronous REST call from Forms Hub to Service Catalog**
+
+Forms Hub could call Service Catalog directly as part of the publish or retire handler. This was not chosen because it introduces a synchronous runtime dependency — if Service Catalog is unavailable or slow, publish and retire operations in Forms Hub would fail or degrade. It also couples two independently deployable services at the HTTP layer, making coordinated deployments a requirement.
+
+**Service Catalog polling `GET /api/v1/forms`**
+
+Service Catalog could periodically poll Forms Hub for form version state changes and diff against its own catalog state. This was not chosen because it requires Service Catalog to own the polling interval, manage state diffing logic, and places unnecessary read load on Forms Hub — all complexity that the event-driven approach avoids entirely.
+
 ### Impact of Not Integrating
+
+Without this integration, form-backed catalog items cannot exist in Service Catalog. There is no current workaround — this is the prerequisite integration that blocks the request flow described in RFC-0001.
 
 ## Unresolved Questions
 
