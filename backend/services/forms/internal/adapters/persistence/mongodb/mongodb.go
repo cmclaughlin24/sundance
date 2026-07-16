@@ -25,7 +25,7 @@ func Bootstrap(client *mongo.Client, logger *slog.Logger, databaseName string) (
 		return nil, err
 	}
 
-	formVersions, err := newMongoDBFormVersionsRepository(db, logger)
+	formVersions, err := newMongoDBFormVersionsRepository(db, outbox.(*mongoDBOutboxRepository), logger)
 	if err != nil {
 		return nil, err
 	}

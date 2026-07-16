@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"log/slog"
 
@@ -137,24 +138,25 @@ func (s *formsService) Delete(ctx context.Context, cmd commands.DeleteCommand[do
 		return err
 	}
 
-	if err := s.isValidAccess(ctx, cmd.TenantID, cmd.ID); err != nil {
+	form, err := s.findForm(ctx, cmd.TenantID, cmd.ID)
+	if err != nil {
 		return err
 	}
 
-	hasActive, err := s.hasActiveVersion(ctx, cmd.ID)
+	hasActive, err := s.hasActiveVersion(ctx, form.ID)
 	if err != nil {
 		return err
 	} else if hasActive {
-		s.logger.WarnContext(ctx, "form deletion failed; form has active version", "tenant_id", cmd.TenantID, "form_id", cmd.ID)
+		s.logger.WarnContext(ctx, "form deletion failed; form has active version", "tenant_id", form.TenantID, "form_id", form.ID)
 		return domain.ErrFormHasActiveVersion
 	}
 
-	if err := s.formsRepository.Delete(ctx, cmd.ID); err != nil {
-		s.logger.ErrorContext(ctx, "failed to delete form", "tenant_id", cmd.TenantID, "form_id", cmd.ID, "error", err)
+	if err := s.formsRepository.Delete(ctx, form.ID); err != nil {
+		s.logger.ErrorContext(ctx, "failed to delete form", "tenant_id", form.TenantID, "form_id", form.ID, "error", err)
 		return err
 	}
 
-	s.logger.InfoContext(ctx, "form deleted", "tenant_id", cmd.TenantID, "form_id", cmd.ID)
+	s.logger.InfoContext(ctx, "form deleted", "tenant_id", form.TenantID, "form_id", form.ID)
 
 	return nil
 }
@@ -167,7 +169,7 @@ func (s *formsService) FindVersions(ctx context.Context, query ports.FindFormVer
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, query.TenantID, query.ID); err != nil {
+	if _, err := s.findForm(ctx, query.TenantID, query.ID); err != nil {
 		return nil, err
 	}
 
@@ -188,7 +190,7 @@ func (s *formsService) FindVersion(ctx context.Context, query ports.FindFormVers
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, query.TenantID, query.ID); err != nil {
+	if _, err := s.findForm(ctx, query.TenantID, query.ID); err != nil {
 		return nil, err
 	}
 
@@ -209,7 +211,7 @@ func (s *formsService) CreateVersion(ctx context.Context, cmd *commands.CreateFo
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, cmd.TenantID, cmd.FormID); err != nil {
+	if _, err := s.findForm(ctx, cmd.TenantID, cmd.FormID); err != nil {
 		return nil, err
 	}
 
@@ -269,7 +271,7 @@ func (s *formsService) UpdateVersion(ctx context.Context, cmd *commands.UpdateFo
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, cmd.TenantID, cmd.FormID); err != nil {
+	if _, err := s.findForm(ctx, cmd.TenantID, cmd.FormID); err != nil {
 		return nil, err
 	}
 
@@ -315,7 +317,8 @@ func (s *formsService) PublishVersion(ctx context.Context, cmd commands.PublishF
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, cmd.TenantID, cmd.FormID); err != nil {
+	form, err := s.findForm(ctx, cmd.TenantID, cmd.FormID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -329,6 +332,22 @@ func (s *formsService) PublishVersion(ctx context.Context, cmd commands.PublishF
 		s.logger.WarnContext(ctx, "version publish failed; domain invariant violation", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
 		return nil, err
 	}
+
+	p, err := json.Marshal(domain.PublishFormVersionPayload{
+		TenantID:    form.TenantID,
+		FormID:      form.ID,
+		VersionID:   version.ID,
+		Version:     version.Version,
+		Name:        form.Name,
+		Description: form.Description,
+		Metadata:    version.Metadata,
+		PublishedBy: version.PublishedBy,
+	})
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to marshal publish version event", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
+		return nil, err
+	}
+	version.AddEvent(domain.EventTypeFormPublished, p)
 
 	version, err = s.versionsRepository.Upsert(ctx, version)
 	if err != nil {
@@ -349,7 +368,8 @@ func (s *formsService) RetireVersion(ctx context.Context, cmd commands.RetireFor
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, cmd.TenantID, cmd.FormID); err != nil {
+	form, err := s.findForm(ctx, cmd.TenantID, cmd.FormID)
+	if err != nil {
 		return nil, err
 	}
 
@@ -364,6 +384,19 @@ func (s *formsService) RetireVersion(ctx context.Context, cmd commands.RetireFor
 		return nil, err
 	}
 
+	p, err := json.Marshal(domain.RetireFormVersionPayload{
+		TenantID:  form.TenantID,
+		FormID:    form.ID,
+		VersionID: version.ID,
+		Version:   version.Version,
+		RetiredBy: version.RetiredBy,
+	})
+	if err != nil {
+		s.logger.ErrorContext(ctx, "failed to marshal retire version event", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
+		return nil, err
+	}
+	version.AddEvent(domain.EventTypeFormRetired, p)
+
 	version, err = s.versionsRepository.Upsert(ctx, version)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to persist version", "tenant_id", cmd.TenantID, "form_id", cmd.FormID, "version_id", cmd.VersionID, "error", err)
@@ -375,20 +408,20 @@ func (s *formsService) RetireVersion(ctx context.Context, cmd commands.RetireFor
 	return version, nil
 }
 
-func (s *formsService) isValidAccess(ctx context.Context, tenantID string, formID domain.FormID) error {
+func (s *formsService) findForm(ctx context.Context, tenantID string, formID domain.FormID) (*domain.Form, error) {
 	form, err := s.formsRepository.FindByID(ctx, formID)
 
 	if err != nil {
 		s.logFindFormByIDError(ctx, err, formID)
-		return err
+		return nil, err
 	}
 
 	if form.TenantID != tenantID {
 		s.logger.WarnContext(ctx, "unauthorized form access", "tenant_id", tenantID, "form_id", formID)
-		return common.ErrUnauthorized
+		return nil, common.ErrUnauthorized
 	}
 
-	return nil
+	return form, nil
 }
 
 func (s *formsService) hasActiveVersion(ctx context.Context, id domain.FormID) (bool, error) {

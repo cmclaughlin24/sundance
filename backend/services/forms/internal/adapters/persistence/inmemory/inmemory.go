@@ -16,7 +16,7 @@ func Bootstrap(logger *slog.Logger) *ports.Repository {
 		Tags:         newInMemoryTagRepository(logger),
 		TagVersions:  newInMemoryTagVersionsRepository(logger),
 		Forms:        newInMemoryFormsRepository(logger),
-		FormVersions: newInMemoryFormVersionsRepository(logger),
+		FormVersions: newInMemoryFormVersionsRepository(logger, outbox),
 		Submissions:  newInMemorySubmissionsRepository(logger, outbox),
 	}
 }

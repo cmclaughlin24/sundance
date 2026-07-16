@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"encoding/json"
 	"errors"
 	"slices"
 	"time"
@@ -14,6 +15,10 @@ const (
 	FormVersionStatusDraft   FormVersionStatus = "draft"
 	FormVersionStatusActive  FormVersionStatus = "active"
 	FormVersionStatusRetired FormVersionStatus = "retired"
+
+	AggregateTypeForm      AggregateType = "form"
+	EventTypeFormPublished EventType     = "published"
+	EventTypeFormRetired   EventType     = "retired"
 )
 
 var (
@@ -40,6 +45,7 @@ type FormVersion struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	pages       PositionElements[*Page]
+	withEvents
 }
 
 func NewFormVersion(formID FormID, version int, status FormVersionStatus, metadata map[string]string) (*FormVersion, error) {
@@ -212,8 +218,32 @@ func (v *FormVersion) Retire(retiredBy string) error {
 	return nil
 }
 
+func (v *FormVersion) AddEvent(eventType EventType, payload json.RawMessage) {
+	e := NewEvent(AggregateTypeForm, string(v.FormID), eventType, payload)
+	v.withEvents.AddEvent(e)
+}
+
 var isValidFormVersionStatus = validate.NewTypeValidator([]FormVersionStatus{
 	FormVersionStatusDraft,
 	FormVersionStatusActive,
 	FormVersionStatusRetired,
 })
+
+type PublishFormVersionPayload struct {
+	TenantID    string            `json:"tenantId"`
+	FormID      FormID            `json:"formId"`
+	VersionID   FormVersionID     `json:"versionId"`
+	Version     int               `json:"version"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Metadata    map[string]string `json:"metadata"`
+	PublishedBy string            `json:"publishedBy"`
+}
+
+type RetireFormVersionPayload struct {
+	TenantID  string        `json:"tenantId"`
+	FormID    FormID        `json:"formId"`
+	VersionID FormVersionID `json:"versionId"`
+	Version   int           `json:"version"`
+	RetiredBy string        `json:"retiredBy"`
+}

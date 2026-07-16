@@ -13,12 +13,14 @@ import (
 type inMemoryFormVersionsRepository struct {
 	mu       sync.RWMutex
 	versions map[string]*domain.FormVersion
+	outbox   ports.OutboxRepository
 	logger   *slog.Logger
 }
 
-func newInMemoryFormVersionsRepository(logger *slog.Logger) ports.FormVersionRepository {
+func newInMemoryFormVersionsRepository(logger *slog.Logger, outbox ports.OutboxRepository) ports.FormVersionRepository {
 	return &inMemoryFormVersionsRepository{
 		versions: make(map[string]*domain.FormVersion),
+		outbox:   outbox,
 		logger:   logger,
 	}
 }
@@ -79,5 +81,21 @@ func (r *inMemoryFormVersionsRepository) Upsert(ctx context.Context, version *do
 
 	r.versions[string(version.ID)] = version
 
+	if err := r.WriteEvents(ctx, version); err != nil {
+		return nil, err
+	}
+
+	version.DrainEvents()
+
 	return version, nil
+}
+
+func (r *inMemoryFormVersionsRepository) WriteEvents(ctx context.Context, e domain.HasEvents) error {
+	for event := range e.PeekEvents() {
+		if _, err := r.outbox.Upsert(ctx, &event); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

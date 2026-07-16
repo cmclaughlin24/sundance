@@ -89,8 +89,6 @@ func (s *submissionJobsService) updateSubmission(ctx context.Context, submission
 		return err
 	}
 
-	submission.DrainEvents()
-
 	return nil
 }
 

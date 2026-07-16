@@ -27,15 +27,16 @@ var (
 )
 
 type mongoDBFormVersionsRepository struct {
-	base *database.MongoDBRepository[documents.FormVersionDocument]
+	base   *database.MongoDBRepository[documents.FormVersionDocument]
+	outbox *mongoDBOutboxRepository
 }
 
-func newMongoDBFormVersionsRepository(db *mongo.Database, logger *slog.Logger) (ports.FormVersionRepository, error) {
+func newMongoDBFormVersionsRepository(db *mongo.Database, outbox *mongoDBOutboxRepository, logger *slog.Logger) (ports.FormVersionRepository, error) {
 	base := database.NewMongoDBRepository[documents.FormVersionDocument](
 		db.Collection("form_versions"),
 		logger,
 	)
-	repository := &mongoDBFormVersionsRepository{base}
+	repository := &mongoDBFormVersionsRepository{base, outbox}
 
 	if err := repository.migrate(context.Background()); err != nil {
 		return nil, err
@@ -134,7 +135,11 @@ func (r *mongoDBFormVersionsRepository) Upsert(ctx context.Context, v *domain.Fo
 
 	var result documents.FormVersionDocument
 	err = r.base.WithSession(ctx, func(sctx context.Context) error {
-		return r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result)
+		if err := r.base.Collection().FindOneAndUpdate(sctx, filter, update, opts).Decode(&result); err != nil {
+			return err
+		}
+
+		return r.WriteEvents(sctx, v)
 	})
 
 	if err != nil {
@@ -146,5 +151,17 @@ func (r *mongoDBFormVersionsRepository) Upsert(ctx context.Context, v *domain.Fo
 		return nil, err
 	}
 
+	v.DrainEvents()
+
 	return documents.FromFormVersionDocument(&result)
+}
+
+func (r *mongoDBFormVersionsRepository) WriteEvents(ctx context.Context, e domain.HasEvents) error {
+	for event := range e.PeekEvents() {
+		if _, err := r.outbox.Upsert(ctx, &event); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
