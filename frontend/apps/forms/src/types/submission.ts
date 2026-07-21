@@ -1,14 +1,14 @@
 export interface ISubmission {
   formId: string;
   versionId: string;
-  values: ISubmissionFieldValue[];
+  values: ISubmissionValue[];
 }
 
-export interface ISubmissionFieldValue {
+export interface ISubmissionValue {
   /**
    * Unique identifier for the field.
    */
-  fieldId: string;
+  elementId: string;
   /**
    * The value of the field.
    */
