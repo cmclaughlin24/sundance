@@ -154,9 +154,9 @@ VITE_TENANTS_API_URL=http://localhost:8080
 
 ## Phase 3 — Form State Architecture
 
-### 3a. New file: `context/FormContext.ts`
+### 3a. New file: `context/FormContext.ts` ✓
 
-Define the context shape, reducer actions, and initial state.
+Define the context shape, reducer actions, and initial state. _Created as `store/formContext.ts`, `store/formReducer.ts`._
 
 ```ts
 interface FormState {
@@ -180,18 +180,20 @@ type FormAction =
   | { type: "INITIALIZE"; values: Record<string, any> };
 ```
 
-### 3b. New file: `context/FormProvider.tsx`
+### 3b. New file: `context/FormProvider.tsx` ✓
 
 Provider component that:
 
-- Accepts `rawSubmission` prop and initializes state from it via `INITIALIZE` dispatch
-- Wraps children with `FormContext.Provider`
-- Re-runs the rule evaluation pass after every `SET_VALUE` action, updating `ruleStates`
+- Accepts `rawSubmission` prop and initializes state from it via `useReducer` initializer function — no extra render cycle ✓
+- Wraps children with state and dispatch contexts ✓
+- _Created as `store/FormProvider.tsx`; consumer hooks in `store/useFormContext.ts`_ ✓
 
 **Files to create:**
 
-- `frontend/apps/forms/src/context/FormContext.ts`
-- `frontend/apps/forms/src/context/FormProvider.tsx`
+- `frontend/apps/forms/src/store/formContext.ts` ✓
+- `frontend/apps/forms/src/store/formReducer.ts` ✓
+- `frontend/apps/forms/src/store/FormProvider.tsx` ✓
+- `frontend/apps/forms/src/store/useFormContext.ts` ✓
 
 ---
 
@@ -443,8 +445,10 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `frontend/apps/forms/src/types/elementAttributes.ts`                   | Discriminated union of all element attribute types ✓                                             |
 | `frontend/apps/forms/src/types/dataSource.ts`                          | `ILookup`, `IDataSourceRef`, `IBindingSource`, `HasDataSourceRef` types — created as `data.ts` ✓ |
-| `frontend/apps/forms/src/context/FormContext.ts`                       | Context shape, reducer, actions, initial state                                                   |
-| `frontend/apps/forms/src/context/FormProvider.tsx`                     | Provider component with rule evaluation orchestration                                            |
+| `frontend/apps/forms/src/store/formContext.ts`                         | State and dispatch context objects ✓                                                             |
+| `frontend/apps/forms/src/store/formReducer.ts`                         | Reducer, actions, `FormState`, `initialFormState`, `initializeForm` ✓                            |
+| `frontend/apps/forms/src/store/FormProvider.tsx`                       | Provider component, wires `useReducer` with `rawSubmission` initializer ✓                        |
+| `frontend/apps/forms/src/store/useFormContext.ts`                      | `useFormState` and `useFormDispatch` consumer hooks ✓                                            |
 | `frontend/apps/forms/src/hooks/useRuleEvaluator.ts`                    | Client-side rule evaluator utility                                                               |
 | `frontend/apps/forms/src/hooks/useDataSourceLookups.ts`                | Async lookup fetcher for select fields                                                           |
 | `frontend/apps/forms/src/components/fields/TextField.tsx`              | Text field component                                                                             |
@@ -468,7 +472,7 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | `frontend/apps/forms/src/services/dataSourcesService.ts`             | Implement `getLookups()` method ✓                                                             |
 | `frontend/apps/forms/src/services/submissionService.ts`              | Add idempotency key header support                                                            |
 | `frontend/apps/forms/src/hooks/useHttpService.ts`                    | Use `import.meta.env` for base URLs                                                           |
-| `frontend/apps/forms/src/components/FormElement/FormElement.tsx`     | Full rewrite — multi-page wizard, `FormProvider`, `useActionState`                            |
+| `frontend/apps/forms/src/components/FormElement/FormElement.tsx`     | Full rewrite — multi-page wizard, `FormProvider`, `useActionState` — _partial: `FormProvider` and `rawSubmission` wired up_ |
 | `frontend/apps/forms/src/components/FormElement/FormElement.type.ts` | Add `token` prop if auth is wired up later                                                    |
 | `frontend/apps/forms/src/routes/__root.tsx`                          | Remove placeholder content                                                                    |
 

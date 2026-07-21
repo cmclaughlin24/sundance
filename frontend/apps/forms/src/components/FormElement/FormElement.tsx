@@ -1,19 +1,20 @@
 import { useFormsService, useSubmissionsService } from "@/hooks/useHttpService";
 import type { FormElementProps } from "./FormElement.type";
 import { useAsyncData } from "@/hooks/useAsyncData";
-import { FormContextProvider } from "@/store/formContext";
+import { FormProvider } from "@/store/FormProvider";
 
 export const FormElement: React.FC<FormElementProps> = function ({
   tenantId,
   formId,
   versionId,
+  rawSubmission,
   onSubmit,
 }) {
   const formsService = useFormsService();
   const submissionService = useSubmissionsService();
   const accessToken = "placeholder";
 
-  const { data, isLoading, error } = useAsyncData(async () => {
+  const { isLoading, error } = useAsyncData(async () => {
     if (!accessToken) {
       return null;
     }
@@ -45,11 +46,9 @@ export const FormElement: React.FC<FormElementProps> = function ({
     return <>Something went wrong...</>;
   }
 
-  console.log(data);
-
   return (
-    <FormContextProvider>
+    <FormProvider rawSubmission={rawSubmission}>
       <form onSubmit={handleSubmit}></form>
-    </FormContextProvider>
+    </FormProvider>
   );
 };
