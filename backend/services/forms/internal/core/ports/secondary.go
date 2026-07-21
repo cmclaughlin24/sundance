@@ -75,14 +75,14 @@ type SubmissionProcessor interface {
 }
 
 type Strategies struct {
-	FieldValidator FieldValidatorRegistry
+	ElementValidator ElementValidatorRegistry
 }
 
-type FieldValidatorStrategy interface {
-	Validate(context.Context, domain.Field, domain.SubmissionFieldValue) error
+type ElementValidatorStrategy interface {
+	Validate(context.Context, domain.Element, domain.SubmissionValue) error
 }
 
-type FieldValidatorRegistry = stratreg.StrategyRegistry[domain.FieldType, FieldValidatorStrategy]
+type ElementValidatorRegistry = stratreg.StrategyRegistry[domain.ElementType, ElementValidatorStrategy]
 
 type RuleEvaluationContext = map[string]any
 

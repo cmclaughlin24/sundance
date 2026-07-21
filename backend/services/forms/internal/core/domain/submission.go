@@ -45,7 +45,7 @@ type Submission struct {
 	Status        SubmissionStatus
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
-	Values        []*SubmissionFieldValue
+	Values        []*SubmissionValue
 	Facts         []*CanonicalFact
 	Attempts      []*SubmissionAttempt
 	withEvents
@@ -56,7 +56,7 @@ func NewSubmission(
 	formID FormID,
 	versionID FormVersionID,
 	idempotencyID IdempotencyID,
-	values []*SubmissionFieldValue,
+	values []*SubmissionValue,
 ) (*Submission, error) {
 	s := &Submission{
 		ID:            SubmissionID(NewID()),
@@ -87,7 +87,7 @@ func HydrateSubmission(
 	referenceID ReferenceID,
 	idempotencyID IdempotencyID,
 	status SubmissionStatus,
-	values []*SubmissionFieldValue,
+	values []*SubmissionValue,
 	facts []*CanonicalFact,
 	attempts []*SubmissionAttempt,
 	createdAt time.Time,
@@ -109,9 +109,9 @@ func HydrateSubmission(
 	}
 }
 
-func (s *Submission) GetFieldValue(id FieldID) (*SubmissionFieldValue, bool) {
-	idx := slices.IndexFunc(s.Values, func(fv *SubmissionFieldValue) bool {
-		return id == fv.FieldID
+func (s *Submission) GetValue(id ElementID) (*SubmissionValue, bool) {
+	idx := slices.IndexFunc(s.Values, func(fv *SubmissionValue) bool {
+		return id == fv.ElementID
 	})
 
 	if idx == -1 {

@@ -94,8 +94,8 @@ func (s *submissionJobsService) updateSubmission(ctx context.Context, submission
 
 func shouldReject(err error) bool {
 	return errors.Is(err, domain.ErrInvalidVersionStatus) ||
-		errors.Is(err, strategies.ErrFieldValidation) ||
-		errors.Is(err, strategies.ErrFieldRequired) ||
-		errors.Is(err, strategies.ErrFieldTypeValue) ||
+		errors.Is(err, strategies.ErrElementValidation) ||
+		errors.Is(err, strategies.ErrElementRequired) ||
+		errors.Is(err, strategies.ErrElementTypeValue) ||
 		errors.Is(err, processors.ErrMissingCollectionIndex)
 }

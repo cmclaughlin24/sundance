@@ -79,13 +79,13 @@ func Test_isBadRequest(t *testing.T) {
 			true,
 		},
 		{
-			"should yield true when err is ErrInvalidFieldType",
-			domain.ErrInvalidFieldType,
+			"should yield true when err is ErrInvalidElementType",
+			domain.ErrInvalidElementType,
 			true,
 		},
 		{
-			"should yield true when err is ErrInvalidFieldAttributes",
-			domain.ErrInvalidFieldAttributes,
+			"should yield true when err is ErrInvalidElementAttributes",
+			domain.ErrInvalidElementAttributes,
 			true,
 		},
 		{

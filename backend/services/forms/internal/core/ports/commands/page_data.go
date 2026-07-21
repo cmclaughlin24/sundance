@@ -16,36 +16,36 @@ type RuleData struct {
 	Expressions []*RuleExpressionData
 }
 
-type FieldTagMappingData struct {
+type ElementTagMappingData struct {
 	TagVersionID string
 	Priority     int
 }
 
-type FieldData struct {
+type ElementData struct {
 	ID         *string
 	Key        string
 	Name       string
 	Type       string
 	Position   float32
-	Attributes domain.FieldAttributes
-	Tags       []FieldTagMappingData
+	Attributes domain.ElementAttributes
+	Tags       []ElementTagMappingData
 	Rules      []RuleData
 }
 
 type SectionData struct {
-	ID       *string
-	Key      string
-	Name     string
-	Position float32
-	FieldsData   []FieldData
-	Rules    []RuleData
+	ID           *string
+	Key          string
+	Name         string
+	Position     float32
+	ElementsData []ElementData
+	Rules        []RuleData
 }
 
 type PageData struct {
-	ID       *string
-	Key      string
-	Name     string
-	Position float32
+	ID           *string
+	Key          string
+	Name         string
+	Position     float32
 	SectionsData []SectionData
-	Rules    []RuleData
+	Rules        []RuleData
 }

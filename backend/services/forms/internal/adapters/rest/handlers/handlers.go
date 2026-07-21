@@ -49,8 +49,8 @@ func isBadRequest(err error) bool {
 		errors.Is(err, domain.ErrDuplicateRuleType) ||
 		errors.Is(err, domain.ErrPublishedByRequired) ||
 		errors.Is(err, domain.ErrRetiredByRequired) ||
-		errors.Is(err, domain.ErrInvalidFieldType) ||
-		errors.Is(err, domain.ErrInvalidFieldAttributes) ||
+		errors.Is(err, domain.ErrInvalidElementType) ||
+		errors.Is(err, domain.ErrInvalidElementAttributes) ||
 		errors.Is(err, domain.ErrInvalidForm) ||
 		errors.Is(err, domain.ErrFormHasActiveVersion) ||
 		errors.Is(err, domain.ErrInvalidPage) ||

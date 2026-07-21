@@ -20,10 +20,10 @@ var (
 )
 
 type Section struct {
-	ID     SectionID
-	Key    string `validate:"required,nowhitespace"`
-	Name   string `validate:"required"`
-	fields PositionElements[*Field]
+	ID       SectionID
+	Key      string `validate:"required,nowhitespace"`
+	Name     string `validate:"required"`
+	elements PositionElements[*Element]
 	withPosition
 	withRules
 }
@@ -34,10 +34,10 @@ func NewSection(key, name string, position float32) (*Section, error) {
 	}
 
 	s := &Section{
-		ID:     SectionID(NewID()),
-		Key:    key,
-		Name:   name,
-		fields: make(PositionElements[*Field], 0),
+		ID:       SectionID(NewID()),
+		Key:      key,
+		Name:     name,
+		elements: make(PositionElements[*Element], 0),
 		withPosition: withPosition{
 			position: position,
 		},
@@ -52,10 +52,10 @@ func NewSection(key, name string, position float32) (*Section, error) {
 
 func HydrateSection(id SectionID, key, name string, position float32) *Section {
 	return &Section{
-		ID:     id,
-		Key:    key,
-		Name:   name,
-		fields: make(PositionElements[*Field], 0),
+		ID:       id,
+		Key:      key,
+		Name:     name,
+		elements: make(PositionElements[*Element], 0),
 		withPosition: withPosition{
 			position: position,
 		},
@@ -85,50 +85,50 @@ func (s *Section) Update(key, name string, position float32) error {
 	return nil
 }
 
-func (s *Section) GetFields() PositionElements[*Field] {
-	return s.fields
+func (s *Section) GetElements() PositionElements[*Element] {
+	return s.elements
 }
 
-func (s *Section) GetField(fieldID FieldID) *Field {
-	idx := slices.IndexFunc(s.fields, func(f *Field) bool {
-		return f.ID == fieldID
+func (s *Section) GetElement(elementID ElementID) *Element {
+	idx := slices.IndexFunc(s.elements, func(e *Element) bool {
+		return e.ID == elementID
 	})
 
 	if idx == -1 {
 		return nil
 	}
 
-	return s.fields[idx]
+	return s.elements[idx]
 }
 
-func (s *Section) AddFields(fields ...*Field) error {
+func (s *Section) AddElements(elements ...*Element) error {
 	if s == nil {
 		return ErrInvalidSection
 	}
 
-	cpy := slices.Clone(s.fields)
-	cpy = append(cpy, fields...)
+	cpy := slices.Clone(s.elements)
+	cpy = append(cpy, elements...)
 
 	if ok := hasUniqueElements(cpy); !ok {
 		return ErrDuplicatePosition
 	}
 
 	sortElements(cpy)
-	s.fields = cpy
+	s.elements = cpy
 
 	return nil
 }
 
-func (s *Section) ReplaceFields(fields ...*Field) error {
+func (s *Section) ReplaceElements(elements ...*Element) error {
 	if s == nil {
 		return ErrInvalidSection
 	}
 
-	old := s.fields
-	s.fields = make(PositionElements[*Field], 0)
+	old := s.elements
+	s.elements = make(PositionElements[*Element], 0)
 
-	if err := s.AddFields(fields...); err != nil {
-		s.fields = old
+	if err := s.AddElements(elements...); err != nil {
+		s.elements = old
 		return err
 	}
 

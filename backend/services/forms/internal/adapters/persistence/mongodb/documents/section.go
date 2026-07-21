@@ -3,26 +3,26 @@ package documents
 import "sundance/backend/services/forms/internal/core/domain"
 
 type SectionDocument struct {
-	ID       string           `bson:"_id"`
-	Key      string           `bson:"key"`
-	Name     string           `bson:"name"`
-	Position float32          `bson:"position"`
-	Fields   []*FieldDocument `bson:"fields"`
-	Rules    []*ruleDocument  `bson:"rules"`
+	ID       string              `bson:"_id"`
+	Key      string              `bson:"key"`
+	Name     string              `bson:"name"`
+	Position float32             `bson:"position"`
+	Elements []*ElementDocument  `bson:"elements"`
+	Rules    []*ruleDocument     `bson:"rules"`
 }
 
 func ToSectionDocument(s *domain.Section) (*SectionDocument, error) {
-	fields := s.GetFields()
-	fieldDocs := make([]*FieldDocument, 0, len(fields))
+	elements := s.GetElements()
+	elementDocs := make([]*ElementDocument, 0, len(elements))
 
-	for _, f := range fields {
-		doc, err := ToFieldDocument(f)
+	for _, e := range elements {
+		doc, err := ToElementDocument(e)
 
 		if err != nil {
 			return nil, err
 		}
 
-		fieldDocs = append(fieldDocs, doc)
+		elementDocs = append(elementDocs, doc)
 	}
 
 	rules := RulesToDocuments(s.GetRules())
@@ -32,7 +32,7 @@ func ToSectionDocument(s *domain.Section) (*SectionDocument, error) {
 		Key:      s.Key,
 		Name:     s.Name,
 		Position: s.GetPosition(),
-		Fields:   fieldDocs,
+		Elements: elementDocs,
 		Rules:    rules,
 	}, nil
 }
@@ -45,18 +45,18 @@ func FromSectionDocument(s *SectionDocument) (*domain.Section, error) {
 		s.Position,
 	)
 
-	fields := make([]*domain.Field, 0, len(s.Fields))
-	for _, f := range s.Fields {
-		field, err := FromFieldDocument(f)
+	elements := make([]*domain.Element, 0, len(s.Elements))
+	for _, e := range s.Elements {
+		element, err := FromElementDocument(e)
 
 		if err != nil {
 			return nil, err
 		}
 
-		fields = append(fields, field)
+		elements = append(elements, element)
 	}
 
-	if err := section.AddFields(fields...); err != nil {
+	if err := section.AddElements(elements...); err != nil {
 		return nil, err
 	}
 

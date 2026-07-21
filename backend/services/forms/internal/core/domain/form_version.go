@@ -99,16 +99,16 @@ func HydrateFormVersion(
 	}
 }
 
-func (v *FormVersion) FlatFields() []*Field {
-	var fields []*Field
+func (v *FormVersion) FlatElements() []*Element {
+	var elements []*Element
 
 	for _, page := range v.pages {
 		for _, section := range page.GetSections() {
-			fields = append(fields, section.GetFields()...)
+			elements = append(elements, section.GetElements()...)
 		}
 	}
 
-	return fields
+	return elements
 }
 
 func (v *FormVersion) GetPages() []*Page {

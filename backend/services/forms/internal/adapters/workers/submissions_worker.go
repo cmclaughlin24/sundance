@@ -113,9 +113,9 @@ func newSubmissionWorkFn(app *core.Application, options submissionJobOptions) wo
 }
 
 func isRetryableError(err error) bool {
-	return !errors.Is(err, strategies.ErrFieldValidation) &&
-		!errors.Is(err, strategies.ErrFieldRequired) &&
-		!errors.Is(err, strategies.ErrFieldTypeValue) &&
+	return !errors.Is(err, strategies.ErrElementValidation) &&
+		!errors.Is(err, strategies.ErrElementRequired) &&
+		!errors.Is(err, strategies.ErrElementTypeValue) &&
 		!errors.Is(err, domain.ErrInvalidVersionStatus) &&
 		!errors.Is(err, stratreg.ErrStrategyNotFound)
 }

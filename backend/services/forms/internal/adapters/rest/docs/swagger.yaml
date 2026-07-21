@@ -1,5 +1,5 @@
 definitions:
-  APIErrorResponse:
+  httputil.APIErrorResponse:
     properties:
       error:
         type: string
@@ -8,49 +8,49 @@ definitions:
       statusCode:
         type: integer
     type: object
-  APIResponse-FormResponse:
+  httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormResponse:
     properties:
       data:
-        $ref: '#/definitions/FormResponse'
+        $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.FormResponse'
       message:
         type: string
     type: object
-  APIResponse-FormVersionResponse:
+  httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormVersionResponse:
     properties:
       data:
-        $ref: '#/definitions/FormVersionResponse'
+        $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.FormVersionResponse'
       message:
         type: string
     type: object
-  APIResponse-SubmissionResponse:
+  httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_SubmissionResponse:
     properties:
       data:
-        $ref: '#/definitions/SubmissionResponse'
+        $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionResponse'
       message:
         type: string
     type: object
-  APIResponse-TagResponse:
+  httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagResponse:
     properties:
       data:
-        $ref: '#/definitions/TagResponse'
+        $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.TagResponse'
       message:
         type: string
     type: object
-  APIResponse-TagVersionResponse:
+  httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagVersionResponse:
     properties:
       data:
-        $ref: '#/definitions/TagVersionResponse'
+        $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.TagVersionResponse'
       message:
         type: string
     type: object
-  APIResponse-sundance_backend_services_forms_internal_core_domain_FactMap:
+  httputil.APIResponse-sundance_backend_services_forms_internal_core_domain_FactMap:
     properties:
       data:
-        $ref: '#/definitions/FactMap'
+        $ref: '#/definitions/sundance_backend_services_forms_internal_core_domain.FactMap'
       message:
         type: string
     type: object
-  CreateTagRequest:
+  sundance_backend_services_forms_internal_adapters_rest_dto.CreateTagRequest:
     properties:
       displayName:
         type: string
@@ -63,10 +63,7 @@ definitions:
       primitiveType:
         type: string
     type: object
-  FactMap:
-    additionalProperties: {}
-    type: object
-  FieldRequest:
+  sundance_backend_services_forms_internal_adapters_rest_dto.ElementRequest:
     properties:
       attributes:
         type: object
@@ -84,11 +81,11 @@ definitions:
         type: number
       rules:
         items:
-          $ref: '#/definitions/RuleRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleRequest'
         type: array
       tags:
         items:
-          $ref: '#/definitions/upsertFieldTagMappingRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.upsertElementTagMappingRequest'
         type: array
       type:
         type: string
@@ -98,7 +95,7 @@ definitions:
     - name
     - type
     type: object
-  FieldResponse:
+  sundance_backend_services_forms_internal_adapters_rest_dto.ElementResponse:
     properties:
       attributes:
         type: object
@@ -112,20 +109,20 @@ definitions:
         type: number
       rules:
         items:
-          $ref: '#/definitions/RuleResponse'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleResponse'
         type: array
       tags:
         items:
-          $ref: '#/definitions/FieldTagMappingResponse'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.ElementTagMappingResponse'
         type: array
       type:
         type: string
     type: object
-  FieldTagMappingResponse:
+  sundance_backend_services_forms_internal_adapters_rest_dto.ElementTagMappingResponse:
     properties:
       createdAt:
         type: string
-      fieldId:
+      elementId:
         type: string
       id:
         type: string
@@ -136,7 +133,7 @@ definitions:
       updatedAt:
         type: string
     type: object
-  FormResponse:
+  sundance_backend_services_forms_internal_adapters_rest_dto.FormResponse:
     properties:
       createdAt:
         type: string
@@ -151,7 +148,7 @@ definitions:
       updatedAt:
         type: string
     type: object
-  FormVersionResponse:
+  sundance_backend_services_forms_internal_adapters_rest_dto.FormVersionResponse:
     properties:
       createdAt:
         type: string
@@ -165,7 +162,7 @@ definitions:
         type: object
       pages:
         items:
-          $ref: '#/definitions/PageResponse'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.PageResponse'
         type: array
       publishedAt:
         type: string
@@ -176,23 +173,13 @@ definitions:
       retiredById:
         type: string
       status:
-        $ref: '#/definitions/FormVersionStatus'
+        $ref: '#/definitions/sundance_backend_services_forms_internal_core_domain.FormVersionStatus'
       updatedAt:
         type: string
       version:
         type: integer
     type: object
-  FormVersionStatus:
-    enum:
-    - draft
-    - active
-    - retired
-    type: string
-    x-enum-varnames:
-    - FormVersionStatusDraft
-    - FormVersionStatusActive
-    - FormVersionStatusRetired
-  PageRequest:
+  sundance_backend_services_forms_internal_adapters_rest_dto.PageRequest:
     properties:
       id:
         type: string
@@ -208,17 +195,17 @@ definitions:
         type: number
       rules:
         items:
-          $ref: '#/definitions/RuleRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleRequest'
         type: array
       sections:
         items:
-          $ref: '#/definitions/SectionRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SectionRequest'
         type: array
     required:
     - key
     - name
     type: object
-  PageResponse:
+  sundance_backend_services_forms_internal_adapters_rest_dto.PageResponse:
     properties:
       id:
         type: string
@@ -230,14 +217,14 @@ definitions:
         type: number
       rules:
         items:
-          $ref: '#/definitions/RuleResponse'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleResponse'
         type: array
       sections:
         items:
-          $ref: '#/definitions/SectionResponse'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SectionResponse'
         type: array
     type: object
-  RuleExpressionRequest:
+  sundance_backend_services_forms_internal_adapters_rest_dto.RuleExpressionRequest:
     properties:
       fieldKey:
         type: string
@@ -253,7 +240,7 @@ definitions:
     - fieldKey
     - operator
     type: object
-  RuleExpressionResponse:
+  sundance_backend_services_forms_internal_adapters_rest_dto.RuleExpressionResponse:
     properties:
       fieldKey:
         type: string
@@ -265,11 +252,11 @@ definitions:
         type: number
       value: {}
     type: object
-  RuleRequest:
+  sundance_backend_services_forms_internal_adapters_rest_dto.RuleRequest:
     properties:
       expressions:
         items:
-          $ref: '#/definitions/RuleExpressionRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleExpressionRequest'
         type: array
       id:
         type: string
@@ -278,32 +265,22 @@ definitions:
     required:
     - type
     type: object
-  RuleResponse:
+  sundance_backend_services_forms_internal_adapters_rest_dto.RuleResponse:
     properties:
       expressions:
         items:
-          $ref: '#/definitions/RuleExpressionResponse'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleExpressionResponse'
         type: array
       id:
         type: string
       type:
-        $ref: '#/definitions/RuleType'
+        $ref: '#/definitions/sundance_backend_services_forms_internal_core_domain.RuleType'
     type: object
-  RuleType:
-    enum:
-    - visible
-    - required
-    - readonly
-    type: string
-    x-enum-varnames:
-    - RuleTypeVisible
-    - RuleTypeRequired
-    - RuleTypeReadOnly
-  SectionRequest:
+  sundance_backend_services_forms_internal_adapters_rest_dto.SectionRequest:
     properties:
-      fields:
+      elements:
         items:
-          $ref: '#/definitions/FieldRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.ElementRequest'
         type: array
       id:
         type: string
@@ -319,17 +296,17 @@ definitions:
         type: number
       rules:
         items:
-          $ref: '#/definitions/RuleRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleRequest'
         type: array
     required:
     - key
     - name
     type: object
-  SectionResponse:
+  sundance_backend_services_forms_internal_adapters_rest_dto.SectionResponse:
     properties:
-      fields:
+      elements:
         items:
-          $ref: '#/definitions/FieldResponse'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.ElementResponse'
         type: array
       id:
         type: string
@@ -341,27 +318,16 @@ definitions:
         type: number
       rules:
         items:
-          $ref: '#/definitions/RuleResponse'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleResponse'
         type: array
     type: object
-  SubmissionFieldValueDto:
-    properties:
-      collectionIndex:
-        type: integer
-      fieldId:
-        type: string
-      value: {}
-    required:
-    - fieldId
-    - value
-    type: object
-  SubmissionRequest:
+  sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionRequest:
     properties:
       formId:
         type: string
       values:
         items:
-          $ref: '#/definitions/SubmissionFieldValueDto'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionValueDto'
         type: array
       versionId:
         type: string
@@ -369,7 +335,7 @@ definitions:
     - formId
     - versionId
     type: object
-  SubmissionResponse:
+  sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionResponse:
     properties:
       createdAt:
         type: string
@@ -380,39 +346,30 @@ definitions:
       referenceId:
         type: string
       status:
-        $ref: '#/definitions/SubmissionStatus'
+        $ref: '#/definitions/sundance_backend_services_forms_internal_core_domain.SubmissionStatus'
       tenantId:
         type: string
       updatedAt:
         type: string
       values:
         items:
-          $ref: '#/definitions/SubmissionFieldValueDto'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionValueDto'
         type: array
       versionId:
         type: string
     type: object
-  SubmissionStatus:
-    enum:
-    - pending
-    - accepted
-    - rejected
-    - failed
-    type: string
-    x-enum-varnames:
-    - SubmissionStatusPending
-    - SubmissionStatusAccepted
-    - SubmissionStatusRejected
-    - SubmissionStatusFailed
-  TagNodeType:
-    enum:
-    - primitive
-    - object
-    type: string
-    x-enum-varnames:
-    - TagNodeTypePrimitive
-    - TagNodeTypeObject
-  TagResponse:
+  sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionValueDto:
+    properties:
+      collectionIndex:
+        type: integer
+      elementId:
+        type: string
+      value: {}
+    required:
+    - elementId
+    - value
+    type: object
+  sundance_backend_services_forms_internal_adapters_rest_dto.TagResponse:
     properties:
       createdAt:
         type: string
@@ -423,25 +380,13 @@ definitions:
       keyPath:
         type: string
       nodeType:
-        $ref: '#/definitions/TagNodeType'
+        $ref: '#/definitions/sundance_backend_services_forms_internal_core_domain.TagNodeType'
       primitiveType:
         type: string
       updatedAt:
         type: string
     type: object
-  TagStatus:
-    enum:
-    - draft
-    - active
-    - deprecated
-    - retired
-    type: string
-    x-enum-varnames:
-    - TagStatusDraft
-    - TagStatusActive
-    - TagStatusDeprecated
-    - TagStatusRetired
-  TagVersionResponse:
+  sundance_backend_services_forms_internal_adapters_rest_dto.TagVersionResponse:
     properties:
       createdAt:
         type: string
@@ -454,18 +399,18 @@ definitions:
       retiredAt:
         type: string
       status:
-        $ref: '#/definitions/TagStatus'
+        $ref: '#/definitions/sundance_backend_services_forms_internal_core_domain.TagStatus'
       tagId:
         type: string
       version:
         type: integer
     type: object
-  UpdateTagRequest:
+  sundance_backend_services_forms_internal_adapters_rest_dto.UpdateTagRequest:
     properties:
       displayName:
         type: string
     type: object
-  UpsertFormRequest:
+  sundance_backend_services_forms_internal_adapters_rest_dto.UpsertFormRequest:
     properties:
       description:
         maxLength: 500
@@ -476,7 +421,7 @@ definitions:
     required:
     - name
     type: object
-  UpsertFormVersionRequest:
+  sundance_backend_services_forms_internal_adapters_rest_dto.UpsertFormVersionRequest:
     properties:
       metadata:
         additionalProperties:
@@ -484,18 +429,73 @@ definitions:
         type: object
       pages:
         items:
-          $ref: '#/definitions/PageRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.PageRequest'
         type: array
     type: object
-  UpsertTagVersionRequest:
+  sundance_backend_services_forms_internal_adapters_rest_dto.UpsertTagVersionRequest:
     type: object
-  upsertFieldTagMappingRequest:
+  sundance_backend_services_forms_internal_adapters_rest_dto.upsertElementTagMappingRequest:
     properties:
       priority:
         type: integer
       tagVersionId:
         type: string
     type: object
+  sundance_backend_services_forms_internal_core_domain.FactMap:
+    additionalProperties: {}
+    type: object
+  sundance_backend_services_forms_internal_core_domain.FormVersionStatus:
+    enum:
+    - draft
+    - active
+    - retired
+    type: string
+    x-enum-varnames:
+    - FormVersionStatusDraft
+    - FormVersionStatusActive
+    - FormVersionStatusRetired
+  sundance_backend_services_forms_internal_core_domain.RuleType:
+    enum:
+    - visible
+    - required
+    - readonly
+    type: string
+    x-enum-varnames:
+    - RuleTypeVisible
+    - RuleTypeRequired
+    - RuleTypeReadOnly
+  sundance_backend_services_forms_internal_core_domain.SubmissionStatus:
+    enum:
+    - pending
+    - accepted
+    - rejected
+    - failed
+    type: string
+    x-enum-varnames:
+    - SubmissionStatusPending
+    - SubmissionStatusAccepted
+    - SubmissionStatusRejected
+    - SubmissionStatusFailed
+  sundance_backend_services_forms_internal_core_domain.TagNodeType:
+    enum:
+    - primitive
+    - object
+    type: string
+    x-enum-varnames:
+    - TagNodeTypePrimitive
+    - TagNodeTypeObject
+  sundance_backend_services_forms_internal_core_domain.TagStatus:
+    enum:
+    - draft
+    - active
+    - deprecated
+    - retired
+    type: string
+    x-enum-varnames:
+    - TagStatusDraft
+    - TagStatusActive
+    - TagStatusDeprecated
+    - TagStatusRetired
 info:
   contact: {}
 paths:
@@ -529,12 +529,12 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/FormResponse'
+              $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.FormResponse'
             type: array
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Get all forms
@@ -567,22 +567,22 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/UpsertFormRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.UpsertFormRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/APIResponse-FormResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Create a form
@@ -625,15 +625,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Delete a form
@@ -672,15 +672,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/FormResponse'
+            $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.FormResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Get a form by ID
@@ -718,26 +718,26 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/UpsertFormRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.UpsertFormRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/APIResponse-FormResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Update a form
@@ -778,12 +778,12 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/FormVersionResponse'
+              $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.FormVersionResponse'
             type: array
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Get all versions
@@ -823,22 +823,22 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/UpsertFormVersionRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.UpsertFormVersionRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/APIResponse-FormVersionResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormVersionResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Create a version
@@ -883,15 +883,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/FormVersionResponse'
+            $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.FormVersionResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Get a version by ID
@@ -936,26 +936,26 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/UpsertFormVersionRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.UpsertFormVersionRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/APIResponse-FormVersionResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormVersionResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Update a version
@@ -1002,19 +1002,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/APIResponse-FormVersionResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormVersionResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Publish a version
@@ -1061,19 +1061,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/APIResponse-FormVersionResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormVersionResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Retire a version
@@ -1109,12 +1109,12 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/SubmissionResponse'
+              $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionResponse'
             type: array
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Get all Submissions
@@ -1154,22 +1154,22 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/SubmissionRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionRequest'
       produces:
       - application/json
       responses:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/APIResponse-SubmissionResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_SubmissionResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Create a submission
@@ -1211,15 +1211,15 @@ paths:
         "202":
           description: Accepted
           schema:
-            $ref: '#/definitions/APIResponse-SubmissionResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_SubmissionResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Replay a submission
@@ -1259,15 +1259,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/SubmissionResponse'
+            $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Get a submission by reference ID
@@ -1314,15 +1314,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Get submission facts
@@ -1369,11 +1369,11 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Get a submission status
@@ -1409,22 +1409,22 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/SubmissionRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionRequest'
       produces:
       - application/json
       responses:
         "200":
           description: Canonical fact map keyed by tag paths
           schema:
-            $ref: '#/definitions/APIResponse-sundance_backend_services_forms_internal_core_domain_FactMap'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_core_domain_FactMap'
         "400":
           description: Validation failure or invalid form version status
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Normalize a submission
@@ -1460,12 +1460,12 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/TagResponse'
+              $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.TagResponse'
             type: array
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Get all tags
@@ -1500,22 +1500,22 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/CreateTagRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.CreateTagRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/APIResponse-TagResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Create a tag
@@ -1560,19 +1560,19 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Delete a tag
@@ -1611,15 +1611,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/TagResponse'
+            $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.TagResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Get a tag by ID
@@ -1659,26 +1659,26 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/UpdateTagRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.UpdateTagRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/APIResponse-TagResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Update a tag
@@ -1719,16 +1719,16 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/TagVersionResponse'
+              $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.TagVersionResponse'
             type: array
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Get all tag versions
@@ -1769,26 +1769,26 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/UpsertTagVersionRequest'
+          $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.UpsertTagVersionRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/APIResponse-TagVersionResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagVersionResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Create a tag version
@@ -1833,15 +1833,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/TagVersionResponse'
+            $ref: '#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.TagVersionResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Get a tag version by ID
@@ -1888,19 +1888,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/APIResponse-TagVersionResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagVersionResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Deprecate a tag version
@@ -1949,19 +1949,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/APIResponse-TagVersionResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagVersionResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Publish a tag version
@@ -2008,28 +2008,22 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/APIResponse-TagVersionResponse'
+            $ref: '#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagVersionResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/APIErrorResponse'
+            $ref: '#/definitions/httputil.APIErrorResponse'
       security:
       - BearerAuth: []
       summary: Retire a tag version
       tags:
       - Tags
-securityDefinitions:
-  BearerAuth:
-    description: 'Bearer JWT. Format: "Bearer <token>"'
-    in: header
-    name: Authorization
-    type: apiKey
 swagger: "2.0"

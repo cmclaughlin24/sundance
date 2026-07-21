@@ -9,36 +9,36 @@ import (
 )
 
 type submissionValidator struct {
-	fieldValidatorStrategies ports.FieldValidatorRegistry
+	elementValidatorStrategies ports.ElementValidatorRegistry
 }
 
 func newSubmissionValidator(strats *ports.Strategies) *submissionValidator {
 	return &submissionValidator{
-		fieldValidatorStrategies: strats.FieldValidator,
+		elementValidatorStrategies: strats.ElementValidator,
 	}
 }
 
-func (v *submissionValidator) validate(ctx context.Context, logger *slog.Logger, resolved []resolveField) error {
-	for _, rf := range resolved {
-		field := rf.field
-		value := rf.value
+func (v *submissionValidator) validate(ctx context.Context, logger *slog.Logger, resolved []resolveElement) error {
+	for _, re := range resolved {
+		element := re.element
+		value := re.value
 
-		fieldValidator, err := v.fieldValidatorStrategies.Get(field.Type)
+		elementValidator, err := v.elementValidatorStrategies.Get(element.Type)
 		if err != nil {
-			logger.ErrorContext(ctx, "failed to validate fields; missing field validation strategy", "field_id", field.ID, "field_type", field.Type)
+			logger.ErrorContext(ctx, "failed to validate elements; missing element validation strategy", "element_id", element.ID, "element_type", element.Type)
 			return err
 		}
 
 		if value == nil {
-			if rf.required {
-				logger.WarnContext(ctx, "field validation failed; required field missing", "field_id", field.ID, "field_key", field.Key)
-				return fmt.Errorf("%w; id=%s key=%s", strategies.ErrFieldRequired, field.ID, field.Key)
+			if re.required {
+				logger.WarnContext(ctx, "element validation failed; required element missing", "element_id", element.ID, "element_key", element.Key)
+				return fmt.Errorf("%w; id=%s key=%s", strategies.ErrElementRequired, element.ID, element.Key)
 			}
 
 			continue
 		}
 
-		if err = fieldValidator.Validate(ctx, *field, *value); err != nil {
+		if err = elementValidator.Validate(ctx, *element, *value); err != nil {
 			return err
 		}
 	}

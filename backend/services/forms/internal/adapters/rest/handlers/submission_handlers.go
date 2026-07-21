@@ -124,9 +124,9 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	values := make([]*domain.SubmissionFieldValue, 0, len(body.Values))
+	values := make([]*domain.SubmissionValue, 0, len(body.Values))
 	for _, fv := range body.Values {
-		values = append(values, domain.NewSubmissionFieldValue(fv.FieldID, fv.Value, fv.CollectionIndex))
+		values = append(values, domain.NewSubmissionValue(fv.ElementID, fv.Value, fv.CollectionIndex))
 	}
 
 	tenantID := httputil.TenantFromContext(r.Context())
@@ -186,9 +186,9 @@ func (h *Handlers) NormalizeSubmission(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	values := make([]*domain.SubmissionFieldValue, 0, len(body.Values))
+	values := make([]*domain.SubmissionValue, 0, len(body.Values))
 	for _, fv := range body.Values {
-		values = append(values, domain.NewSubmissionFieldValue(fv.FieldID, fv.Value, fv.CollectionIndex))
+		values = append(values, domain.NewSubmissionValue(fv.ElementID, fv.Value, fv.CollectionIndex))
 	}
 
 	tenantID := httputil.TenantFromContext(r.Context())

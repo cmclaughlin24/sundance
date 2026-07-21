@@ -6,24 +6,24 @@ import (
 )
 
 type SubmissionDocument struct {
-	ID            string                          `bson:"_id"`
-	TenantID      string                          `bson:"tenant_id"`
-	FormID        string                          `bson:"form_id"`
-	VersionID     string                          `bson:"version_id"`
-	ReferenceID   string                          `bson:"reference_id"`
-	IdempotencyID string                          `bson:"idempotency_id"`
-	Status        string                          `bson:"status"`
-	CreatedAt     time.Time                       `bson:"created_at"`
-	UpdatedAt     time.Time                       `bson:"updated_at"`
-	Attempts      []*submissionAttemptDocument    `bson:"attempts"`
-	Facts         []*canonicalFact                `bson:"facts"`
-	Values        []*submissionFieldValueDocument `bson:"values"`
+	ID            string                       `bson:"_id"`
+	TenantID      string                       `bson:"tenant_id"`
+	FormID        string                       `bson:"form_id"`
+	VersionID     string                       `bson:"version_id"`
+	ReferenceID   string                       `bson:"reference_id"`
+	IdempotencyID string                       `bson:"idempotency_id"`
+	Status        string                       `bson:"status"`
+	CreatedAt     time.Time                    `bson:"created_at"`
+	UpdatedAt     time.Time                    `bson:"updated_at"`
+	Attempts      []*submissionAttemptDocument `bson:"attempts"`
+	Facts         []*canonicalFact             `bson:"facts"`
+	Values        []*submissionValueDocument   `bson:"values"`
 }
 
 func ToSubmissionDocument(s *domain.Submission) (*SubmissionDocument, error) {
-	values := make([]*submissionFieldValueDocument, 0, len(s.Values))
+	values := make([]*submissionValueDocument, 0, len(s.Values))
 	for _, doc := range s.Values {
-		values = append(values, toSubmissionFieldValueDocument(doc))
+		values = append(values, toSubmissionValueDocument(doc))
 	}
 
 	attempts := make([]*submissionAttemptDocument, 0, len(s.Attempts))
@@ -59,9 +59,9 @@ func ToSubmissionDocument(s *domain.Submission) (*SubmissionDocument, error) {
 }
 
 func FromSubmissionDocument(s *SubmissionDocument) (*domain.Submission, error) {
-	values := make([]*domain.SubmissionFieldValue, 0, len(s.Values))
+	values := make([]*domain.SubmissionValue, 0, len(s.Values))
 	for _, doc := range s.Values {
-		values = append(values, fromSubmissionFieldValueDocument(doc))
+		values = append(values, fromSubmissionValueDocument(doc))
 	}
 
 	attempts := make([]*domain.SubmissionAttempt, 0, len(s.Attempts))

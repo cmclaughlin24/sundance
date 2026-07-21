@@ -11,9 +11,9 @@ type ruleByTypeGetter interface {
 	GetRuleByType(domain.RuleType) *domain.Rule
 }
 
-type resolveField struct {
-	field    *domain.Field
-	value    *domain.SubmissionFieldValue
+type resolveElement struct {
+	element  *domain.Element
+	value    *domain.SubmissionValue
 	required bool
 }
 
@@ -29,20 +29,20 @@ func newSubmissionResolver(logger *slog.Logger, evaluator ports.RuleEvaluator) *
 	}
 }
 
-func (r *submissionResolver) resolve(ctx context.Context, s *domain.Submission, fv *domain.FormVersion) ([]resolveField, error) {
+func (r *submissionResolver) resolve(ctx context.Context, s *domain.Submission, fv *domain.FormVersion) ([]resolveElement, error) {
 	if fv.Status == domain.FormVersionStatusDraft {
 		r.logger.WarnContext(ctx, "skipping submission job; invalid status", "submission_id", s.ID, "form_id", s.FormID, "version_id", fv.ID, "version_status", fv.Status)
 		return nil, domain.ErrInvalidVersionStatus
 	}
 
 	evalCtx := make(ports.RuleEvaluationContext, len(s.Values))
-	for _, field := range fv.FlatFields() {
-		if val, ok := s.GetFieldValue(field.ID); ok {
-			evalCtx[field.Key] = val.Value
+	for _, element := range fv.FlatElements() {
+		if val, ok := s.GetValue(element.ID); ok {
+			evalCtx[element.Key] = val.Value
 		}
 	}
 
-	resolved := make([]resolveField, 0)
+	resolved := make([]resolveElement, 0)
 
 pageLoop:
 	for _, page := range fv.GetPages() {
@@ -68,31 +68,31 @@ pageLoop:
 				continue sectionLoop
 			}
 
-		fieldLoop:
-			for _, field := range section.GetFields() {
-				visible, err := r.shouldValidate(ctx, field, evalCtx)
+		elementLoop:
+			for _, element := range section.GetElements() {
+				visible, err := r.shouldValidate(ctx, element, evalCtx)
 
 				if err != nil {
 					return nil, err
 				}
 
 				if !visible {
-					continue fieldLoop
+					continue elementLoop
 				}
 
-				required, err := r.isRequired(ctx, field, evalCtx)
+				required, err := r.isRequired(ctx, element, evalCtx)
 				if err != nil {
 					return nil, err
 				}
 
 				if required == nil {
-					req := field.Attributes.GetIsRequired()
+					req := element.Attributes.GetIsRequired()
 					required = &req
 				}
 
-				val, _ := s.GetFieldValue(field.ID)
-				resolved = append(resolved, resolveField{
-					field:    field,
+				val, _ := s.GetValue(element.ID)
+				resolved = append(resolved, resolveElement{
+					element:  element,
 					value:    val,
 					required: *required,
 				})

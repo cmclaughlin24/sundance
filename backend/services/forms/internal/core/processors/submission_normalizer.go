@@ -16,8 +16,8 @@ var (
 )
 
 type candidate struct {
-	ftm   *domain.FieldTagMapping
-	value *domain.SubmissionFieldValue
+	etm   *domain.ElementTagMapping
+	value *domain.SubmissionValue
 }
 
 type tagAggregate struct {
@@ -39,13 +39,13 @@ func newSubmissionNormalizer(logger *slog.Logger, repository *ports.Repository) 
 	}
 }
 
-func (n *submissionNormalizer) normalize(ctx context.Context, resolved []resolveField) ([]*domain.CanonicalFact, error) {
+func (n *submissionNormalizer) normalize(ctx context.Context, resolved []resolveElement) ([]*domain.CanonicalFact, error) {
 	candidatesByVersion := make(map[domain.TagVersionID][]candidate)
-	for _, rf := range resolved {
-		for _, t := range rf.field.GetTags() {
+	for _, re := range resolved {
+		for _, t := range re.element.GetTags() {
 			candidatesByVersion[t.TagVersionID] = append(candidatesByVersion[t.TagVersionID], candidate{
-				ftm:   t,
-				value: rf.value,
+				etm:   t,
+				value: re.value,
 			})
 		}
 	}
@@ -121,7 +121,7 @@ func (n *submissionNormalizer) evaluateCollectionCandidates(tag domain.Tag, vers
 	for idx, group := range byCollectionIdx {
 		winner := rankCandidates(group)
 		facts = append(facts, domain.NewCanonicalFact(
-			winner.ftm.FieldID,
+			winner.etm.ElementID,
 			version.ID,
 			tag.KeyPath,
 			winner.value,
@@ -142,7 +142,7 @@ func (n *submissionNormalizer) evaluateScalarCandidates(tag domain.Tag, version 
 	}
 
 	facts = append(facts, domain.NewCanonicalFact(
-		winner.ftm.FieldID,
+		winner.etm.ElementID,
 		version.ID,
 		tag.KeyPath,
 		value,
@@ -153,8 +153,8 @@ func (n *submissionNormalizer) evaluateScalarCandidates(tag domain.Tag, version 
 }
 
 func rankCandidates(candidates []candidate) candidate {
-	slices.SortFunc(candidates, func(fc1, fc2 candidate) int {
-		return cmp.Compare(fc2.ftm.Priority, fc1.ftm.Priority)
+	slices.SortFunc(candidates, func(c1, c2 candidate) int {
+		return cmp.Compare(c2.etm.Priority, c1.etm.Priority)
 	})
 	return candidates[0]
 }

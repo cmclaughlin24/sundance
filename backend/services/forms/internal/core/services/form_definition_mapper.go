@@ -161,17 +161,17 @@ func (m *formDefinitionMapper) createSection(s commands.SectionData) (*domain.Se
 		return nil, err
 	}
 
-	fields := make([]*domain.Field, 0, len(s.FieldsData))
-	for _, f := range s.FieldsData {
-		field, err := m.createField(f)
+	elements := make([]*domain.Element, 0, len(s.ElementsData))
+	for _, f := range s.ElementsData {
+		element, err := m.createElement(f)
 		if err != nil {
 			return nil, err
 		}
 
-		fields = append(fields, field)
+		elements = append(elements, element)
 	}
 
-	if err := section.AddFields(fields...); err != nil {
+	if err := section.AddElements(elements...); err != nil {
 		return nil, err
 	}
 
@@ -193,31 +193,31 @@ func (m *formDefinitionMapper) updateSection(s commands.SectionData, section *do
 		return err
 	}
 
-	fields := make([]*domain.Field, 0, len(s.FieldsData))
-	for _, f := range s.FieldsData {
+	elements := make([]*domain.Element, 0, len(s.ElementsData))
+	for _, f := range s.ElementsData {
 		if f.ID != nil {
-			field := section.GetField(domain.FieldID(*f.ID))
+			element := section.GetElement(domain.ElementID(*f.ID))
 
-			if field == nil {
-				return fmt.Errorf("%w; field id=%s", common.ErrNotFound, *f.ID)
+			if element == nil {
+				return fmt.Errorf("%w; element id=%s", common.ErrNotFound, *f.ID)
 			}
 
-			if err := m.updateField(f, field); err != nil {
+			if err := m.updateElement(f, element); err != nil {
 				return err
 			}
 
-			fields = append(fields, field)
+			elements = append(elements, element)
 		} else {
-			field, err := m.createField(f)
+			element, err := m.createElement(f)
 			if err != nil {
 				return err
 			}
 
-			fields = append(fields, field)
+			elements = append(elements, element)
 		}
 	}
 
-	if err := section.ReplaceFields(fields...); err != nil {
+	if err := section.ReplaceElements(elements...); err != nil {
 		return err
 	}
 
@@ -229,14 +229,14 @@ func (m *formDefinitionMapper) updateSection(s commands.SectionData, section *do
 	return nil
 }
 
-func (m *formDefinitionMapper) createField(f commands.FieldData) (*domain.Field, error) {
-	field, err := domain.NewField(f.Key, f.Name, domain.FieldType(f.Type), f.Attributes, f.Position)
+func (m *formDefinitionMapper) createElement(f commands.ElementData) (*domain.Element, error) {
+	element, err := domain.NewElement(f.Key, f.Name, domain.ElementType(f.Type), f.Attributes, f.Position)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, t := range f.Tags {
-		err := field.AddTags(domain.FieldTagMappingConfig{
+		err := element.AddTags(domain.ElementTagMappingConfig{
 			TagVersionID: domain.TagVersionID(t.TagVersionID),
 			Priority:     t.Priority,
 		})
@@ -251,38 +251,38 @@ func (m *formDefinitionMapper) createField(f commands.FieldData) (*domain.Field,
 		return nil, err
 	}
 
-	if err := field.SetRules(rules...); err != nil {
+	if err := element.SetRules(rules...); err != nil {
 		return nil, err
 	}
 
-	m.trackFormKey(field.Key)
-	m.trackExpressionKeys(field.Attributes.GetReferencedKeys()...)
-	return field, nil
+	m.trackFormKey(element.Key)
+	m.trackExpressionKeys(element.Attributes.GetReferencedKeys()...)
+	return element, nil
 }
 
-func (m *formDefinitionMapper) updateField(f commands.FieldData, field *domain.Field) error {
-	if err := field.Update(f.Key, f.Name, domain.FieldType(f.Type), f.Attributes, f.Position); err != nil {
+func (m *formDefinitionMapper) updateElement(f commands.ElementData, element *domain.Element) error {
+	if err := element.Update(f.Key, f.Name, domain.ElementType(f.Type), f.Attributes, f.Position); err != nil {
 		return err
 	}
 
-	tags := make([]domain.FieldTagMappingConfig, 0, len(f.Tags))
-	for _, ftm := range f.Tags {
-		tags = append(tags, domain.FieldTagMappingConfig{
-			TagVersionID: domain.TagVersionID(ftm.TagVersionID),
-			Priority:     ftm.Priority,
+	tags := make([]domain.ElementTagMappingConfig, 0, len(f.Tags))
+	for _, etm := range f.Tags {
+		tags = append(tags, domain.ElementTagMappingConfig{
+			TagVersionID: domain.TagVersionID(etm.TagVersionID),
+			Priority:     etm.Priority,
 		})
 	}
 
-	if err := field.ReplaceTags(tags...); err != nil {
+	if err := element.ReplaceTags(tags...); err != nil {
 		return err
 	}
 
-	if err := m.updateRules(f.Rules, field); err != nil {
+	if err := m.updateRules(f.Rules, element); err != nil {
 		return err
 	}
 
-	m.trackFormKey(field.Key)
-	m.trackExpressionKeys(field.Attributes.GetReferencedKeys()...)
+	m.trackFormKey(element.Key)
+	m.trackExpressionKeys(element.Attributes.GetReferencedKeys()...)
 	return nil
 }
 

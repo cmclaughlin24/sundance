@@ -1,16 +1,16 @@
 package domain
 
 type CanonicalFact struct {
-	FieldID         FieldID
+	ElementID       ElementID
 	TagVersionID    TagVersionID
 	TagKey          string
 	Value           any
 	CollectionIndex *int
 }
 
-func NewCanonicalFact(fieldID FieldID, tagVersionID TagVersionID, tagKey string, value any, collectionIndex *int) *CanonicalFact {
+func NewCanonicalFact(elementID ElementID, tagVersionID TagVersionID, tagKey string, value any, collectionIndex *int) *CanonicalFact {
 	return &CanonicalFact{
-		FieldID:         fieldID,
+		ElementID:       elementID,
 		TagVersionID:    tagVersionID,
 		TagKey:          tagKey,
 		Value:           value,
@@ -18,9 +18,9 @@ func NewCanonicalFact(fieldID FieldID, tagVersionID TagVersionID, tagKey string,
 	}
 }
 
-func HydrateCanonicalFact(fieldID FieldID, tagVersionID TagVersionID, tagKey string, value any, collectionIndex *int) *CanonicalFact {
+func HydrateCanonicalFact(elementID ElementID, tagVersionID TagVersionID, tagKey string, value any, collectionIndex *int) *CanonicalFact {
 	return &CanonicalFact{
-		FieldID:         fieldID,
+		ElementID:       elementID,
 		TagVersionID:    tagVersionID,
 		TagKey:          tagKey,
 		Value:           value,

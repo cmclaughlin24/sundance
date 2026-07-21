@@ -6,11 +6,11 @@ import (
 )
 
 type CreateSubmissionCommand struct {
-	TenantID      string                         `validate:"required"`
-	FormID        domain.FormID                  `validate:"required"`
-	VersionID     domain.FormVersionID           `validate:"required"`
-	IdempotencyID domain.IdempotencyID           `validate:"required"`
-	Values        []*domain.SubmissionFieldValue `validate:"required,min=1"`
+	TenantID      string                    `validate:"required"`
+	FormID        domain.FormID             `validate:"required"`
+	VersionID     domain.FormVersionID      `validate:"required"`
+	IdempotencyID domain.IdempotencyID      `validate:"required"`
+	Values        []*domain.SubmissionValue `validate:"required,min=1"`
 }
 
 func NewCreateSubmissionCommand(
@@ -18,7 +18,7 @@ func NewCreateSubmissionCommand(
 	formID domain.FormID,
 	versionID domain.FormVersionID,
 	idempotencyID domain.IdempotencyID,
-	values []*domain.SubmissionFieldValue,
+	values []*domain.SubmissionValue,
 ) *CreateSubmissionCommand {
 	return &CreateSubmissionCommand{
 		TenantID:      tenantID,
@@ -34,17 +34,17 @@ func (c *CreateSubmissionCommand) Validate() error {
 }
 
 type NormalizeSubmissionCommand struct {
-	TenantID  string                         `validate:"required"`
-	FormID    domain.FormID                  `validate:"required"`
-	VersionID domain.FormVersionID           `validate:"required"`
-	Values    []*domain.SubmissionFieldValue `validate:"required,min=1"`
+	TenantID  string                    `validate:"required"`
+	FormID    domain.FormID             `validate:"required"`
+	VersionID domain.FormVersionID      `validate:"required"`
+	Values    []*domain.SubmissionValue `validate:"required,min=1"`
 }
 
 func NewNormalizeSubmissionCommand(
 	tenantID string,
 	formID domain.FormID,
 	versionID domain.FormVersionID,
-	values []*domain.SubmissionFieldValue,
+	values []*domain.SubmissionValue,
 ) *NormalizeSubmissionCommand {
 	return &NormalizeSubmissionCommand{
 		TenantID:  tenantID,
