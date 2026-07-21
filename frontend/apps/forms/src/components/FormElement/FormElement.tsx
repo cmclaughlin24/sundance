@@ -1,6 +1,7 @@
 import { useFormsService, useSubmissionsService } from "@/hooks/useHttpService";
 import type { FormElementProps } from "./FormElement.type";
 import { useAsyncData } from "@/hooks/useAsyncData";
+import { FormContextProvider } from "@/store/formContext";
 
 export const FormElement: React.FC<FormElementProps> = function ({
   tenantId,
@@ -46,5 +47,9 @@ export const FormElement: React.FC<FormElementProps> = function ({
 
   console.log(data);
 
-  return <form onSubmit={handleSubmit}></form>;
+  return (
+    <FormContextProvider>
+      <form onSubmit={handleSubmit}></form>
+    </FormContextProvider>
+  );
 };

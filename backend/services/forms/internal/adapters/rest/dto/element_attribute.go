@@ -93,7 +93,9 @@ type selectElementAttributesResponse struct {
 
 type checkboxElementAttributesResponse struct {
 	baseElementAttributeResponse
-	IsCheckedByDefault bool `json:"isCheckedByDefault"`
+	IsCheckedByDefault bool                  `json:"isCheckedByDefault"`
+	Data               []any                 `json:"data"`
+	DataSourceRef      *domain.DataSourceRef `json:"dataSourceRef"`
 }
 
 type dateElementAttributesResponse struct {
@@ -137,6 +139,8 @@ func elementAttributesToResponse(attr domain.ElementAttributes) any {
 		return checkboxElementAttributesResponse{
 			baseElementAttributeResponse: base,
 			IsCheckedByDefault:           t.IsCheckedByDefault,
+			Data:                         t.Data,
+			DataSourceRef:                t.DataSourceRef,
 		}
 	case *domain.DateElementAttributes:
 		return dateElementAttributesResponse{

@@ -67,6 +67,8 @@ func (a *SelectElementAttributes) GetReferencedKeys() []string {
 type CheckboxElementAttributes struct {
 	BaseElementAttributes
 	IsCheckedByDefault bool
+	Data               []any
+	DataSourceRef      *DataSourceRef
 }
 
 type DateElementAttributes struct {

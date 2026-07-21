@@ -8,7 +8,7 @@ The `FormElement` component in `frontend/apps/forms/` is currently a scaffold th
 
 ## Phase 1 — Type System Refinements
 
-### 1a. Strongly-typed element attributes
+### 1a. Strongly-typed element attributes ✓
 
 Refactor `frontend/apps/forms/src/types/element.ts` from a loose `Record<string, any>` to a discriminated union of concrete attribute types matching the backend REST DTOs.
 
@@ -66,9 +66,9 @@ type ElementAttributes =
   | DateElementAttributes;
 ```
 
-Also remove `boolean` from the `ElementType` union — it exists in the frontend but not in the backend domain. Map it to `checkbox` or remove entirely.
+Also remove `boolean` from the `ElementType` union — it exists in the frontend but not in the backend domain. Map it to `checkbox` or remove entirely. ✓
 
-### 1b. New file: `types/dataSource.ts`
+### 1b. New file: `types/dataSource.ts` ✓
 
 ```ts
 interface ILookup {
@@ -93,17 +93,19 @@ interface IDataSourceRef {
 Update `ISubmissionValue.value` in `types/submission.ts` to be typed per element where feasible, rather than `any`.
 
 **Files to modify:**
+
 - `frontend/apps/forms/src/types/element.ts`
 - `frontend/apps/forms/src/types/submission.ts`
 
 **Files to create:**
+
 - `frontend/apps/forms/src/types/dataSource.ts`
 
 ---
 
 ## Phase 2 — Service Layer
 
-### 2a. Implement `DataSourcesService.getLookups()`
+### 2a. Implement `DataSourcesService.getLookups()` ✓
 
 Add the missing method to `frontend/apps/forms/src/services/dataSourcesService.ts`:
 
@@ -125,10 +127,10 @@ Replace hardcoded `localhost` URLs in `frontend/apps/forms/src/hooks/useHttpServ
 
 ```ts
 // Before
-resolveHttpService(FormsService, "http://localhost:8081")
+resolveHttpService(FormsService, "http://localhost:8081");
 
 // After
-resolveHttpService(FormsService, import.meta.env.VITE_FORMS_API_URL)
+resolveHttpService(FormsService, import.meta.env.VITE_FORMS_API_URL);
 ```
 
 Create `.env` and `.env.example` at `frontend/apps/forms/`:
@@ -139,10 +141,12 @@ VITE_TENANTS_API_URL=http://localhost:8080
 ```
 
 **Files to modify:**
+
 - `frontend/apps/forms/src/services/dataSourcesService.ts`
 - `frontend/apps/forms/src/hooks/useHttpService.ts`
 
 **Files to create:**
+
 - `frontend/apps/forms/.env`
 - `frontend/apps/forms/.env.example`
 
@@ -156,13 +160,17 @@ Define the context shape, reducer actions, and initial state.
 
 ```ts
 interface FormState {
-  values: Record<string, any>;           // elementId → value
-  errors: Record<string, string[]>;      // elementId → error messages
-  ruleStates: Record<string, {           // elementId → computed rule output
-    visible: boolean;
-    required: boolean;
-    readonly: boolean;
-  }>;
+  values: Record<string, any>; // elementId → value
+  errors: Record<string, string[]>; // elementId → error messages
+  ruleStates: Record<
+    string,
+    {
+      // elementId → computed rule output
+      visible: boolean;
+      required: boolean;
+      readonly: boolean;
+    }
+  >;
 }
 
 type FormAction =
@@ -175,11 +183,13 @@ type FormAction =
 ### 3b. New file: `context/FormProvider.tsx`
 
 Provider component that:
+
 - Accepts `rawSubmission` prop and initializes state from it via `INITIALIZE` dispatch
 - Wraps children with `FormContext.Provider`
 - Re-runs the rule evaluation pass after every `SET_VALUE` action, updating `ruleStates`
 
 **Files to create:**
+
 - `frontend/apps/forms/src/context/FormContext.ts`
 - `frontend/apps/forms/src/context/FormProvider.tsx`
 
@@ -192,6 +202,7 @@ Provider component that:
 A pure utility (not reliant on React state/effects) that mirrors the backend's `ExprRuleEvaluator` logic in TypeScript.
 
 Given the current `values` map and a list of elements, for each element:
+
 1. Iterate `element.rules` grouped by `rule.type` (`visible`, `required`, `readonly`)
 2. For each rule, iterate `rule.expressions` in ascending `position` order
 3. Evaluate `values[expression.fieldKey] <operator> expression.value`
@@ -201,15 +212,16 @@ Given the current `values` map and a list of elements, for each element:
 **Operators to implement** (matching `RuleExpressionOp`):
 
 | Enum value | Operation |
-|---|---|
-| `equal` | `===` |
-| `nequal` | `!==` |
-| `lt` | `<` |
-| `gt` | `>` |
-| `lte` | `<=` |
-| `gte` | `>=` |
+| ---------- | --------- |
+| `equal`    | `===`     |
+| `nequal`   | `!==`     |
+| `lt`       | `<`       |
+| `gt`       | `>`       |
+| `lte`      | `<=`      |
+| `gte`      | `>=`      |
 
 **Default rule states** (when no rule of that type exists on an element):
+
 - `visible`: `true`
 - `required`: use `attributes.isRequired`
 - `readonly`: use `attributes.isReadOnly`
@@ -217,6 +229,7 @@ Given the current `values` map and a list of elements, for each element:
 The server remains authoritative — client-side evaluation is for UX responsiveness only. The backend re-evaluates all rules during submission processing.
 
 **Files to create:**
+
 - `frontend/apps/forms/src/hooks/useRuleEvaluator.ts`
 
 ---
@@ -224,20 +237,22 @@ The server remains authoritative — client-side evaluation is for UX responsive
 ## Phase 5 — Field Components
 
 One component per `ElementType`. All field components:
+
 - Consume `FormContext` via `useContext` to read and write values
 - Read `ruleStates[element.id]` to determine visibility, required state, and read-only state
 - Return `null` when `ruleStates[element.id].visible === false`
 - Dispatch `SET_VALUE` on change
 
-| Component | MUI Input | Key attributes respected |
-|---|---|---|
-| `TextField` | `MUI TextField` | `minLength`, `maxLength`, `pattern`, `placeholder` |
-| `NumberField` | `MUI TextField type="number"` | `min`, `max`, `step` |
-| `SelectField` | `MUI Select` / `Autocomplete` | `data`, `dataSourceRef`, `multiple`, `minSelected`, `maxSelected` |
-| `CheckboxField` | `MUI Checkbox` | `isCheckedByDefault` (initializes value on mount) |
-| `DateField` | `MUI TextField type="date"` | `minDate`, `maxDate` |
+| Component       | MUI Input                     | Key attributes respected                                          |
+| --------------- | ----------------------------- | ----------------------------------------------------------------- |
+| `TextField`     | `MUI TextField`               | `minLength`, `maxLength`, `pattern`, `placeholder`                |
+| `NumberField`   | `MUI TextField type="number"` | `min`, `max`, `step`                                              |
+| `SelectField`   | `MUI Select` / `Autocomplete` | `data`, `dataSourceRef`, `multiple`, `minSelected`, `maxSelected` |
+| `CheckboxField` | `MUI Checkbox`                | `isCheckedByDefault` (initializes value on mount)                 |
+| `DateField`     | `MUI TextField type="date"`   | `minDate`, `maxDate`                                              |
 
 **`SelectField` specifics:**
+
 - If `attributes.data` is non-empty and `attributes.dataSourceRef` is absent, render inline options directly
 - If `attributes.dataSourceRef` is present, fetch options via `useDataSourceLookups` hook (Phase 8)
 - Show a loading spinner while lookups are fetching
@@ -245,6 +260,7 @@ One component per `ElementType`. All field components:
 - Respect `multiple` for multi-select behavior
 
 **Files to create:**
+
 - `frontend/apps/forms/src/components/fields/TextField.tsx`
 - `frontend/apps/forms/src/components/fields/NumberField.tsx`
 - `frontend/apps/forms/src/components/fields/SelectField.tsx`
@@ -261,11 +277,16 @@ Dispatches to the correct field component by `element.type`. Acts as a single sw
 
 ```tsx
 switch (element.type) {
-  case "text":     return <TextField element={element} />;
-  case "number":   return <NumberField element={element} />;
-  case "select":   return <SelectField element={element} />;
-  case "checkbox": return <CheckboxField element={element} />;
-  case "date":     return <DateField element={element} />;
+  case "text":
+    return <TextField element={element} />;
+  case "number":
+    return <NumberField element={element} />;
+  case "select":
+    return <SelectField element={element} />;
+  case "checkbox":
+    return <CheckboxField element={element} />;
+  case "date":
+    return <DateField element={element} />;
 }
 ```
 
@@ -285,6 +306,7 @@ switch (element.type) {
 ### 6d. Multi-page wizard in `FormElement`
 
 Refactor `FormElement.tsx` to:
+
 - Sort `formVersion.pages` by `position` ascending
 - Track `currentPageIndex` in local state
 - Render only the current page via `PageRenderer`
@@ -293,11 +315,13 @@ Refactor `FormElement.tsx` to:
 - Show a progress indicator (e.g. "Page 2 of 4")
 
 **Files to create:**
+
 - `frontend/apps/forms/src/components/layout/ElementRenderer.tsx`
 - `frontend/apps/forms/src/components/layout/SectionRenderer.tsx`
 - `frontend/apps/forms/src/components/layout/PageRenderer.tsx`
 
 **Files to modify:**
+
 - `frontend/apps/forms/src/components/FormElement/FormElement.tsx`
 
 ---
@@ -333,6 +357,7 @@ Display server-side validation errors returned from the backend (e.g. required f
 After a successful submission, call `props.onSubmit({ raw: values, normalized: normalizedResult })`. The `normalized` value should come from the `POST /submissions` response or a preceding `normalize` call.
 
 **Files to modify:**
+
 - `frontend/apps/forms/src/components/FormElement/FormElement.tsx`
 - `frontend/apps/forms/src/services/submissionService.ts`
 
@@ -347,7 +372,7 @@ function useDataSourceLookups(
   dataSourceRef: IDataSourceRef | undefined,
   formValues: Record<string, any>,
   options: DefaultRequestOptions,
-): { lookups: ILookup[]; isLoading: boolean; error: unknown }
+): { lookups: ILookup[]; isLoading: boolean; error: unknown };
 ```
 
 - Uses `useAsyncData` internally
@@ -365,6 +390,7 @@ For `BindingSource.type === "static"`, pass the literal `value` directly as the 
 For `BindingSource.type === "field"`, resolve `formValues[bindingSource.key]` as the param value. Include the resolved field values in `useAsyncData`'s dependency array so lookups re-fetch when upstream fields change.
 
 **Files to create:**
+
 - `frontend/apps/forms/src/hooks/useDataSourceLookups.ts`
 
 ---
@@ -376,7 +402,7 @@ For `BindingSource.type === "field"`, resolve `formValues[bindingSource.key]` as
 Add a file-based route at `frontend/apps/forms/src/routes/forms/$formId/versions/$versionId.tsx`:
 
 ```tsx
-export const Route = createFileRoute('/forms/$formId/versions/$versionId')({
+export const Route = createFileRoute("/forms/$formId/versions/$versionId")({
   component: FormViewerPage,
 });
 
@@ -387,7 +413,9 @@ function FormViewerPage() {
       tenantId={/* from context or route search param */}
       formId={formId}
       versionId={versionId}
-      onSubmit={(event) => { /* handle */ }}
+      onSubmit={(event) => {
+        /* handle */
+      }}
     />
   );
 }
@@ -398,9 +426,11 @@ function FormViewerPage() {
 Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<div>Hello "__root"!</div>` and replace with a proper `<Outlet />` only (chrome is handled by the host shell).
 
 **Files to modify:**
+
 - `frontend/apps/forms/src/routes/__root.tsx`
 
 **Files to create:**
+
 - `frontend/apps/forms/src/routes/forms/$formId/versions/$versionId.tsx`
 
 ---
@@ -409,37 +439,38 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 
 ### Files to create
 
-| File | Purpose |
-|---|---|
-| `frontend/apps/forms/src/types/dataSource.ts` | `ILookup`, `IDataSourceRef`, `IBindingSource` types |
-| `frontend/apps/forms/src/context/FormContext.ts` | Context shape, reducer, actions, initial state |
-| `frontend/apps/forms/src/context/FormProvider.tsx` | Provider component with rule evaluation orchestration |
-| `frontend/apps/forms/src/hooks/useRuleEvaluator.ts` | Client-side rule evaluator utility |
-| `frontend/apps/forms/src/hooks/useDataSourceLookups.ts` | Async lookup fetcher for select fields |
-| `frontend/apps/forms/src/components/fields/TextField.tsx` | Text field component |
-| `frontend/apps/forms/src/components/fields/NumberField.tsx` | Number field component |
-| `frontend/apps/forms/src/components/fields/SelectField.tsx` | Select field component |
-| `frontend/apps/forms/src/components/fields/CheckboxField.tsx` | Checkbox field component |
-| `frontend/apps/forms/src/components/fields/DateField.tsx` | Date field component |
-| `frontend/apps/forms/src/components/layout/ElementRenderer.tsx` | Dispatches to field component by element type |
-| `frontend/apps/forms/src/components/layout/SectionRenderer.tsx` | Renders a section and its elements |
-| `frontend/apps/forms/src/components/layout/PageRenderer.tsx` | Renders a page and its sections |
-| `frontend/apps/forms/src/routes/forms/$formId/versions/$versionId.tsx` | Form viewer route |
-| `frontend/apps/forms/.env` | Local environment variable defaults |
-| `frontend/apps/forms/.env.example` | Documented environment variable template |
+| File                                                                   | Purpose                                                                                          |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `frontend/apps/forms/src/types/elementAttributes.ts`                   | Discriminated union of all element attribute types ✓                                             |
+| `frontend/apps/forms/src/types/dataSource.ts`                          | `ILookup`, `IDataSourceRef`, `IBindingSource`, `HasDataSourceRef` types — created as `data.ts` ✓ |
+| `frontend/apps/forms/src/context/FormContext.ts`                       | Context shape, reducer, actions, initial state                                                   |
+| `frontend/apps/forms/src/context/FormProvider.tsx`                     | Provider component with rule evaluation orchestration                                            |
+| `frontend/apps/forms/src/hooks/useRuleEvaluator.ts`                    | Client-side rule evaluator utility                                                               |
+| `frontend/apps/forms/src/hooks/useDataSourceLookups.ts`                | Async lookup fetcher for select fields                                                           |
+| `frontend/apps/forms/src/components/fields/TextField.tsx`              | Text field component                                                                             |
+| `frontend/apps/forms/src/components/fields/NumberField.tsx`            | Number field component                                                                           |
+| `frontend/apps/forms/src/components/fields/SelectField.tsx`            | Select field component                                                                           |
+| `frontend/apps/forms/src/components/fields/CheckboxField.tsx`          | Checkbox field component                                                                         |
+| `frontend/apps/forms/src/components/fields/DateField.tsx`              | Date field component                                                                             |
+| `frontend/apps/forms/src/components/layout/ElementRenderer.tsx`        | Dispatches to field component by element type                                                    |
+| `frontend/apps/forms/src/components/layout/SectionRenderer.tsx`        | Renders a section and its elements                                                               |
+| `frontend/apps/forms/src/components/layout/PageRenderer.tsx`           | Renders a page and its sections                                                                  |
+| `frontend/apps/forms/src/routes/forms/$formId/versions/$versionId.tsx` | Form viewer route                                                                                |
+| `frontend/apps/forms/.env`                                             | Local environment variable defaults                                                              |
+| `frontend/apps/forms/.env.example`                                     | Documented environment variable template                                                         |
 
 ### Files to modify
 
-| File | Change |
-|---|---|
-| `frontend/apps/forms/src/types/element.ts` | Replace loose attributes type with discriminated union; remove `boolean` from `ElementType` |
-| `frontend/apps/forms/src/types/submission.ts` | Tighten `ISubmissionValue.value` typing |
-| `frontend/apps/forms/src/services/dataSourcesService.ts` | Implement `getLookups()` method |
-| `frontend/apps/forms/src/services/submissionService.ts` | Add idempotency key header support |
-| `frontend/apps/forms/src/hooks/useHttpService.ts` | Use `import.meta.env` for base URLs |
-| `frontend/apps/forms/src/components/FormElement/FormElement.tsx` | Full rewrite — multi-page wizard, `FormProvider`, `useActionState` |
-| `frontend/apps/forms/src/components/FormElement/FormElement.type.ts` | Add `token` prop if auth is wired up later |
-| `frontend/apps/forms/src/routes/__root.tsx` | Remove placeholder content |
+| File                                                                 | Change                                                                                        |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `frontend/apps/forms/src/types/element.ts`                           | Replace loose attributes type with discriminated union; remove `boolean` from `ElementType` ✓ |
+| `frontend/apps/forms/src/types/submission.ts`                        | Tighten `ISubmissionValue.value` typing                                                       |
+| `frontend/apps/forms/src/services/dataSourcesService.ts`             | Implement `getLookups()` method ✓                                                             |
+| `frontend/apps/forms/src/services/submissionService.ts`              | Add idempotency key header support                                                            |
+| `frontend/apps/forms/src/hooks/useHttpService.ts`                    | Use `import.meta.env` for base URLs                                                           |
+| `frontend/apps/forms/src/components/FormElement/FormElement.tsx`     | Full rewrite — multi-page wizard, `FormProvider`, `useActionState`                            |
+| `frontend/apps/forms/src/components/FormElement/FormElement.type.ts` | Add `token` prop if auth is wired up later                                                    |
+| `frontend/apps/forms/src/routes/__root.tsx`                          | Remove placeholder content                                                                    |
 
 ---
 

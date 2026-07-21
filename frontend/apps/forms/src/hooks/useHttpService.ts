@@ -45,7 +45,10 @@ function resolveHttpService<T extends BaseHttpService>(
  * @returns An instance of the `DataSourcesService` class.
  */
 export function useDataSourcesService() {
-  return resolveHttpService(DataSourcesService, "http://localhost:8080");
+  return resolveHttpService(
+    DataSourcesService,
+    import.meta.env.VITE_TENANTS_API_URL,
+  );
 }
 
 /**
@@ -53,7 +56,7 @@ export function useDataSourcesService() {
  * @returns An instance of the `FormsService` class.
  */
 export function useFormsService() {
-  return resolveHttpService(FormsService, "http://localhost:8081");
+  return resolveHttpService(FormsService, import.meta.env.VITE_FORMS_API_URL);
 }
 
 /**
@@ -61,5 +64,5 @@ export function useFormsService() {
  * @returns An instance of the `SubmissionsService` class.
  */
 export function useSubmissionsService() {
-  return resolveHttpService(SubmissionsService, "http://localhost:8081");
+  return resolveHttpService(SubmissionsService, import.meta.env.VITE_FORMS_API_URL);
 }
