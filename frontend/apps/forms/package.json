@@ -12,8 +12,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@sundance/common": "workspace:*",
-    "@sundance/mfe": "workspace:*",
     "@emotion/react": "catalog:",
     "@emotion/styled": "catalog:",
     "@module-federation/vite": "^1.13.0",
@@ -27,8 +25,11 @@
     "@opentelemetry/sdk-trace-base": "^2.6.0",
     "@opentelemetry/sdk-trace-web": "^2.6.0",
     "@opentelemetry/semantic-conventions": "^1.40.0",
+    "@sundance/common": "workspace:*",
+    "@sundance/mfe": "workspace:*",
     "@tanstack/react-router": "^1.167.0",
     "@tanstack/react-router-devtools": "^1.166.7",
+    "axios": "^1.18.1",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
