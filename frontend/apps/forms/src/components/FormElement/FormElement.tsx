@@ -2,6 +2,9 @@ import { useFormsService, useSubmissionsService } from "@/hooks/useHttpService";
 import type { FormElementProps } from "./FormElement.type";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { FormProvider } from "@/store/FormProvider";
+import Box from "@mui/material/Box";
+import { FormRenderer } from "./Renderer/FormRenderer";
+import type { ISubmissionValue } from "@/types/submission";
 
 export const FormElement: React.FC<FormElementProps> = function ({
   tenantId,
@@ -14,7 +17,7 @@ export const FormElement: React.FC<FormElementProps> = function ({
   const submissionService = useSubmissionsService();
   const accessToken = "placeholder";
 
-  const { isLoading, error } = useAsyncData(async () => {
+  const { data, isLoading, error } = useAsyncData(async () => {
     if (!accessToken) {
       return null;
     }
@@ -25,14 +28,17 @@ export const FormElement: React.FC<FormElementProps> = function ({
     });
   }, [formsService, tenantId, formId, versionId, accessToken]);
 
-  const handleSubmit = async (event: React.SubmitEvent<any>) => {
-    event.preventDefault();
-
+  const handleSubmit = async (values: ISubmissionValue[]) => {
     try {
-      const result = await submissionService.normalize(formId, versionId, [], {
-        tenantId,
-        token: accessToken,
-      });
+      const result = await submissionService.normalize(
+        formId,
+        versionId,
+        values,
+        {
+          tenantId,
+          token: accessToken,
+        },
+      );
 
       onSubmit({ raw: [], normalized: result });
     } catch (error) {}
@@ -46,9 +52,17 @@ export const FormElement: React.FC<FormElementProps> = function ({
     return <>Something went wrong...</>;
   }
 
+  if (!data) {
+    return <>Not found...</>;
+  }
+
+  const [form, version] = data;
+
   return (
     <FormProvider rawSubmission={rawSubmission}>
-      <form onSubmit={handleSubmit}></form>
+      <Box>
+        <FormRenderer form={form} version={version} onSubmit={handleSubmit} />
+      </Box>
     </FormProvider>
   );
 };

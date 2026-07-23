@@ -121,7 +121,7 @@ async getLookups(
 
 Calls `GET /data-sources/{dataSourceId}/look-ups` on the tenants backend (`http://localhost:8080`).
 
-### 2b. Environment-based API URLs
+### 2b. Environment-based API URLs ✓
 
 Replace hardcoded `localhost` URLs in `frontend/apps/forms/src/hooks/useHttpService.ts` with Vite environment variables.
 
@@ -179,6 +179,8 @@ type FormAction =
   | { type: "SET_RULE_STATES"; ruleStates: FormState["ruleStates"] }
   | { type: "INITIALIZE"; values: Record<string, any> };
 ```
+
+_Note: `SET_VALUE` and `SET_ERROR` are handled but are stub implementations (log only, return unchanged state). `errors` and `ruleStates` not yet added to `FormState`._
 
 ### 3b. New file: `context/FormProvider.tsx` ✓
 
@@ -245,13 +247,13 @@ One component per `ElementType`. All field components:
 - Return `null` when `ruleStates[element.id].visible === false`
 - Dispatch `SET_VALUE` on change
 
-| Component       | MUI Input                     | Key attributes respected                                          |
-| --------------- | ----------------------------- | ----------------------------------------------------------------- |
-| `TextField`     | `MUI TextField`               | `minLength`, `maxLength`, `pattern`, `placeholder`                |
-| `NumberField`   | `MUI TextField type="number"` | `min`, `max`, `step`                                              |
-| `SelectField`   | `MUI Select` / `Autocomplete` | `data`, `dataSourceRef`, `multiple`, `minSelected`, `maxSelected` |
-| `CheckboxField` | `MUI Checkbox`                | `isCheckedByDefault` (initializes value on mount)                 |
-| `DateField`     | `MUI TextField type="date"`   | `minDate`, `maxDate`                                              |
+| Component       | MUI Input                     | Key attributes respected                                          | Status |
+| --------------- | ----------------------------- | ----------------------------------------------------------------- | ------ |
+| `TextField`     | `MUI TextField`               | `minLength`, `maxLength`, `pattern`, `placeholder`                | ✓ _partial — renders but no context dispatch_ |
+| `NumberField`   | `MUI TextField type="number"` | `min`, `max`, `step`                                              | ✓ _partial — renders but type guard checks `"text"` instead of `"number"`_ |
+| `SelectField`   | `MUI Select` / `Autocomplete` | `data`, `dataSourceRef`, `multiple`, `minSelected`, `maxSelected` | _stub — empty file_ |
+| `CheckboxField` | `MUI Checkbox`                | `isCheckedByDefault` (initializes value on mount)                 | _stub — empty file_ |
+| `DateField`     | `MUI TextField type="date"`   | `minDate`, `maxDate`                                              | _stub — empty file_ |
 
 **`SelectField` specifics:**
 
@@ -263,68 +265,47 @@ One component per `ElementType`. All field components:
 
 **Files to create:**
 
-- `frontend/apps/forms/src/components/fields/TextField.tsx`
-- `frontend/apps/forms/src/components/fields/NumberField.tsx`
-- `frontend/apps/forms/src/components/fields/SelectField.tsx`
-- `frontend/apps/forms/src/components/fields/CheckboxField.tsx`
-- `frontend/apps/forms/src/components/fields/DateField.tsx`
+- `frontend/apps/forms/src/components/FormElement/Elements/TextFieldElement.tsx` ✓ _partial_
+- `frontend/apps/forms/src/components/FormElement/Elements/NumberFieldElement.tsx` ✓ _partial_
+- `frontend/apps/forms/src/components/FormElement/Elements/SelectFieldElement.tsx` _stub_
+- `frontend/apps/forms/src/components/FormElement/Elements/CheckboxFieldElement.tsx` _stub_
+- `frontend/apps/forms/src/components/FormElement/Elements/DateFieldElement.tsx` _stub_
+- `frontend/apps/forms/src/components/FormElement/Elements/BaseFieldElement.tsx` ✓
+- `frontend/apps/forms/src/components/FormElement/Elements/FieldElementLabel.tsx` ✓
 
 ---
 
 ## Phase 6 — Layout Components
 
-### 6a. `ElementRenderer`
+### 6a. `ElementRenderer` ✓
 
-Dispatches to the correct field component by `element.type`. Acts as a single switch point — consumers never import field components directly.
+Dispatches to the correct field component by `element.type` via a `Map` registry. Currently only `text` is registered — remaining types need to be added as field components are completed.
 
-```tsx
-switch (element.type) {
-  case "text":
-    return <TextField element={element} />;
-  case "number":
-    return <NumberField element={element} />;
-  case "select":
-    return <SelectField element={element} />;
-  case "checkbox":
-    return <CheckboxField element={element} />;
-  case "date":
-    return <DateField element={element} />;
-}
-```
+### 6b. `SectionRenderer` ✓
 
-### 6b. `SectionRenderer`
-
-- Sorts `section.elements` by `position` ascending
+- Sorts `section.elements` by `position` ascending via `sortFormElements` utility
 - Maps each element through `ElementRenderer`
-- Evaluates section-level rules from `FormContext` for section visibility
-- Renders the section label/title
 
-### 6c. `PageRenderer`
+### 6c. `PageRenderer` ✓
 
 - Sorts `page.sections` by `position` ascending
 - Maps each section through `SectionRenderer`
-- Evaluates page-level rules for page visibility (skips invisible pages in wizard navigation)
 
-### 6d. Multi-page wizard in `FormElement`
+### 6d. `FormRenderer` ✓ _partial_
 
-Refactor `FormElement.tsx` to:
+`FormRenderer` created — renders all pages, form title, and handles submit. Multi-page wizard (Next/Back, single page at a time, progress indicator) not yet implemented.
 
-- Sort `formVersion.pages` by `position` ascending
-- Track `currentPageIndex` in local state
-- Render only the current page via `PageRenderer`
-- Provide Next and Back buttons with boundary guards
-- Skip pages where all elements are invisible (due to rules)
-- Show a progress indicator (e.g. "Page 2 of 4")
+### 6e. `FormElement` updated ✓ _partial_
 
-**Files to create:**
+Renders `FormRenderer`, passes `data` through, `FormProvider` wired. Inner component concern resolved via `FormRenderer`. Submit passes values through to `submissionService.normalize`.
 
-- `frontend/apps/forms/src/components/layout/ElementRenderer.tsx`
-- `frontend/apps/forms/src/components/layout/SectionRenderer.tsx`
-- `frontend/apps/forms/src/components/layout/PageRenderer.tsx`
+**Files created:**
 
-**Files to modify:**
-
-- `frontend/apps/forms/src/components/FormElement/FormElement.tsx`
+- `frontend/apps/forms/src/components/FormElement/Renderer/ElementRenderer.tsx` ✓
+- `frontend/apps/forms/src/components/FormElement/Renderer/SectionRenderer.tsx` ✓
+- `frontend/apps/forms/src/components/FormElement/Renderer/PageRenderer.tsx` ✓
+- `frontend/apps/forms/src/components/FormElement/Renderer/FormRenderer.tsx` ✓ _partial_
+- `frontend/apps/forms/src/utils/sort.ts` ✓
 
 ---
 
@@ -471,9 +452,10 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | `frontend/apps/forms/src/types/submission.ts`                        | Tighten `ISubmissionValue.value` typing                                                       |
 | `frontend/apps/forms/src/services/dataSourcesService.ts`             | Implement `getLookups()` method ✓                                                             |
 | `frontend/apps/forms/src/services/submissionService.ts`              | Add idempotency key header support                                                            |
-| `frontend/apps/forms/src/hooks/useHttpService.ts`                    | Use `import.meta.env` for base URLs                                                           |
-| `frontend/apps/forms/src/components/FormElement/FormElement.tsx`     | Full rewrite — multi-page wizard, `FormProvider`, `useActionState` — _partial: `FormProvider` and `rawSubmission` wired up_ |
+| `frontend/apps/forms/src/hooks/useHttpService.ts`                    | Use `import.meta.env` for base URLs ✓                                                         |
+| `frontend/apps/forms/src/components/FormElement/FormElement.tsx`     | Full rewrite — multi-page wizard, `FormProvider`, `useActionState` — _partial: `FormProvider`, `rawSubmission`, `FormRenderer` wired up_ |
 | `frontend/apps/forms/src/components/FormElement/FormElement.type.ts` | Add `token` prop if auth is wired up later                                                    |
+| `frontend/apps/forms/src/routes/index.tsx`                           | Updated with real `FormElement` usage ✓                                                       |
 | `frontend/apps/forms/src/routes/__root.tsx`                          | Remove placeholder content                                                                    |
 
 ---

@@ -33,7 +33,7 @@ export class SubmissionsService extends BaseHttpService {
   ): Promise<NormalizedSubmission> {
     const payload: SubmitRequest = { formId, versionId, values };
     const resp = await this._post<SubmitRequest, NormalizedSubmission>(
-      "/submissions/normalize",
+      "/api/v1/submissions/normalize",
       payload,
       options,
     );
@@ -56,6 +56,6 @@ export class SubmissionsService extends BaseHttpService {
     options: DefaultRequestOptions,
   ): Promise<void> {
     const payload: SubmitRequest = { formId, versionId, values };
-    await this._post<SubmitRequest, void>("/submissions", payload, options);
+    await this._post<SubmitRequest, void>("api/v1/submissions", payload, options);
   }
 }

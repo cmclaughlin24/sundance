@@ -56,7 +56,7 @@ export function useDataSourcesService() {
  * @returns An instance of the `FormsService` class.
  */
 export function useFormsService() {
-  return resolveHttpService(FormsService, import.meta.env.VITE_FORMS_API_URL);
+  return resolveHttpService(FormsService, "/forms-api");
 }
 
 /**
@@ -64,5 +64,5 @@ export function useFormsService() {
  * @returns An instance of the `SubmissionsService` class.
  */
 export function useSubmissionsService() {
-  return resolveHttpService(SubmissionsService, import.meta.env.VITE_FORMS_API_URL);
+  return resolveHttpService(SubmissionsService, "/tenants-api");
 }

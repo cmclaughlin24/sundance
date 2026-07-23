@@ -42,6 +42,14 @@ export default defineConfig({
         target: process.env.OTLP_HOST || "http://localhost:4318",
         rewrite: (path) => path.replace(/^\/otlp/, ""),
       },
+      "/forms-api": {
+        target: process.env.FORMS_API || "http://localhost:8080",
+        rewrite: (path) => path.replace(/^\/forms-api/, ""),
+      },
+      "/tenants-api": {
+        target: process.env.TENANTS_API || "http://localhost:8081",
+        rewrite: (path) => path.replace(/^\/tenants-api/, ""),
+      },
     },
     fs: {
       allow: [".", "../shared"],

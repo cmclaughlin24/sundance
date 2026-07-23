@@ -20,7 +20,7 @@ export class DataSourcesService extends BaseHttpService {
 
     const headers = this._defaultRequestHeaders(options);
     const resp = await this._client.get<ILookup[]>(
-      `/data-sources/${dataSourceId}/look-ups`,
+      `/api/v1/data-sources/${dataSourceId}/look-ups`,
       { headers, params },
     );
 

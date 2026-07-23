@@ -20,11 +20,11 @@ export class FormsService extends BaseHttpService {
     formId: string,
     versionId: string,
     options: DefaultRequestOptions,
-  ) {
+  ): Promise<[IForm, IFormVersion]> {
     const [form, version] = await Promise.all([
-      this._get<IForm>(`/forms/${formId}`, options),
+      this._get<IForm>(`/api/v1/forms/${formId}`, options),
       this._get<IFormVersion>(
-        `/forms/${formId}/versions/${versionId}`,
+        `/api/v1/forms/${formId}/versions/${versionId}`,
         options,
       ),
     ]);
