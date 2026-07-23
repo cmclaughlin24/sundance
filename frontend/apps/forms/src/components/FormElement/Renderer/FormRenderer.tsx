@@ -1,7 +1,7 @@
 import type { IForm } from "@/types/form";
 import { FormTitle } from "../FormTitle";
 import type { IFormVersion } from "@/types/formVersion";
-import { sortFormElements } from "@/utils/sort";
+import { sortPositioned } from "@/utils/sort";
 import type { ISubmissionValue } from "@/types/submission";
 import { PageRenderer } from "./PageRenderer";
 import type { SubmitEvent } from "react";
@@ -19,7 +19,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
   onSubmit,
 }) {
   const state = useFormState();
-  const pages = sortFormElements(version.pages);
+  const pages = sortPositioned(version.pages);
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();

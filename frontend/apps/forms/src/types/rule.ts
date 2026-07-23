@@ -2,10 +2,10 @@ import type { HasPosition } from "./hasPosition";
 
 export type RuleType = "visible" | "required" | "readonly";
 
-export interface Rule {
+export interface IRule {
   id: string;
   type: RuleType;
-  expressions: RuleExpression[];
+  expressions: IRuleExpression[];
 }
 
 export enum RuleExpressionOp {
@@ -22,7 +22,7 @@ export enum RuleExpressionJoinOp {
   Or = "or",
 }
 
-export interface RuleExpression extends HasPosition {
+export interface IRuleExpression extends HasPosition {
   fieldKey: string;
   operator: RuleExpressionOp;
   value: any;
@@ -30,5 +30,5 @@ export interface RuleExpression extends HasPosition {
 }
 
 export interface HasRules {
-  rules: Rule[];
+  rules: IRule[];
 }

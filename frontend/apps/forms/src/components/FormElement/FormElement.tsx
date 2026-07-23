@@ -40,7 +40,7 @@ export const FormElement: React.FC<FormElementProps> = function ({
         },
       );
 
-      onSubmit({ raw: [], normalized: result });
+      onSubmit({ raw: values, normalized: result });
     } catch (error) {}
   };
 

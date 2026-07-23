@@ -1,6 +1,6 @@
 import type { HasPosition } from "@/types/hasPosition";
 
-export function sortFormElements<T extends HasPosition>(items: T[]): T[] {
+export function sortPositioned<T extends HasPosition>(items: T[]): T[] {
   if (!items) {
     return [];
   }
