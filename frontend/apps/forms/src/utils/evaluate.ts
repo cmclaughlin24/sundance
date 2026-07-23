@@ -3,14 +3,13 @@ import {
   RuleExpressionOp,
   type IRule,
   type IRuleExpression,
-  type IRuleStates,
+  type IRuleState,
 } from "@/types/rule";
 import { sortPositioned } from "./sort";
-import type { FormState } from "@/store/formReducer";
+import type { IPage } from "@/types/page";
+import type { FormValues } from "@/store/formReducer";
 
 type EvaluatorFn = (fieldValue: any, target: any) => boolean;
-
-export type EvalContext = Map<string, any>;
 
 const evaluatorRegistry = new Map<RuleExpressionOp, EvaluatorFn>([
   [RuleExpressionOp.Equal, (a, b) => a === b],
@@ -21,17 +20,22 @@ const evaluatorRegistry = new Map<RuleExpressionOp, EvaluatorFn>([
   [RuleExpressionOp.GreaterThanEqualTo, (a, b) => a >= b],
 ]);
 
-export function buildEvalContext(state: FormState): EvalContext {
+export type EvalContext = Record<string, any>;
+
+export function buildEvalContext(
+  pages: IPage[] | null,
+  values: FormValues,
+): EvalContext {
   const evalCtx = new Map<string, any>();
 
-  if (!state.version) {
+  if (!pages || pages.length === 0) {
     return evalCtx;
   }
 
-  for (const page of state.version.pages) {
+  for (const page of pages) {
     for (const section of page.sections) {
       for (const element of section.elements) {
-        evalCtx.set(element.key, state.values.get(element.id));
+        evalCtx.set(element.key, values[element.id]);
       }
     }
   }
@@ -42,9 +46,9 @@ export function buildEvalContext(state: FormState): EvalContext {
 export function evaluateRules(
   rules: IRule[],
   evalCtx: EvalContext,
-  defaultState?: IRuleStates,
-): Readonly<IRuleStates> {
-  let state: IRuleStates = {
+  defaultState?: Partial<IRuleState>,
+): Readonly<IRuleState> {
+  let state: IRuleState = {
     readonly: false,
     required: false,
     visible: true,
@@ -94,7 +98,7 @@ export function evaluateRule(rule: IRule, evalCtx: EvalContext): boolean {
 
 function evaluateExpression(
   exp: IRuleExpression,
-  values: Map<string, any>,
+  values: Record<string, any>,
 ): boolean {
   const evaluator = evaluatorRegistry.get(exp.operator);
 
@@ -102,7 +106,7 @@ function evaluateExpression(
     throw new Error(`invalid expression operator: ${exp.operator}`);
   }
 
-  const fieldValue = values.get(exp.fieldKey);
+  const fieldValue = values[exp.fieldKey];
 
   return evaluator(fieldValue, exp.value);
 }

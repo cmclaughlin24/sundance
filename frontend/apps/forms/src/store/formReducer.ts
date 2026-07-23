@@ -2,16 +2,18 @@ import type { IForm } from "@/types/form";
 import type { IFormVersion } from "@/types/formVersion";
 import type { ISubmissionValue } from "@/types/submission";
 
+export type FormValues = Record<string, any>;
+
 export interface FormState {
   form: Readonly<IForm> | null;
   version: Readonly<IFormVersion> | null;
-  values: Map<string, any>;
+  values: FormValues;
 }
 
 export const initialFormState: FormState = {
   form: null,
   version: null,
-  values: new Map<string, any>(),
+  values: {},
 };
 
 export type FormAction =
@@ -41,10 +43,14 @@ export function initializeForm(
   version: IFormVersion,
   raw: ISubmissionValue[],
 ): FormState {
-  const values = new Map<string, any>();
+  if (!raw || raw.length === 0) {
+    return { ...state, form, version };
+  }
+
+  const values: FormValues = {};
 
   for (const { elementId, value } of raw) {
-    values.set(elementId, value);
+    values[elementId] = value;
   }
 
   return { ...state, form, version, values };
@@ -64,7 +70,6 @@ export function setValue(
   elementId: string,
   value: any,
 ): FormState {
-  const values = new Map(state.values);
-  values.set(elementId, value);
+  const values = { ...state.values, [elementId]: value };
   return { ...state, values };
 }

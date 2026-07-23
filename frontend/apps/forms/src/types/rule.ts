@@ -33,7 +33,7 @@ export interface HasRules {
   rules: IRule[];
 }
 
-export interface IRuleStates {
+export interface IRuleState {
   required: boolean;
   readonly: boolean;
   visible: boolean;

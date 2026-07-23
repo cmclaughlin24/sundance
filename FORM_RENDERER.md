@@ -180,7 +180,7 @@ type FormAction =
   | { type: "INITIALIZE"; values: Record<string, any> };
 ```
 
-_Note: `SET_VALUE` and `SET_ERROR` are handled but are stub implementations (log only, return unchanged state). `errors` and `ruleStates` not yet added to `FormState`._
+_Note: `SET_VALUE` fully implemented ✓. `SET_ERROR` stub only. `errors` not yet in `FormState`._
 
 ### 3b. New file: `context/FormProvider.tsx` ✓
 
@@ -196,6 +196,7 @@ Provider component that:
 - `frontend/apps/forms/src/store/formReducer.ts` ✓
 - `frontend/apps/forms/src/store/FormProvider.tsx` ✓
 - `frontend/apps/forms/src/store/useFormContext.ts` ✓
+- `frontend/apps/forms/src/store/evalContext.ts` ✓
 
 ---
 
@@ -205,17 +206,20 @@ Provider component that:
 
 Pure evaluation utility — no React dependency, no `Function` constructor. Implemented as:
 
-- `evaluateRules(rules, evalCtx, defaultState?)` — takes `IRule[]` and a `Map<string, any>` eval context, returns `Readonly<IRuleStates>`
+- `evaluateRules(rules, evalCtx, defaultState?)` — takes `IRule[]` and `EvalContext` (`Record<string, any>`), returns `Readonly<IRuleState>`
 - `evaluateRule(rule, evalCtx)` — evaluates a single rule's expressions with join chaining
+- `buildEvalContext(pages, values)` — builds `element.key → value` map from the full page hierarchy ✓
 - Registry-based operator dispatch via `Map<RuleExpressionOp, EvaluatorFn>`
-- `IRuleStates` type added to `types/rule.ts`
-
-Section/page visibility handled directly in renderers by calling `evaluateRules` with `useFormState().values` — no need to store section/page states in `FormState`.
+- `IRuleState` type added to `types/rule.ts` ✓
+- `EvalContext` published via `store/evalContext.ts`; computed once in `FormRenderer` via `useMemo`, consumed by all field components via `useEvalContext()` ✓
+- `useElementRuleState(element)` in `useFormContext.ts` — reads `evalCtx`, seeds defaults from `element.attributes` ✓
+- `utils/filter.ts` — `filterVisible<T extends HasRules>(items, evalCtx)` utility ✓
 
 **Files created:**
 
 - `frontend/apps/forms/src/utils/evaluate.ts` ✓
-- `frontend/apps/forms/src/types/rule.ts` — `IRuleStates` added ✓
+- `frontend/apps/forms/src/utils/filter.ts` ✓
+- `frontend/apps/forms/src/types/rule.ts` — `IRuleState` added ✓
 
 ---
 
@@ -230,8 +234,8 @@ One component per `ElementType`. All field components:
 
 | Component       | MUI Input                     | Key attributes respected                                          | Status |
 | --------------- | ----------------------------- | ----------------------------------------------------------------- | ------ |
-| `TextField`     | `MUI TextField`               | `minLength`, `maxLength`, `pattern`, `placeholder`                | ✓ _partial — renders but no context dispatch_ |
-| `NumberField`   | `MUI TextField type="number"` | `min`, `max`, `step`                                              | ✓ _partial — renders but type guard checks `"text"` instead of `"number"`_ |
+| `TextField`     | `MUI TextField`               | `minLength`, `maxLength`, `pattern`, `placeholder`                | ✓ _partial — renders, `onChange` dispatches `SET_VALUE`; no rule state wired yet_ |
+| `NumberField`   | `MUI TextField type="number"` | `min`, `max`, `step`                                              | ✓ _partial — renders, type guard fixed, `onChange` dispatches `SET_VALUE`; no rule state wired yet_ |
 | `SelectField`   | `MUI Select` / `Autocomplete` | `data`, `dataSourceRef`, `multiple`, `minSelected`, `maxSelected` | _stub — empty file_ |
 | `CheckboxField` | `MUI Checkbox`                | `isCheckedByDefault` (initializes value on mount)                 | _stub — empty file_ |
 | `DateField`     | `MUI TextField type="date"`   | `minDate`, `maxDate`                                              | _stub — empty file_ |
@@ -260,27 +264,30 @@ One component per `ElementType`. All field components:
 
 ### 6a. `ElementRenderer` ✓
 
-Dispatches to the correct field component by `element.type` via a `Map` registry. Currently only `text` is registered — remaining types need to be added as field components are completed.
+Dispatches to the correct field component by `element.type` via a `Map` registry. `useFormDispatch` wired — dispatches `SET_VALUE` on change. `text` and `number` registered. Remaining types to be added as field components are completed.
 
 ### 6b. `SectionRenderer` ✓
 
-- Sorts `section.elements` by `position` ascending via `sortPositioned` utility
-- Filters elements by `evaluateRules(element.rules, values).visible` ✓ _eval context TODO: wire `useFormState().values`_
+- Sorts `section.elements` by `position` ascending via `sortPositioned`
+- Filters elements by `filterVisible(elements, evalCtx)` via `useEvalContext()` ✓
 - Maps visible elements through `ElementRenderer`
 
 ### 6c. `PageRenderer` ✓
 
 - Sorts `page.sections` by `position` ascending
-- Filters sections by `evaluateRules(section.rules, values).visible` ✓ _eval context TODO: wire `useFormState().values`_
+- Filters sections by `filterVisible(sections, evalCtx)` via `useEvalContext()` ✓
 - Maps visible sections through `SectionRenderer`
 
 ### 6d. `FormRenderer` ✓ _partial_
 
-`FormRenderer` created — renders all pages, form title, and handles submit. Multi-page wizard (Next/Back, single page at a time, progress indicator) not yet implemented.
+- Publishes `EvalContextContext` via `useMemo` keyed on `state.values` ✓
+- Filters pages by `filterVisible(pages, evalCtx)` ✓
+- Collects submission values via `Object.entries(state.values)` ✓
+- Multi-page wizard (Next/Back, single page at a time, progress indicator) not yet implemented
 
 ### 6e. `FormElement` updated ✓ _partial_
 
-Renders `FormRenderer`, passes `data` through, `FormProvider` wired. Inner component concern resolved via `FormRenderer`. Submit passes values through to `submissionService.normalize`.
+Renders `FormRenderer`, `FormProvider` wired with `form`, `version`, `rawSubmission`. Submit passes collected values to `submissionService.normalize`.
 
 **Files created:**
 
@@ -389,7 +396,7 @@ function FormViewerPage() {
 
 ### 9b. Root layout
 
-Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<div>Hello "__root"!</div>` and replace with a proper `<Outlet />` only (chrome is handled by the host shell).
+Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<div>Hello "__root"!</div>` and replace with a proper `<Outlet />` only (chrome is handled by the host shell). _Still contains placeholder content._
 
 **Files to modify:**
 
@@ -412,8 +419,10 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | `frontend/apps/forms/src/store/formContext.ts`                         | State and dispatch context objects ✓                                                             |
 | `frontend/apps/forms/src/store/formReducer.ts`                         | Reducer, actions, `FormState`, `initialFormState`, `initializeForm` ✓                            |
 | `frontend/apps/forms/src/store/FormProvider.tsx`                       | Provider component, wires `useReducer` with `rawSubmission` initializer ✓                        |
-| `frontend/apps/forms/src/store/useFormContext.ts`                      | `useFormState` and `useFormDispatch` consumer hooks ✓                                            |
-| `frontend/apps/forms/src/utils/evaluate.ts`                            | Pure rule evaluator — `evaluateRules`, `evaluateRule`, operator registry ✓                       |
+| `frontend/apps/forms/src/store/useFormContext.ts`                      | `useFormState`, `useFormDispatch`, `useElementRuleState` consumer hooks ✓                         |
+| `frontend/apps/forms/src/utils/evaluate.ts`                            | Pure rule evaluator — `evaluateRules`, `evaluateRule`, `buildEvalContext`, operator registry ✓    |
+| `frontend/apps/forms/src/utils/filter.ts`                              | `filterVisible<T extends HasRules>(items, evalCtx)` utility ✓                                    |
+| `frontend/apps/forms/src/store/evalContext.ts`                         | `EvalContextContext` and `useEvalContext` hook ✓                                                  |
 | `frontend/apps/forms/src/hooks/useDataSourceLookups.ts`                | Async lookup fetcher for select fields                                                           |
 | `frontend/apps/forms/src/components/fields/TextField.tsx`              | Text field component                                                                             |
 | `frontend/apps/forms/src/components/fields/NumberField.tsx`            | Number field component                                                                           |
@@ -432,7 +441,7 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | File                                                                 | Change                                                                                        |
 | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | `frontend/apps/forms/src/types/element.ts`                           | Replace loose attributes type with discriminated union; remove `boolean` from `ElementType` ✓ |
-| `frontend/apps/forms/src/types/rule.ts`                              | Add `IRuleStates` interface ✓                                                                 |
+| `frontend/apps/forms/src/types/rule.ts`                              | Add `IRuleState` interface ✓                                                                  |
 | `frontend/apps/forms/src/types/submission.ts`                        | Tighten `ISubmissionValue.value` typing                                                       |
 | `frontend/apps/forms/src/services/dataSourcesService.ts`             | Implement `getLookups()` method ✓                                                             |
 | `frontend/apps/forms/src/services/submissionService.ts`              | Add idempotency key header support                                                            |

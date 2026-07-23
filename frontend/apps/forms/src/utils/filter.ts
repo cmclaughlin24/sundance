@@ -1,13 +1,11 @@
-import type { FormState } from "@/store/formReducer";
 import type { HasRules } from "@/types/rule";
-import { buildEvalContext, evaluateRules } from "./evaluate";
+import { evaluateRules, type EvalContext } from "./evaluate";
 
 export function filterVisible<T extends HasRules>(
   hasRule: T[],
-  state: FormState,
+  evalCtx: EvalContext,
 ): T[] {
   return hasRule.filter((hr) => {
-    const evalCtx = buildEvalContext(state);
     const { visible } = evaluateRules(hr.rules, evalCtx);
     return visible;
   });
