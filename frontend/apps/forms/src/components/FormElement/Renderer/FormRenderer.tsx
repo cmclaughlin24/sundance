@@ -5,6 +5,7 @@ import { sortFormElements } from "@/utils/sort";
 import type { ISubmissionValue } from "@/types/submission";
 import { PageRenderer } from "./PageRenderer";
 import type { SubmitEvent } from "react";
+import { useFormState } from "@/store/useFormContext";
 
 export interface FormRendererProps {
   form: IForm;
@@ -17,12 +18,19 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
   version,
   onSubmit,
 }) {
+  const state = useFormState();
   const pages = sortFormElements(version.pages);
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    onSubmit([]);
+    const values: ISubmissionValue[] = [];
+
+    for (const [elementId, value] of state.values) {
+      values.push({ elementId, value });
+    }
+
+    onSubmit(values);
   };
 
   return (
@@ -32,6 +40,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
         {pages.map((page) => (
           <PageRenderer page={page} key={page.id} />
         ))}
+        <button type="submit">submit</button>
       </form>
     </>
   );

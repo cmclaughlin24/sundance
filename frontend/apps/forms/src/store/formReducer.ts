@@ -51,6 +51,7 @@ export function setValue(
   elementId: string,
   value: any,
 ): FormState {
-  console.log(elementId, value);
-  return state;
+  const values = new Map(state.values);
+  values.set(elementId, value);
+  return { ...state, values };
 }

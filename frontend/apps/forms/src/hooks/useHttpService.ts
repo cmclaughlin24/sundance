@@ -45,10 +45,7 @@ function resolveHttpService<T extends BaseHttpService>(
  * @returns An instance of the `DataSourcesService` class.
  */
 export function useDataSourcesService() {
-  return resolveHttpService(
-    DataSourcesService,
-    import.meta.env.VITE_TENANTS_API_URL,
-  );
+  return resolveHttpService(DataSourcesService, "/tenants-api");
 }
 
 /**
@@ -64,5 +61,5 @@ export function useFormsService() {
  * @returns An instance of the `SubmissionsService` class.
  */
 export function useSubmissionsService() {
-  return resolveHttpService(SubmissionsService, "/tenants-api");
+  return resolveHttpService(SubmissionsService, "/forms-api");
 }
