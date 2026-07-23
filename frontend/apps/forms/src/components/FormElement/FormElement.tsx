@@ -59,9 +59,9 @@ export const FormElement: React.FC<FormElementProps> = function ({
   const [form, version] = data;
 
   return (
-    <FormProvider rawSubmission={rawSubmission}>
+    <FormProvider form={form} version={version} rawSubmission={rawSubmission}>
       <Box>
-        <FormRenderer form={form} version={version} onSubmit={handleSubmit} />
+        <FormRenderer onSubmit={handleSubmit} />
       </Box>
     </FormProvider>
   );

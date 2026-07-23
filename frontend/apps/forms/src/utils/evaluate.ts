@@ -3,10 +3,14 @@ import {
   RuleExpressionOp,
   type IRule,
   type IRuleExpression,
+  type IRuleStates,
 } from "@/types/rule";
 import { sortPositioned } from "./sort";
+import type { FormState } from "@/store/formReducer";
 
 type EvaluatorFn = (fieldValue: any, target: any) => boolean;
+
+export type EvalContext = Map<string, any>;
 
 const evaluatorRegistry = new Map<RuleExpressionOp, EvaluatorFn>([
   [RuleExpressionOp.Equal, (a, b) => a === b],
@@ -17,13 +21,65 @@ const evaluatorRegistry = new Map<RuleExpressionOp, EvaluatorFn>([
   [RuleExpressionOp.GreaterThanEqualTo, (a, b) => a >= b],
 ]);
 
-export function evaluate(rule: IRule, values: Map<string, any>): boolean {
+export function buildEvalContext(state: FormState): EvalContext {
+  const evalCtx = new Map<string, any>();
+
+  if (!state.version) {
+    return evalCtx;
+  }
+
+  for (const page of state.version.pages) {
+    for (const section of page.sections) {
+      for (const element of section.elements) {
+        evalCtx.set(element.key, state.values.get(element.id));
+      }
+    }
+  }
+
+  return evalCtx;
+}
+
+export function evaluateRules(
+  rules: IRule[],
+  evalCtx: EvalContext,
+  defaultState?: IRuleStates,
+): Readonly<IRuleStates> {
+  let state: IRuleStates = {
+    readonly: false,
+    required: false,
+    visible: true,
+  };
+
+  if (defaultState) {
+    state = { ...state, ...defaultState };
+  }
+
+  for (const rule of rules) {
+    const result = evaluateRule(rule, evalCtx);
+
+    switch (rule.type) {
+      case "visible":
+        state.visible = result;
+        break;
+      case "required":
+        state.required = result;
+        break;
+      case "readonly":
+        state.readonly = result;
+        break;
+    }
+  }
+
+  return state;
+}
+
+export function evaluateRule(rule: IRule, evalCtx: EvalContext): boolean {
   const expressions = sortPositioned(rule.expressions);
   let result = false;
 
   for (let i = 0; i < expressions.length; i++) {
     const exp = expressions[i];
-    const exprResult = evaluateExpression(exp, values);
+    const exprResult = evaluateExpression(exp, evalCtx);
 
     if (i === 0) {
       result = exprResult;

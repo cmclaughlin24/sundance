@@ -199,42 +199,23 @@ Provider component that:
 
 ---
 
-## Phase 4 — Client-Side Rule Evaluator
+## Phase 4 — Client-Side Rule Evaluator ✓
 
-### 4a. New file: `hooks/useRuleEvaluator.ts`
+### 4a. `utils/evaluate.ts` ✓
 
-A pure utility (not reliant on React state/effects) that mirrors the backend's `ExprRuleEvaluator` logic in TypeScript.
+Pure evaluation utility — no React dependency, no `Function` constructor. Implemented as:
 
-Given the current `values` map and a list of elements, for each element:
+- `evaluateRules(rules, evalCtx, defaultState?)` — takes `IRule[]` and a `Map<string, any>` eval context, returns `Readonly<IRuleStates>`
+- `evaluateRule(rule, evalCtx)` — evaluates a single rule's expressions with join chaining
+- Registry-based operator dispatch via `Map<RuleExpressionOp, EvaluatorFn>`
+- `IRuleStates` type added to `types/rule.ts`
 
-1. Iterate `element.rules` grouped by `rule.type` (`visible`, `required`, `readonly`)
-2. For each rule, iterate `rule.expressions` in ascending `position` order
-3. Evaluate `values[expression.fieldKey] <operator> expression.value`
-4. Chain expression results using `expression.joinWithPrevious` (`and` / `or`)
-5. Return the boolean result for each rule type
+Section/page visibility handled directly in renderers by calling `evaluateRules` with `useFormState().values` — no need to store section/page states in `FormState`.
 
-**Operators to implement** (matching `RuleExpressionOp`):
+**Files created:**
 
-| Enum value | Operation |
-| ---------- | --------- |
-| `equal`    | `===`     |
-| `nequal`   | `!==`     |
-| `lt`       | `<`       |
-| `gt`       | `>`       |
-| `lte`      | `<=`      |
-| `gte`      | `>=`      |
-
-**Default rule states** (when no rule of that type exists on an element):
-
-- `visible`: `true`
-- `required`: use `attributes.isRequired`
-- `readonly`: use `attributes.isReadOnly`
-
-The server remains authoritative — client-side evaluation is for UX responsiveness only. The backend re-evaluates all rules during submission processing.
-
-**Files to create:**
-
-- `frontend/apps/forms/src/hooks/useRuleEvaluator.ts`
+- `frontend/apps/forms/src/utils/evaluate.ts` ✓
+- `frontend/apps/forms/src/types/rule.ts` — `IRuleStates` added ✓
 
 ---
 
@@ -283,13 +264,15 @@ Dispatches to the correct field component by `element.type` via a `Map` registry
 
 ### 6b. `SectionRenderer` ✓
 
-- Sorts `section.elements` by `position` ascending via `sortFormElements` utility
-- Maps each element through `ElementRenderer`
+- Sorts `section.elements` by `position` ascending via `sortPositioned` utility
+- Filters elements by `evaluateRules(element.rules, values).visible` ✓ _eval context TODO: wire `useFormState().values`_
+- Maps visible elements through `ElementRenderer`
 
 ### 6c. `PageRenderer` ✓
 
 - Sorts `page.sections` by `position` ascending
-- Maps each section through `SectionRenderer`
+- Filters sections by `evaluateRules(section.rules, values).visible` ✓ _eval context TODO: wire `useFormState().values`_
+- Maps visible sections through `SectionRenderer`
 
 ### 6d. `FormRenderer` ✓ _partial_
 
@@ -430,7 +413,7 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | `frontend/apps/forms/src/store/formReducer.ts`                         | Reducer, actions, `FormState`, `initialFormState`, `initializeForm` ✓                            |
 | `frontend/apps/forms/src/store/FormProvider.tsx`                       | Provider component, wires `useReducer` with `rawSubmission` initializer ✓                        |
 | `frontend/apps/forms/src/store/useFormContext.ts`                      | `useFormState` and `useFormDispatch` consumer hooks ✓                                            |
-| `frontend/apps/forms/src/hooks/useRuleEvaluator.ts`                    | Client-side rule evaluator utility                                                               |
+| `frontend/apps/forms/src/utils/evaluate.ts`                            | Pure rule evaluator — `evaluateRules`, `evaluateRule`, operator registry ✓                       |
 | `frontend/apps/forms/src/hooks/useDataSourceLookups.ts`                | Async lookup fetcher for select fields                                                           |
 | `frontend/apps/forms/src/components/fields/TextField.tsx`              | Text field component                                                                             |
 | `frontend/apps/forms/src/components/fields/NumberField.tsx`            | Number field component                                                                           |
@@ -449,6 +432,7 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | File                                                                 | Change                                                                                        |
 | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | `frontend/apps/forms/src/types/element.ts`                           | Replace loose attributes type with discriminated union; remove `boolean` from `ElementType` ✓ |
+| `frontend/apps/forms/src/types/rule.ts`                              | Add `IRuleStates` interface ✓                                                                 |
 | `frontend/apps/forms/src/types/submission.ts`                        | Tighten `ISubmissionValue.value` typing                                                       |
 | `frontend/apps/forms/src/services/dataSourcesService.ts`             | Implement `getLookups()` method ✓                                                             |
 | `frontend/apps/forms/src/services/submissionService.ts`              | Add idempotency key header support                                                            |

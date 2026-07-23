@@ -7,5 +7,7 @@ export const SectionRenderer: React.FC<{ section: ISection }> = function ({
 }) {
   const elements = sortPositioned(section.elements);
 
-  return elements.map((element) => <ElementRenderer element={element} key={element.id} />);
+  return elements.map((element) => (
+    <ElementRenderer element={element} key={element.id} />
+  ));
 };

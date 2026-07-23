@@ -32,3 +32,9 @@ export interface IRuleExpression extends HasPosition {
 export interface HasRules {
   rules: IRule[];
 }
+
+export interface IRuleStates {
+  required: boolean;
+  readonly: boolean;
+  visible: boolean;
+}
