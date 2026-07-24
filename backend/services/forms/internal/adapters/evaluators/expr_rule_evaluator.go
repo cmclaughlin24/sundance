@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strconv"
 
 	"sundance/backend/pkg/common/stratreg"
 	"sundance/backend/services/forms/internal/core/domain"
@@ -106,6 +107,13 @@ var exprRegistry = stratreg.New[domain.ExprOperator, statementFn]().
 
 func newDefaultStatementFn(operator string) statementFn {
 	return func(re *domain.RuleExpression) string {
-		return fmt.Sprintf("%s %s %v", re.FieldKey, operator, re.Value)
+		val := re.Value
+
+		// NOTE: When evaluating a string, expr-lang/expr expects strings in "" syntax.
+		if v, ok := re.Value.(string); ok {
+			val = strconv.Quote(v)
+		}
+
+		return fmt.Sprintf("%s %s %v", re.FieldKey, operator, val)
 	}
 }
