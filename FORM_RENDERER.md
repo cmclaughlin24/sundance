@@ -195,7 +195,7 @@ Provider component that:
 - `frontend/apps/forms/src/store/formContext.ts` ✓
 - `frontend/apps/forms/src/store/formReducer.ts` ✓
 - `frontend/apps/forms/src/store/FormProvider.tsx` ✓
-- `frontend/apps/forms/src/store/useFormContext.ts` ✓
+- `frontend/apps/forms/src/store/useFormContext.ts` ✓ — includes `useFormState`, `useFormDispatch`, `useElementRuleState`, `useTenantId`
 - `frontend/apps/forms/src/store/evalContext.ts` ✓
 
 ---
@@ -234,8 +234,8 @@ One component per `ElementType`. All field components:
 
 | Component       | MUI Input                     | Key attributes respected                                          | Status |
 | --------------- | ----------------------------- | ----------------------------------------------------------------- | ------ |
-| `TextField`     | `MUI TextField`               | `minLength`, `maxLength`, `pattern`, `placeholder`                | ✓ _partial — renders, `onChange` dispatches `SET_VALUE`; no rule state wired yet_ |
-| `NumberField`   | `MUI TextField type="number"` | `min`, `max`, `step`                                              | ✓ _partial — renders, type guard fixed, `onChange` dispatches `SET_VALUE`; no rule state wired yet_ |
+| `TextField`     | `MUI TextField`               | `minLength`, `maxLength`, `pattern`, `placeholder`                | ✓ _partial — renders, `onChange` dispatches `SET_VALUE`, consumes `ruleState` (`required`, `readonly`)_ |
+| `NumberField`   | `MUI TextField type="number"` | `min`, `max`, `step`                                              | ✓ _partial — renders, type guard fixed, `onChange` dispatches `SET_VALUE`, consumes `ruleState` (`required`, `readonly`)_ |
 | `SelectField`   | `MUI Select` / `Autocomplete` | `data`, `dataSourceRef`, `multiple`, `minSelected`, `maxSelected` | _stub — empty file_ |
 | `CheckboxField` | `MUI Checkbox`                | `isCheckedByDefault` (initializes value on mount)                 | _stub — empty file_ |
 | `DateField`     | `MUI TextField type="date"`   | `minDate`, `maxDate`                                              | _stub — empty file_ |
@@ -336,35 +336,30 @@ After a successful submission, call `props.onSubmit({ raw: values, normalized: n
 
 ---
 
-## Phase 8 — DataSources for Select Fields
+## Phase 8 — DataSources for Select Fields ✓
 
-### 8a. New hook: `useDataSourceLookups`
+### 8a. New hook: `useDataSource` ✓
 
-```ts
-function useDataSourceLookups(
-  dataSourceRef: IDataSourceRef | undefined,
-  formValues: Record<string, any>,
-  options: DefaultRequestOptions,
-): { lookups: ILookup[]; isLoading: boolean; error: unknown };
-```
+Created as `hooks/useDataSource.ts`:
 
-- Uses `useAsyncData` internally
-- If `dataSourceRef` is undefined, returns `{ lookups: [], isLoading: false, error: null }`
-- Resolves `field`-type bindings from `dataSourceRef.bindings` against `formValues` to build the query params
-- Re-fetches when any referenced field value changes (dependency array includes the resolved binding values)
-- Calls `DataSourcesService.getLookups(dataSourceRef.dataSourceId, resolvedParams, options)`
+- `useTenantId()` for tenant header — no direct `useFormState` call needed ✓
+- `useEvalContext()` for binding resolution — `evalCtx` keyed by `element.key` ✓
+- `resolveBindings(bindings, evalCtx)` resolves both `static` and `field` binding types ✓
+- `serializeFilters(filters)` — sorts keys before serializing for stable dependency comparison ✓
+- `serialized` string used as `useAsyncData` dependency — prevents unnecessary re-fetches ✓
+- Guards on `tenantId` before making API call ✓
 
-### 8b. Static binding support
+### 8b. Static binding support ✓
 
-For `BindingSource.type === "static"`, pass the literal `value` directly as the query param — no form value lookup needed.
+`BindingSource.type === "static"` — literal `binding.value` passed directly as filter param.
 
-### 8c. Dynamic binding support (field-referenced)
+### 8c. Dynamic binding support ✓
 
-For `BindingSource.type === "field"`, resolve `formValues[bindingSource.key]` as the param value. Include the resolved field values in `useAsyncData`'s dependency array so lookups re-fetch when upstream fields change.
+`BindingSource.type === "field"` — resolved via `evalCtx[binding.key]`; re-fetches when bound field values change via serialized dependency.
 
-**Files to create:**
+**Files created:**
 
-- `frontend/apps/forms/src/hooks/useDataSourceLookups.ts`
+- `frontend/apps/forms/src/hooks/useDataSource.ts` ✓
 
 ---
 
@@ -419,11 +414,11 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | `frontend/apps/forms/src/store/formContext.ts`                         | State and dispatch context objects ✓                                                             |
 | `frontend/apps/forms/src/store/formReducer.ts`                         | Reducer, actions, `FormState`, `initialFormState`, `initializeForm` ✓                            |
 | `frontend/apps/forms/src/store/FormProvider.tsx`                       | Provider component, wires `useReducer` with `rawSubmission` initializer ✓                        |
-| `frontend/apps/forms/src/store/useFormContext.ts`                      | `useFormState`, `useFormDispatch`, `useElementRuleState` consumer hooks ✓                         |
+| `frontend/apps/forms/src/store/useFormContext.ts`                      | `useFormState`, `useFormDispatch`, `useElementRuleState`, `useTenantId` consumer hooks ✓          |
 | `frontend/apps/forms/src/utils/evaluate.ts`                            | Pure rule evaluator — `evaluateRules`, `evaluateRule`, `buildEvalContext`, operator registry ✓    |
 | `frontend/apps/forms/src/utils/filter.ts`                              | `filterVisible<T extends HasRules>(items, evalCtx)` utility ✓                                    |
 | `frontend/apps/forms/src/store/evalContext.ts`                         | `EvalContextContext` and `useEvalContext` hook ✓                                                  |
-| `frontend/apps/forms/src/hooks/useDataSourceLookups.ts`                | Async lookup fetcher for select fields                                                           |
+| `frontend/apps/forms/src/hooks/useDataSource.ts`                       | Async lookup fetcher — `resolveBindings`, `serializeFilters`, `useTenantId` integration ✓        |
 | `frontend/apps/forms/src/components/fields/TextField.tsx`              | Text field component                                                                             |
 | `frontend/apps/forms/src/components/fields/NumberField.tsx`            | Number field component                                                                           |
 | `frontend/apps/forms/src/components/fields/SelectField.tsx`            | Select field component                                                                           |

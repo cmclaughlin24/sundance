@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { FormDispatchContext, FormStateContext } from "./formContext";
 import { useEvalContext } from "./evalContext";
 import type { IElement } from "@/types/element";
@@ -20,4 +20,9 @@ export function useElementRuleState(element: IElement): Readonly<IRuleState> {
     readonly: element.attributes.isReadOnly,
     required: element.attributes.isRequired,
   });
+}
+
+export function useTenantId() {
+  const state = useFormState();
+  return useMemo(() => state.form?.tenantId, [state.form?.tenantId]);
 }
