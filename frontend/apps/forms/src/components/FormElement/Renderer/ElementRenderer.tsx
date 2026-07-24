@@ -1,10 +1,12 @@
 import { type ElementType, type IElement } from "@/types/element";
 import { TextField } from "../Elements/TextFieldElement";
-import { useFormDispatch } from "@/store/useFormContext";
+import { useElementRuleState, useFormDispatch } from "@/store/useFormContext";
 import { NumberField } from "../Elements/NumberFieldElement";
+import type { IRuleState } from "@/types/rule";
 
 export type ElementComponent = React.FC<{
   element: IElement;
+  ruleState: IRuleState;
   onChange: (value: any) => void;
 }>;
 
@@ -17,6 +19,7 @@ export const ElementRenderer: React.FC<{ element: IElement }> = function ({
   element,
 }) {
   const dispatch = useFormDispatch();
+  const ruleState = useElementRuleState(element);
 
   const handleChange = (value: any) => {
     dispatch({ type: "SET_VALUE", elementId: element.id, value });
@@ -28,5 +31,11 @@ export const ElementRenderer: React.FC<{ element: IElement }> = function ({
     return <>Element not defined!</>;
   }
 
-  return <Component element={element} onChange={handleChange} />;
+  return (
+    <Component
+      element={element}
+      ruleState={ruleState}
+      onChange={handleChange}
+    />
+  );
 };

@@ -4,12 +4,18 @@ import { FieldElementContainer } from "./BaseFieldElement";
 import MuiTextField from "@mui/material/TextField";
 import type { ChangeEvent } from "react";
 
-export const TextField: ElementComponent = function ({ element, onChange }) {
+export const TextField: ElementComponent = function ({
+  element,
+  ruleState,
+  onChange,
+}) {
   if (element.type !== "text") {
     return <>Incorrect Element Type: {element.type}</>;
   }
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     onChange(event.target.value);
   };
 
@@ -19,6 +25,8 @@ export const TextField: ElementComponent = function ({ element, onChange }) {
     <FieldElementContainer element={element}>
       <MuiTextField
         id={element.id}
+        required={ruleState.required}
+        disabled={ruleState.readonly}
         placeholder={attr.placeholder}
         onChange={handleChange}
       />

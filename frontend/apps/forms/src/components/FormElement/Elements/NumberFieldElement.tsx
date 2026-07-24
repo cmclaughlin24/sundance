@@ -4,7 +4,7 @@ import { FieldElementContainer } from "./BaseFieldElement";
 import MuiTextField from "@mui/material/TextField";
 import type { ChangeEvent } from "react";
 
-export const NumberField: ElementComponent = function ({ element, onChange }) {
+export const NumberField: ElementComponent = function ({ element, ruleState, onChange }) {
   if (element.type !== "number") {
     return <>Incorrect Element Type: {element.type}</>;
   }
@@ -22,6 +22,8 @@ export const NumberField: ElementComponent = function ({ element, onChange }) {
       <MuiTextField
         id={element.id}
         type="number"
+        required={ruleState.required}
+        disabled={ruleState.readonly}
         onChange={handleChange}
         slotProps={{
           htmlInput: {
