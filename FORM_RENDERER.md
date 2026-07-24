@@ -236,9 +236,9 @@ One component per `ElementType`. All field components:
 | --------------- | ----------------------------- | ----------------------------------------------------------------- | ------ |
 | `TextField`     | `MUI TextField`               | `minLength`, `maxLength`, `pattern`, `placeholder`                | ✓ _partial — renders, `onChange` dispatches `SET_VALUE`, consumes `ruleState` (`required`, `readonly`)_ |
 | `NumberField`   | `MUI TextField type="number"` | `min`, `max`, `step`                                              | ✓ _partial — renders, type guard fixed, `onChange` dispatches `SET_VALUE`, consumes `ruleState` (`required`, `readonly`)_ |
-| `SelectField`   | `MUI Select` / `Autocomplete` | `data`, `dataSourceRef`, `multiple`, `minSelected`, `maxSelected` | ✓ _partial — static `data` renders, type guard fixed, `onChange` correct; `dataSourceRef` and `multiple` pending_ |
-| `CheckboxField` | `MUI Checkbox`                | `isCheckedByDefault` (initializes value on mount)                 | ✓ _partial — renders `ILookup[]` as checkbox group, `isCheckedByDefault` wired, `onChange` dispatches per lookup; `dataSourceRef` pending_ |
-| `DateField`     | `MUI TextField type="date"`   | `minDate`, `maxDate`                                              | _stub — empty file_ |
+| `SelectField`   | `MUI Select` / `Autocomplete` | `data`, `dataSourceRef`, `multiple`, `minSelected`, `maxSelected` | ✓ _partial — static and dynamic (`dataSourceRef`) rendering, `BaseSelectFieldElement` extracted, disables while loading; `multiple` pending_ |
+| `CheckboxField` | `MUI Checkbox`                | `isCheckedByDefault` (initializes value on mount)                 | ✓ _static and dynamic (`dataSourceRef`) rendering, `BaseCheckboxFieldElement` extracted, per-lookup onChange, disables while loading_ |
+| `DateField`     | `MUI TextField type="date"`   | `minDate`, `maxDate`                                              | ✓ |
 
 **`SelectField` specifics:**
 
@@ -252,9 +252,9 @@ One component per `ElementType`. All field components:
 
 - `frontend/apps/forms/src/components/FormElement/Elements/TextFieldElement.tsx` ✓ _partial_
 - `frontend/apps/forms/src/components/FormElement/Elements/NumberFieldElement.tsx` ✓ _partial_
-- `frontend/apps/forms/src/components/FormElement/Elements/SelectFieldElement.tsx` ✓ _partial_
-- `frontend/apps/forms/src/components/FormElement/Elements/CheckboxFieldElement.tsx` ✓ _partial_
-- `frontend/apps/forms/src/components/FormElement/Elements/DateFieldElement.tsx` _stub_
+- `frontend/apps/forms/src/components/FormElement/Elements/SelectFieldElement.tsx` ✓ _partial — `multiple` pending_
+- `frontend/apps/forms/src/components/FormElement/Elements/CheckboxFieldElement.tsx` ✓
+- `frontend/apps/forms/src/components/FormElement/Elements/DateFieldElement.tsx` ✓
 - `frontend/apps/forms/src/components/FormElement/Elements/BaseFieldElement.tsx` ✓
 - `frontend/apps/forms/src/components/FormElement/Elements/FieldElementLabel.tsx` ✓
 
@@ -264,7 +264,7 @@ One component per `ElementType`. All field components:
 
 ### 6a. `ElementRenderer` ✓
 
-Dispatches to the correct field component by `element.type` via a `Map` registry. `useFormDispatch` wired — dispatches `SET_VALUE` on change. `text` and `number` registered. Remaining types to be added as field components are completed.
+Dispatches to the correct field component by `element.type` via a `Map` registry. `useFormDispatch` wired — dispatches `SET_VALUE` on change. All five types registered: `text`, `number`, `select`, `checkbox`, `date` ✓
 
 ### 6b. `SectionRenderer` ✓
 
@@ -301,20 +301,26 @@ Renders `FormRenderer`, `FormProvider` wired with `form`, `version`, `rawSubmiss
 
 ## Phase 7 — Submission Flow
 
-### 7a. `useActionState` for submit
+### 7a. Async submit handler
 
-Use React 19's `useActionState` in `FormElement` for the async submit action:
+Replace the current `normalize` call in `FormRenderer` with a full submit flow using plain `useState` for pending and error state:
 
 ```ts
-const [state, submitAction, isPending] = useActionState(
-  async (prevState, _formData) => {
-    // 1. Collect visible element IDs from context.ruleStates
-    // 2. Build ISubmissionValue[] from context.values for visible elements only
-    // 3. Call submissionsService.submit(formId, versionId, values, options)
-    // 4. Return { status: "success" } or { status: "error", message }
-  },
-  { status: "idle" },
-);
+const [isPending, setIsPending] = useState(false);
+const [submitError, setSubmitError] = useState<string | null>(null);
+
+const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
+  event.preventDefault();
+  setIsPending(true);
+  try {
+    const result = await submissionsService.submit(formId, versionId, values, options);
+    onSubmit({ raw: values, normalized: result });
+  } catch (err) {
+    setSubmitError("Submission failed.");
+  } finally {
+    setIsPending(false);
+  }
+};
 ```
 
 ### 7b. Idempotency key
@@ -441,7 +447,7 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | `frontend/apps/forms/src/services/dataSourcesService.ts`             | Implement `getLookups()` method ✓                                                             |
 | `frontend/apps/forms/src/services/submissionService.ts`              | Add idempotency key header support                                                            |
 | `frontend/apps/forms/src/hooks/useHttpService.ts`                    | Use `import.meta.env` for base URLs ✓                                                         |
-| `frontend/apps/forms/src/components/FormElement/FormElement.tsx`     | Full rewrite — multi-page wizard, `FormProvider`, `useActionState` — _partial: `FormProvider`, `rawSubmission`, `FormRenderer` wired up_ |
+| `frontend/apps/forms/src/components/FormElement/FormElement.tsx`     | Full rewrite — multi-page wizard, `FormProvider`, async submit handler — _partial: `FormProvider`, `rawSubmission`, `FormRenderer` wired up_ |
 | `frontend/apps/forms/src/components/FormElement/FormElement.type.ts` | Add `token` prop if auth is wired up later                                                    |
 | `frontend/apps/forms/src/routes/index.tsx`                           | Updated with real `FormElement` usage ✓                                                       |
 | `frontend/apps/forms/src/routes/__root.tsx`                          | Remove placeholder content                                                                    |

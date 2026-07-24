@@ -5,6 +5,75 @@ import type { ILookup } from "@/types/data";
 import type { SelectElementAttributes } from "@/types/elementAttributes";
 import { checkElementType } from "@/utils/error";
 import { FieldElementContainer } from "./FieldElementContainer";
+import { useDataSource } from "@/hooks/useDataSource";
+
+interface BaseSelectFieldElementProps {
+  id: string;
+  data: ILookup[];
+  required?: boolean;
+  readonly?: boolean;
+  onChange: (event: any) => void;
+}
+
+const BaseSelectFieldElement: React.FC<BaseSelectFieldElementProps> =
+  function ({ data, required, readonly, id, onChange }) {
+    const handleChange = (event: SelectChangeEvent) => {
+      onChange(event.target.value);
+    };
+
+    let content = data.map((lookup) => (
+      <MenuItem value={lookup.value} key={`${lookup.value}=${lookup.label}`}>
+        {lookup.label}
+      </MenuItem>
+    ));
+
+    return (
+      <MuiSelectField
+        id={id}
+        required={required}
+        disabled={readonly}
+        onChange={handleChange}
+      >
+        {content}
+      </MuiSelectField>
+    );
+  };
+
+const StaticSelectFieldElement: ElementComponent = function ({
+  element,
+  ruleState,
+  onChange,
+}) {
+  const attr = element.attributes as SelectElementAttributes;
+  return (
+    <BaseSelectFieldElement
+      id={element.id}
+      readonly={ruleState.readonly}
+      required={ruleState.required}
+      data={attr.data}
+      onChange={onChange}
+    />
+  );
+};
+
+const DynamicSelectFieldElement: ElementComponent = function ({
+  element,
+  ruleState,
+  onChange,
+}) {
+  const attr = element.attributes as SelectElementAttributes;
+  const { data, isLoading } = useDataSource(attr.dataSourceRef!);
+
+  return (
+    <BaseSelectFieldElement
+      id={element.id}
+      readonly={ruleState.readonly || isLoading}
+      required={ruleState.required}
+      data={data || []}
+      onChange={onChange}
+    />
+  );
+};
 
 export const SelectFieldElement: ElementComponent = function ({
   element,
@@ -14,28 +83,15 @@ export const SelectFieldElement: ElementComponent = function ({
   checkElementType(element.type, "select");
 
   const attr = element.attributes as SelectElementAttributes;
-  const data: ILookup[] = attr.data;
+  let Component = StaticSelectFieldElement;
 
-  const handleChange = (event: SelectChangeEvent) => {
-    onChange(event.target.value);
-  };
-
-  let content = data.map((lookup) => (
-    <MenuItem value={lookup.value} key={`${lookup.value}=${lookup.label}`}>
-      {lookup.label}
-    </MenuItem>
-  ));
+  if (attr.dataSourceRef) {
+    Component = DynamicSelectFieldElement;
+  }
 
   return (
     <FieldElementContainer element={element}>
-      <MuiSelectField
-        id={element.id}
-        required={ruleState.required}
-        disabled={ruleState.readonly}
-        onChange={handleChange}
-      >
-        {content}
-      </MuiSelectField>
+      <Component element={element} ruleState={ruleState} onChange={onChange} />
     </FieldElementContainer>
   );
 };
