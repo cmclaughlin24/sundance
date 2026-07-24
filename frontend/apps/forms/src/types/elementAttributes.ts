@@ -1,4 +1,4 @@
-import type { HasDataSourceRef } from "./data";
+import type { HasDataSourceRef, ILookup } from "./data";
 
 export interface BaseFieldElementAttributes {
   isRequired: boolean;
@@ -20,7 +20,7 @@ export interface NumberElementAttributes extends BaseFieldElementAttributes {
 
 export interface SelectElementAttributes
   extends BaseFieldElementAttributes, HasDataSourceRef {
-  data: any[];
+  data: ILookup[];
   multiple: boolean;
   minSelected?: number;
   maxSelected?: number;
@@ -29,7 +29,7 @@ export interface SelectElementAttributes
 export interface CheckboxElementAttributes
   extends BaseFieldElementAttributes, HasDataSourceRef {
   isCheckedByDefault: boolean;
-  data: any[];
+  data: ILookup[];
 }
 
 export interface DateElementAttributes extends BaseFieldElementAttributes {

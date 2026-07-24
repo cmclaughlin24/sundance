@@ -1,7 +1,7 @@
 import { type ElementType, type IElement } from "@/types/element";
-import { TextField } from "../Elements/TextFieldElement";
+import { TextFieldElement } from "../Elements/TextFieldElement";
 import { useElementRuleState, useFormDispatch } from "@/store/useFormContext";
-import { NumberField } from "../Elements/NumberFieldElement";
+import { NumberFieldElement } from "../Elements/NumberFieldElement";
 import type { IRuleState } from "@/types/rule";
 
 export type ElementComponent = React.FC<{
@@ -11,8 +11,8 @@ export type ElementComponent = React.FC<{
 }>;
 
 const registry = new Map<ElementType, ElementComponent>([
-  ["text", TextField],
-  ["number", NumberField],
+  ["text", TextFieldElement],
+  ["number", NumberFieldElement],
 ]);
 
 export const ElementRenderer: React.FC<{ element: IElement }> = function ({

@@ -236,8 +236,8 @@ One component per `ElementType`. All field components:
 | --------------- | ----------------------------- | ----------------------------------------------------------------- | ------ |
 | `TextField`     | `MUI TextField`               | `minLength`, `maxLength`, `pattern`, `placeholder`                | ✓ _partial — renders, `onChange` dispatches `SET_VALUE`, consumes `ruleState` (`required`, `readonly`)_ |
 | `NumberField`   | `MUI TextField type="number"` | `min`, `max`, `step`                                              | ✓ _partial — renders, type guard fixed, `onChange` dispatches `SET_VALUE`, consumes `ruleState` (`required`, `readonly`)_ |
-| `SelectField`   | `MUI Select` / `Autocomplete` | `data`, `dataSourceRef`, `multiple`, `minSelected`, `maxSelected` | _stub — empty file_ |
-| `CheckboxField` | `MUI Checkbox`                | `isCheckedByDefault` (initializes value on mount)                 | _stub — empty file_ |
+| `SelectField`   | `MUI Select` / `Autocomplete` | `data`, `dataSourceRef`, `multiple`, `minSelected`, `maxSelected` | ✓ _partial — static `data` renders, type guard fixed, `onChange` correct; `dataSourceRef` and `multiple` pending_ |
+| `CheckboxField` | `MUI Checkbox`                | `isCheckedByDefault` (initializes value on mount)                 | ✓ _partial — renders `ILookup[]` as checkbox group, `isCheckedByDefault` wired, `onChange` dispatches per lookup; `dataSourceRef` pending_ |
 | `DateField`     | `MUI TextField type="date"`   | `minDate`, `maxDate`                                              | _stub — empty file_ |
 
 **`SelectField` specifics:**
@@ -252,8 +252,8 @@ One component per `ElementType`. All field components:
 
 - `frontend/apps/forms/src/components/FormElement/Elements/TextFieldElement.tsx` ✓ _partial_
 - `frontend/apps/forms/src/components/FormElement/Elements/NumberFieldElement.tsx` ✓ _partial_
-- `frontend/apps/forms/src/components/FormElement/Elements/SelectFieldElement.tsx` _stub_
-- `frontend/apps/forms/src/components/FormElement/Elements/CheckboxFieldElement.tsx` _stub_
+- `frontend/apps/forms/src/components/FormElement/Elements/SelectFieldElement.tsx` ✓ _partial_
+- `frontend/apps/forms/src/components/FormElement/Elements/CheckboxFieldElement.tsx` ✓ _partial_
 - `frontend/apps/forms/src/components/FormElement/Elements/DateFieldElement.tsx` _stub_
 - `frontend/apps/forms/src/components/FormElement/Elements/BaseFieldElement.tsx` ✓
 - `frontend/apps/forms/src/components/FormElement/Elements/FieldElementLabel.tsx` ✓
@@ -419,14 +419,14 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | `frontend/apps/forms/src/utils/filter.ts`                              | `filterVisible<T extends HasRules>(items, evalCtx)` utility ✓                                    |
 | `frontend/apps/forms/src/store/evalContext.ts`                         | `EvalContextContext` and `useEvalContext` hook ✓                                                  |
 | `frontend/apps/forms/src/hooks/useDataSource.ts`                       | Async lookup fetcher — `resolveBindings`, `serializeFilters`, `useTenantId` integration ✓        |
-| `frontend/apps/forms/src/components/fields/TextField.tsx`              | Text field component                                                                             |
-| `frontend/apps/forms/src/components/fields/NumberField.tsx`            | Number field component                                                                           |
-| `frontend/apps/forms/src/components/fields/SelectField.tsx`            | Select field component                                                                           |
-| `frontend/apps/forms/src/components/fields/CheckboxField.tsx`          | Checkbox field component                                                                         |
-| `frontend/apps/forms/src/components/fields/DateField.tsx`              | Date field component                                                                             |
-| `frontend/apps/forms/src/components/layout/ElementRenderer.tsx`        | Dispatches to field component by element type                                                    |
-| `frontend/apps/forms/src/components/layout/SectionRenderer.tsx`        | Renders a section and its elements                                                               |
-| `frontend/apps/forms/src/components/layout/PageRenderer.tsx`           | Renders a page and its sections                                                                  |
+| `frontend/apps/forms/src/components/FormElement/Elements/TextFieldElement.tsx`     | Text field — placeholder, onChange, ruleState ✓ _partial_                           |
+| `frontend/apps/forms/src/components/FormElement/Elements/NumberFieldElement.tsx`   | Number field — min/max/step, onChange, ruleState ✓ _partial_                        |
+| `frontend/apps/forms/src/components/FormElement/Elements/SelectFieldElement.tsx`   | Select field — static data, type guard, onChange ✓ _partial_                        |
+| `frontend/apps/forms/src/components/FormElement/Elements/CheckboxFieldElement.tsx` | Checkbox group — ILookup[], isCheckedByDefault, per-lookup onChange ✓ _partial_     |
+| `frontend/apps/forms/src/components/FormElement/Elements/DateFieldElement.tsx`     | Date field component — _stub_                                                        |
+| `frontend/apps/forms/src/components/FormElement/Renderer/ElementRenderer.tsx`      | Dispatches to field component by element type ✓                                      |
+| `frontend/apps/forms/src/components/FormElement/Renderer/SectionRenderer.tsx`      | Renders a section and its elements ✓                                                 |
+| `frontend/apps/forms/src/components/FormElement/Renderer/PageRenderer.tsx`         | Renders a page and its sections ✓                                                    |
 | `frontend/apps/forms/src/routes/forms/$formId/versions/$versionId.tsx` | Form viewer route                                                                                |
 | `frontend/apps/forms/.env`                                             | Local environment variable defaults                                                              |
 | `frontend/apps/forms/.env.example`                                     | Documented environment variable template                                                         |

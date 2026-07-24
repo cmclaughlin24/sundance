@@ -3,15 +3,14 @@ import type { ElementComponent } from "../Renderer/ElementRenderer";
 import { FieldElementContainer } from "./BaseFieldElement";
 import MuiTextField from "@mui/material/TextField";
 import type { ChangeEvent } from "react";
+import { checkElementType } from "@/utils/error";
 
-export const TextField: ElementComponent = function ({
+export const TextFieldElement: ElementComponent = function ({
   element,
   ruleState,
   onChange,
 }) {
-  if (element.type !== "text") {
-    return <>Incorrect Element Type: {element.type}</>;
-  }
+  checkElementType(element.type, "text");
 
   const handleChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
