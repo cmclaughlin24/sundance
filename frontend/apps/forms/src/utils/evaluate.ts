@@ -26,7 +26,7 @@ export function buildEvalContext(
   pages: IPage[] | null,
   values: FormValues,
 ): EvalContext {
-  const evalCtx = new Map<string, any>();
+  const evalCtx: EvalContext = {};
 
   if (!pages || pages.length === 0) {
     return evalCtx;
@@ -35,7 +35,7 @@ export function buildEvalContext(
   for (const page of pages) {
     for (const section of page.sections) {
       for (const element of section.elements) {
-        evalCtx.set(element.key, values[element.id]);
+        evalCtx[element.key] = values[element.id];
       }
     }
   }
