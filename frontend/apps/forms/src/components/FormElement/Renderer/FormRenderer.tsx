@@ -32,7 +32,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
 
     const submission: ISubmissionValue[] = [];
 
-    for (const [elementId, value] of Object.entries(submission)) {
+    for (const [elementId, value] of Object.entries(values)) {
       submission.push({ elementId, value });
     }
 
