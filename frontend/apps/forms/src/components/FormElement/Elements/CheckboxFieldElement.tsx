@@ -6,6 +6,7 @@ import MuiCheckbox from "@mui/material/Checkbox";
 import MuiFormControlLabel from "@mui/material/FormControlLabel";
 import Box from "@mui/material/Box";
 import type { ChangeEvent } from "react";
+import { FieldElementContainer } from "./FieldElementContainer";
 
 export const CheckboxFieldElement: ElementComponent = function ({
   element,
@@ -37,5 +38,9 @@ export const CheckboxFieldElement: ElementComponent = function ({
     />
   ));
 
-  return <Box>{content}</Box>;
+  return (
+    <FieldElementContainer element={element}>
+      <Box>{content}</Box>
+    </FieldElementContainer>
+  );
 };

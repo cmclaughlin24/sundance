@@ -3,6 +3,8 @@ import "./App.css";
 import { RouterProvider } from "@tanstack/react-router";
 import { SundanceThemeProvider } from "@sundance/common";
 import type { MfeBootstrapOptions } from "@sundance/mfe";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 export interface AppProps {
   router: any;
@@ -27,7 +29,9 @@ function App({ router, options }: AppProps) {
 
   return (
     <SundanceThemeProvider>
-      <RouterProvider router={router} />
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <RouterProvider router={router} />
+      </LocalizationProvider>
     </SundanceThemeProvider>
   );
 }

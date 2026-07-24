@@ -4,6 +4,7 @@ import type { ElementComponent } from "../Renderer/ElementRenderer";
 import type { ILookup } from "@/types/data";
 import type { SelectElementAttributes } from "@/types/elementAttributes";
 import { checkElementType } from "@/utils/error";
+import { FieldElementContainer } from "./FieldElementContainer";
 
 export const SelectFieldElement: ElementComponent = function ({
   element,
@@ -26,13 +27,15 @@ export const SelectFieldElement: ElementComponent = function ({
   ));
 
   return (
-    <MuiSelectField
-      id={element.id}
-      required={ruleState.required}
-      disabled={ruleState.readonly}
-      onChange={handleChange}
-    >
-      {content}
-    </MuiSelectField>
+    <FieldElementContainer element={element}>
+      <MuiSelectField
+        id={element.id}
+        required={ruleState.required}
+        disabled={ruleState.readonly}
+        onChange={handleChange}
+      >
+        {content}
+      </MuiSelectField>
+    </FieldElementContainer>
   );
 };

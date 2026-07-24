@@ -3,6 +3,9 @@ import { TextFieldElement } from "../Elements/TextFieldElement";
 import { useElementRuleState, useFormDispatch } from "@/store/useFormContext";
 import { NumberFieldElement } from "../Elements/NumberFieldElement";
 import type { IRuleState } from "@/types/rule";
+import { SelectFieldElement } from "../Elements/SelectFieldElement";
+import { CheckboxFieldElement } from "../Elements/CheckboxFieldElement";
+import { DateFieldElement } from "../Elements/DateFieldElement";
 
 export type ElementComponent = React.FC<{
   element: IElement;
@@ -11,8 +14,11 @@ export type ElementComponent = React.FC<{
 }>;
 
 const registry = new Map<ElementType, ElementComponent>([
-  ["text", TextFieldElement],
+  ["checkbox", CheckboxFieldElement],
+  ["date", DateFieldElement],
   ["number", NumberFieldElement],
+  ["select", SelectFieldElement],
+  ["text", TextFieldElement],
 ]);
 
 export const ElementRenderer: React.FC<{ element: IElement }> = function ({
