@@ -33,7 +33,8 @@
     "axios": "^1.18.1",
     "dayjs": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "zustand": "catalog:"
   },
   "devDependencies": {
     "@originjs/vite-plugin-federation": "^1.4.1",

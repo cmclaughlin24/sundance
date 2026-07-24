@@ -10,6 +10,7 @@ catalog:
   dayjs: ^1.11.21
   react: ^19.1.1
   react-dom: ^19.1.1
+  zustand: ^5.0.14
 
 catalogs:
   test:

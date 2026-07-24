@@ -3,7 +3,11 @@ import { sortPositioned } from "@/utils/sort";
 import type { ISubmissionValue } from "@/types/submission";
 import { PageRenderer } from "./PageRenderer";
 import { useMemo, type SubmitEvent } from "react";
-import { useFormState } from "@/store/useFormContext";
+import {
+  useForm,
+  useFormValues,
+  useFormVersion,
+} from "@/store/useFormStoreContext";
 import { filterVisible } from "@/utils/filter";
 import { EvalContextContext } from "@/store/evalContext";
 import { buildEvalContext, type EvalContext } from "@/utils/evaluate";
@@ -15,25 +19,25 @@ export interface FormRendererProps {
 export const FormRenderer: React.FC<FormRendererProps> = function ({
   onSubmit,
 }) {
-  const state = useFormState();
+  const form = useForm();
+  const version = useFormVersion();
+  const values = useFormValues();
   const evalCtx = useMemo<EvalContext>(() => {
-    const pages = state.version?.pages ?? [];
-    return buildEvalContext(pages, state.values);
-  }, [state.version, state.values]);
+    const pages = version?.pages ?? [];
+    return buildEvalContext(pages, values);
+  }, [version, values]);
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const values: ISubmissionValue[] = [];
+    const submission: ISubmissionValue[] = [];
 
-    for (const [elementId, value] of Object.entries(state.values)) {
-      values.push({ elementId, value });
+    for (const [elementId, value] of Object.entries(submission)) {
+      submission.push({ elementId, value });
     }
 
-    onSubmit(values);
+    onSubmit(submission);
   };
-
-  const { form, version } = state;
 
   if (!form || !version) {
     return <>Missing form and version</>;

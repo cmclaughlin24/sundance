@@ -1,7 +1,7 @@
 import { useFormsService, useSubmissionsService } from "@/hooks/useHttpService";
 import type { FormElementProps } from "./FormElement.type";
 import { useAsyncData } from "@/hooks/useAsyncData";
-import { FormProvider } from "@/store/FormProvider";
+import { FormStoreProvider } from "@/store/FormStoreProvider";
 import Box from "@mui/material/Box";
 import { FormRenderer } from "./Renderer/FormRenderer";
 import type { ISubmissionValue } from "@/types/submission";
@@ -59,10 +59,10 @@ export const FormElement: React.FC<FormElementProps> = function ({
   const [form, version] = data;
 
   return (
-    <FormProvider form={form} version={version} rawSubmission={rawSubmission}>
+    <FormStoreProvider form={form} version={version} rawSubmission={rawSubmission}>
       <Box>
         <FormRenderer onSubmit={handleSubmit} />
       </Box>
-    </FormProvider>
+    </FormStoreProvider>
   );
 };

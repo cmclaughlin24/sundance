@@ -27,6 +27,9 @@ catalogs:
     react-dom:
       specifier: ^19.1.1
       version: 19.2.5
+    zustand:
+      specifier: ^5.0.14
+      version: 5.0.14
   test:
     '@playwright/test':
       specifier: ^1.58.2
@@ -57,6 +60,9 @@ importers:
       dayjs:
         specifier: 'catalog:'
         version: 1.11.21
+      zustand:
+        specifier: 'catalog:'
+        version: 5.0.14(@types/react@19.2.14)(react@19.2.5)(use-sync-external-store@1.6.0(react@19.2.5))
     devDependencies:
       '@eslint/js':
         specifier: ^9.36.0
@@ -257,6 +263,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.2.5(react@19.2.5)
+      zustand:
+        specifier: 'catalog:'
+        version: 5.0.14(@types/react@19.2.14)(react@19.2.5)(use-sync-external-store@1.6.0(react@19.2.5))
     devDependencies:
       '@originjs/vite-plugin-federation':
         specifier: ^1.4.1
@@ -3159,6 +3168,24 @@ packages:
   zone.js@0.16.1:
     resolution: {integrity: sha512-dpvY17vxYIW3+bNrP0ClUlaiY0CiIRK3tnoLaGoQsQcY9/I/NpzIWQ7tQNhbV7LacQMpCII6wVzuL3tuWOyfuA==}
 
+  zustand@5.0.14:
+    resolution: {integrity: sha512-/8tAspM5LMPr28b3fwLYrtdj77ECpfZviaP75CMTnwO8ISyaE4GDIG/9rDDYq/cH9D2Xw2A2RXglLInmVBQB/g==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
+
 snapshots:
 
   '@babel/code-frame@7.29.0':
@@ -5782,3 +5809,9 @@ snapshots:
   zod@3.25.76: {}
 
   zone.js@0.16.1: {}
+
+  zustand@5.0.14(@types/react@19.2.14)(react@19.2.5)(use-sync-external-store@1.6.0(react@19.2.5)):
+    optionalDependencies:
+      '@types/react': 19.2.14
+      react: 19.2.5
+      use-sync-external-store: 1.6.0(react@19.2.5)
