@@ -2,12 +2,24 @@ import type {
   ISubmissionValue,
   NormalizedSubmission,
 } from "@/types/submission";
-import { BaseHttpService, type DefaultRequestOptions } from "./baseHttpService";
+import { BaseHttpService, type ApiCUDResponse, type DefaultRequestOptions } from "./baseHttpService";
 
 interface SubmitRequest {
   formId: string;
   versionId: string;
   values: ISubmissionValue[];
+}
+
+export interface AsyncSubmitResponse {
+  id: string;
+  tenantId: string;
+  formId: string;
+  versionId: string;
+  referenceId: string;
+  status: string;
+  values: ISubmissionValue[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export class SubmissionsService extends BaseHttpService {
@@ -54,8 +66,13 @@ export class SubmissionsService extends BaseHttpService {
     versionId: string,
     values: ISubmissionValue[],
     options: DefaultRequestOptions,
-  ): Promise<void> {
+  ): Promise<AsyncSubmitResponse> {
     const payload: SubmitRequest = { formId, versionId, values };
-    await this._post<SubmitRequest, void>("api/v1/submissions", payload, options);
+    const resp = await this._post<SubmitRequest, ApiCUDResponse<AsyncSubmitResponse>>(
+      "api/v1/submissions",
+      payload,
+      options,
+    );
+    return resp.data.data
   }
 }

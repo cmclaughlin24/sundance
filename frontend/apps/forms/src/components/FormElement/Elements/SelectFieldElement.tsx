@@ -12,11 +12,12 @@ interface BaseSelectFieldElementProps {
   data: ILookup[];
   required?: boolean;
   readonly?: boolean;
+  multiple?: boolean;
   onChange: (event: any) => void;
 }
 
 const BaseSelectFieldElement: React.FC<BaseSelectFieldElementProps> =
-  function ({ data, required, readonly, id, onChange }) {
+  function ({ data, required, readonly, multiple, id, onChange }) {
     const handleChange = (event: SelectChangeEvent) => {
       onChange(event.target.value);
     };
@@ -32,6 +33,7 @@ const BaseSelectFieldElement: React.FC<BaseSelectFieldElementProps> =
         id={id}
         required={required}
         disabled={readonly}
+        multiple={multiple}
         onChange={handleChange}
       >
         {content}
@@ -48,6 +50,7 @@ const StaticSelectFieldElement: ElementComponent = function ({
   return (
     <BaseSelectFieldElement
       id={element.id}
+      multiple={attr.multiple}
       readonly={ruleState.readonly}
       required={ruleState.required}
       data={attr.data}
@@ -67,6 +70,7 @@ const DynamicSelectFieldElement: ElementComponent = function ({
   return (
     <BaseSelectFieldElement
       id={element.id}
+      multiple={attr.multiple}
       readonly={ruleState.readonly || isLoading}
       required={ruleState.required}
       data={data || []}

@@ -1,5 +1,5 @@
 import { FormElement } from "@/components/FormElement/FormElement";
-import type { IFormElementSubmitEvent } from "@/components/FormElement/FormElement.type";
+import type { ISyncSubmitEvent } from "@/components/FormElement/FormElement.type";
 import { MainContainer } from "@/components/MainContainer/MainContainer";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -8,7 +8,7 @@ export const Route = createFileRoute("/")({
 });
 
 function RouteComponent() {
-  const handleSubmit = (event: IFormElementSubmitEvent) => console.log(event);
+  const handleSubmit = (event: ISyncSubmitEvent) => console.log(event);
 
   return (
     <div>

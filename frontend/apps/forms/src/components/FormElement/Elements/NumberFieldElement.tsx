@@ -4,6 +4,7 @@ import { FieldElementContainer } from "./FieldElementContainer";
 import MuiTextField from "@mui/material/TextField";
 import type { ChangeEvent } from "react";
 import { checkElementType } from "@/utils/error";
+import { useElementValue } from "@/store/useFormStoreContext";
 
 export const NumberFieldElement: ElementComponent = function ({
   element,
@@ -11,6 +12,8 @@ export const NumberFieldElement: ElementComponent = function ({
   onChange,
 }) {
   checkElementType(element.type, "number");
+
+  const value = useElementValue<number | string>(element.id, "");
 
   const handleChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
@@ -25,6 +28,7 @@ export const NumberFieldElement: ElementComponent = function ({
       <MuiTextField
         id={element.id}
         type="number"
+        value={value}
         required={ruleState.required}
         disabled={ruleState.readonly}
         onChange={handleChange}

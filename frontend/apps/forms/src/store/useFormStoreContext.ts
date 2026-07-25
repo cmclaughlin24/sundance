@@ -40,9 +40,9 @@ export function useFormValues() {
   return useStore(store, (s) => s.values);
 }
 
-export function useElementValue(elementId: string) {
+export function useElementValue<T>(elementId: string, defaultValue?: T): T {
   const store = useFormStoreContext();
-  return useStore(store, (s) => s.values[elementId]);
+  return useStore(store, (s) => s.values[elementId]) ?? defaultValue;
 }
 
 export function useTenantId() {

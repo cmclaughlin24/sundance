@@ -152,50 +152,38 @@ VITE_TENANTS_API_URL=http://localhost:8080
 
 ---
 
-## Phase 3 — Form State Architecture
+## Phase 3 — Form State Architecture ✓ _partial_
 
-### 3a. New file: `context/FormContext.ts` ✓
+### 3a. Zustand store ✓
 
-Define the context shape, reducer actions, and initial state. _Created as `store/formContext.ts`, `store/formReducer.ts`._
+State management migrated from `useReducer` + dual contexts to **Zustand**. Created as `store/formStore.ts`:
 
-```ts
-interface FormState {
-  values: Record<string, any>; // elementId → value
-  errors: Record<string, string[]>; // elementId → error messages
-  ruleStates: Record<
-    string,
-    {
-      // elementId → computed rule output
-      visible: boolean;
-      required: boolean;
-      readonly: boolean;
-    }
-  >;
-}
+- `createFormStore(form, version, raw)` — initializes store with `form`, `version`, `values` (pre-filled from `raw`) ✓
+- `setValue(elementId, value)` — updates `values` record ✓
+- `setError(elementId, errors)` — stub, not yet implemented
+- `errors` not yet in store state
 
-type FormAction =
-  | { type: "SET_VALUE"; elementId: string; value: any }
-  | { type: "SET_ERROR"; elementId: string; errors: string[] }
-  | { type: "SET_RULE_STATES"; ruleStates: FormState["ruleStates"] }
-  | { type: "INITIALIZE"; values: Record<string, any> };
-```
+### 3b. `FormStoreProvider` ✓
 
-_Note: `SET_VALUE` fully implemented ✓. `SET_ERROR` stub only. `errors` not yet in `FormState`._
+`store/FormStoreProvider.tsx` — uses `useRef` to create the store once on mount, publishes via `FormStoreContext`. Accepts `form`, `version`, `rawSubmission` props ✓
 
-### 3b. New file: `context/FormProvider.tsx` ✓
+### 3c. Granular selectors ✓
 
-Provider component that:
+`store/useFormStoreContext.ts` — selector hooks using `useStore`:
 
-- Accepts `rawSubmission` prop and initializes state from it via `useReducer` initializer function — no extra render cycle ✓
-- Wraps children with state and dispatch contexts ✓
-- _Created as `store/FormProvider.tsx`; consumer hooks in `store/useFormContext.ts`_ ✓
+- `useForm()` — subscribes to `form`
+- `useFormVersion()` — subscribes to `version`
+- `useFormValues()` — subscribes to full `values` map
+- `useElementValue(elementId)` — subscribes to a single field value
+- `useTenantId()` — subscribes to `form.tenantId`
+- `useFormDispatch()` — returns `{ setValue, setError }` via `useShallow`
+- `useElementRuleState(element)` — reads `evalCtx`, seeds defaults from `element.attributes`
 
-**Files to create:**
+**Files created:**
 
-- `frontend/apps/forms/src/store/formContext.ts` ✓
-- `frontend/apps/forms/src/store/formReducer.ts` ✓
-- `frontend/apps/forms/src/store/FormProvider.tsx` ✓
-- `frontend/apps/forms/src/store/useFormContext.ts` ✓ — includes `useFormState`, `useFormDispatch`, `useElementRuleState`, `useTenantId`
+- `frontend/apps/forms/src/store/formStore.ts` ✓
+- `frontend/apps/forms/src/store/FormStoreProvider.tsx` ✓
+- `frontend/apps/forms/src/store/useFormStoreContext.ts` ✓
 - `frontend/apps/forms/src/store/evalContext.ts` ✓
 
 ---
@@ -280,14 +268,19 @@ Dispatches to the correct field component by `element.type` via a `Map` registry
 
 ### 6d. `FormRenderer` ✓ _partial_
 
-- Publishes `EvalContextContext` via `useMemo` keyed on `state.values` ✓
+- Reads `form`, `version`, `values` via Zustand selectors ✓
+- Publishes `EvalContextContext` via `useMemo` keyed on `[version, values]` ✓
 - Filters pages by `filterVisible(pages, evalCtx)` ✓
-- Collects submission values via `Object.entries(state.values)` ✓
+- `handleSubmit` correctly collects `Object.entries(values)` into `ISubmissionValue[]` ✓
 - Multi-page wizard (Next/Back, single page at a time, progress indicator) not yet implemented
 
 ### 6e. `FormElement` updated ✓ _partial_
 
-Renders `FormRenderer`, `FormProvider` wired with `form`, `version`, `rawSubmission`. Submit passes collected values to `submissionService.normalize`.
+- `FormStoreProvider` wired with `form`, `version`, `rawSubmission` ✓
+- `submitType` prop controls submission mode ✓
+- `async` → calls `submissionService.submit()`, returns `{ referenceId }` ✓
+- `sync` / default → calls `submissionService.normalize()`, returns `{ raw, normalized }` ✓
+- Multi-page wizard not yet implemented
 
 **Files created:**
 
@@ -299,46 +292,28 @@ Renders `FormRenderer`, `FormProvider` wired with `form`, `version`, `rawSubmiss
 
 ---
 
-## Phase 7 — Submission Flow
+## Phase 7 — Submission Flow ✓ _partial_
 
-### 7a. Async submit handler
+### 7a. Submit handler ✓
 
-Replace the current `normalize` call in `FormRenderer` with a full submit flow using plain `useState` for pending and error state:
+`FormElement` supports two submission modes via `submitType` prop:
+- `"async"` → `submissionService.submit()` → returns `{ referenceId }` ✓
+- `"sync"` / default → `submissionService.normalize()` → returns `{ raw, normalized }` ✓
 
-```ts
-const [isPending, setIsPending] = useState(false);
-const [submitError, setSubmitError] = useState<string | null>(null);
-
-const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
-  event.preventDefault();
-  setIsPending(true);
-  try {
-    const result = await submissionsService.submit(formId, versionId, values, options);
-    onSubmit({ raw: values, normalized: result });
-  } catch (err) {
-    setSubmitError("Submission failed.");
-  } finally {
-    setIsPending(false);
-  }
-};
-```
+`onSubmit` callback called with typed result on success ✓. Errors silently caught — no error surfacing yet.
 
 ### 7b. Idempotency key
 
-The backend enforces an `Idempotency-Key` header on `POST /submissions`. Generate a UUID on `FormElement` mount and thread it through to `SubmissionsService.submit()`. Add an optional `idempotencyKey` parameter to the `_post` call or handle it as a dedicated header in `SubmissionsService`.
+The backend enforces an `Idempotency-Key` header on `POST /submissions`. Not yet wired — `submissionService.submit()` sends no idempotency key. Generate a UUID on `FormElement` mount and pass as a header in `SubmissionsService.submit()`.
 
 ### 7c. Surface submit errors
 
-Display server-side validation errors returned from the backend (e.g. required field failures, type mismatches from the submission pipeline) back in `FormContext` via `SET_ERROR` dispatches.
-
-### 7d. `onSubmit` callback
-
-After a successful submission, call `props.onSubmit({ raw: values, normalized: normalizedResult })`. The `normalized` value should come from the `POST /submissions` response or a preceding `normalize` call.
+Server-side validation errors not yet surfaced. `setError` in the Zustand store is a stub. Needs implementation in `formStore.ts` and dispatch on submission failure.
 
 **Files to modify:**
 
-- `frontend/apps/forms/src/components/FormElement/FormElement.tsx`
-- `frontend/apps/forms/src/services/submissionService.ts`
+- `frontend/apps/forms/src/services/submissionService.ts` — add idempotency key header
+- `frontend/apps/forms/src/store/formStore.ts` — implement `setError`
 
 ---
 
@@ -417,19 +392,18 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `frontend/apps/forms/src/types/elementAttributes.ts`                   | Discriminated union of all element attribute types ✓                                             |
 | `frontend/apps/forms/src/types/dataSource.ts`                          | `ILookup`, `IDataSourceRef`, `IBindingSource`, `HasDataSourceRef` types — created as `data.ts` ✓ |
-| `frontend/apps/forms/src/store/formContext.ts`                         | State and dispatch context objects ✓                                                             |
-| `frontend/apps/forms/src/store/formReducer.ts`                         | Reducer, actions, `FormState`, `initialFormState`, `initializeForm` ✓                            |
-| `frontend/apps/forms/src/store/FormProvider.tsx`                       | Provider component, wires `useReducer` with `rawSubmission` initializer ✓                        |
-| `frontend/apps/forms/src/store/useFormContext.ts`                      | `useFormState`, `useFormDispatch`, `useElementRuleState`, `useTenantId` consumer hooks ✓          |
+| `frontend/apps/forms/src/store/formStore.ts`                           | Zustand store — `createFormStore`, `setValue`, `setError` (stub) ✓                               |
+| `frontend/apps/forms/src/store/FormStoreProvider.tsx`                  | Provider — `useRef` store creation, publishes `FormStoreContext` ✓                               |
+| `frontend/apps/forms/src/store/useFormStoreContext.ts`                 | Granular selectors — `useForm`, `useFormVersion`, `useFormValues`, `useElementValue`, `useTenantId`, `useFormDispatch`, `useElementRuleState` ✓ |
 | `frontend/apps/forms/src/utils/evaluate.ts`                            | Pure rule evaluator — `evaluateRules`, `evaluateRule`, `buildEvalContext`, operator registry ✓    |
 | `frontend/apps/forms/src/utils/filter.ts`                              | `filterVisible<T extends HasRules>(items, evalCtx)` utility ✓                                    |
 | `frontend/apps/forms/src/store/evalContext.ts`                         | `EvalContextContext` and `useEvalContext` hook ✓                                                  |
 | `frontend/apps/forms/src/hooks/useDataSource.ts`                       | Async lookup fetcher — `resolveBindings`, `serializeFilters`, `useTenantId` integration ✓        |
 | `frontend/apps/forms/src/components/FormElement/Elements/TextFieldElement.tsx`     | Text field — placeholder, onChange, ruleState ✓ _partial_                           |
 | `frontend/apps/forms/src/components/FormElement/Elements/NumberFieldElement.tsx`   | Number field — min/max/step, onChange, ruleState ✓ _partial_                        |
-| `frontend/apps/forms/src/components/FormElement/Elements/SelectFieldElement.tsx`   | Select field — static data, type guard, onChange ✓ _partial_                        |
-| `frontend/apps/forms/src/components/FormElement/Elements/CheckboxFieldElement.tsx` | Checkbox group — ILookup[], isCheckedByDefault, per-lookup onChange ✓ _partial_     |
-| `frontend/apps/forms/src/components/FormElement/Elements/DateFieldElement.tsx`     | Date field component — _stub_                                                        |
+| `frontend/apps/forms/src/components/FormElement/Elements/SelectFieldElement.tsx`   | Select field — static + dynamic dataSourceRef, BaseSelectFieldElement ✓ _partial: multiple pending_ |
+| `frontend/apps/forms/src/components/FormElement/Elements/CheckboxFieldElement.tsx` | Checkbox group — static + dynamic dataSourceRef, BaseCheckboxFieldElement ✓         |
+| `frontend/apps/forms/src/components/FormElement/Elements/DateFieldElement.tsx`     | Date field component ✓                                                               |
 | `frontend/apps/forms/src/components/FormElement/Renderer/ElementRenderer.tsx`      | Dispatches to field component by element type ✓                                      |
 | `frontend/apps/forms/src/components/FormElement/Renderer/SectionRenderer.tsx`      | Renders a section and its elements ✓                                                 |
 | `frontend/apps/forms/src/components/FormElement/Renderer/PageRenderer.tsx`         | Renders a page and its sections ✓                                                    |
@@ -447,8 +421,8 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | `frontend/apps/forms/src/services/dataSourcesService.ts`             | Implement `getLookups()` method ✓                                                             |
 | `frontend/apps/forms/src/services/submissionService.ts`              | Add idempotency key header support                                                            |
 | `frontend/apps/forms/src/hooks/useHttpService.ts`                    | Use `import.meta.env` for base URLs ✓                                                         |
-| `frontend/apps/forms/src/components/FormElement/FormElement.tsx`     | Full rewrite — multi-page wizard, `FormProvider`, async submit handler — _partial: `FormProvider`, `rawSubmission`, `FormRenderer` wired up_ |
-| `frontend/apps/forms/src/components/FormElement/FormElement.type.ts` | Add `token` prop if auth is wired up later                                                    |
+| `frontend/apps/forms/src/components/FormElement/FormElement.tsx`     | `FormStoreProvider`, `submitType`, `asyncSubmit`/`syncSubmit` wired ✓ — multi-page wizard pending |
+| `frontend/apps/forms/src/components/FormElement/FormElement.type.ts` | `ISyncSubmitEvent`, `IAsyncSubmitEvent`, `submitType` discriminated union ✓                    |
 | `frontend/apps/forms/src/routes/index.tsx`                           | Updated with real `FormElement` usage ✓                                                       |
 | `frontend/apps/forms/src/routes/__root.tsx`                          | Remove placeholder content                                                                    |
 
@@ -458,6 +432,4 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 
 1. **MUI DatePicker vs. native input** — `@mui/x-date-pickers` is not in the current dependencies. Decision needed: add the package for a richer date picker experience, or use a native `<input type="date">` wrapped in MUI styling.
 
-2. **Dynamic binding re-fetch scope** — `DataSourceRef.bindings` can reference other field values (`type: "field"`), meaning a select's options depend on what the user entered elsewhere. Confirm whether re-fetching lookups on upstream field changes is in scope, or whether only static bindings need to be handled initially.
-
-3. **Auth token source** — `accessToken` is currently `"placeholder"`. The `authentication` MFE is a stub. This will need to be resolved before the renderer can be used against a real backend. Options: a prop on `FormElementProps`, a shared React context from the host shell, or a dedicated auth hook.
+2. **Auth token source** — `accessToken` is currently `"placeholder"`. The `authentication` MFE is a stub. This will need to be resolved before the renderer can be used against a real backend. Options: a prop on `FormElementProps`, a shared React context from the host shell, or a dedicated auth hook.
