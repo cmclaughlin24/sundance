@@ -152,7 +152,7 @@ VITE_TENANTS_API_URL=http://localhost:8080
 
 ---
 
-## Phase 3 — Form State Architecture ✓ _partial_
+## Phase 3 — Form State Architecture ✓
 
 ### 3a. Zustand store ✓
 
@@ -160,8 +160,8 @@ State management migrated from `useReducer` + dual contexts to **Zustand**. Crea
 
 - `createFormStore(form, version, raw)` — initializes store with `form`, `version`, `values` (pre-filled from `raw`) ✓
 - `setValue(elementId, value)` — updates `values` record ✓
-- `setError(elementId, errors)` — stub, not yet implemented
-- `errors` not yet in store state
+- `setError(elementId, errors)` — writes `errors: Record<string, string[]>` to store state ✓
+- `errors: Record<string, string[]>` in store state ✓
 
 ### 3b. `FormStoreProvider` ✓
 
@@ -175,6 +175,7 @@ State management migrated from `useReducer` + dual contexts to **Zustand**. Crea
 - `useFormVersion()` — subscribes to `version`
 - `useFormValues()` — subscribes to full `values` map
 - `useElementValue(elementId)` — subscribes to a single field value
+- `useElementErrors(elementId)` — subscribes to errors for a single field ✓
 - `useTenantId()` — subscribes to `form.tenantId`
 - `useFormDispatch()` — returns `{ setValue, setError }` via `useShallow`
 - `useElementRuleState(element)` — reads `evalCtx`, seeds defaults from `element.attributes`
@@ -222,11 +223,11 @@ One component per `ElementType`. All field components:
 
 | Component       | MUI Input                     | Key attributes respected                                          | Status |
 | --------------- | ----------------------------- | ----------------------------------------------------------------- | ------ |
-| `TextField`     | `MUI TextField`               | `minLength`, `maxLength`, `pattern`, `placeholder`                | ✓ _partial — renders, `onChange` dispatches `SET_VALUE`, consumes `ruleState` (`required`, `readonly`)_ |
-| `NumberField`   | `MUI TextField type="number"` | `min`, `max`, `step`                                              | ✓ _partial — renders, type guard fixed, `onChange` dispatches `SET_VALUE`, consumes `ruleState` (`required`, `readonly`)_ |
-| `SelectField`   | `MUI Select` / `Autocomplete` | `data`, `dataSourceRef`, `multiple`, `minSelected`, `maxSelected` | ✓ _partial — static and dynamic (`dataSourceRef`) rendering, `BaseSelectFieldElement` extracted, disables while loading; `multiple` pending_ |
-| `CheckboxField` | `MUI Checkbox`                | `isCheckedByDefault` (initializes value on mount)                 | ✓ _static and dynamic (`dataSourceRef`) rendering, `BaseCheckboxFieldElement` extracted, per-lookup onChange, disables while loading_ |
-| `DateField`     | `MUI TextField type="date"`   | `minDate`, `maxDate`                                              | ✓ |
+| `TextField`     | `MUI TextField`               | `minLength`, `maxLength`, `pattern`, `placeholder`                | ✓ — Zod validation on blur, `setError`, `helperText` error display |
+| `NumberField`   | `MUI TextField type="number"` | `min`, `max`, `step`                                              | ✓ — Zod validation on blur, `setError`, `helperText` error display |
+| `SelectField`   | `MUI Select`                  | `data`, `dataSourceRef`, `multiple`, `minSelected`, `maxSelected` | ✓ — static + dynamic, Zod validation on blur, `minSelected`/`maxSelected`, `FormHelperText` error display |
+| `CheckboxField` | `MUI Checkbox`                | `isCheckedByDefault`, `data`, `dataSourceRef`                     | ✓ — static + dynamic, per-lookup onChange |
+| `DateField`     | `MUI DatePicker`              | `minDate`, `maxDate`                                              | ✓ — Zod validation on blur, `setError`, `helperText` error display |
 
 **`SelectField` specifics:**
 
@@ -238,9 +239,9 @@ One component per `ElementType`. All field components:
 
 **Files to create:**
 
-- `frontend/apps/forms/src/components/FormElement/Elements/TextFieldElement.tsx` ✓ _partial_
-- `frontend/apps/forms/src/components/FormElement/Elements/NumberFieldElement.tsx` ✓ _partial_
-- `frontend/apps/forms/src/components/FormElement/Elements/SelectFieldElement.tsx` ✓ _partial — `multiple` pending_
+- `frontend/apps/forms/src/components/FormElement/Elements/TextFieldElement.tsx` ✓
+- `frontend/apps/forms/src/components/FormElement/Elements/NumberFieldElement.tsx` ✓
+- `frontend/apps/forms/src/components/FormElement/Elements/SelectFieldElement.tsx` ✓
 - `frontend/apps/forms/src/components/FormElement/Elements/CheckboxFieldElement.tsx` ✓
 - `frontend/apps/forms/src/components/FormElement/Elements/DateFieldElement.tsx` ✓
 - `frontend/apps/forms/src/components/FormElement/Elements/BaseFieldElement.tsx` ✓
@@ -430,6 +431,4 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 
 ## Open Questions
 
-1. **MUI DatePicker vs. native input** — `@mui/x-date-pickers` is not in the current dependencies. Decision needed: add the package for a richer date picker experience, or use a native `<input type="date">` wrapped in MUI styling.
-
-2. **Auth token source** — `accessToken` is currently `"placeholder"`. The `authentication` MFE is a stub. This will need to be resolved before the renderer can be used against a real backend. Options: a prop on `FormElementProps`, a shared React context from the host shell, or a dedicated auth hook.
+1. **Auth token source** — `accessToken` is currently `"placeholder"`. The `authentication` MFE is a stub. This will need to be resolved before the renderer can be used against a real backend. Options: a prop on `FormElementProps`, a shared React context from the host shell, or a dedicated auth hook.

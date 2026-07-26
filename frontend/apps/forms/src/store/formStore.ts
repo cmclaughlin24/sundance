@@ -9,6 +9,7 @@ export interface IFormStore {
   form: Readonly<IForm> | null;
   version: Readonly<IFormVersion> | null;
   values: FormValues;
+  errors: Record<string, string[]>;
   setValue: (elementId: string, value: any) => void;
   setError: (elementId: string, errors: string[]) => void;
 }
@@ -24,10 +25,13 @@ export function createFormStore(
     form,
     version,
     values: createFormValues(raw),
+    errors: {},
     setValue(elementId, value) {
       return set((s) => ({ values: { ...s.values, [elementId]: value } }));
     },
-    setError(_elementId, _errors) {},
+    setError(elementId, errors) {
+      return set((s) => ({ errors: { ...s.errors, [elementId]: errors } }));
+    },
   }));
 }
 

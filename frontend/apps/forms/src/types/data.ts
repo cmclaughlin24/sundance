@@ -1,6 +1,8 @@
+export type LookupValue = string | number;
+
 export interface ILookup {
   label: string;
-  value: any;
+  value: LookupValue;
 }
 
 export interface IBindingSource {
