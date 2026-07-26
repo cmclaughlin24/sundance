@@ -9,6 +9,7 @@ import { FormStoreProvider } from "@/store/FormStoreProvider";
 import Box from "@mui/material/Box";
 import { FormRenderer } from "./Renderer/FormRenderer";
 import type { ISubmissionValue } from "@/types/submission";
+import { formElementStyles } from "./FormElement.style";
 
 export const FormElement: React.FC<FormElementProps> = function ({
   tenantId,
@@ -92,7 +93,7 @@ export const FormElement: React.FC<FormElementProps> = function ({
       version={version}
       rawSubmission={rawSubmission}
     >
-      <Box>
+      <Box sx={formElementStyles['container']}>
         <FormRenderer onSubmit={handleSubmit} />
       </Box>
     </FormStoreProvider>

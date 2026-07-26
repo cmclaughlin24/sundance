@@ -1,4 +1,3 @@
-import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
 export interface FieldElementLabelProps {
@@ -13,11 +12,11 @@ export const FieldElementLabel: React.FC<{
   htmlFor: string;
 }> = function ({ label, description, htmlFor }) {
   return (
-    <Box>
+    <>
       <Typography component="label" htmlFor={htmlFor}>
         {label}
       </Typography>
       {description && <Typography component="p">{description}</Typography>}
-    </Box>
+    </>
   );
 };
