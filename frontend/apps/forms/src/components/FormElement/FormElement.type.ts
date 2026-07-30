@@ -49,6 +49,11 @@ interface BaseFormElementProps {
    * this prop is not provided the form will be rendered with empty fields.
    */
   rawSubmission?: ISubmissionValue[];
+
+  /**
+   * Callback function that is called when the user cancels the form.
+   */
+  onCancel: () => void;
 }
 
 /**

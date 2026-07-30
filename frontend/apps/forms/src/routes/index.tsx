@@ -10,6 +10,8 @@ export const Route = createFileRoute("/")({
 function RouteComponent() {
   const handleSubmit = (event: ISyncSubmitEvent) => console.log(event);
 
+  const handleCancel = () => console.log("cancel");
+
   return (
     <div>
       <MainContainer>
@@ -18,6 +20,7 @@ function RouteComponent() {
           formId="019f9f40-22de-7c12-b867-d22c77470217"
           versionId="019f9f40-4df0-7a80-bd84-4c947d09aac2"
           onSubmit={handleSubmit}
+          onCancel={handleCancel}
         />
       </MainContainer>
     </div>

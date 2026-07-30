@@ -1,4 +1,5 @@
 import Typography from "@mui/material/Typography";
+import { fieldElementLabelStyles } from "./FieldElementLabel.style";
 
 export interface FieldElementLabelProps {
   label: string;
@@ -13,10 +14,18 @@ export const FieldElementLabel: React.FC<{
 }> = function ({ label, description, htmlFor }) {
   return (
     <>
-      <Typography component="label" htmlFor={htmlFor}>
+      <Typography
+        component="label"
+        htmlFor={htmlFor}
+        sx={fieldElementLabelStyles["label"]}
+      >
         {label}
       </Typography>
-      {description && <Typography component="p">{description}</Typography>}
+      {description && (
+        <Typography component="p" sx={fieldElementLabelStyles["description"]}>
+          {description}
+        </Typography>
+      )}
     </>
   );
 };

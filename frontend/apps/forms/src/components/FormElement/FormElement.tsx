@@ -18,6 +18,7 @@ export const FormElement: React.FC<FormElementProps> = function ({
   submitType,
   rawSubmission,
   onSubmit,
+  onCancel,
 }) {
   const formsService = useFormsService();
   const submissionService = useSubmissionsService();
@@ -93,8 +94,8 @@ export const FormElement: React.FC<FormElementProps> = function ({
       version={version}
       rawSubmission={rawSubmission}
     >
-      <Box sx={formElementStyles['container']}>
-        <FormRenderer onSubmit={handleSubmit} />
+      <Box sx={formElementStyles["container"]}>
+        <FormRenderer onSubmit={handleSubmit} onCancel={onCancel} />
       </Box>
     </FormStoreProvider>
   );
