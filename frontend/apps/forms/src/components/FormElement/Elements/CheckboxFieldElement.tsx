@@ -6,7 +6,7 @@ import MuiCheckbox from "@mui/material/Checkbox";
 import MuiFormControlLabel from "@mui/material/FormControlLabel";
 import Box from "@mui/material/Box";
 import type { ChangeEvent } from "react";
-import { FieldElementContainer } from "./FieldElementContainer";
+import { FieldElementContainer } from "../Layout/FieldElementContainer";
 import { useDataSource } from "@/hooks/useDataSource";
 
 interface BaseCheckboxFieldElementProps {

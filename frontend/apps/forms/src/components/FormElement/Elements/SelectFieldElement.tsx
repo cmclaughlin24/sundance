@@ -6,7 +6,7 @@ import type { ElementComponent } from "../Renderer/ElementRenderer";
 import type { ILookup, LookupValue } from "@/types/data";
 import type { SelectElementAttributes } from "@/types/elementAttributes";
 import { checkElementType } from "@/utils/error";
-import { FieldElementContainer } from "./FieldElementContainer";
+import { FieldElementContainer } from "../Layout/FieldElementContainer";
 import { useDataSource } from "@/hooks/useDataSource";
 import {
   useElementErrors,

@@ -1,6 +1,6 @@
 import { checkElementType } from "@/utils/error";
 import type { ElementComponent } from "../Renderer/ElementRenderer";
-import { FieldElementContainer } from "./FieldElementContainer";
+import { FieldElementContainer } from "../Layout/FieldElementContainer";
 import type { DateElementAttributes } from "@/types/elementAttributes";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import type { Dayjs } from "dayjs";
