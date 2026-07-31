@@ -11,34 +11,40 @@
           "position": 0,
           "elements": [
             {
-              "key": "accountType",
-              "name": "Account Type",
-              "type": "text",
+              "key": "identityType",
+              "name": "Identity Type",
+              "type": "select",
               "position": 0,
               "attributes": {
                 "multiple": false,
                 "minSelected": 1,
                 "maxSelected": null,
-                "isRequired": true
+                "isRequired": true,
+                "data": [
+                  {
+                    "value": "human",
+                    "label": "Human Account"
+                  },
+                  {
+                    "value": "nonHuman",
+                    "label": "Non Human Account"
+                  }
+                ]
               },
               "rules": [],
-              "tags": [
-                {
-                  "tagVersionId": "019f8f96-fa89-722a-9af4-a66954763d46",
-                  "priority": 0
-                }
-              ]
+              "tags": []
             },
             {
-              "key": "domain",
-              "name": "Active Directory Domain",
-              "type": "text",
+              "key": "employee",
+              "name": "Select Employee(s)",
+              "type": "select",
               "position": 1,
               "attributes": {
                 "multiple": false,
                 "minSelected": 1,
-                "maxSelected": 1,
-                "isRequired": true
+                "maxSelected": null,
+                "isRequired": true,
+                "data": []
               },
               "rules": [],
               "tags": []
@@ -46,33 +52,101 @@
             {
               "key": "requestType",
               "name": "Request Type",
-              "type": "text",
+              "type": "select",
               "position": 2,
               "attributes": {
                 "multiple": false,
                 "minSelected": 1,
-                "maxSelected": 1,
+                "maxSelected": null,
+                "isRequired": true,
+                "data": [
+                  {
+                    "value": "create",
+                    "label": "Create User"
+                  },
+                  {
+                    "value": "modify",
+                    "label": "Modify User"
+                  },
+                  {
+                    "value": "enable",
+                    "label": "Enable User"
+                  },
+                  {
+                    "value": "disable",
+                    "label": "Disable User"
+                  }
+                ]
+              },
+              "rules": [],
+              "tags": []
+            },
+            {
+              "key": "domain",
+              "name": "Active Directory Domain",
+              "type": "select",
+              "position": 3,
+              "attributes": {
+                "multiple": false,
+                "minSelected": 1,
+                "maxSelected": null,
+                "isRequired": true,
+                "data": [
+                  {
+                    "value": "AD-ENT",
+                    "label": "AD-ENT"
+                  },
+                  {
+                    "value": "QA-ENT",
+                    "label": "QA-ENT"
+                  },
+                  {
+                    "value": "DEV-ENT",
+                    "label": "DEV-ENT"
+                  },
+                  {
+                    "value": "TZ",
+                    "label": "TZ Domain"
+                  }
+                ]
+              },
+              "rules": [],
+              "tags": []
+            },
+            {
+              "key": "accountType",
+              "name": "Account Type",
+              "type": "select",
+              "position": 4,
+              "attributes": {
+                "multiple": false,
+                "minSelected": 1,
+                "maxSelected": null,
+                "isRequired": true,
+                "data": [
+                  {
+                    "value": "primary",
+                    "label": "Primary"
+                  },
+                  {
+                    "value": "normal",
+                    "label": "Normal"
+                  }
+                ]
+              },
+              "rules": [],
+              "tags": []
+            },
+            {
+              "key": "justification",
+              "name": "Add Justification",
+              "type": "text",
+              "position": 5,
+              "attributes": {
                 "isRequired": true
               },
-              "rules": [
-                {
-                  "type": "visible",
-                  "expressions": [
-                    {
-                      "fieldKey": "domain",
-                      "operator": "equal",
-                      "value": "AD-ENT",
-                      "joinWithPrevious": null
-                    }
-                  ]
-                }
-              ],
-              "tags": [
-                {
-                  "tagVersionId": "019f8f97-8e4e-78d9-ab5c-8d4bce30c2af",
-                  "priority": 0
-                }
-              ]
+              "rules": [],
+              "tags": []
             }
           ],
           "rules": []

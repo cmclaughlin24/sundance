@@ -74,7 +74,7 @@ const BaseSelectFieldElement: React.FC<BaseSelectFieldElementProps> =
     ));
 
     return (
-      <FormControl error={errors.length > 0}>
+      <FormControl error={errors?.length > 0}>
         <MuiSelectField
           id={id}
           value={value}
@@ -86,7 +86,7 @@ const BaseSelectFieldElement: React.FC<BaseSelectFieldElementProps> =
         >
           {content}
         </MuiSelectField>
-        {errors[0] && <FormHelperText>{errors[0]}</FormHelperText>}
+        {errors && errors[0] && <FormHelperText>{errors[0]}</FormHelperText>}
       </FormControl>
     );
   };
