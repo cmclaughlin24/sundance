@@ -4,7 +4,7 @@ import { FormTitle } from "../Layout/FormTitle";
 import { sortPositioned } from "@/utils/sort";
 import type { ISubmissionValue } from "@/types/submission";
 import { PageRenderer } from "./PageRenderer";
-import { useMemo, type SubmitEvent } from "react";
+import { useMemo, useState, type SubmitEvent } from "react";
 import {
   useForm,
   useFormValues,
@@ -16,6 +16,7 @@ import { buildEvalContext, type EvalContext } from "@/utils/evaluate";
 import { formRendererStyles } from "./FormRenderer.style";
 import { FormFooter } from "../Layout/FormFooter/FormFooter";
 import { FormFooterActions } from "../Layout/FormFooter/FormFooterActions";
+import LinearProgress from "@mui/material/LinearProgress";
 
 export interface FormRendererProps {
   onSubmit: (values: ISubmissionValue[]) => void;
@@ -29,10 +30,20 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
   const form = useForm();
   const version = useFormVersion();
   const values = useFormValues();
+  const [pageIndex, setPageIndex] = useState(0);
   const evalCtx = useMemo<EvalContext>(() => {
     const pages = version?.pages ?? [];
     return buildEvalContext(pages, values);
   }, [version, values]);
+
+  let pages = sortPositioned(version!.pages);
+  pages = filterVisible(pages, evalCtx);
+
+  // NOTE: While it is protected against during form design time, if the current page becomes invisible
+  // the previous page will be show to the user.
+  const page = pages[pageIndex] ?? pages[pageIndex - 1];
+  const progress = ((pageIndex + 1) / pages.length) * 100;
+  const isLastPage = pageIndex === pages.length - 1;
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -46,12 +57,17 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
     onSubmit(submission);
   };
 
+  const handlePageChange = (increment: number) => {
+    if (increment < 0) {
+      setPageIndex((idx) => Math.max(idx + increment, 0));
+    } else if (increment > 0) {
+      setPageIndex((idx) => Math.min(idx + increment, pages.length - 1));
+    }
+  };
+
   if (!form || !version) {
     return <>Missing form and version</>;
   }
-
-  let pages = sortPositioned(version!.pages);
-  pages = filterVisible(pages, evalCtx);
 
   return (
     <EvalContextContext value={evalCtx}>
@@ -62,9 +78,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
         id={form.id}
       >
         <FormTitle name={form!.name} description={form!.description} />
-        {pages.map((page) => (
-          <PageRenderer page={page} key={page.id} />
-        ))}
+        <PageRenderer page={page} key={page.id} />
       </Box>
       <FormFooter
         actions={
@@ -72,10 +86,27 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
             <Button variant="contained" color="secondary" onClick={onCancel}>
               Cancel
             </Button>
-            <Button variant="contained" type="submit" form={form.id}>
-              Submit
-            </Button>
+            {pages.length > 1 && pageIndex > 0 && (
+              <Button variant="outlined" onClick={() => handlePageChange(-1)}>
+                Previous
+              </Button>
+            )}
+            {!isLastPage && (
+              <Button variant="outlined" onClick={() => handlePageChange(1)}>
+                Next
+              </Button>
+            )}
+            {isLastPage && (
+              <Button variant="contained" type="submit" form={form.id}>
+                Submit
+              </Button>
+            )}
           </FormFooterActions>
+        }
+        progress={
+          pages.length === 1 ? undefined : (
+            <LinearProgress variant="determinate" value={progress} />
+          )
         }
       />
     </EvalContextContext>

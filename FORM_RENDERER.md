@@ -273,22 +273,31 @@ Dispatches to the correct field component by `element.type` via a `Map` registry
 - Publishes `EvalContextContext` via `useMemo` keyed on `[version, values]` ✓
 - Filters pages by `filterVisible(pages, evalCtx)` ✓
 - `handleSubmit` correctly collects `Object.entries(values)` into `ISubmissionValue[]` ✓
-- Multi-page wizard (Next/Back, single page at a time, progress indicator) not yet implemented
+- Multi-page wizard via `pageIndex` (`useState`) ✓
+- Single page rendered via `pages[pageIndex] ?? pages[pageIndex - 1]` — defensive fallback if current page becomes invisible ✓
+- Next/Back/Submit conditionally rendered; Previous hidden on first page ✓
+- Progress bar computed, hidden on single-page forms ✓
+- _Bug: `version!.pages` non-null assertion at line 39 before the `!form || !version` guard_
 
-### 6e. `FormElement` updated ✓ _partial_
+### 6e. `FormElement` updated ✓
 
 - `FormStoreProvider` wired with `form`, `version`, `rawSubmission` ✓
 - `submitType` prop controls submission mode ✓
 - `async` → calls `submissionService.submit()`, returns `{ referenceId }` ✓
 - `sync` / default → calls `submissionService.normalize()`, returns `{ raw, normalized }` ✓
-- Multi-page wizard not yet implemented
+- `onCancel` prop wired through to `FormRenderer` ✓
 
 **Files created:**
 
 - `frontend/apps/forms/src/components/FormElement/Renderer/ElementRenderer.tsx` ✓
 - `frontend/apps/forms/src/components/FormElement/Renderer/SectionRenderer.tsx` ✓
 - `frontend/apps/forms/src/components/FormElement/Renderer/PageRenderer.tsx` ✓
-- `frontend/apps/forms/src/components/FormElement/Renderer/FormRenderer.tsx` ✓ _partial_
+- `frontend/apps/forms/src/components/FormElement/Renderer/FormRenderer.tsx` ✓ _partial — `version!` non-null assertion bug_
+- `frontend/apps/forms/src/components/FormElement/Layout/FormFooter/FormFooter.tsx` ✓
+- `frontend/apps/forms/src/components/FormElement/Layout/FormFooter/FormFooterActions.tsx` ✓
+- `frontend/apps/forms/src/components/FormElement/Layout/FormTitle.tsx` ✓
+- `frontend/apps/forms/src/components/FormElement/Layout/FieldElementContainer.tsx` ✓
+- `frontend/apps/forms/src/components/FormElement/Layout/FieldElementLabel.tsx` ✓
 - `frontend/apps/forms/src/utils/sort.ts` ✓
 
 ---
@@ -309,12 +318,12 @@ The backend enforces an `Idempotency-Key` header on `POST /submissions`. Not yet
 
 ### 7c. Surface submit errors
 
-Server-side validation errors not yet surfaced. `setError` in the Zustand store is a stub. Needs implementation in `formStore.ts` and dispatch on submission failure.
+`setError` implemented in `formStore.ts` ✓. Server-side validation errors not yet dispatched on submission failure in `FormElement`.
 
 **Files to modify:**
 
 - `frontend/apps/forms/src/services/submissionService.ts` — add idempotency key header
-- `frontend/apps/forms/src/store/formStore.ts` — implement `setError`
+- `frontend/apps/forms/src/components/FormElement/FormElement.tsx` — dispatch `setError` on submission failure
 
 ---
 
@@ -393,16 +402,16 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | `frontend/apps/forms/src/types/elementAttributes.ts`                   | Discriminated union of all element attribute types ✓                                             |
 | `frontend/apps/forms/src/types/dataSource.ts`                          | `ILookup`, `IDataSourceRef`, `IBindingSource`, `HasDataSourceRef` types — created as `data.ts` ✓ |
-| `frontend/apps/forms/src/store/formStore.ts`                           | Zustand store — `createFormStore`, `setValue`, `setError` (stub) ✓                               |
+| `frontend/apps/forms/src/store/formStore.ts`                           | Zustand store — `createFormStore`, `setValue`, `setError`, `errors` ✓                            |
 | `frontend/apps/forms/src/store/FormStoreProvider.tsx`                  | Provider — `useRef` store creation, publishes `FormStoreContext` ✓                               |
-| `frontend/apps/forms/src/store/useFormStoreContext.ts`                 | Granular selectors — `useForm`, `useFormVersion`, `useFormValues`, `useElementValue`, `useTenantId`, `useFormDispatch`, `useElementRuleState` ✓ |
+| `frontend/apps/forms/src/store/useFormStoreContext.ts`                 | Granular selectors — `useForm`, `useFormVersion`, `useFormValues`, `useElementValue`, `useElementErrors`, `useTenantId`, `useFormDispatch`, `useElementRuleState` ✓ |
 | `frontend/apps/forms/src/utils/evaluate.ts`                            | Pure rule evaluator — `evaluateRules`, `evaluateRule`, `buildEvalContext`, operator registry ✓    |
 | `frontend/apps/forms/src/utils/filter.ts`                              | `filterVisible<T extends HasRules>(items, evalCtx)` utility ✓                                    |
 | `frontend/apps/forms/src/store/evalContext.ts`                         | `EvalContextContext` and `useEvalContext` hook ✓                                                  |
 | `frontend/apps/forms/src/hooks/useDataSource.ts`                       | Async lookup fetcher — `resolveBindings`, `serializeFilters`, `useTenantId` integration ✓        |
-| `frontend/apps/forms/src/components/FormElement/Elements/TextFieldElement.tsx`     | Text field — placeholder, onChange, ruleState ✓ _partial_                           |
-| `frontend/apps/forms/src/components/FormElement/Elements/NumberFieldElement.tsx`   | Number field — min/max/step, onChange, ruleState ✓ _partial_                        |
-| `frontend/apps/forms/src/components/FormElement/Elements/SelectFieldElement.tsx`   | Select field — static + dynamic dataSourceRef, BaseSelectFieldElement ✓ _partial: multiple pending_ |
+| `frontend/apps/forms/src/components/FormElement/Elements/TextFieldElement.tsx`     | Text field — Zod validation, setError, helperText ✓                                 |
+| `frontend/apps/forms/src/components/FormElement/Elements/NumberFieldElement.tsx`   | Number field — Zod validation, setError, helperText ✓                               |
+| `frontend/apps/forms/src/components/FormElement/Elements/SelectFieldElement.tsx`   | Select field — static + dynamic, multiple, Zod validation, FormHelperText ✓         |
 | `frontend/apps/forms/src/components/FormElement/Elements/CheckboxFieldElement.tsx` | Checkbox group — static + dynamic dataSourceRef, BaseCheckboxFieldElement ✓         |
 | `frontend/apps/forms/src/components/FormElement/Elements/DateFieldElement.tsx`     | Date field component ✓                                                               |
 | `frontend/apps/forms/src/components/FormElement/Renderer/ElementRenderer.tsx`      | Dispatches to field component by element type ✓                                      |
@@ -422,7 +431,7 @@ Update `frontend/apps/forms/src/routes/__root.tsx` to remove the placeholder `<d
 | `frontend/apps/forms/src/services/dataSourcesService.ts`             | Implement `getLookups()` method ✓                                                             |
 | `frontend/apps/forms/src/services/submissionService.ts`              | Add idempotency key header support                                                            |
 | `frontend/apps/forms/src/hooks/useHttpService.ts`                    | Use `import.meta.env` for base URLs ✓                                                         |
-| `frontend/apps/forms/src/components/FormElement/FormElement.tsx`     | `FormStoreProvider`, `submitType`, `asyncSubmit`/`syncSubmit` wired ✓ — multi-page wizard pending |
+| `frontend/apps/forms/src/components/FormElement/FormElement.tsx`     | `FormStoreProvider`, `submitType`, `asyncSubmit`/`syncSubmit`, `onCancel` wired ✓                 |
 | `frontend/apps/forms/src/components/FormElement/FormElement.type.ts` | `ISyncSubmitEvent`, `IAsyncSubmitEvent`, `submitType` discriminated union ✓                    |
 | `frontend/apps/forms/src/routes/index.tsx`                           | Updated with real `FormElement` usage ✓                                                       |
 | `frontend/apps/forms/src/routes/__root.tsx`                          | Remove placeholder content                                                                    |

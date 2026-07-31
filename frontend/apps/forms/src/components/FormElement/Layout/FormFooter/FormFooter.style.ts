@@ -6,6 +6,8 @@ export const formFooterStyles: Record<string, SxProps<Theme>> = {
     bottom: 0,
     left: 0,
     right: 0,
+  },
+  content: {
     paddingX: 8,
     paddingY: 2.5,
     display: "flex",
