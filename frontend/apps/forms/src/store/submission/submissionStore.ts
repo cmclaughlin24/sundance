@@ -1,29 +1,19 @@
 import { createStore } from "zustand";
-import type { IForm } from "@/types/form";
-import type { IFormVersion } from "@/types/formVersion";
 import type { ISubmissionValue } from "@/types/submission";
 
 export type FormValues = Record<string, any>;
 
-export interface IFormStore {
-  form: Readonly<IForm> | null;
-  version: Readonly<IFormVersion> | null;
+export interface ISubmissionStore {
   values: FormValues;
   errors: Record<string, string[]>;
   setValue: (elementId: string, value: any) => void;
   setError: (elementId: string, errors: string[]) => void;
 }
 
-export type FormStoreApi = ReturnType<typeof createFormStore>;
+export type SubmissionStoreApi = ReturnType<typeof createSubmissionStore>;
 
-export function createFormStore(
-  form: IForm,
-  version: IFormVersion,
-  raw: ISubmissionValue[] = [],
-) {
-  return createStore<IFormStore>((set) => ({
-    form,
-    version,
+export function createSubmissionStore(raw: ISubmissionValue[] = []) {
+  return createStore<ISubmissionStore>((set) => ({
     values: createFormValues(raw),
     errors: {},
     setValue(elementId, value) {

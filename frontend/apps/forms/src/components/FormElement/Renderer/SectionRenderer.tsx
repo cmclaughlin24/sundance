@@ -2,7 +2,7 @@ import type { ISection } from "@/types/section";
 import { sortPositioned } from "@/utils/sort";
 import { ElementRenderer } from "./ElementRenderer";
 import { filterVisible } from "@/utils/filter";
-import { useEvalContext } from "@/store/evalContext";
+import { useEvalContext } from "@/store/submission/evalContext";
 
 export const SectionRenderer: React.FC<{ section: ISection }> = function ({
   section,

@@ -5,11 +5,12 @@ import type {
   ISyncSubmitEvent,
 } from "./FormElement.type";
 import { useAsyncData } from "@/hooks/useAsyncData";
-import { FormStoreProvider } from "@/store/FormStoreProvider";
+import { SubmissionProvider } from "@/store/submission/SubmissionProvider";
 import Box from "@mui/material/Box";
 import { FormRenderer } from "./Renderer/FormRenderer";
 import type { ISubmissionValue } from "@/types/submission";
 import { formElementStyles } from "./FormElement.style";
+import { FormDefinitionProvider } from "@/store/formDefinition/FormDefinitionProvider";
 
 export const FormElement: React.FC<FormElementProps> = function ({
   tenantId,
@@ -89,14 +90,12 @@ export const FormElement: React.FC<FormElementProps> = function ({
   const [form, version] = data;
 
   return (
-    <FormStoreProvider
-      form={form}
-      version={version}
-      rawSubmission={rawSubmission}
-    >
-      <Box sx={formElementStyles["container"]}>
-        <FormRenderer onSubmit={handleSubmit} onCancel={onCancel} />
-      </Box>
-    </FormStoreProvider>
+    <FormDefinitionProvider form={form} version={version}>
+      <SubmissionProvider rawSubmission={rawSubmission}>
+        <Box sx={formElementStyles["container"]}>
+          <FormRenderer onSubmit={handleSubmit} onCancel={onCancel} />
+        </Box>
+      </SubmissionProvider>
+    </FormDefinitionProvider>
   );
 };

@@ -11,8 +11,8 @@ import { useDataSource } from "@/hooks/useDataSource";
 import {
   useElementErrors,
   useElementValue,
-  useFormDispatch,
-} from "@/store/useFormStoreContext";
+  useSubmissionDispatch,
+} from "@/store/submission/useSubmissionContext";
 import { z } from "zod";
 
 interface BaseSelectFieldElementProps {
@@ -39,7 +39,7 @@ const BaseSelectFieldElement: React.FC<BaseSelectFieldElementProps> =
     elementId,
     onChange,
   }) {
-    const { setError } = useFormDispatch();
+    const { setError } = useSubmissionDispatch();
     const value = useElementValue<LookupValue | LookupValue[]>(
       elementId,
       !multiple ? "" : [],

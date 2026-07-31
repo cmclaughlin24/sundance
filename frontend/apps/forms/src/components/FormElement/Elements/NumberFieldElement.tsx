@@ -7,8 +7,8 @@ import { checkElementType } from "@/utils/error";
 import {
   useElementErrors,
   useElementValue,
-  useFormDispatch,
-} from "@/store/useFormStoreContext";
+  useSubmissionDispatch,
+} from "@/store/submission/useSubmissionContext";
 import { z } from "zod";
 
 export const NumberFieldElement: ElementComponent = function ({
@@ -18,7 +18,7 @@ export const NumberFieldElement: ElementComponent = function ({
 }) {
   checkElementType(element.type, "number");
 
-  const { setError } = useFormDispatch();
+  const { setError } = useSubmissionDispatch();
   const value = useElementValue<number | "">(element.id, "");
   const errors = useElementErrors(element.id);
   const attr = element.attributes as NumberElementAttributes;

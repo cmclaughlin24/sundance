@@ -3,7 +3,7 @@ import type { PropsWithChildren } from "react";
 import { FieldElementLabel } from "./FieldElementLabel";
 import type { IElement } from "@/types/element";
 import { fieldElementContainerStyles } from "./FieldElementContainer.style";
-import { useElementRuleState } from "@/store/useFormStoreContext";
+import { useElementRuleState } from "@/store/submission/useSubmissionContext";
 
 export const FieldElementContainer: React.FC<
   PropsWithChildren<{ element: IElement }>

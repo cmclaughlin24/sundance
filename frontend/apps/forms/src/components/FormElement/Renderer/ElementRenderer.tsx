@@ -1,6 +1,6 @@
 import { type ElementType, type IElement } from "@/types/element";
 import { TextFieldElement } from "../Elements/TextFieldElement";
-import { useElementRuleState, useFormDispatch } from "@/store/useFormStoreContext";
+import { useElementRuleState, useSubmissionDispatch } from "@/store/submission/useSubmissionContext";
 import { NumberFieldElement } from "../Elements/NumberFieldElement";
 import type { IRuleState } from "@/types/rule";
 import { SelectFieldElement } from "../Elements/SelectFieldElement";
@@ -24,7 +24,7 @@ const registry = new Map<ElementType, ElementComponent>([
 export const ElementRenderer: React.FC<{ element: IElement }> = function ({
   element,
 }) {
-  const { setValue } = useFormDispatch();
+  const { setValue } = useSubmissionDispatch();
   const ruleState = useElementRuleState(element);
 
   const handleChange = (value: any) => {

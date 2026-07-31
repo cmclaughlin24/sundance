@@ -1,9 +1,9 @@
 import Box from "@mui/material/Box";
 import { formFooterStyles } from "./FormFooter.style";
-import { useForm } from "@/store/useFormStoreContext";
 import Typography from "@mui/material/Typography";
 import type { FormFooterActions } from "./FormFooterActions";
 import type LinearProgress from "@mui/material/LinearProgress";
+import { useForm } from "@/store/formDefinition";
 
 export interface FormFooterProps {
   actions: React.ReactElement<typeof FormFooterActions>;

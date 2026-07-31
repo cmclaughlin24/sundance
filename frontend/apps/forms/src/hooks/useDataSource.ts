@@ -1,10 +1,10 @@
 import { useAsyncData } from "./useAsyncData";
-import { useTenantId } from "@/store/useFormStoreContext";
-import { useEvalContext } from "@/store/evalContext";
+import { useEvalContext } from "@/store/submission/evalContext";
 import type { IBindingSource, IDataSourceRef, ILookup } from "@/types/data";
 import { useDataSourcesService } from "./useHttpService";
 import { useMemo } from "react";
 import type { EvalContext } from "@/utils/evaluate";
+import { useTenantId } from "@/store/formDefinition/useFormDefinitionContext";
 
 export function useDataSource(dataSourceRef: IDataSourceRef) {
   const tenantId = useTenantId();

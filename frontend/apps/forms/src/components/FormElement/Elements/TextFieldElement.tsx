@@ -7,8 +7,8 @@ import { checkElementType } from "@/utils/error";
 import {
   useElementErrors,
   useElementValue,
-  useFormDispatch,
-} from "@/store/useFormStoreContext";
+  useSubmissionDispatch,
+} from "@/store/submission/useSubmissionContext";
 import { z, ZodString } from "zod";
 
 export const TextFieldElement: ElementComponent = function ({
@@ -18,7 +18,7 @@ export const TextFieldElement: ElementComponent = function ({
 }) {
   checkElementType(element.type, "text");
 
-  const { setError } = useFormDispatch();
+  const { setError } = useSubmissionDispatch();
   const value = useElementValue<string>(element.id, "");
   const errors = useElementErrors(element.id);
   const attr = element.attributes as TextElementAttributes;

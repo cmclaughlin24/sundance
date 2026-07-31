@@ -5,18 +5,15 @@ import { sortPositioned } from "@/utils/sort";
 import type { ISubmissionValue } from "@/types/submission";
 import { PageRenderer } from "./PageRenderer";
 import { useMemo, useState, type SubmitEvent } from "react";
-import {
-  useForm,
-  useFormValues,
-  useFormVersion,
-} from "@/store/useFormStoreContext";
+import { useFormValues } from "@/store/submission/useSubmissionContext";
 import { filterVisible } from "@/utils/filter";
-import { EvalContextContext } from "@/store/evalContext";
+import { EvalContextContext } from "@/store/submission/evalContext";
 import { buildEvalContext, type EvalContext } from "@/utils/evaluate";
 import { formRendererStyles } from "./FormRenderer.style";
 import { FormFooter } from "../Layout/FormFooter/FormFooter";
 import { FormFooterActions } from "../Layout/FormFooter/FormFooterActions";
 import LinearProgress from "@mui/material/LinearProgress";
+import { useForm, useFormVersion } from "@/store/formDefinition";
 
 export interface FormRendererProps {
   onSubmit: (values: ISubmissionValue[]) => void;
