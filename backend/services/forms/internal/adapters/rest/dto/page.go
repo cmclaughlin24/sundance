@@ -55,12 +55,12 @@ func RequestToPageData(dto PageRequest) (commands.PageData, error) {
 	rules := RequestsToRuleData(dto.Rules)
 
 	return commands.PageData{
-		ID:       dto.ID,
-		Key:      dto.Key,
-		Name:     dto.Name,
-		Position: dto.Position,
+		ID:           dto.ID,
+		Key:          dto.Key,
+		Name:         dto.Name,
+		Position:     dto.Position,
 		SectionsData: sections,
-		Rules:    rules,
+		Rules:        rules,
 	}, nil
 }
 

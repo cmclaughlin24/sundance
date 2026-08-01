@@ -82,7 +82,7 @@ func (m *formDefinitionMapper) updateFormDefinition(version *domain.FormVersion)
 }
 
 func (m *formDefinitionMapper) createPage(p commands.PageData) (*domain.Page, error) {
-	page, err := domain.NewPage(p.Name, p.Key, p.Position)
+	page, err := domain.NewPage(p.Key, p.Name, p.Position)
 	if err != nil {
 		return nil, err
 	}

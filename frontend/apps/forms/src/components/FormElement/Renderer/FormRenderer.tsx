@@ -9,11 +9,12 @@ import { useFormValues } from "@/store/submission/useSubmissionContext";
 import { filterVisible } from "@/utils/filter";
 import { EvalContextContext } from "@/store/submission/evalContext";
 import { buildEvalContext, type EvalContext } from "@/utils/evaluate";
-import { formRendererStyles } from "./FormRenderer.style";
+import { rendererStyles } from "./renderer.style";
 import { FormFooter } from "../Layout/FormFooter/FormFooter";
 import { FormFooterActions } from "../Layout/FormFooter/FormFooterActions";
 import LinearProgress from "@mui/material/LinearProgress";
 import { useForm, useFormVersion } from "@/store/formDefinition";
+import { AnimatePresence } from "motion/react";
 
 export interface FormRendererProps {
   onSubmit: (values: ISubmissionValue[]) => void;
@@ -70,12 +71,14 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
     <EvalContextContext value={evalCtx}>
       <Box
         component="form"
-        sx={formRendererStyles["form"]}
+        sx={rendererStyles["form"]}
         onSubmit={handleSubmit}
         id={form.id}
       >
         <FormTitle name={form!.name} description={form!.description} />
-        <PageRenderer page={page} key={page.id} />
+        <AnimatePresence mode="wait">
+          <PageRenderer page={page} key={page.id} />
+        </AnimatePresence>
       </Box>
       <FormFooter
         actions={

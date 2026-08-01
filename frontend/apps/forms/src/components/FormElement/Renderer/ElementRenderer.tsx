@@ -1,11 +1,16 @@
 import { type ElementType, type IElement } from "@/types/element";
 import { TextFieldElement } from "../Elements/TextFieldElement";
-import { useElementRuleState, useSubmissionDispatch } from "@/store/submission/useSubmissionContext";
+import {
+  useElementRuleState,
+  useSubmissionDispatch,
+} from "@/store/submission/useSubmissionContext";
 import { NumberFieldElement } from "../Elements/NumberFieldElement";
 import type { IRuleState } from "@/types/rule";
 import { SelectFieldElement } from "../Elements/SelectFieldElement";
 import { CheckboxFieldElement } from "../Elements/CheckboxFieldElement";
 import { DateFieldElement } from "../Elements/DateFieldElement";
+import { motion } from "motion/react";
+import { elementVariants } from "./renderer.animations";
 
 export type ElementComponent = React.FC<{
   element: IElement;
@@ -38,10 +43,12 @@ export const ElementRenderer: React.FC<{ element: IElement }> = function ({
   }
 
   return (
-    <Component
-      element={element}
-      ruleState={ruleState}
-      onChange={handleChange}
-    />
+    <motion.div variants={elementVariants} initial="initial" animate="animate">
+      <Component
+        element={element}
+        ruleState={ruleState}
+        onChange={handleChange}
+      />
+    </motion.div>
   );
 };

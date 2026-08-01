@@ -1,0 +1,142 @@
+{
+	"metadata": {
+	},
+	"pages": [
+		{
+			"id": null,
+			"key": "activeDirectory",
+			"name": "Active Directory Account Management",
+			"position": 0,
+			"sections": [
+				{
+					"key": "account",
+					"name": "Account Information",
+					"position": 0,
+					"elements": [
+						{
+							"key": "accountType",
+							"name": "Account Type",
+							"type": "text",
+							"position": 0,
+							"attributes": {
+								"multiple": false,
+								"minSelected": 1,
+								"maxSelected": null,
+								"isRequired": true
+							},
+							"rules": [],
+							"tags": []
+						},
+						{
+							"key": "domain",
+							"name": "Active Directory Domain",
+							"type": "text",
+							"position": 1,
+							"attributes": {
+								"multiple": false,
+								"minSelected": 1,
+								"maxSelected": 1,
+								"isRequired": true
+							},
+							"rules": []
+						},
+						{
+							"key": "requestType",
+							"name": "Request Type",
+							"type": "text",
+							"position": 2,
+							"attributes": {
+								"multiple": false,
+								"minSelected": 1,
+								"maxSelected": 1,
+								"isRequired": true
+							},
+							"rules": [
+								{
+									"type": "visible",
+									"expressions": [
+										{
+											"fieldKey": "domain",
+											"operator": "equal",
+											"value": "AD-ENT",
+											"joinWithPrevious": null
+										}
+									]
+								}
+							]
+						}
+					],
+					"rules": []
+				}
+			],
+			"rules": []
+		},
+		{
+			"id": null,
+			"key": "management",
+			"name": "Active Directory Account Management",
+			"position": 1,
+			"sections": [
+				{
+					"key": "reason",
+					"name": "Reason",
+					"position": 0,
+					"elements": [
+						{
+							"key": "justification",
+							"name": "Add Justification",
+							"type": "text",
+							"position": 0,
+							"attributes": {
+								"isRequired": true
+							},
+							"rules": []
+						}
+					],
+					"rules": []
+				},
+				{
+					"key": "reason2",
+					"name": "Reason",
+					"position": 1,
+					"elements": [
+						{
+							"key": "justification2",
+							"name": "Add Justification",
+							"type": "text",
+							"position": 0,
+							"attributes": {
+								"isRequired": true
+							},
+							"rules": []
+						},
+						{
+							"key": "justification3",
+							"name": "Add Justification",
+							"type": "text",
+							"position": 1,
+							"attributes": {
+								"isRequired": true
+							},
+							"rules": []
+						}
+					],
+					"rules": [
+						{
+									"type": "visible",
+									"expressions": [
+										{
+											"fieldKey": "justification",
+											"operator": "equal",
+											"value": "AD-ENT",
+											"joinWithPrevious": null
+										}
+									]
+						 }
+					]
+				}
+			],
+			"rules": []
+		}
+	]
+}
