@@ -6,11 +6,11 @@ import type {
 } from "./FormElement.type";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { SubmissionProvider } from "@/store/submission/SubmissionProvider";
-import Box from "@mui/material/Box";
 import { FormRenderer } from "./Renderer/FormRenderer";
 import type { ISubmissionValue } from "@/types/submission";
 import { formElementStyles } from "./FormElement.style";
 import { FormDefinitionProvider } from "@/store/formDefinition/FormDefinitionProvider";
+import { PageCard } from "../Layout/PageCard";
 
 export const FormElement: React.FC<FormElementProps> = function ({
   tenantId,
@@ -92,9 +92,9 @@ export const FormElement: React.FC<FormElementProps> = function ({
   return (
     <FormDefinitionProvider form={form} version={version}>
       <SubmissionProvider rawSubmission={rawSubmission}>
-        <Box sx={formElementStyles["container"]}>
+        <PageCard sx={formElementStyles["page"]}>
           <FormRenderer onSubmit={handleSubmit} onCancel={onCancel} />
-        </Box>
+        </PageCard>
       </SubmissionProvider>
     </FormDefinitionProvider>
   );

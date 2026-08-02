@@ -10,60 +10,54 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as FormsFormIdVersionsVersionIdFormLayoutRouteImport } from './routes/forms/$formId/versions/$versionId/_formLayout'
-import { Route as FormsFormIdVersionsVersionIdFormLayoutIndexRouteImport } from './routes/forms/$formId/versions/$versionId/_formLayout.index'
+import { Route as DesignerIndexRouteImport } from './routes/designer/index'
+import { Route as FormsFormIdVersionsVersionIdIndexRouteImport } from './routes/forms/$formId/versions/$versionId/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FormsFormIdVersionsVersionIdFormLayoutRoute =
-  FormsFormIdVersionsVersionIdFormLayoutRouteImport.update({
-    id: '/forms/$formId/versions/$versionId/_formLayout',
-    path: '/forms/$formId/versions/$versionId',
+const DesignerIndexRoute = DesignerIndexRouteImport.update({
+  id: '/designer/',
+  path: '/designer/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FormsFormIdVersionsVersionIdIndexRoute =
+  FormsFormIdVersionsVersionIdIndexRouteImport.update({
+    id: '/forms/$formId/versions/$versionId/',
+    path: '/forms/$formId/versions/$versionId/',
     getParentRoute: () => rootRouteImport,
-  } as any)
-const FormsFormIdVersionsVersionIdFormLayoutIndexRoute =
-  FormsFormIdVersionsVersionIdFormLayoutIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => FormsFormIdVersionsVersionIdFormLayoutRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/forms/$formId/versions/$versionId': typeof FormsFormIdVersionsVersionIdFormLayoutRouteWithChildren
-  '/forms/$formId/versions/$versionId/': typeof FormsFormIdVersionsVersionIdFormLayoutIndexRoute
+  '/designer/': typeof DesignerIndexRoute
+  '/forms/$formId/versions/$versionId/': typeof FormsFormIdVersionsVersionIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/forms/$formId/versions/$versionId': typeof FormsFormIdVersionsVersionIdFormLayoutIndexRoute
+  '/designer': typeof DesignerIndexRoute
+  '/forms/$formId/versions/$versionId': typeof FormsFormIdVersionsVersionIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/forms/$formId/versions/$versionId/_formLayout': typeof FormsFormIdVersionsVersionIdFormLayoutRouteWithChildren
-  '/forms/$formId/versions/$versionId/_formLayout/': typeof FormsFormIdVersionsVersionIdFormLayoutIndexRoute
+  '/designer/': typeof DesignerIndexRoute
+  '/forms/$formId/versions/$versionId/': typeof FormsFormIdVersionsVersionIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/forms/$formId/versions/$versionId'
-    | '/forms/$formId/versions/$versionId/'
+  fullPaths: '/' | '/designer/' | '/forms/$formId/versions/$versionId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/forms/$formId/versions/$versionId'
-  id:
-    | '__root__'
-    | '/'
-    | '/forms/$formId/versions/$versionId/_formLayout'
-    | '/forms/$formId/versions/$versionId/_formLayout/'
+  to: '/' | '/designer' | '/forms/$formId/versions/$versionId'
+  id: '__root__' | '/' | '/designer/' | '/forms/$formId/versions/$versionId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  FormsFormIdVersionsVersionIdFormLayoutRoute: typeof FormsFormIdVersionsVersionIdFormLayoutRouteWithChildren
+  DesignerIndexRoute: typeof DesignerIndexRoute
+  FormsFormIdVersionsVersionIdIndexRoute: typeof FormsFormIdVersionsVersionIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -75,42 +69,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/forms/$formId/versions/$versionId/_formLayout': {
-      id: '/forms/$formId/versions/$versionId/_formLayout'
-      path: '/forms/$formId/versions/$versionId'
-      fullPath: '/forms/$formId/versions/$versionId'
-      preLoaderRoute: typeof FormsFormIdVersionsVersionIdFormLayoutRouteImport
+    '/designer/': {
+      id: '/designer/'
+      path: '/designer'
+      fullPath: '/designer/'
+      preLoaderRoute: typeof DesignerIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/forms/$formId/versions/$versionId/_formLayout/': {
-      id: '/forms/$formId/versions/$versionId/_formLayout/'
-      path: '/'
+    '/forms/$formId/versions/$versionId/': {
+      id: '/forms/$formId/versions/$versionId/'
+      path: '/forms/$formId/versions/$versionId'
       fullPath: '/forms/$formId/versions/$versionId/'
-      preLoaderRoute: typeof FormsFormIdVersionsVersionIdFormLayoutIndexRouteImport
-      parentRoute: typeof FormsFormIdVersionsVersionIdFormLayoutRoute
+      preLoaderRoute: typeof FormsFormIdVersionsVersionIdIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
-
-interface FormsFormIdVersionsVersionIdFormLayoutRouteChildren {
-  FormsFormIdVersionsVersionIdFormLayoutIndexRoute: typeof FormsFormIdVersionsVersionIdFormLayoutIndexRoute
-}
-
-const FormsFormIdVersionsVersionIdFormLayoutRouteChildren: FormsFormIdVersionsVersionIdFormLayoutRouteChildren =
-  {
-    FormsFormIdVersionsVersionIdFormLayoutIndexRoute:
-      FormsFormIdVersionsVersionIdFormLayoutIndexRoute,
-  }
-
-const FormsFormIdVersionsVersionIdFormLayoutRouteWithChildren =
-  FormsFormIdVersionsVersionIdFormLayoutRoute._addFileChildren(
-    FormsFormIdVersionsVersionIdFormLayoutRouteChildren,
-  )
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  FormsFormIdVersionsVersionIdFormLayoutRoute:
-    FormsFormIdVersionsVersionIdFormLayoutRouteWithChildren,
+  DesignerIndexRoute: DesignerIndexRoute,
+  FormsFormIdVersionsVersionIdIndexRoute:
+    FormsFormIdVersionsVersionIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

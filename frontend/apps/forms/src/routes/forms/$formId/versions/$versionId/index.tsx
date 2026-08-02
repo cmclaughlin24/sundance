@@ -2,7 +2,7 @@ import { FormElement } from '@/components/FormElement/FormElement';
 import type { ISyncSubmitEvent } from '@/components/FormElement/FormElement.type';
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/forms/$formId/versions/$versionId/_formLayout/')({
+export const Route = createFileRoute('/forms/$formId/versions/$versionId/')({
   component: FormRouteComponent,
 })
 
