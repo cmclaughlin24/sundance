@@ -5,7 +5,7 @@ export const MainContainer: React.FC<React.PropsWithChildren<{}>> = function ({
   children,
 }) {
   return (
-    <Box component="main" sx={mainContainerStyles["container"]}>
+    <Box component="main" sx={mainContainerStyles["main"]}>
       {children}
     </Box>
   );

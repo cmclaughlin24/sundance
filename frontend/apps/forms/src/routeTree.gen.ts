@@ -10,33 +10,60 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FormsFormIdVersionsVersionIdFormLayoutRouteImport } from './routes/forms/$formId/versions/$versionId/_formLayout'
+import { Route as FormsFormIdVersionsVersionIdFormLayoutIndexRouteImport } from './routes/forms/$formId/versions/$versionId/_formLayout.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FormsFormIdVersionsVersionIdFormLayoutRoute =
+  FormsFormIdVersionsVersionIdFormLayoutRouteImport.update({
+    id: '/forms/$formId/versions/$versionId/_formLayout',
+    path: '/forms/$formId/versions/$versionId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const FormsFormIdVersionsVersionIdFormLayoutIndexRoute =
+  FormsFormIdVersionsVersionIdFormLayoutIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => FormsFormIdVersionsVersionIdFormLayoutRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/forms/$formId/versions/$versionId': typeof FormsFormIdVersionsVersionIdFormLayoutRouteWithChildren
+  '/forms/$formId/versions/$versionId/': typeof FormsFormIdVersionsVersionIdFormLayoutIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/forms/$formId/versions/$versionId': typeof FormsFormIdVersionsVersionIdFormLayoutIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/forms/$formId/versions/$versionId/_formLayout': typeof FormsFormIdVersionsVersionIdFormLayoutRouteWithChildren
+  '/forms/$formId/versions/$versionId/_formLayout/': typeof FormsFormIdVersionsVersionIdFormLayoutIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/forms/$formId/versions/$versionId'
+    | '/forms/$formId/versions/$versionId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/forms/$formId/versions/$versionId'
+  id:
+    | '__root__'
+    | '/'
+    | '/forms/$formId/versions/$versionId/_formLayout'
+    | '/forms/$formId/versions/$versionId/_formLayout/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FormsFormIdVersionsVersionIdFormLayoutRoute: typeof FormsFormIdVersionsVersionIdFormLayoutRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +75,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forms/$formId/versions/$versionId/_formLayout': {
+      id: '/forms/$formId/versions/$versionId/_formLayout'
+      path: '/forms/$formId/versions/$versionId'
+      fullPath: '/forms/$formId/versions/$versionId'
+      preLoaderRoute: typeof FormsFormIdVersionsVersionIdFormLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forms/$formId/versions/$versionId/_formLayout/': {
+      id: '/forms/$formId/versions/$versionId/_formLayout/'
+      path: '/'
+      fullPath: '/forms/$formId/versions/$versionId/'
+      preLoaderRoute: typeof FormsFormIdVersionsVersionIdFormLayoutIndexRouteImport
+      parentRoute: typeof FormsFormIdVersionsVersionIdFormLayoutRoute
+    }
   }
 }
 
+interface FormsFormIdVersionsVersionIdFormLayoutRouteChildren {
+  FormsFormIdVersionsVersionIdFormLayoutIndexRoute: typeof FormsFormIdVersionsVersionIdFormLayoutIndexRoute
+}
+
+const FormsFormIdVersionsVersionIdFormLayoutRouteChildren: FormsFormIdVersionsVersionIdFormLayoutRouteChildren =
+  {
+    FormsFormIdVersionsVersionIdFormLayoutIndexRoute:
+      FormsFormIdVersionsVersionIdFormLayoutIndexRoute,
+  }
+
+const FormsFormIdVersionsVersionIdFormLayoutRouteWithChildren =
+  FormsFormIdVersionsVersionIdFormLayoutRoute._addFileChildren(
+    FormsFormIdVersionsVersionIdFormLayoutRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FormsFormIdVersionsVersionIdFormLayoutRoute:
+    FormsFormIdVersionsVersionIdFormLayoutRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
