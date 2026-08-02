@@ -10,7 +10,7 @@ import { FormRenderer } from "./Renderer/FormRenderer";
 import type { ISubmissionValue } from "@/types/submission";
 import { formElementStyles } from "./FormElement.style";
 import { FormDefinitionProvider } from "@/store/formDefinition/FormDefinitionProvider";
-import { PageCard } from "../Layout/PageCard";
+import { Page } from "../Layout/Page/Page";
 
 export const FormElement: React.FC<FormElementProps> = function ({
   tenantId,
@@ -92,9 +92,9 @@ export const FormElement: React.FC<FormElementProps> = function ({
   return (
     <FormDefinitionProvider form={form} version={version}>
       <SubmissionProvider rawSubmission={rawSubmission}>
-        <PageCard sx={formElementStyles["page"]}>
+        <Page sx={formElementStyles["page"]}>
           <FormRenderer onSubmit={handleSubmit} onCancel={onCancel} />
-        </PageCard>
+        </Page>
       </SubmissionProvider>
     </FormDefinitionProvider>
   );

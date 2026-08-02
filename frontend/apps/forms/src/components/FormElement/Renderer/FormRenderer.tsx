@@ -1,6 +1,6 @@
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import { FormTitle } from "../Layout/FormTitle";
+import { PageTitle } from "../../Layout/Page/PageTitle";
 import { sortPositioned } from "@/utils/sort";
 import type { ISubmissionValue } from "@/types/submission";
 import { PageRenderer } from "./PageRenderer";
@@ -80,7 +80,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
         onSubmit={handleSubmit}
         id={form.id}
       >
-        <FormTitle name={form!.name} description={form!.description} />
+        <PageTitle name={form!.name} description={form!.description} />
         <AnimatePresence mode="wait">
           <PageRenderer page={page} key={page.id} />
         </AnimatePresence>
