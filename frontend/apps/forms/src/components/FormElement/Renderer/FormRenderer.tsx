@@ -5,7 +5,10 @@ import { sortPositioned } from "@/utils/sort";
 import type { ISubmissionValue } from "@/types/submission";
 import { PageRenderer } from "./PageRenderer";
 import { useMemo, useState, type SubmitEvent } from "react";
-import { useFormValues } from "@/store/submission/useSubmissionContext";
+import {
+  useFormErrors,
+  useFormValues,
+} from "@/store/submission/useSubmissionContext";
 import { filterVisible } from "@/utils/filter";
 import { EvalContextContext } from "@/store/submission/evalContext";
 import { buildEvalContext, type EvalContext } from "@/utils/evaluate";
@@ -15,6 +18,7 @@ import { FormFooterActions } from "../Layout/FormFooter/FormFooterActions";
 import LinearProgress from "@mui/material/LinearProgress";
 import { useForm, useFormVersion } from "@/store/formDefinition";
 import { AnimatePresence } from "motion/react";
+import { calculateProgress } from "@/utils/progress";
 
 export interface FormRendererProps {
   onSubmit: (values: ISubmissionValue[]) => void;
@@ -28,6 +32,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
   const form = useForm();
   const version = useFormVersion();
   const values = useFormValues();
+  const errors = useFormErrors();
   const [pageIndex, setPageIndex] = useState(0);
   const evalCtx = useMemo<EvalContext>(() => {
     const pages = version?.pages ?? [];
@@ -40,7 +45,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
   // NOTE: While it is protected against during form design time, if the current page becomes invisible
   // the previous page will be show to the user.
   const page = pages[pageIndex] ?? pages[pageIndex - 1];
-  const progress = ((pageIndex + 1) / pages.length) * 100;
+  const progress = calculateProgress(values, errors, evalCtx, pages);
   const isLastPage = pageIndex === pages.length - 1;
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
@@ -103,11 +108,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
             )}
           </FormFooterActions>
         }
-        progress={
-          pages.length === 1 ? undefined : (
-            <LinearProgress variant="determinate" value={progress} />
-          )
-        }
+        progress={<LinearProgress variant="determinate" value={progress} />}
       />
     </EvalContextContext>
   );

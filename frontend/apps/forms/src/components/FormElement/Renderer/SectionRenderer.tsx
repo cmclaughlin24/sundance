@@ -21,6 +21,7 @@ export const SectionRenderer: React.FC<{ section: ISection }> = function ({
       variants={sectionVariants}
       initial="initial"
       animate="animate"
+      exit="exit"
       sx={rendererStyles["section"]}
     >
       <AnimatePresence initial={false}>

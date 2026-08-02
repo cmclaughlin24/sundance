@@ -16,6 +16,13 @@ export const sectionVariants: Variants = {
     y: 0,
     transition: { duration: 0.3, type: "spring", bounce: 0.4 },
   },
+  exit: {
+    opacity: 0,
+    y: -25,
+    height: 0,
+    paddingBottom: 0,
+    transition: { duration: 0.2 },
+  },
 };
 
 export const elementVariants: Variants = {
@@ -24,5 +31,12 @@ export const elementVariants: Variants = {
     opacity: 1,
     y: 0,
     transition: { duration: 0.3, type: "spring", bounce: 0.4 },
+  },
+  exit: {
+    opacity: 0,
+    y: -25,
+    height: 0,
+    paddingBottom: 0,
+    transition: { duration: 0.2 },
   },
 };

@@ -7,7 +7,7 @@ import {
 } from "@/types/rule";
 import { sortPositioned } from "./sort";
 import type { IPage } from "@/types/page";
-import type { FormValues } from "@/store/formReducer";
+import type { FormValues } from "@/store/submission/submissionStore";
 
 type EvaluatorFn = (fieldValue: any, target: any) => boolean;
 

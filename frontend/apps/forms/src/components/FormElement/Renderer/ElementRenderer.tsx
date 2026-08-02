@@ -43,7 +43,7 @@ export const ElementRenderer: React.FC<{ element: IElement }> = function ({
   }
 
   return (
-    <motion.div variants={elementVariants} initial="initial" animate="animate">
+    <motion.div variants={elementVariants} initial="initial" animate="animate" exit="exit">
       <Component
         element={element}
         ruleState={ruleState}

@@ -33,6 +33,11 @@ export function useFormValues() {
   return useStore(store, (s) => s.values);
 }
 
+export function useFormErrors() {
+  const store = useSubmissionContext();
+  return useStore(store, (s) => s.errors);
+}
+
 export function useElementValue<T>(elementId: string, defaultValue?: T): T {
   const store = useSubmissionContext();
   return useStore(store, (s) => s.values[elementId]) ?? defaultValue;
