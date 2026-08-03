@@ -10,12 +10,13 @@ import { useEffect, useState, type DependencyList } from "react";
  * @returns An instance of the specified HTTP service.
  */
 export function useAsyncData<T>(
-  operation: () => Promise<T>,
+  operation: (token: string) => Promise<T>,
   deps?: DependencyList,
 ) {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const token = "placeholder";
 
   useEffect(() => {
     let isCancelled = false;
@@ -25,7 +26,7 @@ export function useAsyncData<T>(
       setError(null);
 
       try {
-        const result = await operation();
+        const result = await operation(token);
 
         if (isCancelled) {
           return;

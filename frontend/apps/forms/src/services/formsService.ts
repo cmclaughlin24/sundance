@@ -10,6 +10,15 @@ export class FormsService extends BaseHttpService {
   }
 
   /**
+   * Gets a list of forms.
+   * @param options The default request options.
+   * @returns A promise that resolves to a list of forms.
+   */
+  async getForms(options: DefaultRequestOptions): Promise<IForm[]> {
+    return this._get<IForm[]>(`/api/v1/forms`, options);
+  }
+
+  /**
    * Gets a form and its version.
    * @param formId The ID of the form.
    * @param versionId The ID of the form version.

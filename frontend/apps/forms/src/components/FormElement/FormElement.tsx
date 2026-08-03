@@ -23,25 +23,28 @@ export const FormElement: React.FC<FormElementProps> = function ({
 }) {
   const formsService = useFormsService();
   const submissionService = useSubmissionsService();
-  const accessToken = "placeholder";
+  const token = "placeholder";
 
-  const { data, isLoading, error } = useAsyncData(async () => {
-    if (!accessToken) {
-      return null;
-    }
+  const { data, isLoading, error } = useAsyncData(
+    async (accessToken) => {
+      if (!accessToken) {
+        return null;
+      }
 
-    return await formsService.getForm(formId, versionId, {
-      tenantId,
-      token: accessToken,
-    });
-  }, [formsService, tenantId, formId, versionId, accessToken]);
+      return await formsService.getForm(formId, versionId, {
+        tenantId,
+        token: accessToken,
+      });
+    },
+    [formsService, tenantId, formId, versionId],
+  );
 
   const asyncSubmit = async (
     values: ISubmissionValue[],
   ): Promise<IAsyncSubmitEvent> => {
     const result = await submissionService.submit(formId, versionId, values, {
       tenantId,
-      token: accessToken,
+      token,
     });
 
     return { referenceId: result.referenceId };
@@ -54,10 +57,7 @@ export const FormElement: React.FC<FormElementProps> = function ({
       formId,
       versionId,
       values,
-      {
-        tenantId,
-        token: accessToken,
-      },
+      { tenantId, token },
     );
 
     return { raw: values, normalized: result };
