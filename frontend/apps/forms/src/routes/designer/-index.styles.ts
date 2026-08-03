@@ -3,15 +3,23 @@ import type { Theme } from "node_modules/@emotion/react/dist/declarations/src";
 
 export const designerStyles: Record<string, SxProps<Theme>> = {
   page: {
-    maxWidth: "1440px",
+    maxWidth: 1440,
     display: "flex",
     flexDirection: "column",
     gap: 5,
   },
   toolbar: {
     marginBottom: 3,
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: 2,
+  },
+  toolbarLeft: {
+    gridColumn: "span 2",
     display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
+    gap: 2,
+  },
+  searchInput: {
+    width: "100%",
   },
 };

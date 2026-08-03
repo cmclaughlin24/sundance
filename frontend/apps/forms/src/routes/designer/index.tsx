@@ -61,12 +61,16 @@ function DesignerRouteComponent() {
       <Box>FORM COUNTS</Box>
       <Box>
         <Box sx={designerStyles["toolbar"]}>
-          <Box>
+          <Box sx={designerStyles["toolbarLeft"]}>
             <Button onClick={handleFilterClick}>Filter</Button>
             <Button onClick={handleNewClick}>New Form +</Button>
           </Box>
           <Box>
-            <TextField placeholder="Search Forms" />
+            <TextField
+              variant="outlined"
+              placeholder="Search Forms"
+              sx={designerStyles["searchInput"]}
+            />
           </Box>
         </Box>
         <FormList forms={data} onClick={handleFormClick} />

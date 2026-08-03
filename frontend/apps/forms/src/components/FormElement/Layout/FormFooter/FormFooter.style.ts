@@ -2,10 +2,9 @@ import type { SxProps, Theme } from "@mui/material/styles";
 
 export const formFooterStyles: Record<string, SxProps<Theme>> = {
   footer: {
-    position: "absolute",
+    marginTop: 2.25,
+    position: "sticky",
     bottom: 0,
-    left: 0,
-    right: 0,
   },
   content: {
     paddingX: 8,

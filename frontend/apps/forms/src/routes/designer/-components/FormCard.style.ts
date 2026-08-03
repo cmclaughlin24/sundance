@@ -3,7 +3,9 @@ import type { SxProps } from "@mui/material/styles";
 
 export const formCardStyles: Record<string, SxProps<Theme>> = {
   card: {
+    borderRadius: "10px",
     padding: 2,
+    boxShadow: "0 4px 8px 0 rgba(156, 145, 145, .25)",
   },
   name: {
     fontSize: "1rem",
