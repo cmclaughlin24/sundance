@@ -37,10 +37,11 @@ export function hydrateSubmissionValues(
       continue;
     }
 
-    values.push({
-      elementId: element.id,
-      value: element.attributes.defaultValue,
-    });
+    const defaultValue = element.attributes.defaultValue;
+
+    if (defaultValue != null) {
+      values.push({ elementId: element.id, value: defaultValue });
+    }
   }
 
   return values;
