@@ -3,6 +3,7 @@ import type { HasDataSourceRef, ILookup } from "./data";
 export interface BaseFieldElementAttributes {
   isRequired: boolean;
   isReadOnly: boolean;
+  defaultValue: any | undefined;
 }
 
 export interface TextElementAttributes extends BaseFieldElementAttributes {

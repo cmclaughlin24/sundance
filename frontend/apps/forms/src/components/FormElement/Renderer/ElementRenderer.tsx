@@ -11,6 +11,7 @@ import { CheckboxFieldElement } from "../Elements/CheckboxFieldElement";
 import { DateFieldElement } from "../Elements/DateFieldElement";
 import { motion } from "motion/react";
 import { elementVariants } from "./renderer.animations";
+import Box from "@mui/material/Box";
 
 export type ElementComponent = React.FC<{
   element: IElement;
@@ -43,12 +44,19 @@ export const ElementRenderer: React.FC<{ element: IElement }> = function ({
   }
 
   return (
-    <motion.div variants={elementVariants} initial="initial" animate="animate" exit="exit">
+    <Box
+      component={motion.div}
+      sx={{ width: "100%" }}
+      variants={elementVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
       <Component
         element={element}
         ruleState={ruleState}
         onChange={handleChange}
       />
-    </motion.div>
+    </Box>
   );
 };

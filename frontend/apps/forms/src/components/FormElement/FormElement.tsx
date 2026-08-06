@@ -11,6 +11,7 @@ import type { ISubmissionValue } from "@/types/submission";
 import { formElementStyles } from "./FormElement.style";
 import { FormDefinitionProvider } from "@/store/formDefinition/FormDefinitionProvider";
 import { Page } from "../Layout/Page/Page";
+import { hydrateSubmissionValues } from "@/utils/form";
 
 export const FormElement: React.FC<FormElementProps> = function ({
   tenantId,
@@ -88,10 +89,11 @@ export const FormElement: React.FC<FormElementProps> = function ({
   }
 
   const [form, version] = data;
+  const values = hydrateSubmissionValues(rawSubmission, version);
 
   return (
     <FormDefinitionProvider form={form} version={version}>
-      <SubmissionProvider rawSubmission={rawSubmission}>
+      <SubmissionProvider rawSubmission={values}>
         <Page sx={formElementStyles["page"]}>
           <FormRenderer onSubmit={handleSubmit} onCancel={onCancel} />
         </Page>
