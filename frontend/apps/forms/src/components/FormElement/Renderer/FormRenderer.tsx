@@ -15,7 +15,6 @@ import { buildEvalContext, type EvalContext } from "@/utils/evaluate";
 import { rendererStyles } from "./renderer.style";
 import { FormFooter } from "../Layout/FormFooter/FormFooter";
 import { FormFooterActions } from "../Layout/FormFooter/FormFooterActions";
-import LinearProgress from "@mui/material/LinearProgress";
 import { useForm, useFormVersion } from "@/store/formDefinition";
 import { AnimatePresence } from "motion/react";
 import { calculateProgress } from "@/utils/progress";
@@ -85,31 +84,28 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
           <PageRenderer page={page} key={page.id} />
         </AnimatePresence>
       </Box>
-      <FormFooter
-        actions={
-          <FormFooterActions>
-            <Button variant="contained" color="secondary" onClick={onCancel}>
-              Cancel
+      <FormFooter progress={progress}>
+        <FormFooterActions>
+          <Button variant="contained" color="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+          {pages.length > 1 && pageIndex > 0 && (
+            <Button variant="outlined" onClick={() => handlePageChange(-1)}>
+              Previous
             </Button>
-            {pages.length > 1 && pageIndex > 0 && (
-              <Button variant="outlined" onClick={() => handlePageChange(-1)}>
-                Previous
-              </Button>
-            )}
-            {!isLastPage && (
-              <Button variant="outlined" onClick={() => handlePageChange(1)}>
-                Next
-              </Button>
-            )}
-            {isLastPage && (
-              <Button variant="contained" type="submit" form={form.id}>
-                Submit
-              </Button>
-            )}
-          </FormFooterActions>
-        }
-        progress={<LinearProgress variant="determinate" value={progress} />}
-      />
+          )}
+          {!isLastPage && (
+            <Button variant="outlined" onClick={() => handlePageChange(1)}>
+              Next
+            </Button>
+          )}
+          {isLastPage && (
+            <Button variant="contained" type="submit" form={form.id}>
+              Submit
+            </Button>
+          )}
+        </FormFooterActions>
+      </FormFooter>
     </EvalContextContext>
   );
 };

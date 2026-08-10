@@ -5,6 +5,7 @@ const baseStyles: SxProps<Theme> = {
   flexDirection: "column",
   alignItems: "start",
   gap: 5,
+  width: "100%",
 };
 
 export const rendererStyles: Record<string, SxProps<Theme>> = {
