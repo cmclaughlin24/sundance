@@ -84,7 +84,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
           <PageRenderer page={page} key={page.id} />
         </AnimatePresence>
       </Box>
-      <FormFooter progress={progress}>
+      <FormFooter progress={progress} variant="compact">
         <FormFooterActions>
           <Button variant="contained" color="secondary" onClick={onCancel}>
             Cancel

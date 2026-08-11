@@ -1,26 +1,32 @@
 import Box from "@mui/material/Box";
 import { formFooterStyles } from "./FormFooter.style";
-import Typography from "@mui/material/Typography";
 import type { FormFooterActions } from "./FormFooterActions";
 import { useForm } from "@/store/formDefinition";
 import type { IFormProgress } from "@/utils/progress";
 import LinearProgress from "@mui/material/LinearProgress";
-import { FormProgress } from "../FormProgress";
+import type { IForm } from "@/types/form";
+import { FullFormFooterContent } from "./FullFormFooterContent";
+import { CompactFormFooterContent } from "./CompactFormFooterContent";
 
 export interface FormFooterProps {
   children: React.ReactElement<typeof FormFooterActions>;
+  variant?: "full" | "compact";
   progress?: IFormProgress | undefined;
 }
 
+export type FormContentComponent = React.FC<
+  { form: IForm | null } & Exclude<FormFooterProps, "variant">
+>;
+
 export const FormFooter: React.FC<FormFooterProps> = function ({
   children,
+  variant,
   progress,
 }) {
   const form = useForm();
 
   let progressBar: React.ReactElement<typeof LinearProgress> | undefined =
     undefined;
-  let text: React.ReactNode;
 
   if (progress) {
     progressBar = (
@@ -30,29 +36,20 @@ export const FormFooter: React.FC<FormFooterProps> = function ({
         value={progress.percentage}
       />
     );
+  }
 
-    text = <FormProgress progress={progress} />;
+  let Content: FormContentComponent = FullFormFooterContent;
+
+  if (variant === "compact") {
+    Content = CompactFormFooterContent;
   }
 
   return (
     <>
-      <Box sx={formFooterStyles["footer"]}>
-        {progressBar}
-        <Box
-          sx={{
-            ...formFooterStyles["content"],
-            paddingTop: progress ? 1 : 2.5,
-          }}
-        >
-          <Box>
-            {text}
-            <Typography variant="body2" sx={formFooterStyles["name"]}>
-              {form?.name}
-            </Typography>
-          </Box>
-          {children}
-        </Box>
-      </Box>
+      <Box sx={formFooterStyles["footer"]}>{progressBar}</Box>
+      <Content form={form} progress={progress}>
+        {children}
+      </Content>
     </>
   );
 };
