@@ -32,8 +32,16 @@ export function buildEvalContext(
     return evalCtx;
   }
 
-  for (const page of pages) {
-    for (const section of page.sections) {
+  pageLoop: for (const page of pages) {
+    if (!page.sections) {
+      continue pageLoop;
+    }
+
+    sectionLoop: for (const section of page.sections) {
+      if (!section.elements) {
+        continue sectionLoop;
+      }
+
       for (const element of section.elements) {
         evalCtx[element.key] = values[element.id];
       }
@@ -80,10 +88,11 @@ export function evaluateRules(
 export function evaluateRule(rule: IRule, evalCtx: EvalContext): boolean {
   const expressions = sortPositioned(rule.expressions);
   let result = false;
+  let ctx = evalCtx ?? {};
 
   for (let i = 0; i < expressions.length; i++) {
     const exp = expressions[i];
-    const exprResult = evaluateExpression(exp, evalCtx);
+    const exprResult = evaluateExpression(exp, ctx);
 
     if (i === 0) {
       result = exprResult;
