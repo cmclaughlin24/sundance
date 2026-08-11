@@ -46,10 +46,12 @@ export const FormFooter: React.FC<FormFooterProps> = function ({
 
   return (
     <>
-      <Box sx={formFooterStyles["footer"]}>{progressBar}</Box>
-      <Content form={form} progress={progress}>
-        {children}
-      </Content>
+      <Box sx={formFooterStyles["footer"]}>
+        {progressBar}
+        <Content form={form} progress={progress}>
+          {children}
+        </Content>
+      </Box>
     </>
   );
 };
