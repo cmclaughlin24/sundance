@@ -20,7 +20,7 @@ export const FullFormFooterContent: FormContentComponent = function ({
         paddingTop: progress ? 1 : 2.5,
       }}
     >
-      <Box>
+      <Box sx={formFooterStyles["statusMessage"]}>
         {text}
         <Typography variant="body2" sx={formFooterStyles["name"]}>
           {form?.name}

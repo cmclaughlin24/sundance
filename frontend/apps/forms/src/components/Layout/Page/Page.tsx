@@ -11,7 +11,7 @@ const styles: SxProps<Theme> = {
   boxShadow: "0 1px 3px 0 rgba(0, 0, 0, .1)",
   border: "1px solid #2b2b2b",
   position: "relative",
-  flex: 1
+  flex: 1,
 };
 
 export const Page: React.FC<PageProps> = function ({ sx, children }) {

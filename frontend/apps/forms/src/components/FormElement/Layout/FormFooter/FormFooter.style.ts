@@ -16,12 +16,21 @@ export const formFooterStyles: Record<string, SxProps<Theme>> = {
   },
   fullContent: {
     ...baseContentStyles,
-    justifyContent: "space-between",
+    justifyContent: {
+      xs: "space-around",
+      md: "space-between",
+    },
   },
   compactContent: {
     ...baseContentStyles,
-    justifyContent: "flex-end",
-    gap: 2.5
+    justifyContent: {
+      xs: "space-around",
+      md: "flex-end",
+    },
+    gap: 2.5,
+  },
+  statusMessage: {
+    display: { xs: "none", md: "inline-block" },
   },
   name: {
     fontWeight: 600,

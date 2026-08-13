@@ -5,7 +5,6 @@ const baseStyles: SxProps<Theme> = {
   flexDirection: "column",
   alignItems: "start",
   gap: 5,
-  width: "100%",
 };
 
 export const rendererStyles: Record<string, SxProps<Theme>> = {
@@ -18,6 +17,6 @@ export const rendererStyles: Record<string, SxProps<Theme>> = {
     paddingBottom: 0,
     minHeight: 0,
   },
-  page: { ...baseStyles },
-  section: { ...baseStyles },
+  page: { ...baseStyles, width: "100%" },
+  section: { ...baseStyles, width: "100%" },
 };

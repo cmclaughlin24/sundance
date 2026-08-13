@@ -3,7 +3,11 @@ import type { SxProps, Theme } from "@mui/material/styles";
 export const fieldElementContainerStyles: Record<string, SxProps<Theme>> = {
   container: {
     display: "flex",
-    gap: 1,
+    gap: { xs: 2, md: 1 },
+    flexDirection: {
+      xs: "column",
+      md: "row",
+    },
     paddingBottom: 1.25,
   },
   label: {

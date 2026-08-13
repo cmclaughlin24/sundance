@@ -13,5 +13,9 @@ export const formProgressStyles: Record<string, SxProps<Theme>> = {
   },
   error: {
     color: "#B42D19",
+    ":hover": {
+      cursor: "pointer",
+      textDecoration: "underline",
+    },
   },
 };

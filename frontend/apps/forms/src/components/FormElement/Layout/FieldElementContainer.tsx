@@ -3,15 +3,22 @@ import type { PropsWithChildren } from "react";
 import { FieldElementLabel } from "./FieldElementLabel";
 import type { IElement } from "@/types/element";
 import { fieldElementContainerStyles } from "./FieldElementContainer.style";
-import { useElementRuleState } from "@/store/submission/useSubmissionContext";
+import {
+  useElementErrors,
+  useElementRuleState,
+} from "@/store/submission/useSubmissionContext";
 
 export const FieldElementContainer: React.FC<
   PropsWithChildren<{ element: IElement }>
 > = function ({ element, children }) {
   const ruleState = useElementRuleState(element);
+  const errors = useElementErrors(element.id);
 
   return (
-    <Box sx={fieldElementContainerStyles["container"]}>
+    <Box
+      sx={fieldElementContainerStyles["container"]}
+      data-error={errors && errors.length > 0}
+    >
       <Box sx={fieldElementContainerStyles["label"]}>
         <FieldElementLabel
           label={element.name}

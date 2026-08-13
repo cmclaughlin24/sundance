@@ -7,18 +7,9 @@ export const CompactFormFooterContent: FormContentComponent = function ({
   progress,
   children,
 }) {
-  const handleClick = () => {
-    if (!progress?.errors) {
-      return;
-    }
-
-    // TODO: Implement scroll into view on the first element with errors.
-    console.log("scrolling invalid field into view");
-  };
-
   let statusMessage =
     !progress || progress.percentage === 100 ? null : (
-      <Box component="span" onClick={handleClick}>
+      <Box component="span" sx={formFooterStyles["statusMessage"]}>
         <FormProgressMessage progress={progress} />
       </Box>
     );
