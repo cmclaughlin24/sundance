@@ -1,0 +1,84 @@
+{
+  "pages": [
+    {
+      "key": "activeDirectory",
+      "name": "Active Directory Account Management",
+      "position": 0,
+      "sections": [
+        {
+          "key": "account",
+          "name": "Account Information",
+          "position": 0,
+          "elements": [
+            {
+              "key": "accountType",
+              "name": "Account Type",
+              "type": "text",
+              "position": 0,
+              "attributes": {
+                "multiple": false,
+                "minSelected": 1,
+                "maxSelected": null,
+                "isRequired": true
+              },
+              "rules": [],
+              "tags": [
+                {
+                  "tagVersionId": "019f8f96-fa89-722a-9af4-a66954763d46",
+                  "priority": 0
+                }
+              ]
+            },
+            {
+              "key": "domain",
+              "name": "Active Directory Domain",
+              "type": "text",
+              "position": 1,
+              "attributes": {
+                "multiple": false,
+                "minSelected": 1,
+                "maxSelected": 1,
+                "isRequired": true
+              },
+              "rules": [],
+              "tags": []
+            },
+            {
+              "key": "requestType",
+              "name": "Request Type",
+              "type": "text",
+              "position": 2,
+              "attributes": {
+                "multiple": false,
+                "minSelected": 1,
+                "maxSelected": 1,
+                "isRequired": true
+              },
+              "rules": [
+                {
+                  "type": "visible",
+                  "expressions": [
+                    {
+                      "fieldKey": "domain",
+                      "operator": "equal",
+                      "value": "AD-ENT",
+                      "joinWithPrevious": null
+                    }
+                  ]
+                }
+              ],
+              "tags": [
+                {
+                  "tagVersionId": "019f8f97-8e4e-78d9-ab5c-8d4bce30c2af",
+                  "priority": 0
+                }
+              ]
+            }
+          ],
+          "rules": []
+        }
+      ],
+      "rules": []
+    }
+  ]
+}
