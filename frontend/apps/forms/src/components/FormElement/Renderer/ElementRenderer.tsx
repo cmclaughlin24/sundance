@@ -12,6 +12,10 @@ import { DateFieldElement } from "../Elements/DateFieldElement";
 import { motion } from "motion/react";
 import { elementVariants } from "./renderer.animations";
 import Box from "@mui/material/Box";
+import { RadioFieldElement } from "../Elements/RadioFieldElement";
+import { SegmentedFieldElement } from "../Elements/SegmentedFieldElement";
+import { ToggleFieldElement } from "../Elements/ToggleFieldElement";
+import { UserFieldElement } from "../Elements/UserFieldElement/UserFieldElement";
 
 export type ElementComponent = React.FC<{
   element: IElement;
@@ -25,6 +29,10 @@ const registry = new Map<ElementType, ElementComponent>([
   ["number", NumberFieldElement],
   ["select", SelectFieldElement],
   ["text", TextFieldElement],
+  ["radio", RadioFieldElement],
+  ["segmented", SegmentedFieldElement],
+  ["toggle", ToggleFieldElement],
+  ["user", UserFieldElement],
 ]);
 
 export const ElementRenderer: React.FC<{ element: IElement }> = function ({
