@@ -47,14 +47,16 @@ export abstract class BaseHttpService {
    * Sends a `GET` request to the specified URL.
    * @param url The URL to send the `GET` request to.
    * @param options The default request options.
-   * @returns The response ddata of type `R`.
+   * @param params (optional) The query parameters
+   * @returns The response data of type `R`.
    */
   protected async _get<R>(
     url: string,
     options: DefaultRequestOptions,
+    params?: URLSearchParams
   ): Promise<R> {
     const headers = this._defaultRequestHeaders(options);
-    const response = await this._client.get<R>(url, { headers });
+    const response = await this._client.get<R>(url, { headers, params });
     return response.data;
   }
 
@@ -119,8 +121,14 @@ export abstract class BaseHttpService {
     options: DefaultRequestOptions,
   ): AxiosHeaders {
     let headers = new AxiosHeaders();
-    headers = this._setTenantHeader(headers, options.tenantId);
-    headers = this._setBearerHeader(headers, options.token);
+
+    headers = options.tenantId
+      ? this._setTenantHeader(headers, options.tenantId)
+      : headers;
+    headers = options.tenantId
+      ? this._setBearerHeader(headers, options.token)
+      : headers;
+
     return headers;
   }
 

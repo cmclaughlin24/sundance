@@ -2,13 +2,19 @@ import { checkElementType } from "@/utils/error";
 import { FieldElementContainer } from "../../Layout/FieldElementContainer";
 import type { ElementComponent } from "../../Renderer/ElementRenderer";
 import { useElementValue } from "@/store/submission/useSubmissionContext";
-import type { IUserOption } from "@/types/userOption";
+import type { IUserLookup } from "@/types/userLookup";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { userFieldElementStyles } from "./UserFieldElement.style";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
 import { SelectedUserList } from "./SelectedUserList";
+import { useCallback, type ChangeEvent } from "react";
+import { SearchBar } from "@/components/SearchBar/Searchbar";
+import { useUsersService } from "@/hooks/useHttpService";
+import { useTenantId } from "@/store/formDefinition";
+
+const minimumSearchCharacters = 6;
 
 export const UserFieldElement: ElementComponent = function ({
   element,
@@ -16,13 +22,40 @@ export const UserFieldElement: ElementComponent = function ({
 }) {
   checkElementType(element.type, "user");
 
-  const value = useElementValue<IUserOption[]>(element.id, []);
+  const usersService = useUsersService();
+  const tenantId = useTenantId();
+  const value = useElementValue<IUserLookup[]>(element.id, []);
+
+  const findUsers = useCallback(
+    async (token: string, searchTerm?: string) => {
+      if (
+        !searchTerm ||
+        searchTerm.length < minimumSearchCharacters ||
+        !token ||
+        !tenantId
+      ) {
+        return [];
+      }
+
+      return await usersService.getUserLookups(searchTerm, { tenantId, token });
+    },
+    [tenantId, usersService],
+  );
+
+  const handleOnMyself = (event: ChangeEvent<HTMLInputElement>) => {
+    // TODO: Implement logic to lookup the current user & add them to the list.
+    console.log(event.target.checked);
+  };
+
+  const handleSelection = (option: IUserLookup) => {
+    onChange([...value, option]);
+  };
 
   const handleRemoveAll = () => {
     onChange([]);
   };
 
-  const handleRemove = (option: IUserOption) => {
+  const handleRemove = (option: IUserLookup) => {
     if (!value || !value.length) {
       console.warn(
         "UserFieldElement attempted to remove user but element does not have a value",
@@ -60,13 +93,23 @@ export const UserFieldElement: ElementComponent = function ({
       <Box sx={userFieldElementStyles["inputContainer"]}>
         <FormControlLabel
           label="For myself"
-          control={<Checkbox data-testid="user-field-element-for-myself" />}
+          control={
+            <Checkbox
+              onChange={handleOnMyself}
+              data-testid="user-field-element-for-myself"
+            />
+          }
         />
         <Box sx={userFieldElementStyles["search"]}>
           <Typography variant="body1">
             Search employee(s) by name, email, or ID:
           </Typography>
-          {/* TODO: Add the missing SearchBar component */}
+          <SearchBar
+            value={null}
+            queryFn={findUsers}
+            onSelection={handleSelection}
+            helperText={`Must enter ${minimumSearchCharacters} characters to search by name or ID`}
+          />
         </Box>
         {list}
       </Box>

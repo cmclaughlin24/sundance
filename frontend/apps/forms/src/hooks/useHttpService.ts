@@ -2,6 +2,7 @@ import type { BaseHttpService } from "@/services/baseHttpService";
 import { DataSourcesService } from "@/services/dataSourcesService";
 import { FormsService } from "@/services/formsService";
 import { SubmissionsService } from "@/services/submissionService";
+import { UsersService } from "@/services/usersService";
 import type { CreateAxiosDefaults } from "axios";
 
 /**
@@ -62,4 +63,12 @@ export function useFormsService() {
  */
 export function useSubmissionsService() {
   return resolveHttpService(SubmissionsService, "/forms-api");
+}
+
+/**
+ * `useUsersService` is a custom hook that provides an instance of the `UsersService` class.
+ * @returns An instance of the `UsersService` class.
+ */
+export function useUsersService() {
+  return resolveHttpService(UsersService, "/users-api");
 }

@@ -1,11 +1,11 @@
-import type { IUserOption } from "@/types/userOption";
+import type { IUserLookup } from "@/types/userLookup";
 import Box from "@mui/material/Box";
 import { userChipStyles } from "./UserChip.style";
 import Typography from "@mui/material/Typography";
 
 export interface UserChipProps {
-  option: IUserOption;
-  onRemove: (value: IUserOption) => void;
+  option: IUserLookup;
+  onRemove: (value: IUserLookup) => void;
 }
 
 export const UserChip: React.FC<UserChipProps> = function ({

@@ -1,11 +1,11 @@
-import type { IUserOption } from "@/types/userOption";
+import type { IUserLookup } from "@/types/userLookup";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { UserChip } from "./UserChip";
 
 export interface SelectedUserListProps {
-  selections: IUserOption[];
-  onRemove: (option: IUserOption) => void;
+  selections: IUserLookup[];
+  onRemove: (option: IUserLookup) => void;
 }
 
 export const SelectedUserList: React.FC<SelectedUserListProps> = function ({
@@ -23,7 +23,7 @@ export const SelectedUserList: React.FC<SelectedUserListProps> = function ({
   return (
     <Box component="ul">
       {selections.map((option) => (
-        <Box component="li">
+        <Box component="li" key={option.value}>
           <UserChip option={option} onRemove={onRemove} />
         </Box>
       ))}
