@@ -21,7 +21,7 @@ export const SelectedUserList: React.FC<SelectedUserListProps> = function ({
   }
 
   return (
-    <Box component="ul">
+    <Box component="ul" sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
       {selections.map((option) => (
         <Box component="li" key={option.value}>
           <UserChip option={option} onRemove={onRemove} />

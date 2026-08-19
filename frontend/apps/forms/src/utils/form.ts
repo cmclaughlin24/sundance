@@ -1,6 +1,7 @@
 import type { IElement } from "@/types/element";
 import type { IFormVersion } from "@/types/formVersion";
 import type { ISubmissionValue } from "@/types/submission";
+import type { IFormProgress } from "./progress";
 
 /**
  * Returns a flat array of all elements across every page and section of the given form version.
@@ -45,4 +46,25 @@ export function hydrateSubmissionValues(
   }
 
   return values;
+}
+
+/**
+ * Checks the validity of the given form element, returning true if it is valid or false if it is invalid.
+ * @param formEl - The HTML form element to check.
+ * @param progress - The current form element to check.
+ * @returns `true` if the form is valid, `false` otherwise.
+ */
+export function checkFormValidity(
+  formEl: HTMLFormElement | null,
+  progress: IFormProgress | undefined,
+): boolean {
+  if (!formEl || !progress) {
+    return false;
+  }
+
+  return (
+    formEl.checkValidity() &&
+    progress.errors === 0 &&
+    progress.percentage === 100
+  );
 }

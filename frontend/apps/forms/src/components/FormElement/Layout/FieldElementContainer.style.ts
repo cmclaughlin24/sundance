@@ -8,6 +8,7 @@ export const fieldElementContainerStyles: Record<string, SxProps<Theme>> = {
       xs: "column",
       md: "row",
     },
+    padding: "2px",
     paddingBottom: 1.25,
   },
   label: {

@@ -17,22 +17,29 @@ const variants: Variants = {
   },
 };
 
-export const FormProgressMessage: React.FC<{ progress: IFormProgress }> =
-  function ({ progress }) {
+export interface FormProgressMessageProps {
+  progress: IFormProgress;
+
+  variant?: "errorsOnly" | "remainWithErrors";
+}
+
+export const FormProgressMessage: React.FC<FormProgressMessageProps> =
+  function ({ variant, progress }) {
     const theme = useTheme();
 
-    let statusMessage = (
-      <Typography
-        component={motion.span}
-        key="remaining"
-        variants={variants}
-        initial="initial"
-        animate="animate"
-        exit="exit"
-      >
-        {progress!.total - progress!.filled} required field(s) reamining
-      </Typography>
-    );
+    let statusMessage =
+      variant && variant === "remainWithErrors" ? (
+        <Typography
+          component={motion.span}
+          key="remaining"
+          variants={variants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          {progress!.total - progress!.filled} required field(s) reamining
+        </Typography>
+      ) : null;
 
     const handleErrorClk = () => {
       const element = document.querySelector('[data-error="true"]');
@@ -45,10 +52,14 @@ export const FormProgressMessage: React.FC<{ progress: IFormProgress }> =
       element.animate(
         [
           {
-            boxShadow: `0 0 0 5px ${theme.palette.background.default}, 0 0 0 5px ${theme.palette.error.main}80`,
+            background: `${theme.palette.error.light}15`,
+            borderRadius: "16px",
+            boxShadow: `0 0 0 5px ${theme.palette.error.main}80`,
           },
           {
-            boxShadow: `0 0 0 5px ${theme.palette.background.default}, 0 0 0 13px ${theme.palette.error.main}00`,
+            background: `${theme.palette.error.light}00`,
+            borderRadius: "16px",
+            boxShadow: `0 0 0 13px ${theme.palette.error.main}00`,
           },
         ],
         { duration: 1200, easing: "ease-out" },

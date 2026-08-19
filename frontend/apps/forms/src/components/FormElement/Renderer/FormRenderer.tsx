@@ -4,7 +4,7 @@ import { PageTitle } from "../../Layout/Page/PageTitle";
 import { sortPositioned } from "@/utils/sort";
 import type { ISubmissionValue } from "@/types/submission";
 import { PageRenderer } from "./PageRenderer";
-import { useMemo, useState, type SubmitEvent } from "react";
+import { useMemo, useRef, useState, type SubmitEvent } from "react";
 import {
   useFormErrors,
   useFormValues,
@@ -18,6 +18,7 @@ import { FormFooterActions } from "../Layout/FormFooter/FormFooterActions";
 import { useForm, useFormVersion } from "@/store/formDefinition";
 import { AnimatePresence } from "motion/react";
 import { calculateProgress } from "@/utils/progress";
+import { checkFormValidity } from "@/utils/form";
 
 export interface FormRendererProps {
   onSubmit: (values: ISubmissionValue[]) => void;
@@ -28,6 +29,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
   onSubmit,
   onCancel,
 }) {
+  const formRef = useRef<HTMLFormElement>(null);
   const form = useForm();
   const version = useFormVersion();
   const values = useFormValues();
@@ -46,6 +48,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
   const page = pages[pageIndex] ?? pages[pageIndex - 1];
   const progress = calculateProgress(values, errors, evalCtx, pages);
   const isLastPage = pageIndex === pages.length - 1;
+  const isFormValid = checkFormValidity(formRef.current, progress);
 
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -78,6 +81,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
         sx={rendererStyles["form"]}
         onSubmit={handleSubmit}
         id={form.id}
+        ref={formRef}
       >
         <PageTitle name={form!.name} description={form!.description} />
         <AnimatePresence mode="wait">
@@ -100,7 +104,12 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
             </Button>
           )}
           {isLastPage && (
-            <Button variant="contained" type="submit" form={form.id}>
+            <Button
+              variant="contained"
+              type="submit"
+              disabled={isFormValid}
+              form={form.id}
+            >
               Submit
             </Button>
           )}

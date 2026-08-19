@@ -1,7 +1,11 @@
 import { checkElementType } from "@/utils/error";
 import { FieldElementContainer } from "../../Layout/FieldElementContainer";
 import type { ElementComponent } from "../../Renderer/ElementRenderer";
-import { useElementValue } from "@/store/submission/useSubmissionContext";
+import {
+  useElementErrors,
+  useElementValue,
+  useSubmissionDispatch,
+} from "@/store/submission/useSubmissionContext";
 import type { IUserLookup } from "@/types/userLookup";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -13,18 +17,26 @@ import { useCallback, type ChangeEvent } from "react";
 import { SearchBar } from "@/components/SearchBar/Searchbar";
 import { useUsersService } from "@/hooks/useHttpService";
 import { useTenantId } from "@/store/formDefinition";
+import z from "zod";
+import { ErrorMessages } from "@/constants/errorMessages";
 
 const minimumSearchCharacters = 6;
 
 export const UserFieldElement: ElementComponent = function ({
   element,
+  ruleState,
   onChange,
 }) {
   checkElementType(element.type, "user");
 
   const usersService = useUsersService();
   const tenantId = useTenantId();
+  const { setError } = useSubmissionDispatch();
   const value = useElementValue<IUserLookup[]>(element.id, []);
+  const errors = useElementErrors(element.id);
+  const validationSchema = buildUserValidationSchema({
+    required: ruleState.required,
+  });
 
   const findUsers = useCallback(
     async (token: string, searchTerm?: string) => {
@@ -53,6 +65,7 @@ export const UserFieldElement: ElementComponent = function ({
 
   const handleRemoveAll = () => {
     onChange([]);
+    handleBlur([]);
   };
 
   const handleRemove = (option: IUserLookup) => {
@@ -63,7 +76,17 @@ export const UserFieldElement: ElementComponent = function ({
       return;
     }
 
-    onChange(value.filter((v) => v.value !== option.value));
+    const updated = value.filter((v) => v.value !== option.value);
+    onChange(updated);
+    handleBlur(updated);
+  };
+
+  const handleBlur = (value: IUserLookup[]) => {
+    const result = validationSchema.safeParse(value);
+    setError(
+      element.id,
+      result.success ? [] : result.error.issues.map((e) => e.message),
+    );
   };
 
   let list: React.ReactNode;
@@ -88,6 +111,9 @@ export const UserFieldElement: ElementComponent = function ({
     );
   }
 
+  const errorMesssage: string | null =
+    errors && errors.length > 0 ? errors[0] : null;
+
   return (
     <FieldElementContainer element={element}>
       <Box sx={userFieldElementStyles["inputContainer"]}>
@@ -108,7 +134,12 @@ export const UserFieldElement: ElementComponent = function ({
             value={null}
             queryFn={findUsers}
             onSelection={handleSelection}
-            helperText={`Must enter ${minimumSearchCharacters} characters to search by name or ID`}
+            onBlur={() => handleBlur(value)}
+            error={errorMesssage !== null}
+            helperText={
+              errorMesssage ??
+              `Must enter ${minimumSearchCharacters} characters to search by name or ID`
+            }
           />
         </Box>
         {list}
@@ -116,3 +147,21 @@ export const UserFieldElement: ElementComponent = function ({
     </FieldElementContainer>
   );
 };
+
+function buildUserValidationSchema(options: {
+  required: boolean;
+}): z.ZodTypeAny {
+  const item = z.object({
+    key: z.string(),
+    label: z.string(),
+    value: z.union([z.string(), z.number()]),
+  });
+
+  const schema = z.array(item);
+
+  if (!options.required) {
+    return schema.optional();
+  }
+
+  return schema.min(1, ErrorMessages.required);
+}

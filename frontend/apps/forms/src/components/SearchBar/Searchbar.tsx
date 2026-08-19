@@ -9,7 +9,12 @@ import Box from "@mui/material/Box";
 import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
 import type { AutocompleteValue } from "@mui/material/useAutocomplete";
-import { useEffect, useState, type SyntheticEvent } from "react";
+import {
+  useEffect,
+  useState,
+  type FocusEventHandler,
+  type SyntheticEvent,
+} from "react";
 import { DefaultSearchItem } from "./DefaultSearchItem";
 import Autocomplete from "@mui/material/Autocomplete";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -22,6 +27,8 @@ export interface SearchBarProps<T> {
   onSelection: (option: T) => void;
   children?: (option: T) => React.ReactNode;
   helperText?: string;
+  onBlur?: FocusEventHandler<HTMLDivElement> | undefined;
+  error?: boolean;
 }
 
 type RenderFn<T> = (
