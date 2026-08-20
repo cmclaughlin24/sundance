@@ -43,6 +43,7 @@ export function SearchBar<T extends ILookup>({
   onSelection,
   children,
   helperText,
+  error,
   ...props
 }: SearchBarProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -75,7 +76,7 @@ export function SearchBar<T extends ILookup>({
   };
 
   const handleRenderInput = (props: AutocompleteRenderInputParams) => {
-    return <TextField {...props} />;
+    return <TextField {...props} error={error} />;
   };
 
   const handleRenderOptions: RenderFn<T> = (props, option) => {
@@ -87,7 +88,7 @@ export function SearchBar<T extends ILookup>({
   };
 
   return (
-    <FormControl>
+    <FormControl error={error}>
       <Autocomplete
         options={(data as Readonly<T[]>) ?? []}
         renderInput={handleRenderInput}

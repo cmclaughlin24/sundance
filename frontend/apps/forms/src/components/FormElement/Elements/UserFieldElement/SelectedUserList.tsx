@@ -5,7 +5,7 @@ import { UserChip } from "./UserChip";
 
 export interface SelectedUserListProps {
   selections: IUserLookup[];
-  onRemove: (option: IUserLookup) => void;
+  onRemove: (lookup: IUserLookup) => void;
 }
 
 export const SelectedUserList: React.FC<SelectedUserListProps> = function ({

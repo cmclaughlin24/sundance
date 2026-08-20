@@ -1,5 +1,6 @@
 import type { IUserLookup } from "@/types/userLookup";
 import { BaseHttpService, type DefaultRequestOptions } from "./baseHttpService";
+import { Cached } from "@/decorators/cached.decorator";
 
 export class UsersService extends BaseHttpService {
   static readonly serviceKey = "UsersService";
@@ -11,6 +12,19 @@ export class UsersService extends BaseHttpService {
    */
   async getUserLookups(
     _searchTerm: string,
+    _options: DefaultRequestOptions,
+  ): Promise<IUserLookup[]> {
+    return Promise.resolve<IUserLookup[]>([]);
+  }
+
+  /**
+   * Gets a list of active accounts for a user.
+   * @param userId - The unique identifier for a user.
+   * @param returns A promise that resolves to a list of active accounts for the user.
+   */
+  @Cached()
+  async getUserAccounts(
+    _userId: string,
     _options: DefaultRequestOptions,
   ): Promise<IUserLookup[]> {
     return Promise.resolve<IUserLookup[]>([]);

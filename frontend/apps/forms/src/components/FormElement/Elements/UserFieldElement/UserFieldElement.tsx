@@ -19,6 +19,8 @@ import { useUsersService } from "@/hooks/useHttpService";
 import { useTenantId } from "@/store/formDefinition";
 import z from "zod";
 import { ErrorMessages } from "@/constants/errorMessages";
+import * as ArrayUtils from "@/utils/array";
+import { useAsyncData } from "@/hooks/useAsyncData";
 
 const minimumSearchCharacters = 6;
 
@@ -37,6 +39,18 @@ export const UserFieldElement: ElementComponent = function ({
   const validationSchema = buildUserValidationSchema({
     required: ruleState.required,
   });
+  const userId = "";
+
+  const { data: userAccounts } = useAsyncData<IUserLookup[]>(
+    async (token: string) => {
+      if (!userId || !tenantId) {
+        return [];
+      }
+
+      return await usersService.getUserAccounts(userId, { token, tenantId });
+    },
+    [],
+  );
 
   const findUsers = useCallback(
     async (token: string, searchTerm?: string) => {
@@ -54,18 +68,40 @@ export const UserFieldElement: ElementComponent = function ({
     [tenantId, usersService],
   );
 
+  const updateValue = (value: IUserLookup[]) => {
+    onChange(value);
+    handleBlur(value);
+  };
+
   const handleOnMyself = (event: ChangeEvent<HTMLInputElement>) => {
-    // TODO: Implement logic to lookup the current user & add them to the list.
-    console.log(event.target.checked);
+    if (!event.target.checked) {
+      const updated = value.filter((lookup) => lookup.value !== userId);
+      updateValue(updated);
+      return;
+    }
+
+    let lookup: IUserLookup | null = null;
+
+    if (ArrayUtils.hasExactLength(userAccounts, 1)) {
+      const [account] = userAccounts!;
+      lookup = account;
+    } else if (ArrayUtils.hasLengthGreaterThan(userAccounts, 1)) {
+      // TODO: Add the user account to the array.
+    }
+
+    if (!lookup) {
+      return;
+    }
+
+    updateValue([lookup, ...value]);
   };
 
   const handleSelection = (option: IUserLookup) => {
-    onChange([...value, option]);
+    updateValue([...value, option]);
   };
 
   const handleRemoveAll = () => {
-    onChange([]);
-    handleBlur([]);
+    updateValue([]);
   };
 
   const handleRemove = (option: IUserLookup) => {
@@ -76,9 +112,7 @@ export const UserFieldElement: ElementComponent = function ({
       return;
     }
 
-    const updated = value.filter((v) => v.value !== option.value);
-    onChange(updated);
-    handleBlur(updated);
+    updateValue(value.filter((v) => v.value !== option.value));
   };
 
   const handleBlur = (value: IUserLookup[]) => {
