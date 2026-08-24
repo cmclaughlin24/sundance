@@ -16,7 +16,7 @@ export default defineConfig({
   plugins: [
     devtools(),
     tanstackRouter({ target: "react", autoCodeSplitting: true }),
-    react(),
+    react({ tsDecorators: true }),
     federation({
       dts: false,
       name: "forms",
