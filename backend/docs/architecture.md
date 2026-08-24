@@ -62,7 +62,7 @@ At Wells Fargo, current solutions include:
 
 ### 1.3 Stakeholders
 
-## 2. Contraints
+## 2. Constraints
 
 ## 3. Context & Scope
 
@@ -796,12 +796,13 @@ Architecture decisions are recorded as individual ADRs in `backend/docs/adr/`. E
 | [ADR-007](adr/007-expr-lang-for-rule-evaluation.md)                                | `expr-lang/expr` for Rule Evaluation                         |
 | [ADR-008](adr/008-canonical-tag-mapping-decoupled-from-form-field-naming.md)       | Canonical Tag Mapping Decoupled from Form Field Naming       |
 | [ADR-009](adr/009-outbox-pattern-polling-vs-streaming.md)                          | Outbox Pattern: Polling vs. Streaming                        |
+| [ADR-010](adr/010-go-over-java.md)                                                 | Go (Golang) over Java                                        |
 
 ## 10. Quality Requirements
 
 ### 10.1 Performance
 
-### 10.2 Avaliability
+### 10.2 Availability
 
 ### 10.3 Scalability
 
