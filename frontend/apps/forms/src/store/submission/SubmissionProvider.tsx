@@ -1,6 +1,7 @@
-import { createContext, useRef } from "react";
+import { createContext, useEffect, useRef } from "react";
 import type { ISubmissionValue } from "@/types/submission";
 import {
+  createFormValues,
   createSubmissionStore,
   type SubmissionStoreApi,
 } from "./submissionStore";
@@ -22,6 +23,13 @@ export const SubmissionProvider: React.FC<SubmissionProviderProps> = ({
   if (!storeRef.current) {
     storeRef.current = createSubmissionStore(rawSubmission);
   }
+
+  useEffect(() => {
+    storeRef.current!.setState({
+      values: createFormValues(rawSubmission),
+      errors: {},
+    });
+  }, [rawSubmission]);
 
   return (
     <SubmissionStoreContext value={storeRef.current}>

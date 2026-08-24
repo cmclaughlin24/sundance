@@ -9,7 +9,7 @@ import type { CreateAxiosDefaults } from "axios";
  */
 interface HttpServiceClass<T extends BaseHttpService = BaseHttpService> {
   readonly serviceKey: string;
-  new (baseURL: string, config?: CreateAxiosDefaults): T;
+  new (config?: CreateAxiosDefaults): T;
 }
 
 /**
@@ -26,17 +26,16 @@ const instanceCache = new Map<string, BaseHttpService>();
  * @param baseURL The base URL for the HTTP service.
  * @returns An instance of the specified HTTP service.
  */
-function resolveHttpService<T extends BaseHttpService>(
+export function resolveHttpService<T extends BaseHttpService>(
   Ctor: HttpServiceClass<T>,
-  baseURL: string,
 ) {
   const cached = instanceCache.get(Ctor.serviceKey);
 
-  if (cached && cached.isBaseURL(baseURL)) {
+  if (cached) {
     return cached as T;
   }
 
-  const service = new Ctor(baseURL);
+  const service = new Ctor();
   instanceCache.set(Ctor.serviceKey, service);
   return service;
 }
@@ -46,7 +45,7 @@ function resolveHttpService<T extends BaseHttpService>(
  * @returns An instance of the `DataSourcesService` class.
  */
 export function useDataSourcesService() {
-  return resolveHttpService(DataSourcesService, "/tenants-api");
+  return resolveHttpService(DataSourcesService);
 }
 
 /**
@@ -54,7 +53,7 @@ export function useDataSourcesService() {
  * @returns An instance of the `FormsService` class.
  */
 export function useFormsService() {
-  return resolveHttpService(FormsService, "/forms-api");
+  return resolveHttpService(FormsService);
 }
 
 /**
@@ -62,7 +61,7 @@ export function useFormsService() {
  * @returns An instance of the `SubmissionsService` class.
  */
 export function useSubmissionsService() {
-  return resolveHttpService(SubmissionsService, "/forms-api");
+  return resolveHttpService(SubmissionsService);
 }
 
 /**
@@ -70,5 +69,5 @@ export function useSubmissionsService() {
  * @returns An instance of the `UsersService` class.
  */
 export function useUsersService() {
-  return resolveHttpService(UsersService, "/users-api");
+  return resolveHttpService(UsersService);
 }

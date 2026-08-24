@@ -1,11 +1,12 @@
 import type { ILookup } from "@/types/data";
 import { BaseHttpService, type DefaultRequestOptions } from "./baseHttpService";
+import { CONFIG } from "@/constants/config";
 
 export class DataSourcesService extends BaseHttpService {
   static readonly serviceKey = "DataSourcesService";
 
-  constructor(baseURL: string) {
-    super(baseURL);
+  constructor() {
+    super(CONFIG.tenantsUrl);
   }
 
   async getLookups(

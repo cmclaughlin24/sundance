@@ -12,6 +12,7 @@ import { formElementStyles } from "./FormElement.style";
 import { FormDefinitionProvider } from "@/store/formDefinition/FormDefinitionProvider";
 import { Page } from "../Layout/Page/Page";
 import { hydrateSubmissionValues } from "@/utils/form";
+import { useMemo } from "react";
 
 export const FormElement: React.FC<FormElementProps> = function ({
   tenantId,
@@ -32,7 +33,7 @@ export const FormElement: React.FC<FormElementProps> = function ({
         return null;
       }
 
-      return await formsService.getForm(formId, versionId, {
+      return await formsService.getFormAndVersion(formId, versionId, {
         tenantId,
         token: accessToken,
       });
@@ -89,7 +90,10 @@ export const FormElement: React.FC<FormElementProps> = function ({
   }
 
   const [form, version] = data;
-  const values = hydrateSubmissionValues(rawSubmission, version);
+  const values = useMemo(
+    () => hydrateSubmissionValues(rawSubmission, version),
+    [rawSubmission, version],
+  );
 
   return (
     <FormDefinitionProvider form={form} version={version}>

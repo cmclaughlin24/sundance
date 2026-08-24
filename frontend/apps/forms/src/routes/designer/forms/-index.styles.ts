@@ -1,5 +1,4 @@
-import type { SxProps } from "@mui/material/styles";
-import type { Theme } from "node_modules/@emotion/react/dist/declarations/src";
+import type { SxProps, Theme } from "@mui/material/styles";
 
 export const designerStyles: Record<string, SxProps<Theme>> = {
   page: {

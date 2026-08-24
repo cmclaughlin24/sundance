@@ -1,12 +1,13 @@
 import { type IForm } from "@/types/form";
 import { BaseHttpService, type DefaultRequestOptions } from "./baseHttpService";
 import { type IFormVersion } from "@/types/formVersion";
+import { CONFIG } from "@/constants/config";
 
 export class FormsService extends BaseHttpService {
   static readonly serviceKey = "FormsService";
 
-  constructor(baseURL: string) {
-    super(baseURL);
+  constructor() {
+    super(CONFIG.formsUrl);
   }
 
   /**
@@ -19,23 +20,51 @@ export class FormsService extends BaseHttpService {
   }
 
   /**
+   * Gets a form.
+   * @param formId The ID of the form.
+   * @param options The default request options.
+   * @returns A promise that resolves to a form.
+   */
+  async getForm(
+    formId: string,
+    options: DefaultRequestOptions,
+  ): Promise<IForm> {
+    return await this._get<IForm>(`/api/v1/forms/${formId}`, options);
+  }
+
+  /**
+   * Gets a form version.
+   * @param formId The ID of the form.
+   * @param versionId The ID of the form version.
+   * @param options The default request options.
+   * @returns A promise that resolves to a form version.
+   */
+  async getFormVersion(
+    formId: string,
+    versionId: string,
+    options: DefaultRequestOptions,
+  ): Promise<IFormVersion> {
+    return await this._get<IFormVersion>(
+      `/api/v1/forms/${formId}/versions/${versionId}`,
+      options,
+    );
+  }
+
+  /**
    * Gets a form and its version.
    * @param formId The ID of the form.
    * @param versionId The ID of the form version.
    * @param options The default request options.
    * @returns A promise that resolves to a tuple containing the form and its version.
    */
-  async getForm(
+  async getFormAndVersion(
     formId: string,
     versionId: string,
     options: DefaultRequestOptions,
   ): Promise<[IForm, IFormVersion]> {
     const [form, version] = await Promise.all([
-      this._get<IForm>(`/api/v1/forms/${formId}`, options),
-      this._get<IFormVersion>(
-        `/api/v1/forms/${formId}/versions/${versionId}`,
-        options,
-      ),
+      this.getForm(formId, options),
+      this.getFormVersion(formId, versionId, options),
     ]);
 
     return [form, version];

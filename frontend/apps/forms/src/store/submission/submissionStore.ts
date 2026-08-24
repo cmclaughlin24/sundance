@@ -25,7 +25,9 @@ export function createSubmissionStore(raw: ISubmissionValue[] = []) {
   }));
 }
 
-function createFormValues(raw: ISubmissionValue[]): FormValues {
+export function createFormValues(
+  raw: ISubmissionValue[] | undefined,
+): FormValues {
   if (!raw) {
     return {};
   }

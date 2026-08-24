@@ -11,7 +11,7 @@ import type { IForm } from "@/types/form";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 
-export const Route = createFileRoute("/designer/")({
+export const Route = createFileRoute("/designer/forms/")({
   component: DesignerRouteComponent,
 });
 

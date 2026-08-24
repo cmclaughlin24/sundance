@@ -10,7 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as DesignerIndexRouteImport } from './routes/designer/index'
+import { Route as DesignerFormsIndexRouteImport } from './routes/designer/forms/index'
+import { Route as DesignerFormsFormIdIndexRouteImport } from './routes/designer/forms/$formId/index'
 import { Route as FormsFormIdVersionsVersionIdIndexRouteImport } from './routes/forms/$formId/versions/$versionId/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -18,11 +19,17 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DesignerIndexRoute = DesignerIndexRouteImport.update({
-  id: '/designer/',
-  path: '/designer/',
+const DesignerFormsIndexRoute = DesignerFormsIndexRouteImport.update({
+  id: '/designer/forms/',
+  path: '/designer/forms/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DesignerFormsFormIdIndexRoute =
+  DesignerFormsFormIdIndexRouteImport.update({
+    id: '/designer/forms/$formId/',
+    path: '/designer/forms/$formId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const FormsFormIdVersionsVersionIdIndexRoute =
   FormsFormIdVersionsVersionIdIndexRouteImport.update({
     id: '/forms/$formId/versions/$versionId/',
@@ -32,31 +39,48 @@ const FormsFormIdVersionsVersionIdIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/designer/': typeof DesignerIndexRoute
+  '/designer/forms/': typeof DesignerFormsIndexRoute
+  '/designer/forms/$formId/': typeof DesignerFormsFormIdIndexRoute
   '/forms/$formId/versions/$versionId/': typeof FormsFormIdVersionsVersionIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/designer': typeof DesignerIndexRoute
+  '/designer/forms': typeof DesignerFormsIndexRoute
+  '/designer/forms/$formId': typeof DesignerFormsFormIdIndexRoute
   '/forms/$formId/versions/$versionId': typeof FormsFormIdVersionsVersionIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/designer/': typeof DesignerIndexRoute
+  '/designer/forms/': typeof DesignerFormsIndexRoute
+  '/designer/forms/$formId/': typeof DesignerFormsFormIdIndexRoute
   '/forms/$formId/versions/$versionId/': typeof FormsFormIdVersionsVersionIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/designer/' | '/forms/$formId/versions/$versionId/'
+  fullPaths:
+    | '/'
+    | '/designer/forms/'
+    | '/designer/forms/$formId/'
+    | '/forms/$formId/versions/$versionId/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/designer' | '/forms/$formId/versions/$versionId'
-  id: '__root__' | '/' | '/designer/' | '/forms/$formId/versions/$versionId/'
+  to:
+    | '/'
+    | '/designer/forms'
+    | '/designer/forms/$formId'
+    | '/forms/$formId/versions/$versionId'
+  id:
+    | '__root__'
+    | '/'
+    | '/designer/forms/'
+    | '/designer/forms/$formId/'
+    | '/forms/$formId/versions/$versionId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DesignerIndexRoute: typeof DesignerIndexRoute
+  DesignerFormsIndexRoute: typeof DesignerFormsIndexRoute
+  DesignerFormsFormIdIndexRoute: typeof DesignerFormsFormIdIndexRoute
   FormsFormIdVersionsVersionIdIndexRoute: typeof FormsFormIdVersionsVersionIdIndexRoute
 }
 
@@ -69,11 +93,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/designer/': {
-      id: '/designer/'
-      path: '/designer'
-      fullPath: '/designer/'
-      preLoaderRoute: typeof DesignerIndexRouteImport
+    '/designer/forms/': {
+      id: '/designer/forms/'
+      path: '/designer/forms'
+      fullPath: '/designer/forms/'
+      preLoaderRoute: typeof DesignerFormsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/designer/forms/$formId/': {
+      id: '/designer/forms/$formId/'
+      path: '/designer/forms/$formId'
+      fullPath: '/designer/forms/$formId/'
+      preLoaderRoute: typeof DesignerFormsFormIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forms/$formId/versions/$versionId/': {
@@ -88,7 +119,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DesignerIndexRoute: DesignerIndexRoute,
+  DesignerFormsIndexRoute: DesignerFormsIndexRoute,
+  DesignerFormsFormIdIndexRoute: DesignerFormsFormIdIndexRoute,
   FormsFormIdVersionsVersionIdIndexRoute:
     FormsFormIdVersionsVersionIdIndexRoute,
 }
