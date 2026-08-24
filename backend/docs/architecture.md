@@ -130,6 +130,7 @@ _Figure 4.1 — Ports & Adapters (Hexagonal) Architecture pattern. Each Forms Hu
 | ---------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Go               | Implementation language | Statically typed, high concurrency, fast startup, and a small runtime footprint suited for independently deployable services. See [ADR-010](adr/010-go-over-java.md).                    |
 | MongoDB          | Database                | The deeply nested, polymorphic form definition hierarchy — pages, sections, fields, and per-type attributes — maps naturally to documents without requiring a complex relational schema. |
+| Message Broker (e.g. Kafka) | Canonical event delivery | Decouples submission acceptance from downstream consumption; the outbox relay publishes canonical events for asynchronous consumption. The concrete adapter uses `segmentio/kafka-go`, with an in-memory publisher for local development and testing. |
 | Redis            | Distributed lock        | Provides distributed leader election for background workers in both services without an additional coordination service.                                                                 |
 | chi              | HTTP router             | Lightweight and idiomatic Go; composable middleware chain supports cross-cutting concerns (auth, tenant extraction, idempotency, correlation ID) without framework lock-in.              |
 | `expr-lang/expr` | Rule evaluation         | Provides safe, sandboxed evaluation of runtime rule expressions (visibility, required, read-only) without the risks of `eval`-style execution.                                           |
@@ -207,6 +208,7 @@ The Forms Service owns all form definitions, versioned schemas, submissions, and
 | `POST /api/v1/submissions/normalize`                        | Inbound   | Synchronously validates and normalizes a submission against a form version; returns a canonical fact map. No data is persisted. |
 | `POST /api/v1/submissions/{submissionId}/replay`            | Inbound   | Resets a terminal submission to `pending` for reprocessing; returns `202 Accepted`                                              |
 | `GET /api/v1/submissions/by-reference/{referenceId}`        | Inbound   | Retrieves a submission by its external reference ID                                                                             |
+| `GET /api/v1/submissions/by-reference/{referenceId}/facts`  | Inbound   | Returns the canonical fact map (keyed by tag path) for an `accepted` submission; returns `400` if the submission is not `accepted` |
 | `GET /api/v1/submissions/by-reference/{referenceId}/status` | Inbound   | Returns the current status of a submission by reference ID                                                                      |
 | `GET/POST/PUT/DELETE /api/v1/tags`                          | Inbound   | CRUD for canonical tags and their versions                                                                                      |
 | Tenants Service                                             | Outbound  | Validates submitted lookup values against the live data source at processing time                                               |
@@ -268,6 +270,7 @@ C4Component
     Component(elementValidators, "Element Validator Strategies", "Go", "Five ElementValidatorStrategy implementations (text, number, select, checkbox, date) dispatched at runtime via a StrategyRegistry keyed by ElementType.")
     Component(ruleEvaluator, "Rule Evaluator", "expr-lang/expr", "Evaluates visibility, required, and read-only rules against submitted element values using a sandboxed expression engine.")
     Component(persistence, "Persistence Adapters", "MongoDB / In-Memory", "Repository implementations for Form, FormVersion, Submission, Tag, TagVersion, and Outbox aggregates. Driver selected at startup.")
+    Component(publishers, "Publisher Adapters", "kafka-go / In-Memory", "Publisher implementations. KafkaPublisher writes canonical events to the message broker; InMemoryPublisher is a no-op sink. Driver selected at startup.")
     Component(worker, "Submissions Worker", "Go", "Leader-elected background worker. Picks up pending submissions, delegates to SubmissionProcessor, and transitions submissions to accepted or rejected.")
     Component(outboxWorker, "Outbox Relay Worker", "Go", "Periodic background worker running on all replicas. Atomically claims batches of eligible outbox events via a distributed lease and publishes each to the message broker.")
   }
@@ -279,8 +282,8 @@ C4Component
   Rel(processors, ruleEvaluator, "Evaluates visibility and required rules", "Go interface")
   Rel(appServices, persistence, "Reads and writes aggregates", "Go interface")
   Rel(worker, appServices, "Polls and processes pending submissions", "SubmissionJobsAPI")
-  Rel(outboxWorker, persistence, "Polls outbox and marks events delivered", "OutboxRepository")
-  Rel(outboxWorker, persistence, "Publishes canonical events", "Publisher")
+  Rel(outboxWorker, persistence, "Claims and marks events delivered", "OutboxRepository")
+  Rel(outboxWorker, publishers, "Publishes canonical events", "Publisher")
 ```
 
 | Building Block                 | Responsibility                                                                                                                                                                                                                                                                                                                                     | Source                  |
@@ -292,6 +295,7 @@ C4Component
 | **Element Validator Strategies** | Five `ElementValidatorStrategy` implementations resolved at runtime by `ElementType`: `text` (string constraints), `number` (numeric bounds), `select`, `checkbox`, and `date` (partial; constraints pending).                                                                                                                                         | `core/strategies/`      |
 | **Rule Evaluator**             | `ExprRuleEvaluator` compiles rule expressions into type-safe boolean programs using `expr-lang/expr` and evaluates them against a `RuleEvaluationContext` (element key → submitted value map).                                                                                                                                                       | `adapters/evaluators/`  |
 | **Persistence Adapters**       | MongoDB-backed and in-memory repository implementations for all aggregates. Driver is selected at startup via configuration.                                                                                                                                                                                                                       | `adapters/persistence/` |
+| **Publisher Adapters**         | Implement the `Publisher` port. `KafkaPublisher` writes each canonical event to the message broker (topic = event's `AggregateType`, key = `AggregateID`, `eventType` header); `InMemoryPublisher` is a no-op sink for local development and testing. Driver is selected at startup via configuration.                                              | `adapters/publishers/`  |
 | **Submissions Worker**         | Leader-elected background worker. On each tick, fetches pending submissions and delegates each to `SubmissionProcessor`. Transitions the submission to `accepted` or `rejected` based on the result and persists the outcome. Retries with exponential backoff; non-retryable errors (validation failures, missing strategy) reject immediately.   | `adapters/workers/`     |
 | **Outbox Relay Worker**        | `PeriodicWorker[J Job]` running on all replicas concurrently with no leader election. On each tick, calls `OutboxRepository.Claim` to atomically acquire a batch (default: 10) of eligible outbox events under a 5-minute distributed lease, then publishes each to the message broker. Mutual exclusion is enforced at the document level by the claim lease. On publish failure, marks the event as `error` and clears the lease; the event is reclaimed on the next tick subject to `retryLimit`.                                                                                                                                                                                                                                                                                                                                                                                                                     | `adapters/workers/`     |
 
@@ -597,6 +601,7 @@ All runtime configuration is provided via environment variables injected into th
 | Auth (PingFederate JWKS)                | `APP_SERVER_AUTH_OAUTH2_JWK`, `APP_SERVER_AUTH_OAUTH2_AUDIENCE`, `APP_SERVER_AUTH_OAUTH2_ISSUER` |
 | Database driver selection               | `APP_DATABASE_DRIVER` (`mongodb` or `inmemory`)                                                  |
 | Cache type selection                    | `APP_CACHE_TYPE` (`redis` or `inmemory`)                                                         |
+| Publisher selection                     | `APP_PUBLISHER_TYPE` (`kafka` or `in-memory`); Kafka brokers via `APP_PUBLISHER_KAFKA_ADDR`      |
 
 ### 7.4 CI/CD Pipeline
 
