@@ -128,7 +128,7 @@ _Figure 4.1 — Ports & Adapters (Hexagonal) Architecture pattern. Each Forms Hu
 
 | Technology       | Decision                | Rationale                                                                                                                                                                                |
 | ---------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Go               | Implementation language | Statically typed, high concurrency, fast startup, and a small runtime footprint suited for independently deployable services.                                                            |
+| Go               | Implementation language | Statically typed, high concurrency, fast startup, and a small runtime footprint suited for independently deployable services. See [ADR-010](adr/010-go-over-java.md).                    |
 | MongoDB          | Database                | The deeply nested, polymorphic form definition hierarchy — pages, sections, fields, and per-type attributes — maps naturally to documents without requiring a complex relational schema. |
 | Redis            | Distributed lock        | Provides distributed leader election for background workers in both services without an additional coordination service.                                                                 |
 | chi              | HTTP router             | Lightweight and idiomatic Go; composable middleware chain supports cross-cutting concerns (auth, tenant extraction, idempotency, correlation ID) without framework lock-in.              |
