@@ -1,5 +1,7 @@
 import { Page } from "@/components/layout/Page/Page";
 import { PageTitle } from "@/components/layout/Page/PageTitle";
+import { TabPanel } from "@/components/layout/Tab/TabPanel";
+import { TabPanelGroup } from "@/components/layout/Tab/TabPanelGroup";
 import { TENANT_ID } from "@/constants/tenant";
 import { resolveHttpService } from "@/hooks/useHttpService";
 import { FormsService } from "@/services/formsService";
@@ -17,6 +19,14 @@ enum FormDesignerTab {
   Versions = "versions",
   Settings = "settings",
 }
+
+const TAB_ORDER = [
+  FormDesignerTab.Build,
+  FormDesignerTab.Rules,
+  FormDesignerTab.DataSources,
+  FormDesignerTab.Versions,
+  FormDesignerTab.Settings,
+];
 
 export const Route = createFileRoute("/designer/forms/$formId/{-$tab}/")({
   component: RouteComponent,
@@ -58,6 +68,15 @@ function RouteComponent() {
           <Tab label="Settings" value={FormDesignerTab.Settings} />
         </Tabs>
       </Box>
+      <TabPanelGroup active={tab} order={TAB_ORDER}>
+        <TabPanel value={FormDesignerTab.Build}>Builder Tab</TabPanel>
+        <TabPanel value={FormDesignerTab.Rules}>Rules Tab</TabPanel>
+        <TabPanel value={FormDesignerTab.DataSources}>
+          Reference Data Tab
+        </TabPanel>
+        <TabPanel value={FormDesignerTab.Versions}>Versions Tab</TabPanel>
+        <TabPanel value={FormDesignerTab.Settings}>Settings Tab</TabPanel>
+      </TabPanelGroup>
     </Page>
   );
 }
