@@ -1,6 +1,6 @@
 import { checkElementType } from "@/utils/error";
-import { FieldElementContainer } from "../../Layout/FieldElementContainer";
-import type { ElementComponent } from "../../Renderer/ElementRenderer";
+import { FieldElementContainer } from "../../layout/FieldElementContainer";
+import type { ElementComponent } from "../../renderer/ElementRenderer";
 import {
   useElementErrors,
   useElementValue,

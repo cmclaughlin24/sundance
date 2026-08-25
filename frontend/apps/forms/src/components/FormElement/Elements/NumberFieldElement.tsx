@@ -1,6 +1,6 @@
 import type { NumberElementAttributes } from "@/types/elementAttributes";
-import type { ElementComponent } from "../Renderer/ElementRenderer";
-import { FieldElementContainer } from "../Layout/FieldElementContainer";
+import type { ElementComponent } from "../renderer/ElementRenderer";
+import { FieldElementContainer } from "../layout/FieldElementContainer";
 import MuiTextField from "@mui/material/TextField";
 import type { ChangeEvent } from "react";
 import { checkElementType } from "@/utils/error";

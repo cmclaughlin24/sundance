@@ -2,11 +2,11 @@ import MuiSelectField, { type SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import FormHelperText from "@mui/material/FormHelperText";
-import type { ElementComponent } from "../Renderer/ElementRenderer";
+import type { ElementComponent } from "../renderer/ElementRenderer";
 import type { ILookup, LookupValue } from "@/types/data";
 import type { SelectElementAttributes } from "@/types/elementAttributes";
 import { checkElementType } from "@/utils/error";
-import { FieldElementContainer } from "../Layout/FieldElementContainer";
+import { FieldElementContainer } from "../layout/FieldElementContainer";
 import { useDataSource } from "@/hooks/useDataSource";
 import {
   useElementErrors,

@@ -1,5 +1,5 @@
 import { checkElementType } from "@/utils/error";
-import type { ElementComponent } from "../Renderer/ElementRenderer";
+import type { ElementComponent } from "../renderer/ElementRenderer";
 import type { SegmentedElementAttributes } from "@/types/elementAttributes";
 import {
   useElementErrors,
@@ -9,7 +9,7 @@ import {
 import type { LookupValue } from "@/types/data";
 import z from "zod";
 import MuiToggleButton from "@mui/material/ToggleButton";
-import { FieldElementContainer } from "../Layout/FieldElementContainer";
+import { FieldElementContainer } from "../layout/FieldElementContainer";
 import FormControl from "@mui/material/FormControl";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import FormHelperText from "@mui/material/FormHelperText";

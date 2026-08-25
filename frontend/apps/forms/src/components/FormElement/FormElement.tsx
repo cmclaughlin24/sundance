@@ -6,11 +6,11 @@ import type {
 } from "./FormElement.type";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { SubmissionProvider } from "@/store/submission/SubmissionProvider";
-import { FormRenderer } from "./Renderer/FormRenderer";
+import { FormRenderer } from "./renderer/FormRenderer";
 import type { ISubmissionValue } from "@/types/submission";
 import { formElementStyles } from "./FormElement.style";
 import { FormDefinitionProvider } from "@/store/formDefinition/FormDefinitionProvider";
-import { Page } from "../Layout/Page/Page";
+import { Page } from "../layout/Page/Page";
 import { hydrateSubmissionValues } from "@/utils/form";
 import { useMemo } from "react";
 

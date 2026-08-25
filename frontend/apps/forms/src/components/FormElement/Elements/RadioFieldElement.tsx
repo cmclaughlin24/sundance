@@ -1,5 +1,5 @@
 import { checkElementType } from "@/utils/error";
-import type { ElementComponent } from "../Renderer/ElementRenderer";
+import type { ElementComponent } from "../renderer/ElementRenderer";
 import type { RadioElementAttributes } from "@/types/elementAttributes";
 import {
   useElementErrors,
@@ -8,7 +8,7 @@ import {
 } from "@/store/submission/useSubmissionContext";
 import type { LookupValue } from "@/types/data";
 import z from "zod";
-import { FieldElementContainer } from "../Layout/FieldElementContainer";
+import { FieldElementContainer } from "../layout/FieldElementContainer";
 import FormControl from "@mui/material/FormControl";
 import MuiRadioGroup from "@mui/material/RadioGroup";
 import MuiRadio from "@mui/material/Radio";

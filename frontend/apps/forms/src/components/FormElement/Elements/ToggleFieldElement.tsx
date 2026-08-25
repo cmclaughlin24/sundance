@@ -1,12 +1,12 @@
 import { checkElementType } from "@/utils/error";
-import type { ElementComponent } from "../Renderer/ElementRenderer";
+import type { ElementComponent } from "../renderer/ElementRenderer";
 import {
   useElementErrors,
   useElementValue,
   useSubmissionDispatch,
 } from "@/store/submission/useSubmissionContext";
 import z from "zod";
-import { FieldElementContainer } from "../Layout/FieldElementContainer";
+import { FieldElementContainer } from "../layout/FieldElementContainer";
 import FormControl from "@mui/material/FormControl";
 import Switch from "@mui/material/Switch";
 import type { ToggleElementAttributes } from "@/types/elementAttributes";

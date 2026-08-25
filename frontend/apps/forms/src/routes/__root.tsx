@@ -1,5 +1,5 @@
 import { Outlet, createRootRoute } from "@tanstack/react-router";
-import { MainContainer } from "@/components/Layout/MainContainer";
+import { MainContainer } from "@/components/layout/MainContainer";
 
 export const Route = createRootRoute({
   component: RootComponent,

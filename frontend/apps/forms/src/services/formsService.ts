@@ -2,6 +2,7 @@ import { type IForm } from "@/types/form";
 import { BaseHttpService, type DefaultRequestOptions } from "./baseHttpService";
 import { type IFormVersion } from "@/types/formVersion";
 import { CONFIG } from "@/constants/config";
+import type { FormVersionRequest } from "./formService.type";
 
 export class FormsService extends BaseHttpService {
   static readonly serviceKey = "FormsService";
@@ -68,5 +69,26 @@ export class FormsService extends BaseHttpService {
     ]);
 
     return [form, version];
+  }
+
+  /**
+   * Creates a new form version.
+   * @param formId The ID of the form.
+   * @param version The form version to create.
+   * @param options The default request options.
+   * @returns A promise that resolves to the created form version.
+   */
+  async createFormVersion(
+    formId: string,
+    version: FormVersionRequest,
+    options: DefaultRequestOptions,
+  ): Promise<IFormVersion> {
+    const resp = await this._post<FormVersionRequest, IFormVersion>(
+      `/api/v1/forms/${formId}/versions`,
+      version,
+      options,
+    );
+
+    return resp.data;
   }
 }

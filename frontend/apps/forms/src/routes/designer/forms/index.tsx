@@ -1,7 +1,7 @@
-import { Page } from "@/components/Layout/Page/Page";
+import { Page } from "@/components/layout/Page/Page";
 import { createFileRoute } from "@tanstack/react-router";
 import { designerStyles } from "./-index.styles";
-import { PageTitle } from "@/components/Layout/Page/PageTitle";
+import { PageTitle } from "@/components/layout/Page/PageTitle";
 import Box from "@mui/material/Box";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { useFormsService } from "@/hooks/useHttpService";

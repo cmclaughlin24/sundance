@@ -1,12 +1,12 @@
 import { checkElementType } from "@/utils/error";
-import type { ElementComponent } from "../Renderer/ElementRenderer";
+import type { ElementComponent } from "../renderer/ElementRenderer";
 import type { CheckboxElementAttributes } from "@/types/elementAttributes";
 import type { ILookup } from "@/types/data";
 import MuiCheckbox from "@mui/material/Checkbox";
 import MuiFormControlLabel from "@mui/material/FormControlLabel";
 import Box from "@mui/material/Box";
 import type { ChangeEvent } from "react";
-import { FieldElementContainer } from "../Layout/FieldElementContainer";
+import { FieldElementContainer } from "../layout/FieldElementContainer";
 import { useDataSource } from "@/hooks/useDataSource";
 
 interface BaseCheckboxFieldElementProps {

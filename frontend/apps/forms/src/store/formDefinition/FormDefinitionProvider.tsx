@@ -4,7 +4,7 @@ import { createContext, useRef } from "react";
 import {
   createFormDefinitionStore,
   type FormDefinitionStoreApi,
-} from "./formDefinition";
+} from "./formDefinitionStore";
 
 export type FormDefinitionProviderProps = React.PropsWithChildren<{
   form: IForm;

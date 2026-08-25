@@ -1,6 +1,6 @@
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import { PageTitle } from "../../Layout/Page/PageTitle";
+import { PageTitle } from "../../layout/Page/PageTitle";
 import { sortPositioned } from "@/utils/sort";
 import type { ISubmissionValue } from "@/types/submission";
 import { PageRenderer } from "./PageRenderer";
@@ -13,8 +13,8 @@ import { filterVisible } from "@/utils/filter";
 import { EvalContextContext } from "@/store/submission/evalContext";
 import { buildEvalContext, type EvalContext } from "@/utils/evaluate";
 import { rendererStyles } from "./renderer.style";
-import { FormFooter } from "../Layout/FormFooter/FormFooter";
-import { FormFooterActions } from "../Layout/FormFooter/FormFooterActions";
+import { FormFooter } from "../layout/FormFooter/FormFooter";
+import { FormFooterActions } from "../layout/FormFooter/FormFooterActions";
 import { useForm, useFormVersion } from "@/store/formDefinition";
 import { AnimatePresence } from "motion/react";
 import { calculateProgress } from "@/utils/progress";
