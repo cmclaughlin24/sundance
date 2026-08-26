@@ -35,19 +35,23 @@ export const Route = createFileRoute("/designer/forms/$formId/{-$tab}/")({
   component: RouteComponent,
   loader: async (context) => {
     const service = resolveHttpService(FormsService);
-    const form = await service.getForm(context.params.formId, {
-      tenantId: TENANT_ID,
-      token,
-    });
+    const [form, version] = await service.getFormAndVersion(
+      context.params.formId,
+      "01a03f78-640b-7185-aae6-915ce419a506",
+      {
+        tenantId: TENANT_ID,
+        token,
+      },
+    );
 
-    return { form };
+    return { form, version };
   },
 });
 
 function RouteComponent() {
   const navigate = useNavigate();
   const { formId, tab = FormDesignerTab.Build } = Route.useParams();
-  const { form } = Route.useLoaderData();
+  const { form, version } = Route.useLoaderData();
 
   const handleTabChange = (
     _event: React.SyntheticEvent,
@@ -73,7 +77,7 @@ function RouteComponent() {
       </Box>
       <TabPanelGroup active={tab} order={TAB_ORDER}>
         <TabPanel value={FormDesignerTab.Build}>
-          <FormDesigner form={form} version={{} as IFormVersion} />
+          <FormDesigner form={form} version={version} />
         </TabPanel>
         <TabPanel value={FormDesignerTab.Rules}>Rules Tab</TabPanel>
         <TabPanel value={FormDesignerTab.DataSources}>

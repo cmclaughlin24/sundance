@@ -24,3 +24,19 @@ export function useFormDesignerDispatch() {
     })),
   );
 }
+
+export function useFormSnapshot() {
+  const store = useFormDesignerContext();
+  return useStore(
+    store,
+    useShallow((s) => s.snapshot),
+  );
+}
+
+export function useFormPagesSnapshot() {
+  const store = useFormDesignerContext();
+  return useStore(
+    store,
+    useShallow((s) => s.snapshot.version.pages),
+  );
+}
