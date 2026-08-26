@@ -13,6 +13,7 @@ const styles: Readonly<Record<string, SxProps<Theme>>> = {
     px: 1,
     py: 1.5,
     border: `1px solid ${Border.Primary}`,
+    borderRadius: 2,
   },
 };
 

@@ -9,17 +9,13 @@ import Box from "@mui/material/Box";
 import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
 import type { AutocompleteValue } from "@mui/material/useAutocomplete";
-import {
-  useEffect,
-  useState,
-  type FocusEventHandler,
-  type SyntheticEvent,
-} from "react";
+import { type FocusEventHandler, type SyntheticEvent } from "react";
 import { DefaultSearchItem } from "./DefaultSearchItem";
 import Autocomplete from "@mui/material/Autocomplete";
 import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 import FormHelperText from "@mui/material/FormHelperText";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export interface SearchBarProps<T> {
   value?: T | null;
@@ -46,18 +42,16 @@ export function SearchBar<T extends ILookup>({
   error,
   ...props
 }: SearchBarProps<T>) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debounceSearchTerm, setDebounceSearchTerm] = useState("");
+  const {
+    value: searchTerm,
+    debounceValue: debounceSearchTerm,
+    setValue: setSearchTerm,
+  } = useDebounce("");
 
   const { data, isLoading } = useAsyncData(
     (accessToken) => queryFn(accessToken, debounceSearchTerm),
     [queryFn, debounceSearchTerm],
   );
-
-  useEffect(() => {
-    const timerRef = setTimeout(() => setDebounceSearchTerm(searchTerm), 500);
-    return () => clearTimeout(timerRef);
-  }, [searchTerm]);
 
   const handleChange = (
     _event: SyntheticEvent,

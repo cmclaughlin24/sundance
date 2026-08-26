@@ -9,6 +9,7 @@ import TextFields from "@mui/icons-material/TextFields";
 import ToggleOn from "@mui/icons-material/ToggleOn";
 import ViewStream from "@mui/icons-material/ViewStream";
 import WebAsset from "@mui/icons-material/WebAsset";
+import * as ArrayUtils from "@/utils/array";
 
 export interface IPalletteCategory {
   label: string;
@@ -21,7 +22,36 @@ export interface IPalletteItem {
   type: ElementType | "section";
 }
 
-export const PALLETTE: Readonly<IPalletteCategory[]> = [
+/**
+ * Filters the pallette based on the search term.
+ * @param searchTerm The term to filter the pallette items by.
+ * @returns The filtered pallette categories containing items that match the search term.
+ */
+export function filterPallette(
+  searchTerm: string,
+): Readonly<IPalletteCategory[]> {
+  if (!searchTerm) {
+    return PALLETTE;
+  }
+
+  const pallette: IPalletteCategory[] = [];
+
+  for (const category of PALLETTE) {
+    const items = category.items.filter((item) =>
+      item.label.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
+
+    if (!ArrayUtils.hasLengthGreaterThan(items, 0)) {
+      continue;
+    }
+
+    pallette.push({ ...category, items });
+  }
+
+  return pallette;
+}
+
+const PALLETTE: Readonly<IPalletteCategory[]> = [
   {
     label: "Basic",
     items: [
