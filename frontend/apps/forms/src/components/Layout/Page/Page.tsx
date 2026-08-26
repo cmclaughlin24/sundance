@@ -1,3 +1,4 @@
+import { Border } from "@/constants/colors";
 import Box from "@mui/material/Box";
 import type { SxProps, Theme } from "@mui/material/styles";
 
@@ -9,7 +10,7 @@ const styles: SxProps<Theme> = {
   marginX: "auto",
   padding: 6.5,
   boxShadow: "0 1px 3px 0 rgba(0, 0, 0, .1)",
-  border: "1px solid #2b2b2b",
+  border: `1px solid ${Border.Primary}`,
   position: "relative",
   flex: 1,
 };

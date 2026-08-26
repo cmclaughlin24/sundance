@@ -23,7 +23,7 @@ const variants: Variants = {
   exit: (dir: 1 | -1) => ({ x: dir > 0 ? "-100%" : "100%", opacity: 0 }),
 };
 
-export function TabPanelGroup<T>({
+export const TabPanelGroup = function <T>({
   active,
   order,
   children,
@@ -45,7 +45,7 @@ export function TabPanelGroup<T>({
   }) as TabPanelComponent<T> | undefined;
 
   return (
-    <Box sx={{ overflow: "hidden", position: "relative" }}>
+    <Box sx={{ overflow: "hidden", position: "relative", width: "100%" }}>
       <AnimatePresence initial={false} custom={direction} mode="wait">
         <Box
           key={String(active)}
@@ -55,7 +55,12 @@ export function TabPanelGroup<T>({
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.25, ease: "easeInOut", type: "spring" }}
+          transition={{
+            duration: 0.35,
+            ease: "easeInOut",
+            type: "spring",
+            bounce: 0.175,
+          }}
           role="tabpanel"
           id={`tab-panel-${active}`}
           aria-labelledby={`tab-panel-${active}`}
@@ -65,4 +70,4 @@ export function TabPanelGroup<T>({
       </AnimatePresence>
     </Box>
   );
-}
+};

@@ -5,4 +5,5 @@ export const NumberElementAttributes: ElementAttributesComponent = function ({
   element,
 }) {
   checkElementType(element.type, "number");
+  return <></>;
 };

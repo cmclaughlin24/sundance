@@ -10,22 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as FormsSplatRouteImport } from './routes/forms/$'
 import { Route as AuthenticationSplatRouteImport } from './routes/authentication/$'
+import { Route as FormsSplatRouteImport } from './routes/forms/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const FormsSplatRoute = FormsSplatRouteImport.update({
-  id: '/forms/$',
-  path: '/forms/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticationSplatRoute = AuthenticationSplatRouteImport.update({
   id: '/authentication/$',
   path: '/authentication/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FormsSplatRoute = FormsSplatRouteImport.update({
+  id: '/forms/$',
+  path: '/forms/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -68,18 +68,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/forms/$': {
-      id: '/forms/$'
-      path: '/forms/$'
-      fullPath: '/forms/$'
-      preLoaderRoute: typeof FormsSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/authentication/$': {
       id: '/authentication/$'
       path: '/authentication/$'
       fullPath: '/authentication/$'
       preLoaderRoute: typeof AuthenticationSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forms/$': {
+      id: '/forms/$'
+      path: '/forms/$'
+      fullPath: '/forms/$'
+      preLoaderRoute: typeof FormsSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
   }

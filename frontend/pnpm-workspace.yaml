@@ -5,18 +5,19 @@ packages:
 catalog:
   "@emotion/react": ^11.14.0
   "@emotion/styled": ^11.14.1
-  "@mui/material": ^7.3.9
-  '@mui/x-date-pickers': ^9.10.1
-  dayjs: ^1.11.21
-  react: ^19.1.1
-  react-dom: ^19.1.1
-  zustand: ^5.0.14
+  "@mui/icons-material": ^7.3.9
+  "@mui/material": ^9.3.1
+  '@mui/x-date-pickers': ^9.12.0
+  dayjs: ^1.11.23
+  react: ^19.2.8
+  react-dom: ^19.2.8
+  zustand: ^5.0.15
 
 catalogs:
   test:
-    "@playwright/test": ^1.58.2
+    "@playwright/test": ^1.62.1
     "@testing-library/react": ^16.3.2
-    '@vitest/coverage-v8': ^4.1.2
-    happy-dom: ^20.8.9
-    playwright: ^1.58.2
-    vitest: ^4.1.2
+    '@vitest/coverage-v8': ^4.1.11
+    happy-dom: ^20.11.6
+    playwright: ^1.62.1
+    vitest: ^4.1.11

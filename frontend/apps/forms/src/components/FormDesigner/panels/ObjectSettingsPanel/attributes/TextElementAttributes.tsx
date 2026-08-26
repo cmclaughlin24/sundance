@@ -5,4 +5,5 @@ export const TextElementAttributes: ElementAttributesComponent = function ({
   element,
 }) {
   checkElementType(element.type, "text");
+  return <></>
 };

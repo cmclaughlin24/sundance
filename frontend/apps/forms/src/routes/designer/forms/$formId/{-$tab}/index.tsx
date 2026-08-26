@@ -1,3 +1,4 @@
+import { FormDesigner } from "@/components/FormDesigner/FormDesigner";
 import { Page } from "@/components/layout/Page/Page";
 import { PageTitle } from "@/components/layout/Page/PageTitle";
 import { TabPanel } from "@/components/layout/Tab/TabPanel";
@@ -5,10 +6,12 @@ import { TabPanelGroup } from "@/components/layout/Tab/TabPanelGroup";
 import { TENANT_ID } from "@/constants/tenant";
 import { resolveHttpService } from "@/hooks/useHttpService";
 import { FormsService } from "@/services/formsService";
+import type { IFormVersion } from "@/types/formVersion";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { formDesignerPageStyles } from "./-index.style";
 
 const token = "placeholder";
 
@@ -57,7 +60,7 @@ function RouteComponent() {
   };
 
   return (
-    <Page>
+    <Page sx={formDesignerPageStyles.page}>
       <PageTitle name={form.name} description={form.description} />
       <Box>
         <Tabs value={tab} onChange={handleTabChange}>
@@ -69,7 +72,9 @@ function RouteComponent() {
         </Tabs>
       </Box>
       <TabPanelGroup active={tab} order={TAB_ORDER}>
-        <TabPanel value={FormDesignerTab.Build}>Builder Tab</TabPanel>
+        <TabPanel value={FormDesignerTab.Build}>
+          <FormDesigner form={form} version={{} as IFormVersion} />
+        </TabPanel>
         <TabPanel value={FormDesignerTab.Rules}>Rules Tab</TabPanel>
         <TabPanel value={FormDesignerTab.DataSources}>
           Reference Data Tab

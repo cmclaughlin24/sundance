@@ -3,9 +3,10 @@ import type { IForm } from "@/types/form";
 import type { IFormVersion } from "@/types/formVersion";
 import Box from "@mui/material/Box";
 import { formDesignerStyles } from "./FormDesigner.styles";
-import { LibraryPanel } from "./panels/LibraryPanel/LibraryPanel";
+import { ToolboxPanel } from "./panels/ToolboxPanel/ToolboxPanel";
 import { CanvasPanel } from "./panels/CanvasPanel/CanvasPanel";
 import { ObjectSettingsPanel } from "./panels/ObjectSettingsPanel/ObjectSettingsPanel";
+import { Border } from "@/constants/colors";
 
 export interface FormDesignerProps {
   form: IForm;
@@ -19,9 +20,13 @@ export const FormDesigner: React.FC<FormDesignerProps> = function ({
   return (
     <FormDesignerProvider form={form} version={version}>
       <Box sx={formDesignerStyles.container}>
-        <LibraryPanel />
+        <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
+          <ToolboxPanel />
+        </Box>
         <CanvasPanel />
-        <ObjectSettingsPanel />
+        <Box sx={{ borderLeft: `1px solid ${Border.Primary}` }}>
+          <ObjectSettingsPanel />
+        </Box>
       </Box>
     </FormDesignerProvider>
   );
