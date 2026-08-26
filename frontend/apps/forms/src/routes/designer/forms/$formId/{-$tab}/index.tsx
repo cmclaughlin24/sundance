@@ -6,7 +6,6 @@ import { TabPanelGroup } from "@/components/layout/Tab/TabPanelGroup";
 import { TENANT_ID } from "@/constants/tenant";
 import { resolveHttpService } from "@/hooks/useHttpService";
 import { FormsService } from "@/services/formsService";
-import type { IFormVersion } from "@/types/formVersion";
 import Box from "@mui/material/Box";
 import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
