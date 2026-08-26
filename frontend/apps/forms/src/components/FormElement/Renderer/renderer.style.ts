@@ -1,4 +1,5 @@
 import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
 const baseStyles: SxProps<Theme> = {
   display: "flex",
@@ -7,7 +8,7 @@ const baseStyles: SxProps<Theme> = {
   gap: 5,
 };
 
-export const rendererStyles: Record<string, SxProps<Theme>> = {
+export const rendererStyles: Styles = {
   form: {
     ...baseStyles,
     maxWidth: "901px",

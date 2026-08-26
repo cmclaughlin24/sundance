@@ -1,10 +1,10 @@
 import { Border } from "@/constants/colors";
-import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 import type { IPalletteItem } from "./pallette";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 
-const styles: Readonly<Record<string, SxProps<Theme>>> = {
+const styles: Styles = {
   item: {
     listStyle: "none",
     display: "flex",

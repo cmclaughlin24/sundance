@@ -1,6 +1,6 @@
-import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
-export const formProgressStyles: Record<string, SxProps<Theme>> = {
+export const formProgressStyles: Styles = {
   container: {
     marginBottom: 2.5,
   },

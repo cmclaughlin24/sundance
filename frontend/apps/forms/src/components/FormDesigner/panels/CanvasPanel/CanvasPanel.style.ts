@@ -1,6 +1,6 @@
-import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
-export const canvasPanelStyles: Readonly<Record<string, SxProps<Theme>>> = {
+export const canvasPanelStyles: Styles = {
   canvas: {
     padding: 5,
   },

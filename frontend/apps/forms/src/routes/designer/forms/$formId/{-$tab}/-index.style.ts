@@ -1,6 +1,6 @@
-import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
-export const formDesignerPageStyles: Readonly<Record<string, SxProps<Theme>>> =
+export const formDesignerPageStyles: Styles =
   {
     page: {
       marginTop: 2.5,

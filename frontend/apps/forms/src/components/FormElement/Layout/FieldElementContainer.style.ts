@@ -1,6 +1,6 @@
-import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
-export const fieldElementContainerStyles: Record<string, SxProps<Theme>> = {
+export const fieldElementContainerStyles: Styles = {
   container: {
     display: "flex",
     gap: { xs: 2, md: 1 },

@@ -1,6 +1,6 @@
-import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
-export const userChipStyles: Readonly<Record<string, SxProps<Theme>>> = {
+export const userChipStyles: Styles = {
   chip: {
     px: 1,
     py: 0.75,

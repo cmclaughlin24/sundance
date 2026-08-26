@@ -1,10 +1,10 @@
-import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 import type { IPalletteCategory } from "./pallette";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { PalletteItem } from "./PalletteItem";
 
-const styles: Readonly<Record<string, SxProps<Theme>>> = {
+const styles: Styles = {
   category: {
     display: "flex",
     flexDirection: "column",

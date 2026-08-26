@@ -1,4 +1,3 @@
-import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
-export const userFieldElementStyles: Readonly<Record<string, SxProps<Theme>>> =
-  {};
+export const userFieldElementStyles: Styles = {};

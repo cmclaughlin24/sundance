@@ -1,6 +1,6 @@
-import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
-export const designerStyles: Record<string, SxProps<Theme>> = {
+export const designerStyles: Styles = {
   page: {
     maxWidth: 1440,
     display: "flex",

@@ -1,6 +1,6 @@
-import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
-export const pageTitleStyles: Record<string, SxProps<Theme>> = {
+export const pageTitleStyles: Styles = {
   container: {
     display: "flex",
     flexDirection: "column",

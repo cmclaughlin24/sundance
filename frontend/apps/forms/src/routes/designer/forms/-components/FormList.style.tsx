@@ -1,6 +1,6 @@
-import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
-export const formListStyles: Record<string, SxProps<Theme>> = {
+export const formListStyles: Styles = {
   list: {
     margin: 0,
     padding: 0,

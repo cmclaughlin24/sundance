@@ -1,4 +1,5 @@
 import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
 const baseContentStyles: SxProps<Theme> = {
   paddingX: 8,
@@ -8,7 +9,7 @@ const baseContentStyles: SxProps<Theme> = {
   borderTop: "1px solid #2b2b2b",
 };
 
-export const formFooterStyles: Record<string, SxProps<Theme>> = {
+export const formFooterStyles: Styles = {
   footer: {
     marginTop: 2.25,
     position: "sticky",

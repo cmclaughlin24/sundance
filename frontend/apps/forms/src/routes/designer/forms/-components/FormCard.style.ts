@@ -1,7 +1,6 @@
-import type { Theme } from "@emotion/react";
-import type { SxProps } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
-export const formCardStyles: Record<string, SxProps<Theme>> = {
+export const formCardStyles: Styles = {
   card: {
     borderRadius: "10px",
     padding: 2,

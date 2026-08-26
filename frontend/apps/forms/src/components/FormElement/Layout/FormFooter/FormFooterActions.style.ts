@@ -1,7 +1,6 @@
-import type { Theme } from "@emotion/react";
-import type { SxProps } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
-export const formFooterActionsStyles: Record<string, SxProps<Theme>> = {
+export const formFooterActionsStyles: Styles = {
   container: {
     display: "flex",
     gap: 2.5,

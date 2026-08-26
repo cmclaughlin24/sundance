@@ -1,6 +1,6 @@
-import type { SxProps, Theme } from "@mui/material/styles";
+import type { Styles } from "@/types/styles";
 
-export const fieldElementLabelStyles: Record<string, SxProps<Theme>> = {
+export const fieldElementLabelStyles: Styles = {
   label: {
     fontSize: "2.125rem",
     fontWeight: 300,
