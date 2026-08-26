@@ -21,6 +21,8 @@ export function useFormDesignerDispatch() {
     store,
     useShallow((s) => ({
       dispatch: s.dispatch,
+      undo: s.undo,
+      select: s.select,
     })),
   );
 }
@@ -39,4 +41,9 @@ export function useFormPagesSnapshot() {
     store,
     useShallow((s) => s.snapshot.version.pages),
   );
+}
+
+export function useSelectedItem() {
+  const store = useFormDesignerContext();
+  return useStore(store, (s) => s.selected);
 }

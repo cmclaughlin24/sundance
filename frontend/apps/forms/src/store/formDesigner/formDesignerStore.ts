@@ -3,13 +3,16 @@ import type { FormDesignerEvent } from "./events";
 import type { IFormVersion } from "@/types/formVersion";
 import type { IForm } from "@/types/form";
 import { apply, reduce, type IFormAggregate } from "./eventHandlers";
+import type { SelectedItem } from "./formDesigner.type";
 
 export interface IFormDesignerStore {
   snapshot: IFormAggregate;
   events: FormDesignerEvent[];
   cursor: number;
+  selected: SelectedItem | null;
   dispatch: (event: FormDesignerEvent) => void;
   undo: () => void;
+  select: (item: SelectedItem | null) => void;
 }
 
 export type FormDesignerStoreApi = ReturnType<typeof createFormDesignerStore>;
@@ -21,6 +24,7 @@ export function createFormDesignerStore(form: IForm, version: IFormVersion) {
     snapshot: { form, version },
     events: [],
     cursor: -1,
+    selected: null,
     dispatch: (event) =>
       set((s) => {
         const cursor = s.cursor + 1;
@@ -37,5 +41,6 @@ export function createFormDesignerStore(form: IForm, version: IFormVersion) {
 
         return { ...s, cursor, snapshot };
       }),
+    select: (item) => set((s) => ({ ...s, selected: item })),
   }));
 }
