@@ -22,7 +22,6 @@ export function useFormDesignerDispatch() {
     useShallow((s) => ({
       dispatch: s.dispatch,
       undo: s.undo,
-      select: s.select,
     })),
   );
 }
@@ -43,7 +42,14 @@ export function useFormPagesSnapshot() {
   );
 }
 
-export function useSelectedItem() {
+export function useFormDesignerSelect(id?: string) {
   const store = useFormDesignerContext();
-  return useStore(store, (s) => s.selected);
+  return useStore(
+    store,
+    useShallow((s) => ({
+      selected: s.selected,
+      isSelected: !!s.selected && s.selected.id === id,
+      select: s.select,
+    })),
+  );
 }

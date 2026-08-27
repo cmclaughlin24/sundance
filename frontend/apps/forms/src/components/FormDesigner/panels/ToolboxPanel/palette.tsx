@@ -11,12 +11,12 @@ import ViewStream from "@mui/icons-material/ViewStream";
 import WebAsset from "@mui/icons-material/WebAsset";
 import * as ArrayUtils from "@/utils/array";
 
-export interface IPalletteCategory {
+export interface IPaletteCategory {
   label: string;
-  items: IPalletteItem[];
+  items: IPaletteItem[];
 }
 
-export interface IPalletteItem {
+export interface IPaletteItem {
   icon: React.ReactNode;
   label: string;
   type: ElementType | "section";
@@ -27,16 +27,16 @@ export interface IPalletteItem {
  * @param searchTerm The term to filter the pallette items by.
  * @returns The filtered pallette categories containing items that match the search term.
  */
-export function filterPallette(
+export function filterPalette(
   searchTerm: string,
-): Readonly<IPalletteCategory[]> {
+): Readonly<IPaletteCategory[]> {
   if (!searchTerm) {
-    return PALLETTE;
+    return PALETTE;
   }
 
-  const pallette: IPalletteCategory[] = [];
+  const pallette: IPaletteCategory[] = [];
 
-  for (const category of PALLETTE) {
+  for (const category of PALETTE) {
     const items = category.items.filter((item) =>
       item.label.toLowerCase().includes(searchTerm.toLowerCase()),
     );
@@ -51,7 +51,26 @@ export function filterPallette(
   return pallette;
 }
 
-const PALLETTE: Readonly<IPalletteCategory[]> = [
+/**
+ * Finds a `IPalletteItem` by its type.
+ * @param type The type of pallette item to find.
+ * @returns Teh pallette item if found, otherwise null.
+ */
+export function findPaletteItem(
+  type: ElementType | "section" | "page",
+): IPaletteItem | null {
+  for (const category of PALETTE) {
+    const item = category.items.find((i) => i.type === type);
+
+    if (item) {
+      return item;
+    }
+  }
+
+  return null;
+}
+
+const PALETTE: Readonly<IPaletteCategory[]> = [
   {
     label: "Basic",
     items: [
