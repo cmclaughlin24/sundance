@@ -41,7 +41,7 @@ export const ObjectSettingsPanel: React.FC = function () {
             display: "flex",
             flexDirection: "column",
             gap: 2.5,
-            "& > *:not(:last-child)": {
+            "& > *": {
               borderBottom: `1px solid ${Border.Primary}`,
             },
           }}
