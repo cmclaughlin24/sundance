@@ -12,6 +12,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@dnd-kit/react": "^0.5.0",
     "@emotion/react": "catalog:",
     "@emotion/styled": "catalog:",
     "@module-federation/vite": "^1.20.9",
