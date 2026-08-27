@@ -1,5 +1,6 @@
 import Box from "@mui/material/Box";
 import type { SxProps, Theme } from "@mui/material/styles";
+import { mergeSx } from "merge-sx";
 
 export type TagProps = React.PropsWithChildren<{ sx?: SxProps<Theme> }>;
 
@@ -13,7 +14,7 @@ const styles: SxProps<Theme> = (theme) => ({
 
 export const Tag: React.FC<TagProps> = function ({ children, sx }) {
   return (
-    <Box sx={sx ? (theme) => ({ ...styles(theme), ...sx }) : styles }>
+    <Box sx={mergeSx(styles, sx)}>
       {children}
     </Box>
   );

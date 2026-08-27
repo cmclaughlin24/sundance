@@ -1,6 +1,7 @@
 import { Border } from "@/constants/colors";
 import Box from "@mui/material/Box";
 import type { SxProps, Theme } from "@mui/material/styles";
+import { mergeSx } from "merge-sx";
 
 export type PageProps = React.PropsWithChildren<{
   sx?: SxProps<Theme>;
@@ -18,7 +19,7 @@ const styles: SxProps<Theme> = {
 export const Page: React.FC<PageProps> = function ({ sx, children }) {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <Box sx={sx ? { ...styles, ...sx } : styles}>{children}</Box>
+      <Box sx={mergeSx(styles, sx)}>{children}</Box>
     </Box>
   );
 };

@@ -6,13 +6,13 @@ export const getElementItemStyles = (
   isRequired: boolean,
 ): Styles => {
   return {
-    item: (theme) => ({
+    item: {
       listStyle: "none",
+    },
+    card: (theme) => ({
       padding: 1.5,
-      display: "flex",
-      justifyContent: "space-between",
       alignItems: "center",
-      border: `1px dashed ${Border.Primary}`,
+      gap: 1.5,
       borderRadius: 2.5,
       borderColor: isSelected
         ? `${theme.palette.primary.main}`
@@ -25,9 +25,14 @@ export const getElementItemStyles = (
       ":hover:not(:has(li:hover, button:hover))": {
         cursor: "pointer",
         border: `1px solid ${theme.palette.primary.main}`,
-        background: `${theme.palette.primary.main}25`,
       },
     }),
+    content: {
+      flex: 1,
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
     name: {
       marginBottom: 0.5,
       "::after": isRequired

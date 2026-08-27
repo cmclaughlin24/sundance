@@ -7,6 +7,7 @@ import { getSectionItemStyles } from "./SectionItem.style";
 import { findPaletteItem } from "../../ToolboxPanel/palette";
 import { Tag } from "@/components/Tag";
 import { ItemTools } from "../../../common/ItemTools";
+import { DraggableCard } from "@/components/DraggableCard";
 
 export const SectionItem: React.FC<{ section: ISection }> = function ({
   section,
@@ -22,15 +23,17 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
 
   return (
     <Box component="li" sx={styles.item} onClick={handleClk} role="button">
-      <Box sx={{ alignSelf: "end", display: "flex", alignItems: "center" }}>
-        {paletteItem && <Tag>{paletteItem.label}</Tag>}
-        <ItemTools
-          onReorder={(_inc) => {}}
-          onCopy={() => {}}
-          onDelete={() => {}}
-        />
-      </Box>
-      <ElementList elements={section.elements} />
+      <DraggableCard sx={styles.card} orientation="vertical">
+        <Box sx={{ alignSelf: "end", display: "flex", alignItems: "center" }}>
+          {paletteItem && <Tag>{paletteItem.label}</Tag>}
+          <ItemTools
+            onReorder={(_inc) => {}}
+            onCopy={() => {}}
+            onDelete={() => {}}
+          />
+        </Box>
+        <ElementList elements={section.elements} />
+      </DraggableCard>
     </Box>
   );
 };

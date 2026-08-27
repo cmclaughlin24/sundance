@@ -1,6 +1,7 @@
 import Box from "@mui/material/Box";
 import type { SxProps, Theme } from "@mui/material/styles";
 import { PanelTitle } from "./PanelTitle";
+import { mergeSx } from "merge-sx";
 
 const styles: Readonly<SxProps<Theme>> = {
   padding: 2.5,
@@ -13,7 +14,7 @@ interface PanelComponent extends React.FC<PanelProps> {
 }
 
 const Panel: PanelComponent = function ({ sx, children }) {
-  return <Box sx={sx ? { ...styles, ...sx } : styles}>{children}</Box>;
+  return <Box sx={mergeSx(styles, sx)}>{children}</Box>;
 };
 
 Panel.Title = PanelTitle;

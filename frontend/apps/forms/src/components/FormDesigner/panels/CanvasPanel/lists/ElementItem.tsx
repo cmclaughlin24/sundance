@@ -7,6 +7,7 @@ import Typography from "@mui/material/Typography";
 import { ItemTools } from "../../../common/ItemTools";
 import { Tag } from "@/components/Tag";
 import { findPaletteItem } from "../../ToolboxPanel/palette";
+import { DraggableCard } from "@/components/DraggableCard";
 
 export const ElementItem: React.FC<{ element: IElement }> = function ({
   element,
@@ -25,18 +26,22 @@ export const ElementItem: React.FC<{ element: IElement }> = function ({
 
   return (
     <Box component="li" sx={styles.item} onClick={handleClk} role="button">
-      <Box>
-        <Typography sx={styles.name}>{element.name}</Typography>
-        <Typography sx={styles.key}>{element.key}</Typography>
-      </Box>
-      <Box sx={{ display: "flex", alignItems: "center" }}>
-        {paletteItem && <Tag>{paletteItem.label}</Tag>}
-        <ItemTools
-          onReorder={(_inc) => {}}
-          onCopy={() => {}}
-          onDelete={() => {}}
-        />
-      </Box>
+      <DraggableCard sx={styles.card}>
+        <Box sx={styles.content}>
+          <Box>
+            <Typography sx={styles.name}>{element.name}</Typography>
+            <Typography sx={styles.key}>{element.key}</Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {paletteItem && <Tag>{paletteItem.label}</Tag>}
+            <ItemTools
+              onReorder={(_inc) => {}}
+              onCopy={() => {}}
+              onDelete={() => {}}
+            />
+          </Box>
+        </Box>
+      </DraggableCard>
     </Box>
   );
 };

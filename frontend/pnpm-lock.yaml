@@ -24,6 +24,9 @@ catalogs:
     dayjs:
       specifier: ^1.11.23
       version: 1.11.23
+    merge-sx:
+      specifier: ^4.0.0
+      version: 4.0.1
     react:
       specifier: ^19.2.8
       version: 19.2.8
@@ -266,6 +269,9 @@ importers:
       dayjs:
         specifier: 'catalog:'
         version: 1.11.23
+      merge-sx:
+        specifier: 'catalog:'
+        version: 4.0.1(@mui/material@9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8))(@types/react@19.2.18)(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))
       motion:
         specifier: ^12.43.0
         version: 12.43.0(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -2697,6 +2703,11 @@ packages:
   math-intrinsics@1.1.0:
     resolution: {integrity: sha512-/IXtbwEk5HTPyEwyKX6hGkYXxM9nbj64B+ilVJnC/R6B0pH5G4V3b0pVbL7DBj4tkhBAppbQUlf6F6Xl9LHu1g==}
     engines: {node: '>= 0.4'}
+
+  merge-sx@4.0.1:
+    resolution: {integrity: sha512-G0atWjFcyHwLxUWw9xwvtUQ7QGMdflmIULMb3lpWz5BFwCnqcuCRJxQMVhjEUb7Bv3fbaUlR3pe7Ux1HIEMvFQ==}
+    peerDependencies:
+      '@mui/material': ^5.1.0 || ^6.0.0 || ^7.0.0 || ^9.0.0
 
   mime-db@1.52.0:
     resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
@@ -5459,6 +5470,10 @@ snapshots:
       semver: 7.8.5
 
   math-intrinsics@1.1.0: {}
+
+  merge-sx@4.0.1(@mui/material@9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8))(@types/react@19.2.18)(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)):
+    dependencies:
+      '@mui/material': 9.3.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.18)(react@19.2.8))(@types/react@19.2.18)(react@19.2.8))(@types/react@19.2.18)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
 
   mime-db@1.52.0: {}
 

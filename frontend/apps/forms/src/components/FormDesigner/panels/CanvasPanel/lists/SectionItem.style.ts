@@ -3,13 +3,12 @@ import type { Styles } from "@/types/styles";
 
 export const getSectionItemStyles = (isSelected: boolean): Styles => {
   return {
-    item: (theme) => ({
+    item: {
       listStyle: "none",
+    },
+    card: (theme) => ({
       padding: 2.5,
-      display: "flex",
-      flexDirection: "column",
       gap: 2.5,
-      border: `1px dashed ${Border.Primary}`,
       borderRadius: 2.5,
       borderColor: isSelected
         ? `${theme.palette.primary.main}`
@@ -22,7 +21,6 @@ export const getSectionItemStyles = (isSelected: boolean): Styles => {
       ":hover:not(:has(li:hover, button:hover))": {
         cursor: "pointer",
         border: `1px solid ${theme.palette.primary.main}`,
-        background: `${theme.palette.primary.main}25`,
       },
     }),
   };
