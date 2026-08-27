@@ -7,6 +7,9 @@ import type { ElementType, IElement } from "@/types/element";
 import type { ElementAttributes } from "@/types/elementAttributes";
 import Typography from "@mui/material/Typography";
 import { ActiveObjectTitle } from "./ActiveObjectTitle";
+import { Collapisble } from "@/components/Collapisble";
+import Box from "@mui/material/Box";
+import { Border } from "@/constants/colors";
 
 export type ElementAttributesComponent = React.FC<{
   element: IElement;
@@ -33,6 +36,21 @@ export const ObjectSettingsPanel: React.FC = function () {
     content = (
       <>
         <ActiveObjectTitle elementType={selected.type} />
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 2.5,
+            "& > *:not(:last-child)": {
+              borderBottom: `1px solid ${Border.Primary}`,
+            },
+          }}
+        >
+          <Collapisble summary="Identity">Identity Content</Collapisble>
+          <Collapisble summary="Properties">Identity Content</Collapisble>
+          <Collapisble summary="Data Sources">Identity Content</Collapisble>
+          <Collapisble summary="Behavior">Identity Content</Collapisble>
+        </Box>
       </>
     );
   }

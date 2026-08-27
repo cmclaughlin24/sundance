@@ -2,8 +2,8 @@ import { createStore } from "zustand";
 import type { FormDesignerEvent } from "./events";
 import type { IFormVersion } from "@/types/formVersion";
 import type { IForm } from "@/types/form";
-import { apply, reduce, type IFormAggregate } from "./eventHandlers";
 import type { SelectedItem } from "./formDesigner.type";
+import { apply, reduce, type IFormAggregate } from "./eventHandlers/eventHandler";
 
 export interface IFormDesignerStore {
   snapshot: IFormAggregate;

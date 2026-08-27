@@ -35,6 +35,7 @@ export type AddSectionEvent = {
 export type MoveSectionEvent = {
   type: "MoveSection";
   sectionId: string;
+  targetPageId: string;
   position: number;
 };
 
@@ -52,6 +53,7 @@ export type AddElementEvent = {
 export type MoveElementEvent = {
   type: "MoveElement";
   elementId: string;
+  targetSectionId: string;
   position: number;
 };
 
