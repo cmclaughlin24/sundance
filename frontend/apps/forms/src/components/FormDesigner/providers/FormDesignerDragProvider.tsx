@@ -12,6 +12,11 @@ import type {
   PaletteDropEventData,
 } from "../types/formDropEvent";
 import { createContext, useContext, useState } from "react";
+import type {
+  AddElementEvent,
+  AddSectionEvent,
+  FormDesignerEvent,
+} from "@/store/formDesigner/events";
 
 const FormDesignerDragContext = createContext<FormDragEventData | null>(null);
 
@@ -29,7 +34,27 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
       dragData: PaletteDragEventData,
       dropData: PaletteDropEventData,
     ) => {
-      console.log(dragData, dropData);
+      let event: FormDesignerEvent;
+
+      switch (dragData.type) {
+        case "section":
+          event = {
+            type: "AddSection",
+            pageId: dropData.parentId,
+            position: dropData.position,
+          } satisfies AddSectionEvent;
+          break;
+        default:
+          event = {
+            type: "AddElement",
+            elementType: dragData.type,
+            sectionId: dropData.parentId,
+            position: dropData.position,
+          } satisfies AddElementEvent;
+          break;
+      }
+
+      dispatch(event);
     };
 
     return (
