@@ -2,6 +2,7 @@ import type { ISection } from "@/types/section";
 import Box from "@mui/material/Box";
 import { SectionItem } from "./SectionItem";
 import type { Styles } from "@/types/styles";
+import { AnimatePresence } from "motion/react";
 
 const styles: Styles = {
   list: {
@@ -18,9 +19,11 @@ export const SectionList: React.FC<{ sections: ISection[] }> = function ({
 }) {
   return (
     <Box component="ul" sx={styles.list}>
-      {sections.map((section) => (
-        <SectionItem section={section} key={section.id} />
-      ))}
+      <AnimatePresence>
+        {sections.map((section) => (
+          <SectionItem section={section} key={section.id} />
+        ))}
+      </AnimatePresence>
     </Box>
   );
 };

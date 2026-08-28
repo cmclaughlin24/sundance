@@ -20,6 +20,7 @@ import {
   type FormDragEventData,
 } from "@/components/FormDesigner/types/formDragEvent";
 import { getNextPosition, sortPositioned } from "@/utils/position";
+import { motion } from "motion/react";
 
 export const SectionItem: React.FC<{ section: ISection }> = function ({
   section,
@@ -52,7 +53,12 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
 
   return (
     <Box
-      component="li"
+      component={motion.li}
+      layout="position"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ type: "spring", bounce: 0, duration: 0.35 }}
       sx={styles.item}
       onClick={handleClk}
       ref={ref}
