@@ -4,25 +4,50 @@ import { ElementList } from "./ElementList";
 import { useFormDesignerSelect } from "@/store/formDesigner";
 import type { MouseEventHandler } from "react";
 import { getSectionItemStyles } from "./SectionItem.style";
-import { findPaletteItem } from "../../ToolboxPanel/palette";
+import {
+  findPaletteItem,
+  PaletteItemDragType,
+} from "../../ToolboxPanel/palette";
 import { Tag } from "@/components/Tag";
 import { ItemTools } from "../../../common/ItemTools";
-import { DraggableCard } from "@/components/DraggableCard";
+import { DraggableCard } from "@/components/DragDrop/DraggableCard";
+import { useDroppable } from "@dnd-kit/react";
+import type { PaletteDropEventData } from "@/components/FormDesigner/types/formDropEvent";
+import { DropZoneIndicator } from "@/components/DragDrop/DropZoneIndicator";
+import { useFormDragEvent } from "@/components/FormDesigner/providers/FormDesignerDragProvider";
+import {
+  FormDragEventSource,
+  type FormDragEventData,
+} from "@/components/FormDesigner/types/formDragEvent";
 
 export const SectionItem: React.FC<{ section: ISection }> = function ({
   section,
 }) {
   const { select, isSelected } = useFormDesignerSelect(section.id);
-  const styles = getSectionItemStyles(isSelected);
-  const paletteItem = findPaletteItem("section");
+  const { ref } = useDroppable({
+    id: `section-${section.id}`,
+    accept: PaletteItemDragType.Element,
+    data: { source: "palette", parentId: section.id } as PaletteDropEventData,
+  });
+  const dragData = useFormDragEvent();
 
   const handleClk: MouseEventHandler<HTMLLIElement> = (event) => {
     event.stopPropagation();
     select(!isSelected ? { type: "section", id: section.id } : null);
   };
 
+  const paletteItem = findPaletteItem("section");
+  const canDrop = canDropItem(dragData);
+  const styles = getSectionItemStyles(isSelected);
+
   return (
-    <Box component="li" sx={styles.item} onClick={handleClk} role="button">
+    <Box
+      component="li"
+      sx={styles.item}
+      onClick={handleClk}
+      ref={ref}
+      role="button"
+    >
       <DraggableCard sx={styles.card} orientation="vertical">
         <Box sx={{ alignSelf: "end", display: "flex", alignItems: "center" }}>
           {paletteItem && <Tag>{paletteItem.label}</Tag>}
@@ -33,7 +58,18 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
           />
         </Box>
         <ElementList elements={section.elements} />
+        {canDrop && <DropZoneIndicator text="Drop element here" />}
       </DraggableCard>
     </Box>
   );
 };
+
+function canDropItem(data: FormDragEventData | null): boolean {
+  if (!data) {
+    return false;
+  }
+
+  // TODO: Improve this conditional such that it will not introduce a bug if additional layout
+  // elements are added.
+  return data.source === FormDragEventSource.Palette && data.type !== "section";
+}

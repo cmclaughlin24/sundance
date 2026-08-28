@@ -11,6 +11,13 @@ import ViewStream from "@mui/icons-material/ViewStream";
 import WebAsset from "@mui/icons-material/WebAsset";
 import * as ArrayUtils from "@/utils/array";
 
+export type PaletteItemType = ElementType | "section";
+
+export enum PaletteItemDragType {
+  Element = "element",
+  Section = "section",
+}
+
 export interface IPaletteCategory {
   label: string;
   items: IPaletteItem[];
@@ -19,7 +26,8 @@ export interface IPaletteCategory {
 export interface IPaletteItem {
   icon: React.ReactNode;
   label: string;
-  type: ElementType | "section";
+  type: PaletteItemType;
+  dragType: PaletteItemDragType;
 }
 
 /**
@@ -74,27 +82,81 @@ const PALETTE: Readonly<IPaletteCategory[]> = [
   {
     label: "Basic",
     items: [
-      { icon: <TextFields />, label: "Text", type: "text" },
-      { icon: <Numbers />, label: "Number", type: "number" },
-      { icon: <CalendarToday />, label: "Date", type: "date" },
-      { icon: <ToggleOn />, label: "Toggle", type: "toggle" },
+      {
+        icon: <TextFields />,
+        label: "Text",
+        type: "text",
+        dragType: PaletteItemDragType.Element,
+      },
+      {
+        icon: <Numbers />,
+        label: "Number",
+        type: "number",
+        dragType: PaletteItemDragType.Element,
+      },
+      {
+        icon: <CalendarToday />,
+        label: "Date",
+        type: "date",
+        dragType: PaletteItemDragType.Element,
+      },
+      {
+        icon: <ToggleOn />,
+        label: "Toggle",
+        type: "toggle",
+        dragType: PaletteItemDragType.Element,
+      },
     ],
   },
   {
     label: "Choice",
     items: [
-      { icon: <CheckBox />, label: "Checkbox", type: "checkbox" },
-      { icon: <RadioButtonChecked />, label: "Radio", type: "radio" },
-      { icon: <ArrowDropDownCircle />, label: "Select", type: "select" },
-      { icon: <ViewStream />, label: "Segmented", type: "segmented" },
+      {
+        icon: <CheckBox />,
+        label: "Checkbox",
+        type: "checkbox",
+        dragType: PaletteItemDragType.Element,
+      },
+      {
+        icon: <RadioButtonChecked />,
+        label: "Radio",
+        type: "radio",
+        dragType: PaletteItemDragType.Element,
+      },
+      {
+        icon: <ArrowDropDownCircle />,
+        label: "Select",
+        type: "select",
+        dragType: PaletteItemDragType.Element,
+      },
+      {
+        icon: <ViewStream />,
+        label: "Segmented",
+        type: "segmented",
+        dragType: PaletteItemDragType.Element,
+      },
     ],
   },
   {
     label: "Directory",
-    items: [{ icon: <Person />, label: "User", type: "user" }],
+    items: [
+      {
+        icon: <Person />,
+        label: "User",
+        type: "user",
+        dragType: PaletteItemDragType.Element,
+      },
+    ],
   },
   {
     label: "Layout",
-    items: [{ icon: <WebAsset />, label: "Section", type: "section" }],
+    items: [
+      {
+        icon: <WebAsset />,
+        label: "Section",
+        type: "section",
+        dragType: PaletteItemDragType.Section,
+      },
+    ],
   },
 ];

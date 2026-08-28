@@ -2,6 +2,7 @@ import type { ISection } from "@/types/section";
 import Box from "@mui/material/Box";
 import { SectionItem } from "./SectionItem";
 import type { Styles } from "@/types/styles";
+import { useDroppable } from "@dnd-kit/react";
 
 const styles: Styles = {
   list: {

@@ -2,9 +2,9 @@ import type { Styles } from "@/types/styles";
 import type { IPaletteItem } from "./palette";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { DraggableCard } from "@/components/DraggableCard";
+import { DraggableCard } from "@/components/DragDrop/DraggableCard";
 import { useDraggable } from "@dnd-kit/react";
-import type { FormDragEventData } from "../../types/drag-event";
+import { FormDragEventSource, type FormDragEventData } from "../../types/formDragEvent";
 
 const styles: Styles = {
   item: {
@@ -30,8 +30,9 @@ export const PaletteItem: React.FC<{
 }> = function ({ item, draggable = true }) {
   const { ref, handleRef } = useDraggable({
     id: `palette-${item.type}`,
+    type: item.dragType,
     data: {
-      source: "palette",
+      source: FormDragEventSource.Palette,
       type: item.type,
     } satisfies FormDragEventData,
     disabled: !draggable,

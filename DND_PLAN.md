@@ -140,64 +140,69 @@ export function onAddSection(
 Extracted into `FormDesigner/providers/FormDesignerDragProvider.tsx` — a dedicated component that
 sits inside `FormDesignerProvider` so it can access the Zustand store via `useFormDesignerDispatch`.
 `FormDesigner.tsx` wraps the panels with `<FormDesignerDragProvider>` instead of inlining the
-provider. `DragOverlay` uses the render-function form; `onDragEnd` body is stubbed pending Steps 2–4.
+provider. `DragOverlay` uses the render-function form with a `switch` on `data.source`.
+`onDragEnd` likewise switches on `dragData.source` and delegates to typed handler functions
+(e.g. `handlePaletteDragEnd`) — body is stubbed pending Steps 2–4.
 
-A `FormDesigner/types/drag-event.ts` file was also added defining the `FormDragEventData`
-discriminated union (`PaletteDragEventData`) used to type `source.data` in event handlers and the
-overlay render function.
+Two type files were added:
+- `FormDesigner/types/formDragEvent.ts` — `FormDragEventData` discriminated union (`PaletteDragEventData`)
+- `FormDesigner/types/formDropEvent.ts` — `FormDropEventData` discriminated union (`PaletteDropEventData`)
 
 ### ✅ Step 6 — Make `PaletteItem` Draggable
 
 `PaletteItem` now accepts a `draggable?: boolean` prop (default `true`). `useDraggable` is always
-called (hooks rules satisfied) with `disabled: !draggable`. When `draggable={false}` the `handleRef`
-is not forwarded to `DraggableCard`, making the overlay clone purely visual with no nested hook
-behaviour. The `DragOverlay` in `FormDesignerDragProvider` renders `<PaletteItem item={...} draggable={false} />`.
+called (hooks rules satisfied) with `disabled: !draggable`. The `type` field on `useDraggable` is
+set to `item.dragType` — a new `PaletteItemDragType` enum (`Element` | `Section`) defined in
+`palette.tsx` — so that droppables can use `accept` to restrict which palette types they receive.
+When `draggable={false}` the `handleRef` is not forwarded to `DraggableCard`, making the overlay
+clone purely visual. The `DragOverlay` renders `<PaletteItem item={...} draggable={false} />`.
 
-> Note: `data.type` is used in the payload (not `data.elementType` as originally planned) — the
-> `FormDragEventData` type reflects this. `handleRef` is passed as `null` when `draggable={false}`;
-> consider changing to `undefined` to avoid a potential TypeScript error with `Ref<Element>`.
+> Note: `data.type` is used in the payload (not `data.elementType`). `handleRef` is passed as
+> `null` when `draggable={false}` — consider changing to `undefined` to avoid a potential
+> TypeScript error with `Ref<Element>`.
 
-### Step 7 — Make `SectionItem` a Drop Zone
+### ✅ Step 7 — Make `SectionItem` a Drop Zone
 
-Use `useDroppable` from `@dnd-kit/react` in `SectionItem`. It returns `ref` (attach to the
-droppable element) and `isDropTarget` (true when a draggable is actively over this zone):
+`SectionItem` now uses `useDroppable` with `accept: PaletteItemDragType.Element` — it only
+activates for element-type palette drags, not section drags. The `ref` is applied to the root `li`.
+Drop data is typed as `PaletteDropEventData` with `parentId: section.id`.
 
-```tsx
-import { useDroppable } from "@dnd-kit/react";
+`SectionList` has `useDroppable` imported and is in progress — it will become the canvas-level
+drop zone that accepts `PaletteItemDragType.Section` drags for creating new sections.
 
-const { ref, isDropTarget } = useDroppable({
-  id: `section-${section.id}`,
-  data: { sectionId: section.id, elementCount: section.elements.length },
-});
-```
-
-Pass `isDropTarget` into `getSectionItemStyles` alongside `isSelected` to render a distinct
-"ready to drop" highlight (e.g. solid blue border) when a palette item is dragged over.
+> `isDropTarget` visual highlight on `SectionItem` not yet wired into `getSectionItemStyles` — still pending.
 
 ### Step 8 — Handle Drop in `onDragEnd`
 
-The `onDragEnd` callback in `FormDesignerDragProvider` checks the source and target data:
+`handlePaletteDragEnd` stub is in place in `FormDesignerDragProvider`. Needs to dispatch the
+correct event based on `dragData.type`:
 
 ```ts
-onDragEnd={(event) => {
-  if (event.canceled) return;
-  const { source, target } = event.operation;
-
-  // Palette item dropped onto a section
-  if (source?.data?.source === "palette" && target?.data?.sectionId) {
+const handlePaletteDragEnd = (
+  dragData: PaletteDragEventData,
+  dropData: PaletteDropEventData,
+) => {
+  if (dragData.type === "section") {
+    dispatch({
+      type: "AddSection",
+      sectionId: crypto.randomUUID(),
+      pageId: dropData.parentId,
+      position: /* end of page */ 0,
+    });
+  } else {
     dispatch({
       type: "AddElement",
       elementId: crypto.randomUUID(),
-      elementType: source.data.type,
-      sectionId: target.data.sectionId,
-      position: target.data.elementCount,   // append to end of section
+      elementType: dragData.type,
+      sectionId: dropData.parentId,
+      position: /* end of section */ 0,
     });
   }
-}}
+};
 ```
 
-For future support of reordering existing elements within/between sections, also handle:
-- Source is an existing element + target is a section → dispatch `MoveElementEvent`
+For future support of reordering existing elements within/between sections, add additional
+`source` cases to the `onDragEnd` switch.
 
 ### Step 9 — Wire `ItemTools.onReorder` to Move Events
 
@@ -269,28 +274,30 @@ Apply the same pattern to `SectionItem` / `SectionList` for section-level animat
 | File | Type | Status | Change |
 |---|---|---|---|
 | `package.json` | Modify | ✅ | Add `@dnd-kit/react` |
-| `FormDesigner/types/drag-event.ts` | **New** | ✅ | `FormDragEventData` discriminated union type |
-| `FormDesigner/providers/FormDesignerDragProvider.tsx` | **New** | ✅ | `DragDropProvider` + `DragOverlay` wrapper component |
+| `FormDesigner/types/formDragEvent.ts` | **New** | ✅ | `FormDragEventData` / `PaletteDragEventData` discriminated union |
+| `FormDesigner/types/formDropEvent.ts` | **New** | ✅ | `FormDropEventData` / `PaletteDropEventData` discriminated union |
+| `FormDesigner/providers/FormDesignerDragProvider.tsx` | **New** | ✅ | `DragDropProvider` + `DragOverlay` + typed `onDragEnd` switch |
 | `FormDesigner/FormDesigner.tsx` | Modify | ✅ | Wrap panels with `FormDesignerDragProvider` |
-| `ToolboxPanel/PaletteItem.tsx` | Modify | ✅ | `useDraggable` with `draggable` prop; single component covers both toolbox and overlay |
-| `components/DraggableCard.tsx` | Modify | ✅ | Accept and forward optional `handleRef` prop to root `Box` |
+| `ToolboxPanel/palette.tsx` | Modify | ✅ | `PaletteItemDragType` enum + `dragType` field on every `IPaletteItem` |
+| `ToolboxPanel/PaletteItem.tsx` | Modify | ✅ | `useDraggable` with `type: item.dragType`; `draggable` prop pattern |
+| `components/DraggableCard.tsx` | Modify | ✅ | Optional `handleRef` prop forwarded to root `Box` |
+| `CanvasPanel/lists/SectionItem.tsx` | Modify | 🔄 | `useDroppable` wired with `accept: PaletteItemDragType.Element`; `isDropTarget` style not yet applied |
+| `CanvasPanel/lists/SectionList.tsx` | Modify | 🔄 | `useDroppable` imported; canvas-level section drop zone not yet wired |
 | `store/formDesigner/events.ts` | Modify | | Extend `AddElementEvent` (`elementType`, `sectionId`); extend `AddSectionEvent` (`pageId`) |
 | `store/formDesigner/elementFactory.ts` | **New** | | `createElementFromType()` factory function |
 | `store/formDesigner/eventHandlers/elementEventHandlers.ts` | Modify | | Implement `onAddElement` stub |
 | `store/formDesigner/eventHandlers/sectionEventHandlers.ts` | Modify | | Implement `onAddSection` stub |
-| `CanvasPanel/lists/SectionItem.tsx` | Modify | | Add `useDroppable` with `ref` + `isDropTarget` |
 | `CanvasPanel/lists/SectionItem.style.ts` | Modify | | Add `isDropTarget` style variant |
 | `CanvasPanel/lists/ElementList.tsx` | Modify | | Wrap with `AnimatePresence` |
 | `CanvasPanel/lists/ElementItem.tsx` | Modify | | Switch root to `motion.li` with `layout` + enter/exit animations; wire `onReorder` |
-| `CanvasPanel/lists/SectionList.tsx` | Modify | | Thread `pageId` prop down to `SectionItem` |
 
-**Total: 10 modified files, 3 new files. 6 of 15 complete.**
+**Total: 11 modified files, 4 new files. 8 of 17 complete, 2 in progress.**
 
 ---
 
 ## Decisions / Open Questions
 
-- **Drop position within a section**: The plan above drops to the end of the section (`elementCount`). For precise insertion (before/after a specific element), `ElementItem` would also need `useDroppable` or the section would need to track hover position — this is a scope increase.
+- **Drop position within a section**: Currently dispatches with `position: 0` as a placeholder. For precise insertion (before/after a specific element), `ElementItem` would also need `useDroppable` or the section would need to track hover position — this is a scope increase.
 - **Cross-section drag of existing elements**: `MoveElement` supports cross-section moves. Wiring this up with `useSortable` (from `@dnd-kit/react/sortable`) across multiple droppable containers is the natural next step after the toolbox drop is working.
-- **Section creation from toolbox**: The palette has a "Section" type. Dropping it onto the canvas (outside any section) could dispatch `AddSectionEvent`. This requires the canvas area itself to also be a droppable zone.
 - **`handleRef` null vs undefined**: `DraggableCard` accepts `handleRef?: Ref<Element>` but `PaletteItem` passes `null` when `draggable={false}`. Change to `undefined` to avoid a potential TypeScript error.
+- **`SectionList` as section drop zone**: Needs `pageId` threaded down as a prop so the droppable data can carry it for `AddSectionEvent` dispatch.

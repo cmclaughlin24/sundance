@@ -7,7 +7,7 @@ import Typography from "@mui/material/Typography";
 import { ItemTools } from "../../../common/ItemTools";
 import { Tag } from "@/components/Tag";
 import { findPaletteItem } from "../../ToolboxPanel/palette";
-import { DraggableCard } from "@/components/DraggableCard";
+import { DraggableCard } from "@/components/DragDrop/DraggableCard";
 
 export const ElementItem: React.FC<{ element: IElement }> = function ({
   element,
@@ -17,12 +17,13 @@ export const ElementItem: React.FC<{ element: IElement }> = function ({
     isSelected,
     element.attributes.isRequired,
   );
-  const paletteItem = findPaletteItem(element.type);
 
   const handleClk: MouseEventHandler<HTMLLIElement> = (event) => {
     event.stopPropagation();
     select(!isSelected ? { type: element.type, id: element.id } : null);
   };
+
+  const paletteItem = findPaletteItem(element.type);
 
   return (
     <Box component="li" sx={styles.item} onClick={handleClk} role="button">
@@ -45,3 +46,4 @@ export const ElementItem: React.FC<{ element: IElement }> = function ({
     </Box>
   );
 };
+
