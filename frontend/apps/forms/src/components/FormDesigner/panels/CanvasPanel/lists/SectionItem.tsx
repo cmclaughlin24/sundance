@@ -24,7 +24,7 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
   section,
 }) {
   const { select, isSelected } = useFormDesignerSelect(section.id);
-  const { ref } = useDroppable({
+  const { ref, isDropTarget } = useDroppable({
     id: `section-${section.id}`,
     accept: PaletteItemDragType.Element,
     data: { source: "palette", parentId: section.id } as PaletteDropEventData,
@@ -63,7 +63,10 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
         </Box>
         <ElementList elements={section.elements} />
         {canDrop && (
-          <DropZoneIndicator text={`Drop ${dragPaletteItem!.label} here`} />
+          <DropZoneIndicator
+            text={`Drop ${dragPaletteItem!.label} here`}
+            isDropTarget={isDropTarget}
+          />
         )}
       </DraggableCard>
     </Box>

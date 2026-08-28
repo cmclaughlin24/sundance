@@ -26,7 +26,7 @@ const styles: Styles = {
 };
 
 export const PageItem: React.FC<{ page: IPage }> = function ({ page }) {
-  const { ref } = useDroppable({
+  const { ref, isDropTarget } = useDroppable({
     id: `page-${page.id}`,
     accept: PaletteItemDragType.Section,
     data: { source: "palette", parentId: page.id } as PaletteDropEventData,
@@ -42,7 +42,10 @@ export const PageItem: React.FC<{ page: IPage }> = function ({ page }) {
     <Box component="li" sx={styles.item} ref={ref}>
       <SectionList sections={page.sections} />
       {canDrop && (
-        <DropZoneIndicator text={`Drop ${dragPaletteItem!.label} here`} />
+        <DropZoneIndicator
+          text={`Drop ${dragPaletteItem!.label} here`}
+          isDropTarget={isDropTarget}
+        />
       )}
     </Box>
   );
