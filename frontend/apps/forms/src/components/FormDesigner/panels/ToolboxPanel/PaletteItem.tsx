@@ -4,7 +4,11 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { DraggableCard } from "@/components/DragDrop/DraggableCard";
 import { useDraggable } from "@dnd-kit/react";
-import { FormDragEventSource, type FormDragEventData } from "../../types/formDragEvent";
+import {
+  FormDragEventSource,
+  type FormDragEventData,
+} from "../../types/formDragEvent";
+import { mergeSx } from "merge-sx";
 
 const styles: Styles = {
   item: {
@@ -22,13 +26,17 @@ const styles: Styles = {
       border: `1px solid ${theme.palette.primary.main}`,
     },
   }),
+  onDrag: (theme) => ({
+    background: `${theme.palette.primary.main}70`,
+    border: `1px solid ${theme.palette.primary.main}`,
+  }),
 };
 
 export const PaletteItem: React.FC<{
   item: IPaletteItem;
   draggable?: boolean;
 }> = function ({ item, draggable = true }) {
-  const { ref, handleRef } = useDraggable({
+  const { ref, handleRef, isDragging } = useDraggable({
     id: `palette-${item.type}`,
     type: item.dragType,
     data: {
@@ -40,7 +48,10 @@ export const PaletteItem: React.FC<{
 
   return (
     <Box component="li" sx={styles.item} ref={ref}>
-      <DraggableCard sx={styles.card} handleRef={draggable ? handleRef : null}>
+      <DraggableCard
+        sx={mergeSx(styles.card, isDragging ? styles.onDrag : {})}
+        handleRef={draggable ? handleRef : null}
+      >
         {item.icon}
         <Typography>{item.label}</Typography>
       </DraggableCard>

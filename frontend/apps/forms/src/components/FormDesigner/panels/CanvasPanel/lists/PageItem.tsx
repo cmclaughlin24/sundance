@@ -3,7 +3,10 @@ import Box from "@mui/material/Box";
 import { SectionList } from "./SectionList";
 import type { Styles } from "@/types/styles";
 import { useDroppable } from "@dnd-kit/react";
-import { PaletteItemDragType } from "../../ToolboxPanel/palette";
+import {
+  findPaletteItem,
+  PaletteItemDragType,
+} from "../../ToolboxPanel/palette";
 import type { PaletteDropEventData } from "@/components/FormDesigner/types/formDropEvent";
 import { DropZoneIndicator } from "@/components/DragDrop/DropZoneIndicator";
 import {
@@ -11,10 +14,14 @@ import {
   type FormDragEventData,
 } from "@/components/FormDesigner/types/formDragEvent";
 import { useFormDragEvent } from "@/components/FormDesigner/providers/FormDesignerDragProvider";
+import { useMemo } from "react";
 
 const styles: Styles = {
   item: {
     listStyle: "none",
+    display: "flex",
+    flexDirection: "column",
+    gap: 2.5,
   },
 };
 
@@ -26,11 +33,17 @@ export const PageItem: React.FC<{ page: IPage }> = function ({ page }) {
   });
   const dragData = useFormDragEvent();
   const canDrop = canDropItem(dragData);
+  const dragPaletteItem = useMemo(
+    () => (dragData ? findPaletteItem(dragData.type) : null),
+    [dragData],
+  );
 
   return (
     <Box component="li" sx={styles.item} ref={ref}>
       <SectionList sections={page.sections} />
-      {canDrop && <DropZoneIndicator text="Drop you section here" />}
+      {canDrop && (
+        <DropZoneIndicator text={`Drop ${dragPaletteItem!.label} here`} />
+      )}
     </Box>
   );
 };

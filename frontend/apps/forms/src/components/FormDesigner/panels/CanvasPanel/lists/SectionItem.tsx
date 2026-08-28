@@ -2,7 +2,7 @@ import type { ISection } from "@/types/section";
 import Box from "@mui/material/Box";
 import { ElementList } from "./ElementList";
 import { useFormDesignerSelect } from "@/store/formDesigner";
-import type { MouseEventHandler } from "react";
+import { useMemo, type MouseEventHandler } from "react";
 import { getSectionItemStyles } from "./SectionItem.style";
 import {
   findPaletteItem,
@@ -36,7 +36,11 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
     select(!isSelected ? { type: "section", id: section.id } : null);
   };
 
-  const paletteItem = findPaletteItem("section");
+  const paletteItem = useMemo(() => findPaletteItem("section"), []);
+  const dragPaletteItem = useMemo(
+    () => (dragData ? findPaletteItem(dragData.type) : null),
+    [dragData],
+  );
   const canDrop = canDropItem(dragData);
   const styles = getSectionItemStyles(isSelected);
 
@@ -58,7 +62,9 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
           />
         </Box>
         <ElementList elements={section.elements} />
-        {canDrop && <DropZoneIndicator text="Drop element here" />}
+        {canDrop && (
+          <DropZoneIndicator text={`Drop ${dragPaletteItem!.label} here`} />
+        )}
       </DraggableCard>
     </Box>
   );

@@ -142,35 +142,45 @@ sits inside `FormDesignerProvider` so it can access the Zustand store via `useFo
 `FormDesigner.tsx` wraps the panels with `<FormDesignerDragProvider>` instead of inlining the
 provider. `DragOverlay` uses the render-function form with a `switch` on `data.source`.
 `onDragEnd` likewise switches on `dragData.source` and delegates to typed handler functions
-(e.g. `handlePaletteDragEnd`) — body is stubbed pending Steps 2–4.
+(`handlePaletteDragEnd`) — body is stubbed pending Steps 2–4. `onDragStart` sets `activeDragData`
+in context; `onDragEnd` clears it to `null`.
 
-Two type files were added:
-- `FormDesigner/types/formDragEvent.ts` — `FormDragEventData` discriminated union (`PaletteDragEventData`)
-- `FormDesigner/types/formDropEvent.ts` — `FormDropEventData` discriminated union (`PaletteDropEventData`)
+A `FormDesignerDragContext` is co-located in the provider file, exposed via `useFormDragEvent()`.
+The hook returns `FormDragEventData | null` — `null` means no drag is active (no error thrown).
+`FormDragEventSource` enum replaces the `"palette"` string literal throughout.
+
+Type files added:
+- `FormDesigner/types/formDragEvent.ts` — `FormDragEventData` / `PaletteDragEventData` / `FormDragEventSource` enum
+- `FormDesigner/types/formDropEvent.ts` — `FormDropEventData` / `PaletteDropEventData`
 
 ### ✅ Step 6 — Make `PaletteItem` Draggable
 
-`PaletteItem` now accepts a `draggable?: boolean` prop (default `true`). `useDraggable` is always
-called (hooks rules satisfied) with `disabled: !draggable`. The `type` field on `useDraggable` is
-set to `item.dragType` — a new `PaletteItemDragType` enum (`Element` | `Section`) defined in
-`palette.tsx` — so that droppables can use `accept` to restrict which palette types they receive.
-When `draggable={false}` the `handleRef` is not forwarded to `DraggableCard`, making the overlay
-clone purely visual. The `DragOverlay` renders `<PaletteItem item={...} draggable={false} />`.
+`PaletteItem` accepts a `draggable?: boolean` prop (default `true`). `useDraggable` is always
+called (hooks rules satisfied) with `disabled: !draggable`. The `type` field is set to
+`item.dragType` (`PaletteItemDragType` enum) so droppables can use `accept` to restrict which
+palette types they receive. The `DragOverlay` renders `<PaletteItem item={...} draggable={false} />`
+as a static visual clone.
 
-> Note: `data.type` is used in the payload (not `data.elementType`). `handleRef` is passed as
-> `null` when `draggable={false}` — consider changing to `undefined` to avoid a potential
-> TypeScript error with `Ref<Element>`.
+> Note: `handleRef` is passed as `null` when `draggable={false}` — consider changing to
+> `undefined` to avoid a potential TypeScript error with `Ref<Element>`.
 
-### ✅ Step 7 — Make `SectionItem` a Drop Zone
+### ✅ Step 7 — Drop Zones with Ambient Indicators
 
-`SectionItem` now uses `useDroppable` with `accept: PaletteItemDragType.Element` — it only
-activates for element-type palette drags, not section drags. The `ref` is applied to the root `li`.
-Drop data is typed as `PaletteDropEventData` with `parentId: section.id`.
+Drop zones are wired with `useDroppable` and `accept`, and show a `<DropZoneIndicator>` as soon
+as a drag starts — before the cursor is over them — using `useFormDragEvent()` context:
 
-`SectionList` has `useDroppable` imported and is in progress — it will become the canvas-level
-drop zone that accepts `PaletteItemDragType.Section` drags for creating new sections.
+- **`SectionItem`** — `accept: PaletteItemDragType.Element`; renders `<DropZoneIndicator text="Drop element here">` when `canDropItem(dragData)` is true (drag active + type is not `"section"`)
+- **`PageItem`** — `accept: PaletteItemDragType.Section`; renders `<DropZoneIndicator text="Drop your section here">` when drag active + type is `"section"`. This is the drop zone for new sections, not `SectionList`.
 
-> `isDropTarget` visual highlight on `SectionItem` not yet wired into `getSectionItemStyles` — still pending.
+`canDropItem()` is a local helper in each component that checks `dragData.source` and `dragData.type`.
+
+> `isDropTarget` visual highlight (stronger style when cursor is directly over the zone) not yet
+> wired into `getSectionItemStyles` — still pending.
+>
+> `SectionList.tsx` has a stale unused `useDroppable` import — can be cleaned up.
+>
+> `canDropItem` TODO noted in code: logic should use `PaletteItemDragType` rather than checking
+> `data.type !== "section"` to avoid future brittleness.
 
 ### Step 8 — Handle Drop in `onDragEnd`
 
@@ -274,30 +284,34 @@ Apply the same pattern to `SectionItem` / `SectionList` for section-level animat
 | File | Type | Status | Change |
 |---|---|---|---|
 | `package.json` | Modify | ✅ | Add `@dnd-kit/react` |
-| `FormDesigner/types/formDragEvent.ts` | **New** | ✅ | `FormDragEventData` / `PaletteDragEventData` discriminated union |
-| `FormDesigner/types/formDropEvent.ts` | **New** | ✅ | `FormDropEventData` / `PaletteDropEventData` discriminated union |
-| `FormDesigner/providers/FormDesignerDragProvider.tsx` | **New** | ✅ | `DragDropProvider` + `DragOverlay` + typed `onDragEnd` switch |
+| `FormDesigner/types/formDragEvent.ts` | **New** | ✅ | `FormDragEventData` / `PaletteDragEventData` / `FormDragEventSource` enum |
+| `FormDesigner/types/formDropEvent.ts` | **New** | ✅ | `FormDropEventData` / `PaletteDropEventData` |
+| `FormDesigner/providers/FormDesignerDragProvider.tsx` | **New** | ✅ | `DragDropProvider` + `DragOverlay` + context + `useFormDragEvent` hook + typed `onDragEnd` switch |
 | `FormDesigner/FormDesigner.tsx` | Modify | ✅ | Wrap panels with `FormDesignerDragProvider` |
 | `ToolboxPanel/palette.tsx` | Modify | ✅ | `PaletteItemDragType` enum + `dragType` field on every `IPaletteItem` |
-| `ToolboxPanel/PaletteItem.tsx` | Modify | ✅ | `useDraggable` with `type: item.dragType`; `draggable` prop pattern |
-| `components/DraggableCard.tsx` | Modify | ✅ | Optional `handleRef` prop forwarded to root `Box` |
-| `CanvasPanel/lists/SectionItem.tsx` | Modify | 🔄 | `useDroppable` wired with `accept: PaletteItemDragType.Element`; `isDropTarget` style not yet applied |
-| `CanvasPanel/lists/SectionList.tsx` | Modify | 🔄 | `useDroppable` imported; canvas-level section drop zone not yet wired |
+| `ToolboxPanel/PaletteItem.tsx` | Modify | ✅ | `useDraggable` with `type: item.dragType`; `draggable` prop pattern; `FormDragEventSource` enum |
+| `components/DragDrop/DraggableCard.tsx` | Moved | ✅ | Moved from `components/` to `components/DragDrop/`; optional `handleRef` prop |
+| `components/DragDrop/DropZoneIndicator.tsx` | **New** | ✅ | Ambient drop zone indicator component shown on drag start |
+| `CanvasPanel/lists/SectionItem.tsx` | Modify | ✅ | `useDroppable` + `useFormDragEvent` + `canDropItem` + `DropZoneIndicator` |
+| `CanvasPanel/lists/PageItem.tsx` | Modify | ✅ | `useDroppable` (section drops) + `useFormDragEvent` + `canDropItem` + `DropZoneIndicator` |
+| `CanvasPanel/lists/SectionList.tsx` | Modify | 🔄 | Stale `useDroppable` import — needs cleanup |
+| `CanvasPanel/lists/SectionItem.style.ts` | Modify | | Add `isDropTarget` stronger hover style variant |
 | `store/formDesigner/events.ts` | Modify | | Extend `AddElementEvent` (`elementType`, `sectionId`); extend `AddSectionEvent` (`pageId`) |
 | `store/formDesigner/elementFactory.ts` | **New** | | `createElementFromType()` factory function |
 | `store/formDesigner/eventHandlers/elementEventHandlers.ts` | Modify | | Implement `onAddElement` stub |
 | `store/formDesigner/eventHandlers/sectionEventHandlers.ts` | Modify | | Implement `onAddSection` stub |
-| `CanvasPanel/lists/SectionItem.style.ts` | Modify | | Add `isDropTarget` style variant |
 | `CanvasPanel/lists/ElementList.tsx` | Modify | | Wrap with `AnimatePresence` |
 | `CanvasPanel/lists/ElementItem.tsx` | Modify | | Switch root to `motion.li` with `layout` + enter/exit animations; wire `onReorder` |
 
-**Total: 11 modified files, 4 new files. 8 of 17 complete, 2 in progress.**
+**Total: 11 modified files, 5 new files, 1 moved. 11 of 19 complete, 1 in progress.**
 
 ---
 
 ## Decisions / Open Questions
 
-- **Drop position within a section**: Currently dispatches with `position: 0` as a placeholder. For precise insertion (before/after a specific element), `ElementItem` would also need `useDroppable` or the section would need to track hover position — this is a scope increase.
-- **Cross-section drag of existing elements**: `MoveElement` supports cross-section moves. Wiring this up with `useSortable` (from `@dnd-kit/react/sortable`) across multiple droppable containers is the natural next step after the toolbox drop is working.
-- **`handleRef` null vs undefined**: `DraggableCard` accepts `handleRef?: Ref<Element>` but `PaletteItem` passes `null` when `draggable={false}`. Change to `undefined` to avoid a potential TypeScript error.
-- **`SectionList` as section drop zone**: Needs `pageId` threaded down as a prop so the droppable data can carry it for `AddSectionEvent` dispatch.
+- **`isDropTarget` active hover style**: `isDropTarget` from `useDroppable` is available in both `SectionItem` and `PageItem` but not yet passed into their style functions. Should show a stronger highlight (e.g. solid border) when the cursor is directly over the zone, on top of the ambient `DropZoneIndicator`.
+- **`canDropItem` brittleness**: Both `SectionItem` and `PageItem` use `data.type !== "section"` / `data.type === "section"` as the condition. Should use `PaletteItemDragType` from `event.operation.source.type` (available in `onDragStart`) instead of the `data` payload for robustness.
+- **Drop position**: Currently dispatches `position: 0` as a placeholder. Precise insertion requires `ElementItem` / `SectionItem` to also act as droppables with position tracking.
+- **`SectionList` cleanup**: Stale `useDroppable` import needs removing.
+- **`handleRef` null vs undefined**: `PaletteItem` passes `null` when `draggable={false}`. Change to `undefined` to match `Ref<Element>` type.
+- **Cross-section drag of existing elements**: Natural next step after drop dispatch is working — use `useSortable` from `@dnd-kit/react/sortable` with `group` for cross-section moves.
