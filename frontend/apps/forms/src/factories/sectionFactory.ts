@@ -1,9 +1,8 @@
 import type { ISection } from "@/types/section";
-import { generatedID } from "@/utils/id";
 
-export function createEmptySection(): ISection {
+export function createEmptySection(id: string): ISection {
   return {
-    id: generatedID(),
+    id,
     key: "",
     name: "Section",
     position: 0,

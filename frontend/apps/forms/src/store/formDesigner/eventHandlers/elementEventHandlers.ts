@@ -14,7 +14,7 @@ export function onAddElement(
   aggregate: IFormAggregate,
   event: AddElementEvent,
 ): IFormAggregate {
-  const element = createElementFromType(event.elementType);
+  const element = createElementFromType(event.elementType, event.id);
 
   const pages = aggregate.version.pages.map((page): IPage => {
     const hasSection = page.sections.some((s) => s.id === event.sectionId);

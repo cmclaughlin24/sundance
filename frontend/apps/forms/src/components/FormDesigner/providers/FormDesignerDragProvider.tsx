@@ -1,7 +1,10 @@
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
 import { findPaletteItem } from "../panels/ToolboxPanel/palette";
 import { PaletteItem } from "../panels/ToolboxPanel/PaletteItem";
-import { useFormDesignerDispatch } from "@/store/formDesigner";
+import {
+  useFormDesignerDispatch,
+  useFormDesignerSelect,
+} from "@/store/formDesigner";
 import {
   FormDragEventSource,
   type FormDragEventData,
@@ -17,6 +20,7 @@ import type {
   AddSectionEvent,
   FormDesignerEvent,
 } from "@/store/formDesigner/events";
+import { generatedID } from "@/utils/id";
 
 const FormDesignerDragContext = createContext<FormDragEventData | null>(null);
 
@@ -29,17 +33,20 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
     const [activeDragData, setActiveDragData] =
       useState<FormDragEventData | null>(null);
     const { dispatch } = useFormDesignerDispatch();
+    const { select } = useFormDesignerSelect();
 
     const handlePaletteDragEnd = (
       dragData: PaletteDragEventData,
       dropData: PaletteDropEventData,
     ) => {
       let event: FormDesignerEvent;
+      const id = generatedID();
 
       switch (dragData.type) {
         case "section":
           event = {
             type: "AddSection",
+            id,
             pageId: dropData.parentId,
             position: dropData.position,
           } satisfies AddSectionEvent;
@@ -47,6 +54,7 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
         default:
           event = {
             type: "AddElement",
+            id,
             elementType: dragData.type,
             sectionId: dropData.parentId,
             position: dropData.position,
@@ -55,6 +63,7 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
       }
 
       dispatch(event);
+      select({ type: dragData.type, id });
     };
 
     return (

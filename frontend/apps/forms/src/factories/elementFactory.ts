@@ -10,20 +10,19 @@ import type {
   ToggleElementAttributes,
   UserElementAttributes,
 } from "@/types/elementAttributes";
-import { generatedID } from "@/utils/id";
 
 export type ElementFactory = (id: string) => IElement;
 
 const registry = new Map<ElementType, ElementFactory>();
 
-export function createElementFromType(elementType: ElementType): IElement {
+export function createElementFromType(elementType: ElementType, id: string): IElement {
   const factory = registry.get(elementType);
 
   if (!factory) {
     throw new Error(`No factory registered for element type: ${elementType}`);
   }
 
-  return factory(generatedID());
+  return factory(id);
 }
 
 function registerElementFactory(

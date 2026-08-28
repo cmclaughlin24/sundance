@@ -29,6 +29,7 @@ export type RemovePageEvent = {
 
 export type AddSectionEvent = {
   type: "AddSection";
+  id: string;
   pageId: string;
   position: number;
 };
@@ -47,6 +48,7 @@ export type RemoveSectionEvent = {
 
 export type AddElementEvent = {
   type: "AddElement";
+  id: string;
   sectionId: string;
   elementType: ElementType;
   position: number;

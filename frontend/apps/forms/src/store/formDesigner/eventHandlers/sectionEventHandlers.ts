@@ -9,7 +9,7 @@ export function onAddSection(
   aggregate: IFormAggregate,
   event: AddSectionEvent,
 ): IFormAggregate {
-  const section = createEmptySection();
+  const section = createEmptySection(event.id);
 
   const pages = aggregate.version.pages.map((page): IPage => {
     if (page.id !== event.pageId) {

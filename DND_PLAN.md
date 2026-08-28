@@ -10,11 +10,6 @@
 - Canvas renders a full `Page → Section → Element` hierarchy
 - `useFormDesignerSelect` and `useFormDesignerDispatch` hooks available throughout
 
-### What's stubbed / missing
-- `onAddElement` and `onAddSection` event handlers return the aggregate unchanged
-- `AddElementEvent` lacks `elementType` — the handler cannot know what kind of element to create
-- `ItemTools.onReorder` callbacks are empty arrow functions
-
 ---
 
 ## Dependencies to Install
@@ -41,7 +36,7 @@ pnpm --filter @sundance/forms add @dnd-kit/react
 
 ### ✅ Step 2 — Extend Event Types (`store/formDesigner/events.ts`)
 
-`AddSectionEvent` and `AddElementEvent` updated:
+`AddSectionEvent` has `pageId`; `AddElementEvent` has `sectionId` and `elementType`:
 
 ```ts
 export type AddSectionEvent = {
@@ -53,112 +48,57 @@ export type AddSectionEvent = {
 export type AddElementEvent = {
   type: "AddElement";
   sectionId: string;
+  elementType: ElementType;
   position: number;
-  // ⚠️ elementType still missing — needed before onAddElement can be implemented
 };
 ```
 
-> `elementType: ElementType` still needs to be added to `AddElementEvent`.
+### ✅ Step 3 — Element + Section Factories
 
-### ✅ Step 3 — Element Factory (`src/factories/elementFactory.ts`)
+**`src/factories/elementFactory.ts`** — Registry-based abstract factory. `registerElementFactory`
+is private (not exported). All 9 element types registered inline with `satisfies` to verify
+attribute shapes at compile time. ID generation via `generatedID()`.
 
-Registry-based abstract factory. `registerElementFactory` is private (not exported). All 9 element
-types registered inline with `satisfies` to verify attribute shapes at compile time. ID generation
-handled internally via `generatedID()` from `src/utils/id.ts` (uses `crypto.randomUUID()` with a
-`TEMP_` prefix; companion `isTemporaryID()` available for server-reconciliation later).
+**`src/factories/sectionFactory.ts`** — `createEmptySection()` returns a new `ISection` with a
+generated ID, empty `elements`, `rules`, `key`, `name: "Section"`, and `position: 0`.
 
-`ElementAttributes` union in `src/types/elementAttributes.ts` extended to include all 9 types:
-`SegmentedElementAttributes`, `RadioElementAttributes`, `ToggleElementAttributes`,
-`UserElementAttributes` were previously missing.
+**`src/utils/id.ts`** — `generatedID()` + `isTemporaryID()`.
+
+**`src/utils/position.ts`** — new file with two utilities:
+- `sortPositioned<T extends HasPosition>(items)` — sorts by `position`
+- `getNextPosition<T extends HasPosition>(items)` — returns last item's `position + 1`, or `0` if empty
+
+`ElementAttributes` union extended to all 9 types.
 
 `canDropItem` in both `PageItem` and `SectionItem` updated to use `PaletteItemDragType.Section`
 enum instead of the `"section"` string literal.
 
-### Step 4 — Add `elementType` to `AddElementEvent`
+### ✅ Step 4 — Drop Zone Position
 
-```ts
-export type AddElementEvent = {
-  type: "AddElement";
-  sectionId: string;
-  elementType: ElementType;   // ← add this
-  position: number;
-};
-```
+`PaletteDropEventData` extended with `position: number`. Both `SectionItem` and `PageItem` compute
+the append position at droppable registration time using `sortPositioned` + `getNextPosition`:
 
-### Step 5 — Implement `onAddElement` and `onAddSection`
+- **`SectionItem`** — `position: getNextPosition(sortPositioned(section.elements))`
+- **`PageItem`** — `position: getNextPosition(sortPositioned(page.sections))`
 
-**`eventHandlers/elementEventHandlers.ts`:**
+`DropZoneIndicator` updated to own its `AnimatePresence` via `isVisible` prop — callers render it
+unconditionally and pass `isVisible={canDrop}`.
 
-```ts
-export function onAddElement(
-  aggregate: IFormAggregate,
-  event: AddElementEvent,
-): IFormAggregate {
-  const element = createElementFromType(event.elementType);
-  const pages = aggregate.version.pages.map((page) => ({
-    ...page,
-    sections: page.sections.map((section) => {
-      if (section.id !== event.sectionId) return section;
-      return {
-        ...section,
-        elements: insertAtPosition(section.elements, element, event.position),
-      };
-    }),
-  }));
-  return { ...aggregate, version: { ...aggregate.version, pages } };
-}
-```
+### ✅ Step 5 — Implement `onAddElement` and `onAddSection`
 
-**`eventHandlers/sectionEventHandlers.ts`:**
+**`elementEventHandlers.ts`** — imports `createElementFromType`; maps pages → sections to find
+target by `event.sectionId`; inserts via `insertAtPosition`.
 
-```ts
-export function onAddSection(
-  aggregate: IFormAggregate,
-  event: AddSectionEvent,
-): IFormAggregate {
-  const section = createEmptySection(event.pageId);
-  const pages = aggregate.version.pages.map((page) => {
-    if (page.id !== event.pageId) return page;
-    return {
-      ...page,
-      sections: insertAtPosition(page.sections, section, event.position),
-    };
-  });
-  return { ...aggregate, version: { ...aggregate.version, pages } };
-}
-```
+**`sectionEventHandlers.ts`** — imports `createEmptySection`; maps pages to find target by
+`event.pageId`; inserts via `insertAtPosition`.
 
-A `createEmptySection` utility is also needed — returns a new `ISection` with a generated ID,
-empty `elements`, `rules`, `key`, and `name`.
+### ✅ Step 6 — Wire `handlePaletteDragEnd` Dispatch
 
-### Step 6 — Wire `handlePaletteDragEnd` Dispatch
-
-Replace the `console.log` stub in `FormDesignerDragProvider`:
-
-```ts
-const handlePaletteDragEnd = (
-  dragData: PaletteDragEventData,
-  dropData: PaletteDropEventData,
-) => {
-  if (dragData.type === PaletteItemDragType.Section) {
-    dispatch({
-      type: "AddSection",
-      pageId: dropData.parentId,
-      position: 0,
-    });
-  } else {
-    dispatch({
-      type: "AddElement",
-      elementType: dragData.type,
-      sectionId: dropData.parentId,
-      position: 0,
-    });
-  }
-};
-```
-
-Also import `elementFactory.ts` here (or anywhere in the module graph above this call) so the
-registry side effects run before `createElementFromType` is called.
+`dispatch` is destructured from `useFormDesignerDispatch`. `handlePaletteDragEnd` uses a `switch`
+on `dragData.type` with `satisfies` type checking on each constructed event before dispatching.
+`"section"` routes to `AddSectionEvent`; all other types route to `AddElementEvent`. The
+`elementFactory.ts` registry is triggered via the import of `createElementFromType` inside
+`elementEventHandlers.ts` which is in the module graph.
 
 ### Step 7 — Wire `ItemTools.onReorder` to Move Events
 
@@ -170,7 +110,7 @@ onReorder={(inc) =>
   dispatch({
     type: "MoveElement",
     elementId: element.id,
-    targetSectionId: sectionId,        // needs sectionId passed as prop
+    targetSectionId: sectionId,
     position: element.position + inc,
   })
 }
@@ -180,7 +120,7 @@ onReorder={(inc) =>
   dispatch({
     type: "MoveSection",
     sectionId: section.id,
-    targetPageId: pageId,              // needs pageId passed as prop
+    targetPageId: pageId,
     position: section.position + inc,
   })
 }
@@ -190,10 +130,6 @@ Requires threading `sectionId` into `ElementItem` and `pageId` into `SectionItem
 which means updating `ElementList` and `SectionList` to pass them down.
 
 ### Step 8 — Framer Motion Animations
-
-`DropZoneIndicator` now owns its own `AnimatePresence` via `isVisible` prop — callers render it
-unconditionally and pass `isVisible={canDrop}`. The `motion` wrappers in `PageItem` and
-`SectionItem` have been removed in favour of this self-contained approach.
 
 Remaining animation work:
 - `ElementList` — `AnimatePresence` wrapper for element enter/exit
@@ -209,34 +145,37 @@ Remaining animation work:
 |---|---|---|---|
 | `package.json` | Modify | ✅ | Add `@dnd-kit/react` |
 | `FormDesigner/types/formDragEvent.ts` | **New** | ✅ | `FormDragEventData` / `PaletteDragEventData` / `FormDragEventSource` enum |
-| `FormDesigner/types/formDropEvent.ts` | **New** | ✅ | `FormDropEventData` / `PaletteDropEventData` |
-| `FormDesigner/providers/FormDesignerDragProvider.tsx` | **New** | ✅ | `DragDropProvider` + `DragOverlay` + context + `useFormDragEvent` hook + typed `onDragEnd` switch |
+| `FormDesigner/types/formDropEvent.ts` | **New** | ✅ | `FormDropEventData` / `PaletteDropEventData` with `position` |
+| `FormDesigner/providers/FormDesignerDragProvider.tsx` | **New** | ✅ | `DragDropProvider` + `DragOverlay` + context + `useFormDragEvent` hook + `handlePaletteDragEnd` with typed switch dispatch |
 | `FormDesigner/FormDesigner.tsx` | Modify | ✅ | Wrap panels with `FormDesignerDragProvider` |
 | `FormDesigner/FormDesigner.styles.ts` | Modify | ✅ | Right panel column widened to `28rem` |
 | `ToolboxPanel/palette.tsx` | Modify | ✅ | `PaletteItemDragType` enum + `dragType` field on every `IPaletteItem` |
 | `ToolboxPanel/PaletteItem.tsx` | Modify | ✅ | `useDraggable` with `type: item.dragType`; `draggable` prop; `isDragging` → `onDrag` style |
 | `components/DragDrop/DraggableCard.tsx` | Moved | ✅ | Moved from `components/` to `components/DragDrop/`; optional `handleRef` prop |
 | `components/DragDrop/DropZoneIndicator.tsx` | **New** | ✅ | `isVisible` owns `AnimatePresence`; `isDropTarget` drives background animation via Framer Motion variants + `useTheme` |
-| `CanvasPanel/lists/SectionItem.tsx` | Modify | ✅ | `useDroppable` + `useFormDragEvent` + `canDropItem` + `dragPaletteItem` memo + `DropZoneIndicator` |
+| `CanvasPanel/lists/SectionItem.tsx` | Modify | ✅ | `useDroppable` + `useFormDragEvent` + `canDropItem` + `sortPositioned`/`getNextPosition` + `DropZoneIndicator` |
 | `CanvasPanel/lists/SectionItem.style.ts` | Modify | ✅ | `elements` style added for inner layout wrapper |
-| `CanvasPanel/lists/PageItem.tsx` | Modify | ✅ | `useDroppable` (section drops) + same pattern as `SectionItem` |
+| `CanvasPanel/lists/PageItem.tsx` | Modify | ✅ | `useDroppable` (section drops) + `sortPositioned`/`getNextPosition` + `DropZoneIndicator` |
 | `CanvasPanel/lists/SectionList.tsx` | Modify | ✅ | Stale `useDroppable` import removed; `gap: 2.5` added |
 | `src/types/elementAttributes.ts` | Modify | ✅ | `ElementAttributes` union extended to all 9 types |
 | `src/factories/elementFactory.ts` | **New** | ✅ | Registry-based abstract factory; all 9 types registered inline |
+| `src/factories/sectionFactory.ts` | **New** | ✅ | `createEmptySection()` factory |
 | `src/utils/id.ts` | **New** | ✅ | `generatedID()` + `isTemporaryID()` |
-| `store/formDesigner/events.ts` | Modify | ✅ | `AddSectionEvent` has `pageId`; `AddElementEvent` has `sectionId` |
-| `store/formDesigner/events.ts` | Modify | | `AddElementEvent` still needs `elementType: ElementType` |
-| `store/formDesigner/eventHandlers/elementEventHandlers.ts` | Modify | | Implement `onAddElement` (blocked on `elementType` field) |
-| `store/formDesigner/eventHandlers/sectionEventHandlers.ts` | Modify | | Implement `onAddSection` + `createEmptySection` utility |
+| `src/utils/position.ts` | **New** | ✅ | `sortPositioned()` + `getNextPosition()` |
+| `store/formDesigner/events.ts` | Modify | ✅ | `AddSectionEvent` has `pageId`; `AddElementEvent` has `sectionId` + `elementType` |
+| `store/formDesigner/eventHandlers/elementEventHandlers.ts` | Modify | ✅ | `onAddElement` implemented |
+| `store/formDesigner/eventHandlers/sectionEventHandlers.ts` | Modify | ✅ | `onAddSection` implemented |
 | `CanvasPanel/lists/ElementList.tsx` | Modify | | `AnimatePresence` wrapper |
 | `CanvasPanel/lists/ElementItem.tsx` | Modify | | `motion.li` + `layout="position"` + tween transition + enter/exit; wire `onReorder` |
+| `CanvasPanel/lists/SectionList.tsx` | Modify | | `AnimatePresence` wrapper |
+| `CanvasPanel/lists/SectionItem.tsx` | Modify | | `motion.li` + `layout="position"` |
 
-**Total: 14 modified files, 6 new files, 1 moved. 17 of 23 complete.**
+**Total: 15 modified files, 7 new files, 1 moved. 22 of 23 complete.**
 
 ---
 
 ## Decisions / Open Questions
 
 - **`handleRef` null vs undefined**: `PaletteItem` passes `null` when `draggable={false}`. Change to `undefined` to match `Ref<Element>` type.
-- **Drop position**: Currently dispatches `position: 0`. Precise insertion would require additional droppable hit-testing per element/section.
+- **Drop position**: `getNextPosition` appends to the end. Precise mid-list insertion would require per-element droppable hit-testing — out of scope for now.
 - **Cross-section drag of existing elements**: Natural next step — `useSortable` from `@dnd-kit/react/sortable` with `group` for cross-section moves.
