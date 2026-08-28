@@ -8,9 +8,9 @@ const styles: Styles = {
   list: {
     margin: 0,
     padding: 0,
+    marginBottom: -1.5,
     display: "flex",
     flexDirection: "column",
-    gap: 2.5,
   },
 };
 
@@ -19,7 +19,7 @@ export const SectionList: React.FC<{ sections: ISection[] }> = function ({
 }) {
   return (
     <Box component="ul" sx={styles.list}>
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {sections.map((section) => (
           <SectionItem section={section} key={section.id} />
         ))}

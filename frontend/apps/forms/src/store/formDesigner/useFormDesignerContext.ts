@@ -21,7 +21,17 @@ export function useFormDesignerDispatch() {
     store,
     useShallow((s) => ({
       dispatch: s.dispatch,
+    })),
+  );
+}
+
+export function useFormDesignerUndo() {
+  const store = useFormDesignerContext();
+  return useStore(
+    store,
+    useShallow((s) => ({
       undo: s.undo,
+      redo: s.redo,
     })),
   );
 }

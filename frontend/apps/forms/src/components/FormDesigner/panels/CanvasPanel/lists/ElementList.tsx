@@ -7,10 +7,10 @@ import { AnimatePresence } from "motion/react";
 const styles: Styles = {
   list: {
     margin: 0,
+    marginBottom: -1.5,
     padding: 0,
     display: "flex",
     flexDirection: "column",
-    gap: 1.5,
   },
 };
 
@@ -19,7 +19,7 @@ export const ElementList: React.FC<{ elements: IElement[] }> = function ({
 }) {
   return (
     <Box component="ul" sx={styles.list}>
-      <AnimatePresence>
+      <AnimatePresence initial={false}>
         {elements.map((element) => (
           <ElementItem element={element} key={element.id} />
         ))}

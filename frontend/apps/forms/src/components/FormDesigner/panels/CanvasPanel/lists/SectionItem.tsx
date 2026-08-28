@@ -1,7 +1,10 @@
 import type { ISection } from "@/types/section";
 import Box from "@mui/material/Box";
 import { ElementList } from "./ElementList";
-import { useFormDesignerSelect } from "@/store/formDesigner";
+import {
+  useFormDesignerDispatch,
+  useFormDesignerSelect,
+} from "@/store/formDesigner";
 import { useMemo, type MouseEventHandler } from "react";
 import { getSectionItemStyles } from "./SectionItem.style";
 import {
@@ -20,12 +23,20 @@ import {
   type FormDragEventData,
 } from "@/components/FormDesigner/types/formDragEvent";
 import { getNextPosition, sortPositioned } from "@/utils/position";
-import { motion } from "motion/react";
+import { motion, type Variants } from "motion/react";
+import type { RemoveSectionEvent } from "@/store/formDesigner/events";
+
+const variants: Variants = {
+  initial: { opacity: 0, height: 0, marginBottom: 0 },
+  animate: { opacity: 1, height: "auto", marginBottom: "1.25rem" },
+  exit: { opacity: 0, height: 0, marginBottom: 0 },
+};
 
 export const SectionItem: React.FC<{ section: ISection }> = function ({
   section,
 }) {
   const elements = sortPositioned(section.elements);
+  const { dispatch } = useFormDesignerDispatch();
   const { select, isSelected } = useFormDesignerSelect(section.id);
   const { ref, isDropTarget } = useDroppable({
     id: `section-${section.id}`,
@@ -43,6 +54,14 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
     select(!isSelected ? { type: "section", id: section.id } : null);
   };
 
+  const handleDelete = () => {
+    dispatch({
+      type: "RemoveSection",
+      sectionId: section.id,
+    } satisfies RemoveSectionEvent);
+    isSelected && select(null);
+  };
+
   const paletteItem = useMemo(() => findPaletteItem("section"), []);
   const dragPaletteItem = useMemo(
     () => (dragData ? findPaletteItem(dragData.type) : null),
@@ -55,9 +74,10 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
     <Box
       component={motion.li}
       layout="position"
-      initial={{ opacity: 0, height: 0 }}
-      animate={{ opacity: 1, height: "auto" }}
-      exit={{ opacity: 0, height: 0 }}
+      variants={variants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
       transition={{ type: "spring", bounce: 0, duration: 0.35 }}
       sx={styles.item}
       onClick={handleClk}
@@ -70,7 +90,7 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
           <ItemTools
             onReorder={(_inc) => {}}
             onCopy={() => {}}
-            onDelete={() => {}}
+            onDelete={handleDelete}
           />
         </Box>
         <Box sx={styles.elements}>

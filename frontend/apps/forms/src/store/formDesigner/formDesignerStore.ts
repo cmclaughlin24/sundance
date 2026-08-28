@@ -3,7 +3,11 @@ import type { FormDesignerEvent } from "./events";
 import type { IFormVersion } from "@/types/formVersion";
 import type { IForm } from "@/types/form";
 import type { SelectedItem } from "./formDesigner.type";
-import { apply, reduce, type IFormAggregate } from "./eventHandlers/eventHandler";
+import {
+  apply,
+  reduce,
+  type IFormAggregate,
+} from "./eventHandlers/eventHandler";
 
 export interface IFormDesignerStore {
   snapshot: IFormAggregate;
@@ -12,6 +16,7 @@ export interface IFormDesignerStore {
   selected: SelectedItem | null;
   dispatch: (event: FormDesignerEvent) => void;
   undo: () => void;
+  redo: () => void;
   select: (item: SelectedItem | null) => void;
 }
 
@@ -37,6 +42,14 @@ export function createFormDesignerStore(form: IForm, version: IFormVersion) {
       set((s) => {
         const cursor = s.cursor >= 0 ? s.cursor - 1 : s.cursor;
         const events = cursor !== -1 ? s.events.slice(0, s.cursor) : [];
+        const snapshot = reduce(initial, events);
+
+        return { ...s, cursor, snapshot };
+      }),
+    redo: () =>
+      set((s) => {
+        const cursor = s.cursor + 1 < s.events.length ? s.cursor + 1 : s.cursor;
+        const events = s.events.slice(0, cursor + 1);
         const snapshot = reduce(initial, events);
 
         return { ...s, cursor, snapshot };

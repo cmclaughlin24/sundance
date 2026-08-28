@@ -7,4 +7,13 @@ export const canvasPanelStyles: Styles = {
     flexDirection: "column",
     gap: 2.5,
   },
+  toolbar: {
+    display: "flex",
+    justifyContent: "space-between",
+  },
+  buttons: {
+    "> button:not(:last-of-type)": {
+      marginRight: 1,
+    },
+  },
 };
