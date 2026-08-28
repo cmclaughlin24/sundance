@@ -7,6 +7,9 @@ export const collapsibleStyles: Styles = {
     display: "flex",
     alignItems: "center",
     gap: 0.5,
+    ":hover": {
+      cursor: "pointer",
+    },
   },
   content: {
     overflow: "hidden",

@@ -1,6 +1,5 @@
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
@@ -24,21 +23,13 @@ export const Collapisble: React.FC<CollapisbleProps> = function ({
 
   return (
     <Box sx={collapsibleStyles.collapisble}>
-      <Box sx={collapsibleStyles.summary}>
-        <IconButton
-          size="medium"
-          aria-label="Move up"
-          data-testid="item-toolbar-move-up"
-          sx={collapsibleStyles.button}
-        >
-          <ExpandMore
-            fontSize="inherit"
-            onClick={handleToggle}
-            component={motion.svg}
-            animate={{ rotate: isCollapsed ? -90 : 0 }}
-            transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
-          />
-        </IconButton>
+      <Box sx={collapsibleStyles.summary} onClick={handleToggle} role="button">
+        <ExpandMore
+          fontSize="medium"
+          component={motion.svg}
+          animate={{ rotate: isCollapsed ? -90 : 0 }}
+          transition={{ type: "spring", bounce: 0.6, duration: 0.4 }}
+        />
         <Typography>{summary}</Typography>
       </Box>
       <AnimatePresence initial={false}>
