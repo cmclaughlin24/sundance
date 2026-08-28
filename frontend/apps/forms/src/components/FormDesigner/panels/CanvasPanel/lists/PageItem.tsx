@@ -15,6 +15,7 @@ import {
 } from "@/components/FormDesigner/types/formDragEvent";
 import { useFormDragEvent } from "@/components/FormDesigner/providers/FormDesignerDragProvider";
 import { useMemo } from "react";
+import { motion } from "motion/react";
 
 const styles: Styles = {
   item: {
@@ -39,7 +40,7 @@ export const PageItem: React.FC<{ page: IPage }> = function ({ page }) {
   );
 
   return (
-    <Box component="li" sx={styles.item} ref={ref}>
+    <Box component={motion.li} layout="position" sx={styles.item} ref={ref}>
       <SectionList sections={page.sections} />
       {canDrop && (
         <DropZoneIndicator

@@ -23,5 +23,10 @@ export const getSectionItemStyles = (isSelected: boolean): Styles => {
         border: `1px solid ${theme.palette.primary.main}`,
       },
     }),
+    elements: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 1.5,
+    },
   };
 };

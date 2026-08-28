@@ -19,6 +19,7 @@ import {
   FormDragEventSource,
   type FormDragEventData,
 } from "@/components/FormDesigner/types/formDragEvent";
+import { motion } from "motion/react";
 
 export const SectionItem: React.FC<{ section: ISection }> = function ({
   section,
@@ -61,13 +62,15 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
             onDelete={() => {}}
           />
         </Box>
-        <ElementList elements={section.elements} />
-        {canDrop && (
-          <DropZoneIndicator
-            text={`Drop ${dragPaletteItem!.label} here`}
-            isDropTarget={isDropTarget}
-          />
-        )}
+        <Box component={motion.div} sx={styles.elements} layout="position">
+          <ElementList elements={section.elements} />
+          {canDrop && (
+            <DropZoneIndicator
+              text={`Drop ${dragPaletteItem!.label} here`}
+              isDropTarget={isDropTarget}
+            />
+          )}
+        </Box>
       </DraggableCard>
     </Box>
   );
