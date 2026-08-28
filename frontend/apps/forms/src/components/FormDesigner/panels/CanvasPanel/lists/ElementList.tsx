@@ -2,6 +2,7 @@ import type { IElement } from "@/types/element";
 import Box from "@mui/material/Box";
 import { ElementItem } from "./ElementItem";
 import type { Styles } from "@/types/styles";
+import { AnimatePresence } from "motion/react";
 
 const styles: Styles = {
   list: {
@@ -18,9 +19,11 @@ export const ElementList: React.FC<{ elements: IElement[] }> = function ({
 }) {
   return (
     <Box component="ul" sx={styles.list}>
-      {elements.map((element) => (
-        <ElementItem element={element} key={element.id} />
-      ))}
+      <AnimatePresence>
+        {elements.map((element) => (
+          <ElementItem element={element} key={element.id} />
+        ))}
+      </AnimatePresence>
     </Box>
   );
 };

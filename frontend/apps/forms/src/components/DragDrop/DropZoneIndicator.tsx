@@ -35,10 +35,13 @@ export const DropZoneIndicator: React.FC<{
       },
       animate: {
         background: `${theme.palette.primary.main}60`,
-        transition: { duration: 0.25, ease: "easeInOut" },
+        transition: { duration: 0.25, ease: "easeIn" },
       },
       exit: {
         background: `${theme.palette.primary.main}20`,
+        opacity: 0,
+        height: 0,
+        transition: { duration: 0.1, ease: "easeIn" },
       },
     }),
     [theme],

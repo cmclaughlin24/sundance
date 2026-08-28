@@ -8,6 +8,7 @@ import { ItemTools } from "../../../common/ItemTools";
 import { Tag } from "@/components/Tag";
 import { findPaletteItem } from "../../ToolboxPanel/palette";
 import { DraggableCard } from "@/components/DragDrop/DraggableCard";
+import { motion } from "motion/react";
 
 export const ElementItem: React.FC<{ element: IElement }> = function ({
   element,
@@ -26,7 +27,17 @@ export const ElementItem: React.FC<{ element: IElement }> = function ({
   const paletteItem = findPaletteItem(element.type);
 
   return (
-    <Box component="li" sx={styles.item} onClick={handleClk} role="button">
+    <Box
+      component={motion.li}
+      layout="position"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+      sx={styles.item}
+      onClick={handleClk}
+      role="button"
+    >
       <DraggableCard sx={styles.card}>
         <Box sx={styles.content}>
           <Box>
@@ -46,4 +57,3 @@ export const ElementItem: React.FC<{ element: IElement }> = function ({
     </Box>
   );
 };
-
