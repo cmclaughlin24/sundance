@@ -12,7 +12,10 @@ import { Tag } from "@/components/Tag";
 import { findPaletteItem } from "../../ToolboxPanel/palette";
 import { DraggableCard } from "@/components/DragDrop/DraggableCard";
 import { motion, type Variants } from "motion/react";
-import type { RemoveElementEvent } from "@/store/formDesigner/events";
+import type {
+  ReorderElementEvent,
+  RemoveElementEvent,
+} from "@/store/formDesigner/events";
 
 const variants: Variants = {
   initial: { opacity: 0, height: 0, marginBottom: 0 },
@@ -33,6 +36,14 @@ export const ElementItem: React.FC<{ element: IElement }> = function ({
   const handleClk: MouseEventHandler<HTMLLIElement> = (event) => {
     event.stopPropagation();
     select(!isSelected ? { type: element.type, id: element.id } : null);
+  };
+
+  const handleReorder = (inc: -1 | 1) => {
+    dispatch({
+      type: "ReorderElement",
+      elementId: element.id,
+      inc,
+    } satisfies ReorderElementEvent);
   };
 
   const handleDelete = () => {
@@ -67,7 +78,7 @@ export const ElementItem: React.FC<{ element: IElement }> = function ({
           <Box sx={{ display: "flex", alignItems: "center" }}>
             {paletteItem && <Tag>{paletteItem.label}</Tag>}
             <ItemTools
-              onReorder={(_inc) => {}}
+              onReorder={handleReorder}
               onCopy={() => {}}
               onDelete={handleDelete}
             />

@@ -2,6 +2,7 @@ import type { IElement } from "@/types/element";
 import type {
   AddElementEvent,
   MoveElementEvent,
+  ReorderElementEvent,
   RemoveElementEvent,
 } from "../events";
 import type { IFormAggregate } from "./eventHandler";
@@ -9,6 +10,7 @@ import type { ISection } from "@/types/section";
 import type { IPage } from "@/types/page";
 import { insertAtPosition, removeById } from "./utils";
 import { createElementFromType } from "@/factories/elementFactory";
+import { swapPositions } from "@/utils/position";
 
 export function onAddElement(
   aggregate: IFormAggregate,
@@ -31,6 +33,33 @@ export function onAddElement(
       return {
         ...section,
         elements: insertAtPosition(section.elements, element, event.position),
+      };
+    });
+
+    return { ...page, sections };
+  });
+
+  return {
+    ...aggregate,
+    version: { ...aggregate.version, pages },
+  };
+}
+
+export function onReorderElement(
+  aggregate: IFormAggregate,
+  event: ReorderElementEvent,
+): IFormAggregate {
+  const pages = aggregate.version.pages.map((page): IPage => {
+    const sections = page.sections.map((section): ISection => {
+      const hasElement = section.elements.some((e) => e.id === event.elementId);
+
+      if (!hasElement) {
+        return section;
+      }
+
+      return {
+        ...section,
+        elements: swapPositions(section.elements, event.elementId, event.inc),
       };
     });
 

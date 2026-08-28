@@ -7,9 +7,11 @@ export type FormDesignerEvent =
   | AddSectionEvent
   | MoveSectionEvent
   | RemoveSectionEvent
+  | ReorderSectionEvent
   | AddElementEvent
   | MoveElementEvent
-  | RemoveElementEvent;
+  | RemoveElementEvent
+  | ReorderElementEvent;
 
 export type AddPageEvent = {
   type: "AddPage";
@@ -46,6 +48,12 @@ export type RemoveSectionEvent = {
   sectionId: string;
 };
 
+export type ReorderSectionEvent = {
+  type: "ReorderSection";
+  sectionId: string;
+  inc: -1 | 1;
+};
+
 export type AddElementEvent = {
   type: "AddElement";
   id: string;
@@ -64,4 +72,10 @@ export type MoveElementEvent = {
 export type RemoveElementEvent = {
   type: "RemoveElement";
   elementId: string;
+};
+
+export type ReorderElementEvent = {
+  type: "ReorderElement";
+  elementId: string;
+  inc: -1 | 1;
 };

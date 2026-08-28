@@ -1,9 +1,15 @@
 import type { ISection } from "@/types/section";
-import type { AddSectionEvent, MoveSectionEvent, RemoveSectionEvent } from "../events";
+import type {
+  AddSectionEvent,
+  MoveSectionEvent,
+  ReorderSectionEvent,
+  RemoveSectionEvent,
+} from "../events";
 import type { IFormAggregate } from "./eventHandler";
 import type { IPage } from "@/types/page";
 import { insertAtPosition, removeById } from "./utils";
 import { createEmptySection } from "@/factories/sectionFactory";
+import { swapPositions } from "@/utils/position";
 
 export function onAddSection(
   aggregate: IFormAggregate,
@@ -19,6 +25,29 @@ export function onAddSection(
     return {
       ...page,
       sections: insertAtPosition(page.sections, section, event.position),
+    };
+  });
+
+  return {
+    ...aggregate,
+    version: { ...aggregate.version, pages },
+  };
+}
+
+export function onReorderSection(
+  aggregate: IFormAggregate,
+  event: ReorderSectionEvent,
+): IFormAggregate {
+  const pages = aggregate.version.pages.map((page): IPage => {
+    const hasSection = page.sections.some((s) => s.id === event.sectionId);
+
+    if (!hasSection) {
+      return page;
+    }
+
+    return {
+      ...page,
+      sections: swapPositions(page.sections, event.sectionId, event.inc),
     };
   });
 

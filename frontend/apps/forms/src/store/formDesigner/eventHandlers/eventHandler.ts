@@ -24,9 +24,11 @@ const handlers: Readonly<Handlers> = {
   AddSection: sectionHandlers.onAddSection,
   MoveSection: sectionHandlers.onMoveSection,
   RemoveSection: sectionHandlers.onRemoveSection,
+  ReorderSection: sectionHandlers.onReorderSection,
   AddElement: elementHandlers.onAddElement,
   MoveElement: elementHandlers.onMoveElement,
   RemoveElement: elementHandlers.onRemoveElement,
+  ReorderElement: elementHandlers.onReorderElement,
 };
 
 export function reduce(

@@ -24,7 +24,10 @@ import {
 } from "@/components/FormDesigner/types/formDragEvent";
 import { getNextPosition, sortPositioned } from "@/utils/position";
 import { motion, type Variants } from "motion/react";
-import type { RemoveSectionEvent } from "@/store/formDesigner/events";
+import type {
+  ReorderSectionEvent,
+  RemoveSectionEvent,
+} from "@/store/formDesigner/events";
 
 const variants: Variants = {
   initial: { opacity: 0, height: 0, marginBottom: 0 },
@@ -52,6 +55,14 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
   const handleClk: MouseEventHandler<HTMLLIElement> = (event) => {
     event.stopPropagation();
     select(!isSelected ? { type: "section", id: section.id } : null);
+  };
+
+  const handleReorder = (inc: -1 | 1) => {
+    dispatch({
+      type: "ReorderSection",
+      sectionId: section.id,
+      inc,
+    } satisfies ReorderSectionEvent);
   };
 
   const handleDelete = () => {
@@ -88,7 +99,7 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
         <Box sx={{ alignSelf: "end", display: "flex", alignItems: "center" }}>
           {paletteItem && <Tag>{paletteItem.label}</Tag>}
           <ItemTools
-            onReorder={(_inc) => {}}
+            onReorder={handleReorder}
             onCopy={() => {}}
             onDelete={handleDelete}
           />
