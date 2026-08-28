@@ -83,5 +83,8 @@ function canDropItem(data: FormDragEventData | null): boolean {
 
   // TODO: Improve this conditional such that it will not introduce a bug if additional layout
   // elements are added.
-  return data.source === FormDragEventSource.Palette && data.type !== "section";
+  return (
+    data.source === FormDragEventSource.Palette &&
+    data.type !== PaletteItemDragType.Section
+  );
 }

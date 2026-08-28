@@ -11,7 +11,6 @@ export type FormDesignerEvent =
 
 export type AddPageEvent = {
   type: "AddPage";
-  pageId: string;
   position: number;
 };
 
@@ -28,7 +27,7 @@ export type RemovePageEvent = {
 
 export type AddSectionEvent = {
   type: "AddSection";
-  sectionId: string;
+  pageId: string;
   position: number;
 };
 
@@ -46,7 +45,7 @@ export type RemoveSectionEvent = {
 
 export type AddElementEvent = {
   type: "AddElement";
-  elementId: string;
+  sectionId: string;
   position: number;
 };
 

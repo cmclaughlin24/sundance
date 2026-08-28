@@ -159,26 +159,27 @@ Type files added:
 called (hooks rules satisfied) with `disabled: !draggable`. The `type` field is set to
 `item.dragType` (`PaletteItemDragType` enum) so droppables can use `accept` to restrict which
 palette types they receive. The `DragOverlay` renders `<PaletteItem item={...} draggable={false} />`
-as a static visual clone.
+as a static visual clone. `isDragging` drives an `onDrag` style (highlighted background + solid
+border via `mergeSx`) applied to the source item while dragging.
 
 > Note: `handleRef` is passed as `null` when `draggable={false}` — consider changing to
 > `undefined` to avoid a potential TypeScript error with `Ref<Element>`.
 
-### ✅ Step 7 — Drop Zones with Ambient Indicators
+### ✅ Step 7 — Drop Zones with Ambient + Active Indicators
 
 Drop zones are wired with `useDroppable` and `accept`, and show a `<DropZoneIndicator>` as soon
-as a drag starts — before the cursor is over them — using `useFormDragEvent()` context:
+as a drag starts — before the cursor is over them — using `useFormDragEvent()` context. When the
+cursor is directly over the zone, `isDropTarget` (from `useDroppable`) is passed to
+`DropZoneIndicator` which animates the background from `20%` to `60%` opacity using Framer Motion
+`variants` and `useTheme` + `useMemo` to access the MUI palette inside motion variants.
 
-- **`SectionItem`** — `accept: PaletteItemDragType.Element`; renders `<DropZoneIndicator text="Drop element here">` when `canDropItem(dragData)` is true (drag active + type is not `"section"`)
-- **`PageItem`** — `accept: PaletteItemDragType.Section`; renders `<DropZoneIndicator text="Drop your section here">` when drag active + type is `"section"`. This is the drop zone for new sections, not `SectionList`.
+- **`SectionItem`** — `accept: PaletteItemDragType.Element`; renders `<DropZoneIndicator text="Drop {label} here" isDropTarget={isDropTarget}>` when `canDropItem(dragData)` is true
+- **`PageItem`** — `accept: PaletteItemDragType.Section`; same pattern for section drags
 
+`dragPaletteItem` is memoised via `useMemo(() => findPaletteItem(dragData.type), [dragData])` in
+both components so the indicator label reflects the specific element type being dragged.
 `canDropItem()` is a local helper in each component that checks `dragData.source` and `dragData.type`.
 
-> `isDropTarget` visual highlight (stronger style when cursor is directly over the zone) not yet
-> wired into `getSectionItemStyles` — still pending.
->
-> `SectionList.tsx` has a stale unused `useDroppable` import — can be cleaned up.
->
 > `canDropItem` TODO noted in code: logic should use `PaletteItemDragType` rather than checking
 > `data.type !== "section"` to avoid future brittleness.
 
@@ -247,7 +248,9 @@ which means updating `ElementList` and `SectionList` to pass them down.
 ### Step 10 — Framer Motion Animations (low effort, already installed)
 
 Wrap `ElementList` with `AnimatePresence` and convert `ElementItem`'s root to a `motion` component.
-The `layout` prop handles reorder animations automatically — no manual calculation needed.
+Use `layout="position"` with a tween `layout` transition to prevent the stretching bounce that
+occurs when `DropZoneIndicator` is inserted into the DOM alongside list items. Wrap
+`DropZoneIndicator` in an `AnimatePresence` + `motion.div` for smooth height enter/exit.
 
 ```tsx
 // ElementList.tsx
@@ -261,21 +264,39 @@ import { AnimatePresence } from "motion/react";
   </AnimatePresence>
 </Box>
 
-// ElementItem.tsx — change root Box to motion.li
+// ElementItem.tsx
 <Box
   component={motion.li}
-  layout
+  layout="position"
   initial={{ opacity: 0, y: -6 }}
   animate={{ opacity: 1, y: 0 }}
   exit={{ opacity: 0, y: -6 }}
-  transition={{ type: "spring", bounce: 0.2, duration: 0.35 }}
+  transition={{
+    layout: { type: "tween", duration: 0.15, ease: "easeOut" },
+    default: { type: "spring", bounce: 0.2, duration: 0.35 },
+  }}
   sx={styles.item}
   onClick={handleClk}
   role="button"
 >
+
+// DropZoneIndicator wrapper in SectionItem / PageItem
+<AnimatePresence>
+  {canDrop && (
+    <motion.div
+      key="drop-indicator"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "4.25rem" }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+    >
+      <DropZoneIndicator text={...} isDropTarget={isDropTarget} />
+    </motion.div>
+  )}
+</AnimatePresence>
 ```
 
-Apply the same pattern to `SectionItem` / `SectionList` for section-level animations.
+Apply the same `layout="position"` pattern to `SectionItem` / `SectionList` for section-level animations.
 
 ---
 
@@ -288,30 +309,28 @@ Apply the same pattern to `SectionItem` / `SectionList` for section-level animat
 | `FormDesigner/types/formDropEvent.ts` | **New** | ✅ | `FormDropEventData` / `PaletteDropEventData` |
 | `FormDesigner/providers/FormDesignerDragProvider.tsx` | **New** | ✅ | `DragDropProvider` + `DragOverlay` + context + `useFormDragEvent` hook + typed `onDragEnd` switch |
 | `FormDesigner/FormDesigner.tsx` | Modify | ✅ | Wrap panels with `FormDesignerDragProvider` |
+| `FormDesigner/FormDesigner.styles.ts` | Modify | ✅ | Right panel column widened to `28rem` |
 | `ToolboxPanel/palette.tsx` | Modify | ✅ | `PaletteItemDragType` enum + `dragType` field on every `IPaletteItem` |
-| `ToolboxPanel/PaletteItem.tsx` | Modify | ✅ | `useDraggable` with `type: item.dragType`; `draggable` prop pattern; `FormDragEventSource` enum |
+| `ToolboxPanel/PaletteItem.tsx` | Modify | ✅ | `useDraggable` with `type: item.dragType`; `draggable` prop; `isDragging` → `onDrag` style via `mergeSx` |
 | `components/DragDrop/DraggableCard.tsx` | Moved | ✅ | Moved from `components/` to `components/DragDrop/`; optional `handleRef` prop |
-| `components/DragDrop/DropZoneIndicator.tsx` | **New** | ✅ | Ambient drop zone indicator component shown on drag start |
-| `CanvasPanel/lists/SectionItem.tsx` | Modify | ✅ | `useDroppable` + `useFormDragEvent` + `canDropItem` + `DropZoneIndicator` |
-| `CanvasPanel/lists/PageItem.tsx` | Modify | ✅ | `useDroppable` (section drops) + `useFormDragEvent` + `canDropItem` + `DropZoneIndicator` |
-| `CanvasPanel/lists/SectionList.tsx` | Modify | 🔄 | Stale `useDroppable` import — needs cleanup |
-| `CanvasPanel/lists/SectionItem.style.ts` | Modify | | Add `isDropTarget` stronger hover style variant |
+| `components/DragDrop/DropZoneIndicator.tsx` | **New** | ✅ | Ambient + active indicator; `isDropTarget` prop animates background via Framer Motion `variants` + `useTheme` |
+| `CanvasPanel/lists/SectionItem.tsx` | Modify | ✅ | `useDroppable` + `useFormDragEvent` + `canDropItem` + `dragPaletteItem` memo + `DropZoneIndicator` with `isDropTarget` |
+| `CanvasPanel/lists/PageItem.tsx` | Modify | ✅ | `useDroppable` (section drops) + same pattern as `SectionItem` |
+| `CanvasPanel/lists/SectionList.tsx` | Modify | ✅ | Stale `useDroppable` import removed; `gap: 2.5` added to list styles |
 | `store/formDesigner/events.ts` | Modify | | Extend `AddElementEvent` (`elementType`, `sectionId`); extend `AddSectionEvent` (`pageId`) |
 | `store/formDesigner/elementFactory.ts` | **New** | | `createElementFromType()` factory function |
 | `store/formDesigner/eventHandlers/elementEventHandlers.ts` | Modify | | Implement `onAddElement` stub |
 | `store/formDesigner/eventHandlers/sectionEventHandlers.ts` | Modify | | Implement `onAddSection` stub |
-| `CanvasPanel/lists/ElementList.tsx` | Modify | | Wrap with `AnimatePresence` |
-| `CanvasPanel/lists/ElementItem.tsx` | Modify | | Switch root to `motion.li` with `layout` + enter/exit animations; wire `onReorder` |
+| `CanvasPanel/lists/ElementList.tsx` | Modify | | Wrap with `AnimatePresence`; `DropZoneIndicator` height animation wrapper |
+| `CanvasPanel/lists/ElementItem.tsx` | Modify | | `motion.li` with `layout="position"` + tween transition + enter/exit; wire `onReorder` |
 
-**Total: 11 modified files, 5 new files, 1 moved. 11 of 19 complete, 1 in progress.**
+**Total: 12 modified files, 5 new files, 1 moved. 13 of 19 complete.**
 
 ---
 
 ## Decisions / Open Questions
 
-- **`isDropTarget` active hover style**: `isDropTarget` from `useDroppable` is available in both `SectionItem` and `PageItem` but not yet passed into their style functions. Should show a stronger highlight (e.g. solid border) when the cursor is directly over the zone, on top of the ambient `DropZoneIndicator`.
-- **`canDropItem` brittleness**: Both `SectionItem` and `PageItem` use `data.type !== "section"` / `data.type === "section"` as the condition. Should use `PaletteItemDragType` from `event.operation.source.type` (available in `onDragStart`) instead of the `data` payload for robustness.
+- **`canDropItem` brittleness**: Both `SectionItem` and `PageItem` use `data.type !== "section"` / `data.type === "section"`. Should store `source.type` (`PaletteItemDragType`) from `onDragStart` in context instead of deriving it from the `data` payload.
 - **Drop position**: Currently dispatches `position: 0` as a placeholder. Precise insertion requires `ElementItem` / `SectionItem` to also act as droppables with position tracking.
-- **`SectionList` cleanup**: Stale `useDroppable` import needs removing.
 - **`handleRef` null vs undefined**: `PaletteItem` passes `null` when `draggable={false}`. Change to `undefined` to match `Ref<Element>` type.
 - **Cross-section drag of existing elements**: Natural next step after drop dispatch is working — use `useSortable` from `@dnd-kit/react/sortable` with `group` for cross-section moves.

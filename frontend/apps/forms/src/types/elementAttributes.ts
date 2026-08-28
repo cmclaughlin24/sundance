@@ -59,4 +59,8 @@ export type ElementAttributes =
   | NumberElementAttributes
   | SelectElementAttributes
   | CheckboxElementAttributes
-  | DateElementAttributes;
+  | DateElementAttributes
+  | SegmentedElementAttributes
+  | RadioElementAttributes
+  | ToggleElementAttributes
+  | UserElementAttributes;
