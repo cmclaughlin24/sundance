@@ -8,12 +8,39 @@ import type { IFormAggregate } from "./eventHandler";
 import type { ISection } from "@/types/section";
 import type { IPage } from "@/types/page";
 import { insertAtPosition, removeById } from "./utils";
+import { createElementFromType } from "@/factories/elementFactory";
 
 export function onAddElement(
   aggregate: IFormAggregate,
-  _event: AddElementEvent,
-) {
-  return aggregate;
+  event: AddElementEvent,
+): IFormAggregate {
+  const element = createElementFromType(event.elementType);
+
+  const pages = aggregate.version.pages.map((page): IPage => {
+    const hasSection = page.sections.some((s) => s.id === event.sectionId);
+
+    if (!hasSection) {
+      return page;
+    }
+
+    const sections = page.sections.map((section): ISection => {
+      if (section.id !== event.sectionId) {
+        return section;
+      }
+
+      return {
+        ...section,
+        elements: insertAtPosition(section.elements, element, event.position),
+      };
+    });
+
+    return { ...page, sections };
+  });
+
+  return {
+    ...aggregate,
+    version: { ...aggregate.version, pages },
+  };
 }
 
 export function onMoveElement(

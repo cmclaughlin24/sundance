@@ -15,7 +15,7 @@ import {
 } from "@/components/FormDesigner/types/formDragEvent";
 import { useFormDragEvent } from "@/components/FormDesigner/providers/FormDesignerDragProvider";
 import { useMemo } from "react";
-import { motion } from "motion/react";
+import { getNextPosition, sortPositioned } from "@/utils/position";
 
 const styles: Styles = {
   item: {
@@ -27,10 +27,15 @@ const styles: Styles = {
 };
 
 export const PageItem: React.FC<{ page: IPage }> = function ({ page }) {
+  const sections = sortPositioned(page.sections);
   const { ref, isDropTarget } = useDroppable({
     id: `page-${page.id}`,
     accept: PaletteItemDragType.Section,
-    data: { source: "palette", parentId: page.id } as PaletteDropEventData,
+    data: {
+      source: "palette",
+      parentId: page.id,
+      position: getNextPosition(sections),
+    } satisfies PaletteDropEventData,
   });
   const dragData = useFormDragEvent();
   const canDrop = canDropItem(dragData);
@@ -40,14 +45,13 @@ export const PageItem: React.FC<{ page: IPage }> = function ({ page }) {
   );
 
   return (
-    <Box component={motion.li} layout="position" sx={styles.item} ref={ref}>
-      <SectionList sections={page.sections} />
-      {canDrop && (
-        <DropZoneIndicator
-          text={`Drop ${dragPaletteItem!.label} here`}
-          isDropTarget={isDropTarget}
-        />
-      )}
+    <Box component="li" sx={styles.item} ref={ref}>
+      <SectionList sections={sections} />
+      <DropZoneIndicator
+        text={`Drop ${dragPaletteItem?.label} here`}
+        isVisible={canDrop}
+        isDropTarget={isDropTarget}
+      />
     </Box>
   );
 };

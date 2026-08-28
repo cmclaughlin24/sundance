@@ -1,5 +1,5 @@
 import type { IPage } from "@/types/page";
-import { sortPositioned } from "@/utils/sort";
+import { sortPositioned } from "@/utils/position";
 import { SectionRenderer } from "./SectionRenderer";
 import { filterVisible } from "@/utils/filter";
 import { useEvalContext } from "@/store/submission/evalContext";

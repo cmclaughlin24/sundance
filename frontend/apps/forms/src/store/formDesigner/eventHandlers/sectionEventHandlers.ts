@@ -3,12 +3,29 @@ import type { AddSectionEvent, MoveSectionEvent, RemoveSectionEvent } from "../e
 import type { IFormAggregate } from "./eventHandler";
 import type { IPage } from "@/types/page";
 import { insertAtPosition, removeById } from "./utils";
+import { createEmptySection } from "@/factories/sectionFactory";
 
 export function onAddSection(
   aggregate: IFormAggregate,
-  _event: AddSectionEvent,
-) {
-  return aggregate;
+  event: AddSectionEvent,
+): IFormAggregate {
+  const section = createEmptySection();
+
+  const pages = aggregate.version.pages.map((page): IPage => {
+    if (page.id !== event.pageId) {
+      return page;
+    }
+
+    return {
+      ...page,
+      sections: insertAtPosition(page.sections, section, event.position),
+    };
+  });
+
+  return {
+    ...aggregate,
+    version: { ...aggregate.version, pages },
+  };
 }
 
 export function onMoveSection(

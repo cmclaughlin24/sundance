@@ -23,13 +23,12 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
   function ({ children }) {
     const [activeDragData, setActiveDragData] =
       useState<FormDragEventData | null>(null);
-    const {} = useFormDesignerDispatch();
+    const { dispatch } = useFormDesignerDispatch();
 
     const handlePaletteDragEnd = (
       dragData: PaletteDragEventData,
       dropData: PaletteDropEventData,
     ) => {
-      // TODO: Dispatch the Add* action based on the palette item type.
       console.log(dragData, dropData);
     };
 

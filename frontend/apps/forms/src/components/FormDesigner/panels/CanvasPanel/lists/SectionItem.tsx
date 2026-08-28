@@ -19,16 +19,21 @@ import {
   FormDragEventSource,
   type FormDragEventData,
 } from "@/components/FormDesigner/types/formDragEvent";
-import { motion } from "motion/react";
+import { getNextPosition, sortPositioned } from "@/utils/position";
 
 export const SectionItem: React.FC<{ section: ISection }> = function ({
   section,
 }) {
+  const elements = sortPositioned(section.elements);
   const { select, isSelected } = useFormDesignerSelect(section.id);
   const { ref, isDropTarget } = useDroppable({
     id: `section-${section.id}`,
     accept: PaletteItemDragType.Element,
-    data: { source: "palette", parentId: section.id } as PaletteDropEventData,
+    data: {
+      source: "palette",
+      parentId: section.id,
+      position: getNextPosition(elements),
+    } satisfies PaletteDropEventData,
   });
   const dragData = useFormDragEvent();
 
@@ -62,14 +67,13 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
             onDelete={() => {}}
           />
         </Box>
-        <Box component={motion.div} sx={styles.elements} layout="position">
-          <ElementList elements={section.elements} />
-          {canDrop && (
-            <DropZoneIndicator
-              text={`Drop ${dragPaletteItem!.label} here`}
-              isDropTarget={isDropTarget}
-            />
-          )}
+        <Box sx={styles.elements}>
+          <ElementList elements={elements} />
+          <DropZoneIndicator
+            text={`Drop ${dragPaletteItem?.label} here`}
+            isVisible={canDrop}
+            isDropTarget={isDropTarget}
+          />
         </Box>
       </DraggableCard>
     </Box>

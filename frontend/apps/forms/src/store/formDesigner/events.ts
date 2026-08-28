@@ -1,3 +1,5 @@
+import type { ElementType } from "@/types/element";
+
 export type FormDesignerEvent =
   | AddPageEvent
   | MovePageEvent
@@ -46,6 +48,7 @@ export type RemoveSectionEvent = {
 export type AddElementEvent = {
   type: "AddElement";
   sectionId: string;
+  elementType: ElementType;
   position: number;
 };
 

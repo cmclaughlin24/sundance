@@ -1,5 +1,5 @@
 import type { ISection } from "@/types/section";
-import { sortPositioned } from "@/utils/sort";
+import { sortPositioned } from "@/utils/position";
 import { ElementRenderer } from "./ElementRenderer";
 import { filterVisible } from "@/utils/filter";
 import { useEvalContext } from "@/store/submission/evalContext";

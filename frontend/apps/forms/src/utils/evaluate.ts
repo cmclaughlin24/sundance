@@ -5,7 +5,7 @@ import {
   type IRuleExpression,
   type IRuleState,
 } from "@/types/rule";
-import { sortPositioned } from "./sort";
+import { sortPositioned } from "./position";
 import type { IPage } from "@/types/page";
 import type { FormValues } from "@/store/submission/submissionStore";
 
