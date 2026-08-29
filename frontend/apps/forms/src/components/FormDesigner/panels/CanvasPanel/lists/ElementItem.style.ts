@@ -47,5 +47,9 @@ export const getElementItemStyles = (
       fontSize: "0.75rem",
       color: "#4B4444",
     },
+    onDrag: (theme) => ({
+      background: `${theme.palette.primary.main}70`,
+      border: `1px solid ${theme.palette.primary.main}`,
+    }),
   };
 };

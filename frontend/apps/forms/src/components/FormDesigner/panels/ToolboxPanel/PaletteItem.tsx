@@ -49,7 +49,7 @@ export const PaletteItem: React.FC<{
   return (
     <Box component="li" sx={styles.item} ref={ref}>
       <DraggableCard
-        sx={mergeSx(styles.card, isDragging ? styles.onDrag : {})}
+        sx={mergeSx(styles.card, isDragging && !draggable ? styles.onDrag : {})}
         handleRef={draggable ? handleRef : null}
       >
         {item.icon}

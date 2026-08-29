@@ -9,17 +9,19 @@ import { useMemo, type MouseEventHandler } from "react";
 import { getSectionItemStyles } from "./SectionItem.style";
 import {
   findPaletteItem,
-  PaletteItemDragType,
 } from "../../ToolboxPanel/palette";
 import { Tag } from "@/components/Tag";
 import { ItemTools } from "../../../common/ItemTools";
 import { DraggableCard } from "@/components/DragDrop/DraggableCard";
-import { useDroppable } from "@dnd-kit/react";
+import { useDraggable, useDroppable } from "@dnd-kit/react";
 import type { PaletteDropEventData } from "@/components/FormDesigner/types/formDropEvent";
 import { DropZoneIndicator } from "@/components/DragDrop/DropZoneIndicator";
 import { useFormDragEvent } from "@/components/FormDesigner/providers/FormDesignerDragProvider";
 import {
+    CanvasDragType,
   FormDragEventSource,
+  PaletteItemDragType,
+  type CanvasSectionDragEventData,
   type FormDragEventData,
 } from "@/components/FormDesigner/types/formDragEvent";
 import { getNextPosition, sortPositioned } from "@/utils/position";
@@ -28,20 +30,42 @@ import type {
   ReorderSectionEvent,
   RemoveSectionEvent,
 } from "@/store/formDesigner/events";
+import { mergeSx } from "merge-sx";
+import type { ItemComponentProps } from "@/components/FormDesigner/types/componentProps";
 
 const variants: Variants = {
   initial: { opacity: 0, height: 0, marginBottom: 0 },
   animate: { opacity: 1, height: "auto", marginBottom: "1.25rem" },
   exit: { opacity: 0, height: 0, marginBottom: 0 },
+  isDragging: { opacity: 0, transition: { duration: 0.5 } },
 };
 
-export const SectionItem: React.FC<{ section: ISection }> = function ({
+export interface SectionItemProps extends ItemComponentProps {
+  section: ISection;
+}
+
+export const SectionItem: React.FC<SectionItemProps> = function ({
   section,
+  parentId,
+  draggable = true,
 }) {
   const elements = sortPositioned(section.elements);
   const { dispatch } = useFormDesignerDispatch();
   const { select, isSelected } = useFormDesignerSelect(section.id);
-  const { ref, isDropTarget } = useDroppable({
+
+  const { ref: dragRef, isDragging } = useDraggable({
+    id: `canvas-section-${section.id}-${draggable}`,
+    type: CanvasDragType.Section,
+    data: {
+      source: FormDragEventSource.Canvas,
+      type: "section",
+      fromPageId: parentId,
+      section,
+    } satisfies CanvasSectionDragEventData,
+    disabled: !draggable,
+  });
+
+  const { ref: dropRef, isDropTarget } = useDroppable({
     id: `section-${section.id}`,
     accept: PaletteItemDragType.Element,
     data: {
@@ -75,7 +99,10 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
 
   const paletteItem = useMemo(() => findPaletteItem("section"), []);
   const dragPaletteItem = useMemo(
-    () => (dragData ? findPaletteItem(dragData.type) : null),
+    () =>
+      dragData && dragData.source === "palette"
+        ? findPaletteItem(dragData.type)
+        : null,
     [dragData],
   );
   const canDrop = canDropItem(dragData);
@@ -87,15 +114,22 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
       layout="position"
       variants={variants}
       initial="initial"
-      animate="animate"
+      animate={isDragging ? "isDragging" : "animate"}
       exit="exit"
       transition={{ type: "spring", bounce: 0, duration: 0.35 }}
       sx={styles.item}
       onClick={handleClk}
-      ref={ref}
+      ref={dropRef}
       role="button"
     >
-      <DraggableCard sx={styles.card} orientation="vertical">
+      <DraggableCard
+        sx={mergeSx(
+          styles.card,
+          isDragging && !draggable && !draggable ? styles.onDrag : {},
+        )}
+        orientation="vertical"
+        handleRef={dragRef}
+      >
         <Box sx={{ alignSelf: "end", display: "flex", alignItems: "center" }}>
           {paletteItem && <Tag>{paletteItem.label}</Tag>}
           <ItemTools
@@ -105,7 +139,7 @@ export const SectionItem: React.FC<{ section: ISection }> = function ({
           />
         </Box>
         <Box sx={styles.elements}>
-          <ElementList elements={elements} />
+          <ElementList elements={elements} parentId={section.id} />
           <DropZoneIndicator
             text={`Drop ${dragPaletteItem?.label} here`}
             isVisible={canDrop}
@@ -124,8 +158,5 @@ function canDropItem(data: FormDragEventData | null): boolean {
 
   // TODO: Improve this conditional such that it will not introduce a bug if additional layout
   // elements are added.
-  return (
-    data.source === FormDragEventSource.Palette &&
-    data.type !== PaletteItemDragType.Section
-  );
+  return data.source === FormDragEventSource.Palette && data.type !== "section";
 }

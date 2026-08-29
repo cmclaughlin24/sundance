@@ -10,13 +10,9 @@ import ToggleOn from "@mui/icons-material/ToggleOn";
 import ViewStream from "@mui/icons-material/ViewStream";
 import WebAsset from "@mui/icons-material/WebAsset";
 import * as ArrayUtils from "@/utils/array";
+import { PaletteItemDragType } from "../../types/formDragEvent";
 
 export type PaletteItemType = ElementType | "section";
-
-export enum PaletteItemDragType {
-  Element = "element",
-  Section = "section",
-}
 
 export interface IPaletteCategory {
   label: string;

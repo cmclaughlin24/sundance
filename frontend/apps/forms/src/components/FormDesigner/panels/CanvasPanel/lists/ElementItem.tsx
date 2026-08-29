@@ -16,18 +16,46 @@ import type {
   ReorderElementEvent,
   RemoveElementEvent,
 } from "@/store/formDesigner/events";
+import {
+  CanvasDragType,
+  FormDragEventSource,
+  type CanvasElementDragEventData,
+} from "@/components/FormDesigner/types/formDragEvent";
+import { mergeSx } from "merge-sx";
+import type { ItemComponentProps } from "@/components/FormDesigner/types/componentProps";
+import { useDraggable } from "@dnd-kit/react";
 
 const variants: Variants = {
   initial: { opacity: 0, height: 0, marginBottom: 0 },
   animate: { opacity: 1, height: "auto", marginBottom: "1.25rem" },
   exit: { opacity: 0, height: 0, marginBottom: 0 },
+  isDragging: { opacity: 0, transition: { duration: 0.5 } },
 };
 
-export const ElementItem: React.FC<{ element: IElement }> = function ({
+export interface ElementItemProps extends ItemComponentProps {
+  element: IElement;
+}
+
+export const ElementItem: React.FC<ElementItemProps> = function ({
   element,
+  parentId,
+  draggable = true,
 }) {
   const { select, isSelected } = useFormDesignerSelect(element.id);
   const { dispatch } = useFormDesignerDispatch();
+
+  const { ref: dragRef, isDragging } = useDraggable({
+    id: `canvas-element-${element.id}-${draggable}`,
+    type: CanvasDragType.Element,
+    data: {
+      source: FormDragEventSource.Canvas,
+      type: "element",
+      fromSectionId: parentId,
+      element,
+    } satisfies CanvasElementDragEventData,
+    disabled: !draggable,
+  });
+
   const styles = getElementItemStyles(
     isSelected,
     element.attributes.isRequired,
@@ -62,14 +90,17 @@ export const ElementItem: React.FC<{ element: IElement }> = function ({
       layout="position"
       variants={variants}
       initial="initial"
-      animate="animate"
+      animate={isDragging ? "isDragging" : "animate"}
       exit="exit"
       transition={{ type: "spring", bounce: 0, duration: 0.3 }}
       sx={styles.item}
       onClick={handleClk}
       role="button"
     >
-      <DraggableCard sx={styles.card}>
+      <DraggableCard
+        sx={mergeSx(styles.card, isDragging && !draggable ? styles.onDrag : {})}
+        handleRef={dragRef}
+      >
         <Box sx={styles.content}>
           <Box>
             <Typography sx={styles.name}>{element.name}</Typography>

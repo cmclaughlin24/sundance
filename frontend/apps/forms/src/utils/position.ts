@@ -19,6 +19,21 @@ export function getNextPosition<T extends HasPosition>(items: T[]): number {
   return 0;
 }
 
+export function getBetweenPosition<T extends HasPosition>(
+  index: number,
+  items: T[],
+): number {
+  if (index === 0) {
+    return ArrayUtils.hasLengthGreaterThan(items, 0) ? items[0].position - 1 : 0;
+  }
+
+  if (index === items.length) {
+    return items[items.length - 1].position + 1;
+  }
+
+  return (items[index - 1].position + items[index].position) / 2;
+}
+
 export function swapPositions<T extends HasPosition & { id: string }>(
   items: T[],
   id: string,

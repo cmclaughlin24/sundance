@@ -3,14 +3,12 @@ import Box from "@mui/material/Box";
 import { SectionList } from "./SectionList";
 import type { Styles } from "@/types/styles";
 import { useDroppable } from "@dnd-kit/react";
-import {
-  findPaletteItem,
-  PaletteItemDragType,
-} from "../../ToolboxPanel/palette";
+import { findPaletteItem } from "../../ToolboxPanel/palette";
 import type { PaletteDropEventData } from "@/components/FormDesigner/types/formDropEvent";
 import { DropZoneIndicator } from "@/components/DragDrop/DropZoneIndicator";
 import {
   FormDragEventSource,
+  PaletteItemDragType,
   type FormDragEventData,
 } from "@/components/FormDesigner/types/formDragEvent";
 import { useFormDragEvent } from "@/components/FormDesigner/providers/FormDesignerDragProvider";
@@ -40,13 +38,16 @@ export const PageItem: React.FC<{ page: IPage }> = function ({ page }) {
   const dragData = useFormDragEvent();
   const canDrop = canDropItem(dragData);
   const dragPaletteItem = useMemo(
-    () => (dragData ? findPaletteItem(dragData.type) : null),
+    () =>
+      dragData && dragData.source === "palette"
+        ? findPaletteItem(dragData.type)
+        : null,
     [dragData],
   );
 
   return (
     <Box component="li" sx={styles.item} ref={ref}>
-      <SectionList sections={sections} />
+      <SectionList sections={sections} parentId={page.id} />
       <DropZoneIndicator
         text={`Drop ${dragPaletteItem?.label} here`}
         isVisible={canDrop}
@@ -63,8 +64,5 @@ function canDropItem(data: FormDragEventData | null): boolean {
 
   // TODO: Improve this conditional such that it will not introduce a bug if additional layout
   // elements are added.
-  return (
-    data.source === FormDragEventSource.Palette &&
-    data.type === PaletteItemDragType.Section
-  );
+  return data.source === FormDragEventSource.Palette && data.type === "section";
 }

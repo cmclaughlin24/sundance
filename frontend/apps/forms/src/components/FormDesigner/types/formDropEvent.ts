@@ -4,4 +4,10 @@ export interface PaletteDropEventData {
   position: number;
 }
 
-export type FormDropEventData = PaletteDropEventData;
+export interface CanvasDropEventData {
+  source: "canvas";
+  parentId: string;
+  position: number;
+}
+
+export type FormDropEventData = PaletteDropEventData | CanvasDropEventData;

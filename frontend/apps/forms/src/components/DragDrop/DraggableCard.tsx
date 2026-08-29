@@ -9,19 +9,30 @@ export type DraggableCardProps = React.PropsWithChildren<{
   sx?: SxProps<Theme>;
   orientation?: "horizontal" | "vertical";
   handleRef?: Ref<Element>;
+  dragHandleOnly?: boolean;
 }>;
 
 export const DraggableCard: React.FC<DraggableCardProps> = function ({
   sx = {},
   orientation = "horizontal",
   handleRef,
+  dragHandleOnly = false,
   children,
 }) {
   const { draggableCard, icon } = draggableCardStyles(orientation);
 
   return (
-    <Box ref={handleRef} sx={mergeSx(draggableCard, sx)}>
-      <DragIndicator sx={icon} />
+    <Box ref={!dragHandleOnly ? handleRef : null} sx={mergeSx(draggableCard, sx)}>
+      <Box
+        ref={dragHandleOnly ? handleRef : null}
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignContent: "center",
+        }}
+      >
+        <DragIndicator sx={icon} />
+      </Box>
       {children}
     </Box>
   );

@@ -7,10 +7,13 @@ import {
 } from "@/store/formDesigner";
 import {
   FormDragEventSource,
+  type CanvasElementDragEventData,
+  type CanvasSectionDragEventData,
   type FormDragEventData,
   type PaletteDragEventData,
 } from "../types/formDragEvent";
 import type {
+  CanvasDropEventData,
   FormDropEventData,
   PaletteDropEventData,
 } from "../types/formDropEvent";
@@ -19,8 +22,12 @@ import type {
   AddElementEvent,
   AddSectionEvent,
   FormDesignerEvent,
+  MoveElementEvent,
+  MoveSectionEvent,
 } from "@/store/formDesigner/events";
 import { generatedID } from "@/utils/id";
+import { SectionItem } from "../panels/CanvasPanel/lists/SectionItem";
+import { ElementItem } from "../panels/CanvasPanel/lists/ElementItem";
 
 const FormDesignerDragContext = createContext<FormDragEventData | null>(null);
 
@@ -66,6 +73,27 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
       select({ type: dragData.type, id });
     };
 
+    const handleCanvasDragEnd = (
+      dragData: CanvasElementDragEventData | CanvasSectionDragEventData,
+      dropData: CanvasDropEventData,
+    ) => {
+      if (dragData.type === "section") {
+        dispatch({
+          type: "MoveSection",
+          sectionId: dragData.section.id,
+          targetPageId: dropData.parentId,
+          position: dropData.position,
+        } satisfies MoveSectionEvent);
+      } else {
+        dispatch({
+          type: "MoveElement",
+          elementId: dragData.element.id,
+          targetSectionId: dropData.parentId,
+          position: dropData.position,
+        } satisfies MoveElementEvent);
+      }
+    };
+
     return (
       <FormDesignerDragContext value={activeDragData}>
         <DragDropProvider
@@ -89,11 +117,17 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
 
             switch (dragData.source) {
               case FormDragEventSource.Palette:
-                handlePaletteDragEnd(dragData, dropData);
+                handlePaletteDragEnd(
+                  dragData,
+                  dropData as PaletteDropEventData,
+                );
+                break;
+              case FormDragEventSource.Canvas:
+                handleCanvasDragEnd(dragData, dropData as CanvasDropEventData);
                 break;
               default:
                 throw new Error(
-                  `failed to handle onDragEnd event; unknown FormDragEventData source ${dragData.source}`,
+                  "failed to handle onDragEnd event; unknown FormDragEventData source",
                 );
             }
           }}
@@ -107,9 +141,27 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
                 case FormDragEventSource.Palette:
                   const paletteItem = findPaletteItem(source.data.type);
                   return <PaletteItem item={paletteItem!} draggable={false} />;
+                case FormDragEventSource.Canvas:
+                  if (data.type === "section") {
+                    return (
+                      <SectionItem
+                        section={data.section}
+                        parentId={data.fromPageId}
+                        draggable={false}
+                      />
+                    );
+                  }
+
+                  return (
+                    <ElementItem
+                      element={data.element}
+                      parentId={data.fromSectionId}
+                      draggable={false}
+                    />
+                  );
                 default:
                   throw new Error(
-                    `cannot display draggable item; unknown FormDragEventData source ${data.source}`,
+                    "cannot display draggable item; unknown FormDragEventData source",
                   );
               }
             }}

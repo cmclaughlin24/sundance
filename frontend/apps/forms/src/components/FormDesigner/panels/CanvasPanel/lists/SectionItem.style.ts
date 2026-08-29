@@ -28,5 +28,9 @@ export const getSectionItemStyles = (isSelected: boolean): Styles => {
       flexDirection: "column",
       gap: 1.5,
     },
+    onDrag: (theme) => ({
+      background: `${theme.palette.primary.main}70`,
+      border: `1px solid ${theme.palette.primary.main}`,
+    }),
   };
 };
