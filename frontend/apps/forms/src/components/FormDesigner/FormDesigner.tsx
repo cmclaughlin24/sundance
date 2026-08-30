@@ -8,6 +8,7 @@ import { CanvasPanel } from "./panels/CanvasPanel/CanvasPanel";
 import { ObjectSettingsPanel } from "./panels/ObjectSettingsPanel/ObjectSettingsPanel";
 import { Border } from "@/constants/colors";
 import { FormDesignerDragProvider } from "./providers/FormDesignerDragProvider";
+import { KeyboardShortcutProvider } from "@/store/keyboardShortcut/KeyboardShortcutProvider";
 
 export interface FormDesignerProps {
   form: IForm;
@@ -19,18 +20,20 @@ export const FormDesigner: React.FC<FormDesignerProps> = function ({
   version,
 }) {
   return (
-    <FormDesignerProvider form={form} version={version}>
-      <FormDesignerDragProvider>
-        <Box sx={formDesignerStyles.container}>
-          <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
-            <ToolboxPanel />
+    <KeyboardShortcutProvider>
+      <FormDesignerProvider form={form} version={version}>
+        <FormDesignerDragProvider>
+          <Box sx={formDesignerStyles.container}>
+            <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
+              <ToolboxPanel />
+            </Box>
+            <CanvasPanel />
+            <Box sx={{ borderLeft: `1px solid ${Border.Primary}` }}>
+              <ObjectSettingsPanel />
+            </Box>
           </Box>
-          <CanvasPanel />
-          <Box sx={{ borderLeft: `1px solid ${Border.Primary}` }}>
-            <ObjectSettingsPanel />
-          </Box>
-        </Box>
-      </FormDesignerDragProvider>
-    </FormDesignerProvider>
+        </FormDesignerDragProvider>
+      </FormDesignerProvider>
+    </KeyboardShortcutProvider>
   );
 };

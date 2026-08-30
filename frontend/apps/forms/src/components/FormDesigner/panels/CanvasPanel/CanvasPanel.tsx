@@ -13,12 +13,12 @@ import IconButton from "@mui/material/IconButton";
 import RedoIcon from "@mui/icons-material/Redo";
 import UndoIcon from "@mui/icons-material/Undo";
 import Tooltip from "@mui/material/Tooltip";
-import { useEffect, } from "react";
 import type {
   PasteElementEvent,
   PasteSectionEvent,
 } from "@/store/formDesigner/events";
 import { type ClipboardData, ClipboardEventType } from "@/types/clipboard";
+import { useKeyboardShortcut } from "@/store/keyboardShortcut/useKeyboardShortcut";
 
 export const CanvasPanel: React.FC = function () {
   const { undo, redo } = useFormDesignerUndo();
@@ -26,44 +26,47 @@ export const CanvasPanel: React.FC = function () {
   const { selected } = useFormDesignerSelect();
   const pages = useFormPagesSnapshot();
 
-  useEffect(() => {
-    const handleKeyDown = async (event: KeyboardEvent) => {
-      if (!(event.ctrlKey || event.metaKey) || event.key !== "v") {
-        return;
-      }
+  useKeyboardShortcut(
+    {
+      name: "Paste",
+      combination: { key: "v", ctrlOrMeta: true },
+      action: async () => {
+        try {
+          const text = await navigator.clipboard.readText();
+          const data: ClipboardData = JSON.parse(text);
 
-      try {
-        const text = await navigator.clipboard.readText();
-        const data: ClipboardData = JSON.parse(text);
+          switch (data.type) {
+            case ClipboardEventType.CopyElement:
+              if (selected?.type !== "section") {
+                return;
+              }
 
-        switch (data.type) {
-          case ClipboardEventType.CopyElement:
-            if (selected?.type !== "section") {
-              return;
-            }
-
-            dispatch({
-              type: "PasteElement",
-              element: data.element,
-              targetSectionId: selected.id,
-            } satisfies PasteElementEvent);
-            break;
-          case ClipboardEventType.CopySection:
-            dispatch({
-              type: "PasteSection",
-              section: data.section,
-              targetPageId: data.pageId,
-            } satisfies PasteSectionEvent);
-            break;
+              dispatch({
+                type: "PasteElement",
+                element: data.element,
+                targetSectionId: selected.id,
+              } satisfies PasteElementEvent);
+              break;
+            case ClipboardEventType.CopySection:
+              dispatch({
+                type: "PasteSection",
+                section: data.section,
+                targetPageId: data.pageId,
+              } satisfies PasteSectionEvent);
+              break;
+          }
+        } catch {
+          return;
         }
-      } catch {
-        return;
-      }
-    };
+      },
+    },
+    [selected, pages, dispatch],
+  );
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [selected, pages, dispatch]);
+  useKeyboardShortcut(
+    { name: "Undo", combination: { key: "u", ctrlOrMeta: true }, action: undo },
+    [undo],
+  );
 
   return (
     <Panel sx={canvasPanelStyles.canvas}>
