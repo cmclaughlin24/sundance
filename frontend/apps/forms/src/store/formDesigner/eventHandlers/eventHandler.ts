@@ -21,14 +21,16 @@ const handlers: Readonly<Handlers> = {
   AddPage: pageHandlers.onAddPage,
   MovePage: pageHandlers.onMovePage,
   RemovePage: pageHandlers.onRemovePage,
-  AddSection: sectionHandlers.onAddSection,
-  MoveSection: sectionHandlers.onMoveSection,
-  RemoveSection: sectionHandlers.onRemoveSection,
+  AddSection:     sectionHandlers.onAddSection,
+  MoveSection:    sectionHandlers.onMoveSection,
+  RemoveSection:  sectionHandlers.onRemoveSection,
   ReorderSection: sectionHandlers.onReorderSection,
-  AddElement: elementHandlers.onAddElement,
-  MoveElement: elementHandlers.onMoveElement,
-  RemoveElement: elementHandlers.onRemoveElement,
+  PasteSection:   sectionHandlers.onPasteSection,
+  AddElement:     elementHandlers.onAddElement,
+  MoveElement:    elementHandlers.onMoveElement,
+  RemoveElement:  elementHandlers.onRemoveElement,
   ReorderElement: elementHandlers.onReorderElement,
+  PasteElement:   elementHandlers.onPasteElement,
 };
 
 export function reduce(

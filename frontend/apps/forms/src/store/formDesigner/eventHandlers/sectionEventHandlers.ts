@@ -2,6 +2,7 @@ import type { ISection } from "@/types/section";
 import type {
   AddSectionEvent,
   MoveSectionEvent,
+  PasteSectionEvent,
   ReorderSectionEvent,
   RemoveSectionEvent,
 } from "../events";
@@ -9,7 +10,9 @@ import type { IFormAggregate } from "./eventHandler";
 import type { IPage } from "@/types/page";
 import { insertAtPosition, removeById } from "./utils";
 import { createEmptySection } from "@/factories/sectionFactory";
-import { swapPositions } from "@/utils/position";
+import { swapPositions, getNextPosition } from "@/utils/position";
+import { generatedID } from "@/utils/id";
+import { copyKey, copyName } from "@/utils/copy";
 
 export function onAddSection(
   aggregate: IFormAggregate,
@@ -120,6 +123,44 @@ export function onRemoveSection(
     }
 
     return { ...page, sections: removeById(page.sections, event.sectionId) };
+  });
+
+  return {
+    ...aggregate,
+    version: { ...aggregate.version, pages },
+  };
+}
+
+export function onPasteSection(
+  aggregate: IFormAggregate,
+  event: PasteSectionEvent,
+): IFormAggregate {
+  const section: ISection = {
+    ...event.section,
+    id: generatedID(),
+    key: copyKey(event.section.key),
+    name: copyName(event.section.name),
+    elements: event.section.elements.map((element) => ({
+      ...element,
+      id: generatedID(),
+      key: copyKey(element.key),
+      name: copyName(element.name),
+    })),
+  };
+
+  const pages = aggregate.version.pages.map((page): IPage => {
+    if (page.id !== event.targetPageId) {
+      return page;
+    }
+
+    return {
+      ...page,
+      sections: insertAtPosition(
+        page.sections,
+        section,
+        getNextPosition(page.sections),
+      ),
+    };
   });
 
   return {

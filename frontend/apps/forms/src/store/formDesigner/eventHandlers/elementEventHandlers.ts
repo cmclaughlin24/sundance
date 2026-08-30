@@ -2,6 +2,7 @@ import type { IElement } from "@/types/element";
 import type {
   AddElementEvent,
   MoveElementEvent,
+  PasteElementEvent,
   ReorderElementEvent,
   RemoveElementEvent,
 } from "../events";
@@ -10,7 +11,9 @@ import type { ISection } from "@/types/section";
 import type { IPage } from "@/types/page";
 import { insertAtPosition, removeById } from "./utils";
 import { createElementFromType } from "@/factories/elementFactory";
-import { swapPositions } from "@/utils/position";
+import { swapPositions, getNextPosition } from "@/utils/position";
+import { generatedID } from "@/utils/id";
+import { copyKey, copyName } from "@/utils/copy";
 
 export function onAddElement(
   aggregate: IFormAggregate,
@@ -172,6 +175,50 @@ export function onRemoveElement(
     if (!changed) {
       return page;
     }
+
+    return { ...page, sections };
+  });
+
+  return {
+    ...aggregate,
+    version: { ...aggregate.version, pages },
+  };
+}
+
+export function onPasteElement(
+  aggregate: IFormAggregate,
+  event: PasteElementEvent,
+): IFormAggregate {
+  const element: IElement = {
+    ...event.element,
+    id: generatedID(),
+    key: copyKey(event.element.key),
+    name: copyName(event.element.name),
+  };
+
+  const pages = aggregate.version.pages.map((page): IPage => {
+    const hasSection = page.sections.some(
+      (s) => s.id === event.targetSectionId,
+    );
+
+    if (!hasSection) {
+      return page;
+    }
+
+    const sections = page.sections.map((section): ISection => {
+      if (section.id !== event.targetSectionId) {
+        return section;
+      }
+
+      return {
+        ...section,
+        elements: insertAtPosition(
+          section.elements,
+          element,
+          getNextPosition(section.elements),
+        ),
+      };
+    });
 
     return { ...page, sections };
   });

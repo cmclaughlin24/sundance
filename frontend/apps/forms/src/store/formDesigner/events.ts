@@ -1,4 +1,5 @@
-import type { ElementType } from "@/types/element";
+import type { ElementType, IElement } from "@/types/element";
+import type { ISection } from "@/types/section";
 
 export type FormDesignerEvent =
   | AddPageEvent
@@ -8,10 +9,12 @@ export type FormDesignerEvent =
   | MoveSectionEvent
   | RemoveSectionEvent
   | ReorderSectionEvent
+  | PasteSectionEvent
   | AddElementEvent
   | MoveElementEvent
   | RemoveElementEvent
-  | ReorderElementEvent;
+  | ReorderElementEvent
+  | PasteElementEvent;
 
 export type AddPageEvent = {
   type: "AddPage";
@@ -54,6 +57,12 @@ export type ReorderSectionEvent = {
   inc: -1 | 1;
 };
 
+export type PasteSectionEvent = {
+  type: "PasteSection";
+  section: ISection;
+  targetPageId: string;
+};
+
 export type AddElementEvent = {
   type: "AddElement";
   id: string;
@@ -78,4 +87,10 @@ export type ReorderElementEvent = {
   type: "ReorderElement";
   elementId: string;
   inc: -1 | 1;
+};
+
+export type PasteElementEvent = {
+  type: "PasteElement";
+  element: IElement;
+  targetSectionId: string;
 };

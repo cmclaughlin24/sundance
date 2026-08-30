@@ -7,18 +7,16 @@ import {
 } from "@/store/formDesigner";
 import { useMemo, type MouseEventHandler } from "react";
 import { getSectionItemStyles } from "./SectionItem.style";
-import {
-  findPaletteItem,
-} from "../../ToolboxPanel/palette";
+import { findPaletteItem } from "../../ToolboxPanel/palette";
 import { Tag } from "@/components/Tag";
 import { ItemTools } from "../../../common/ItemTools";
 import { DraggableCard } from "@/components/DragDrop/DraggableCard";
-import { useDraggable, useDroppable } from "@dnd-kit/react";
+import { useDroppable } from "@dnd-kit/react";
 import type { PaletteDropEventData } from "@/components/FormDesigner/types/formDropEvent";
 import { DropZoneIndicator } from "@/components/DragDrop/DropZoneIndicator";
 import { useFormDragEvent } from "@/components/FormDesigner/providers/FormDesignerDragProvider";
 import {
-    CanvasDragType,
+  CanvasDragType,
   FormDragEventSource,
   PaletteItemDragType,
   type CanvasSectionDragEventData,
@@ -30,14 +28,17 @@ import type {
   ReorderSectionEvent,
   RemoveSectionEvent,
 } from "@/store/formDesigner/events";
-import { mergeSx } from "merge-sx";
 import type { ItemComponentProps } from "@/components/FormDesigner/types/componentProps";
+import { useSortable } from "@dnd-kit/react/sortable";
+import {
+  ClipboardEventType,
+  type CopySectionClipboardData,
+} from "@/types/clipboard";
 
 const variants: Variants = {
   initial: { opacity: 0, height: 0, marginBottom: 0 },
   animate: { opacity: 1, height: "auto", marginBottom: "1.25rem" },
   exit: { opacity: 0, height: 0, marginBottom: 0 },
-  isDragging: { opacity: 0, transition: { duration: 0.5 } },
 };
 
 export interface SectionItemProps extends ItemComponentProps {
@@ -47,15 +48,19 @@ export interface SectionItemProps extends ItemComponentProps {
 export const SectionItem: React.FC<SectionItemProps> = function ({
   section,
   parentId,
+  index,
   draggable = true,
 }) {
   const elements = sortPositioned(section.elements);
   const { dispatch } = useFormDesignerDispatch();
   const { select, isSelected } = useFormDesignerSelect(section.id);
 
-  const { ref: dragRef, isDragging } = useDraggable({
-    id: `canvas-section-${section.id}-${draggable}`,
+  const { ref: dragRef, handleRef } = useSortable({
+    id: `canvas-section-${section.id}`,
+    index,
     type: CanvasDragType.Section,
+    group: parentId,
+    accept: CanvasDragType.Section,
     data: {
       source: FormDragEventSource.Canvas,
       type: "section",
@@ -74,11 +79,25 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
       position: getNextPosition(elements),
     } satisfies PaletteDropEventData,
   });
+
   const dragData = useFormDragEvent();
 
   const handleClk: MouseEventHandler<HTMLLIElement> = (event) => {
     event.stopPropagation();
     select(!isSelected ? { type: "section", id: section.id } : null);
+  };
+
+  const handleCopy = () => {
+    // TODO: If multi-page forms are enabled, the clipboard data would need to carry a
+    // targetPageId so the user can choose which page to paste into, rather than always
+    // pasting back to the source page.
+    const data: CopySectionClipboardData = {
+      type: ClipboardEventType.CopySection,
+      section,
+      pageId: parentId,
+    };
+
+    navigator.clipboard.writeText(JSON.stringify(data));
   };
 
   const handleReorder = (inc: -1 | 1) => {
@@ -101,7 +120,7 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
   const dragPaletteItem = useMemo(
     () =>
       dragData && dragData.source === "palette"
-        ? findPaletteItem(dragData.type)
+        ? findPaletteItem(dragData.objectType)
         : null,
     [dragData],
   );
@@ -114,27 +133,28 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
       layout="position"
       variants={variants}
       initial="initial"
-      animate={isDragging ? "isDragging" : "animate"}
+      animate="animate"
       exit="exit"
       transition={{ type: "spring", bounce: 0, duration: 0.35 }}
       sx={styles.item}
       onClick={handleClk}
-      ref={dropRef}
+      ref={(el: Element) => {
+        dragRef(el);
+        dropRef(el);
+      }}
       role="button"
     >
       <DraggableCard
-        sx={mergeSx(
-          styles.card,
-          isDragging && !draggable && !draggable ? styles.onDrag : {},
-        )}
+        sx={styles.card}
+        handleRef={handleRef}
         orientation="vertical"
-        handleRef={dragRef}
+        dragHandleOnly
       >
         <Box sx={{ alignSelf: "end", display: "flex", alignItems: "center" }}>
           {paletteItem && <Tag>{paletteItem.label}</Tag>}
           <ItemTools
             onReorder={handleReorder}
-            onCopy={() => {}}
+            onCopy={handleCopy}
             onDelete={handleDelete}
           />
         </Box>
@@ -158,5 +178,7 @@ function canDropItem(data: FormDragEventData | null): boolean {
 
   // TODO: Improve this conditional such that it will not introduce a bug if additional layout
   // elements are added.
-  return data.source === FormDragEventSource.Palette && data.type !== "section";
+  return (
+    data.source === FormDragEventSource.Palette && data.objectType !== "section"
+  );
 }

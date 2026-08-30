@@ -40,7 +40,7 @@ export const PageItem: React.FC<{ page: IPage }> = function ({ page }) {
   const dragPaletteItem = useMemo(
     () =>
       dragData && dragData.source === "palette"
-        ? findPaletteItem(dragData.type)
+        ? findPaletteItem(dragData.objectType)
         : null,
     [dragData],
   );
@@ -64,5 +64,5 @@ function canDropItem(data: FormDragEventData | null): boolean {
 
   // TODO: Improve this conditional such that it will not introduce a bug if additional layout
   // elements are added.
-  return data.source === FormDragEventSource.Palette && data.type === "section";
+  return data.source === FormDragEventSource.Palette && data.objectType === "section";
 }

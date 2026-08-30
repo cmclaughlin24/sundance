@@ -41,7 +41,7 @@ export const PaletteItem: React.FC<{
     type: item.dragType,
     data: {
       source: FormDragEventSource.Palette,
-      type: item.type,
+      objectType: item.type,
     } satisfies FormDragEventData,
     disabled: !draggable,
   });

@@ -1,5 +1,6 @@
 export interface ItemComponentProps {
   parentId: string;
+  index: number;
   draggable?: boolean;
 }
 

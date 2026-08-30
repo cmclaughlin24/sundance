@@ -13,7 +13,7 @@ export enum PaletteItemDragType {
 
 export interface PaletteDragEventData {
   source: FormDragEventSource.Palette;
-  type: ElementType | "section";
+  objectType: ElementType | "section";
 }
 
 export enum CanvasDragType {

@@ -12,6 +12,9 @@ export const canvasPanelStyles: Styles = {
     justifyContent: "space-between",
   },
   buttons: {
+    "> button": {
+      color: "#4B4444",
+    },
     "> button:not(:last-of-type)": {
       marginRight: 1,
     },
