@@ -15,7 +15,10 @@ export type ElementFactory = (id: string) => IElement;
 
 const registry = new Map<ElementType, ElementFactory>();
 
-export function createElementFromType(elementType: ElementType, id: string): IElement {
+export function createElementFromType(
+  elementType: ElementType,
+  id: string,
+): IElement {
   const factory = registry.get(elementType);
 
   if (!factory) {
@@ -38,6 +41,7 @@ registerElementFactory("text", (id) => ({
   id,
   type: "text",
   name: "Text",
+  description: "",
   key: id,
   position: 0,
   rules: [],
@@ -48,6 +52,7 @@ registerElementFactory("number", (id) => ({
   id,
   type: "number",
   name: "Number",
+  description: "",
   key: id,
   position: 0,
   rules: [],
@@ -58,6 +63,7 @@ registerElementFactory("date", (id) => ({
   id,
   type: "date",
   name: "Date",
+  description: "",
   key: id,
   position: 0,
   rules: [],
@@ -68,6 +74,7 @@ registerElementFactory("toggle", (id) => ({
   id,
   type: "toggle",
   name: "Toggle",
+  description: "",
   key: "",
   position: 0,
   rules: [],
@@ -78,6 +85,7 @@ registerElementFactory("checkbox", (id) => ({
   id,
   type: "checkbox",
   name: "Checkbox",
+  description: "",
   key: id,
   position: 0,
   rules: [],
@@ -92,6 +100,7 @@ registerElementFactory("radio", (id) => ({
   id,
   type: "radio",
   name: "Radio",
+  description: "",
   key: id,
   position: 0,
   rules: [],
@@ -106,6 +115,7 @@ registerElementFactory("select", (id) => ({
   id,
   type: "select",
   name: "Select",
+  description: "",
   key: id,
   position: 0,
   rules: [],
@@ -120,6 +130,7 @@ registerElementFactory("segmented", (id) => ({
   id,
   type: "segmented",
   name: "Segmented",
+  description: "",
   key: id,
   position: 0,
   rules: [],
@@ -130,6 +141,7 @@ registerElementFactory("user", (id) => ({
   id,
   type: "user",
   name: "User",
+  description: "",
   key: id,
   position: 0,
   rules: [],

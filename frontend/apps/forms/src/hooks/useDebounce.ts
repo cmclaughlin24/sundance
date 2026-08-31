@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, type DependencyList } from "react";
 import { useState } from "react";
 
 /**
@@ -7,7 +7,11 @@ import { useState } from "react";
  * @param delay The debounce value in milliseconds.
  * @returns An object containing the current value, the debounce value, and a setter for the value.
  */
-export function useDebounce<T>(initial: T, delay: number = 500) {
+export function useDebounce<T>(
+  initial: T,
+  deps: DependencyList,
+  delay: number = 500,
+) {
   const [value, setValue] = useState(initial);
   const [debounceValue, setDebounceValue] = useState(initial);
 
@@ -15,6 +19,11 @@ export function useDebounce<T>(initial: T, delay: number = 500) {
     const timerRef = setTimeout(() => setDebounceValue(value), delay);
     return () => clearTimeout(timerRef);
   }, [value]);
+
+  useEffect(() => {
+    setValue(initial);
+    setDebounceValue(initial);
+  }, deps);
 
   return { value, debounceValue, setValue };
 }

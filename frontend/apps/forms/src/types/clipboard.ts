@@ -14,7 +14,6 @@ export interface CopyElementClipboardData {
 export interface CopySectionClipboardData {
   type: ClipboardEventType.CopySection;
   section: ISection;
-  pageId: string;
 }
 
 export type ClipboardData = CopyElementClipboardData | CopySectionClipboardData;

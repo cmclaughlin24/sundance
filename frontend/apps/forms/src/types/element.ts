@@ -1,7 +1,5 @@
 import type { ElementAttributes } from "./elementAttributes";
-import type { HasKey } from "./hasKey";
-import type { HasName } from "./hasName";
-import type { HasPosition } from "./hasPosition";
+import type { IFormObject } from "./formObject";
 import type { HasRules } from "./rule";
 
 export type ElementType =
@@ -15,8 +13,8 @@ export type ElementType =
   | "toggle"
   | "user";
 
-export interface IElement extends HasKey, HasPosition, HasName, HasRules {
-  id: string;
+export interface IElement extends IFormObject, HasRules {
+  description: string;
   type: ElementType;
   attributes: ElementAttributes;
 }

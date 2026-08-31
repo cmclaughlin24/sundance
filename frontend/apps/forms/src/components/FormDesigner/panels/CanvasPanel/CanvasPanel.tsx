@@ -16,6 +16,8 @@ import Tooltip from "@mui/material/Tooltip";
 import type {
   PasteElementEvent,
   PasteSectionEvent,
+  RemoveElementEvent,
+  RemoveSectionEvent,
 } from "@/store/formDesigner/events";
 import { type ClipboardData, ClipboardEventType } from "@/types/clipboard";
 import { useKeyboardShortcut } from "@/store/keyboardShortcut/useKeyboardShortcut";
@@ -44,14 +46,15 @@ export const CanvasPanel: React.FC = function () {
               dispatch({
                 type: "PasteElement",
                 element: data.element,
-                targetSectionId: selected.id,
+                targetSectionId: selected.item.id,
               } satisfies PasteElementEvent);
               break;
             case ClipboardEventType.CopySection:
+              // FIXME: When multi-page support is enabled, need to pull the page ID from the current selection.
               dispatch({
                 type: "PasteSection",
                 section: data.section,
-                targetPageId: data.pageId,
+                targetPageId: pages[0].id,
               } satisfies PasteSectionEvent);
               break;
           }
@@ -64,8 +67,45 @@ export const CanvasPanel: React.FC = function () {
   );
 
   useKeyboardShortcut(
-    { name: "Undo", combination: { key: "u", ctrlOrMeta: true }, action: undo },
+    { name: "Undo", combination: { key: "z", ctrlOrMeta: true }, action: undo },
     [undo],
+  );
+
+  useKeyboardShortcut(
+    {
+      name: "Redo",
+      combination: { key: "z", ctrlOrMeta: true, shift: true },
+      action: redo,
+    },
+    [redo],
+  );
+
+  useKeyboardShortcut(
+    {
+      name: "Delete",
+      combination: { key: "Delete" },
+      action: () => {
+        if (!selected) {
+          return;
+        }
+
+        switch (selected.type) {
+          case "section":
+            dispatch({
+              type: "RemoveSection",
+              sectionId: selected.item.id,
+            } satisfies RemoveSectionEvent);
+            break;
+          default:
+            dispatch({
+              type: "RemoveElement",
+              elementId: selected.item.id,
+            } satisfies RemoveElementEvent);
+            break;
+        }
+      },
+    },
+    [dispatch, selected],
   );
 
   return (

@@ -20,7 +20,6 @@ export const KeyboardShortcutProvider: React.FC<React.PropsWithChildren<{}>> =
       const handler = (event: KeyboardEvent) => {
         const { shortcuts } = storeRef.current!.getState();
 
-        console.log(event);
         for (const shortcut of shortcuts) {
           if (isMatch(event, shortcut)) {
             shortcut.action();

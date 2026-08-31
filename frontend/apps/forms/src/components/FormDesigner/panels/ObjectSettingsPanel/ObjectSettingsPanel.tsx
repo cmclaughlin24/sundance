@@ -1,7 +1,8 @@
 import { Panel } from "@/components/layout/Panel";
 import {
-  useFormDesignerDispatch,
+  selectedToPaletteType,
   useFormDesignerSelect,
+  type SelectedItem,
 } from "@/store/formDesigner";
 import type { ElementType, IElement } from "@/types/element";
 import type { ElementAttributes } from "@/types/elementAttributes";
@@ -10,17 +11,26 @@ import { ActiveObjectTitle } from "./ActiveObjectTitle";
 import { Collapisble } from "@/components/Collapisble";
 import Box from "@mui/material/Box";
 import { Border } from "@/constants/colors";
+import { TextElementSettings } from "./settings/TextElementSettings";
+import { NumberElementSettings } from "./settings/NumberElementSettings";
+import {
+  IdentitySettings,
+  type IdentitySettingsProps,
+} from "./settings/IdentitySettings";
+import { BehaviorSettings } from "./settings/BehaviorSettings";
 
-export type ElementAttributesComponent = React.FC<{
+export type ElementSettingsComponent = React.FC<{
   element: IElement;
   onChange: (attr: ElementAttributes) => void;
 }>;
 
-const registry = new Map<ElementType, ElementAttributesComponent>([]);
+const registry = new Map<ElementType, ElementSettingsComponent>([
+  ["text", TextElementSettings],
+  ["number", NumberElementSettings],
+]);
 
 export const ObjectSettingsPanel: React.FC = function () {
   const { selected } = useFormDesignerSelect();
-  const { dispatch } = useFormDesignerDispatch();
 
   const handleChanges = (elementId: string, attr: ElementAttributes) => {
     console.log(elementId, attr);
@@ -33,9 +43,11 @@ export const ObjectSettingsPanel: React.FC = function () {
   );
 
   if (selected) {
+    const elementType = selectedToPaletteType(selected);
+
     content = (
       <>
-        <ActiveObjectTitle elementType={selected.type} />
+        <ActiveObjectTitle elementType={elementType} />
         <Box
           sx={{
             display: "flex",
@@ -46,10 +58,14 @@ export const ObjectSettingsPanel: React.FC = function () {
             },
           }}
         >
-          <Collapisble summary="Identity">Identity Content</Collapisble>
+          <Collapisble summary="Identity">
+            <IdentitySettings {...selectedToIdentityProps(selected)} />
+          </Collapisble>
           <Collapisble summary="Properties">Identity Content</Collapisble>
           <Collapisble summary="Data Sources">Identity Content</Collapisble>
-          <Collapisble summary="Behavior">Identity Content</Collapisble>
+          <Collapisble summary="Behavior">
+            <BehaviorSettings />
+          </Collapisble>
         </Box>
       </>
     );
@@ -62,3 +78,16 @@ export const ObjectSettingsPanel: React.FC = function () {
     </Panel>
   );
 };
+
+function selectedToIdentityProps(
+  selected: SelectedItem,
+): IdentitySettingsProps {
+  switch (selected.type) {
+    case "element":
+      return { type: "element", object: selected.item };
+    case "page":
+      return { type: "page", object: selected.item };
+    case "section":
+      return { type: "section", object: selected.item };
+  }
+}

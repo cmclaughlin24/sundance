@@ -69,7 +69,7 @@ export const ElementItem: React.FC<ElementItemProps> = function ({
 
   const handleClk: MouseEventHandler<HTMLLIElement> = (event) => {
     event.stopPropagation();
-    select(!isSelected ? { type: element.type, id: element.id } : null);
+    select(!isSelected ? { type: "element", item: element } : null);
   };
 
   const handleCopy = () => {

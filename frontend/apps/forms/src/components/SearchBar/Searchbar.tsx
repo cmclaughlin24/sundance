@@ -46,7 +46,7 @@ export function SearchBar<T extends ILookup>({
     value: searchTerm,
     debounceValue: debounceSearchTerm,
     setValue: setSearchTerm,
-  } = useDebounce("");
+  } = useDebounce("", []);
 
   const { data, isLoading } = useAsyncData(
     (accessToken) => queryFn(accessToken, debounceSearchTerm),

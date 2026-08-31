@@ -11,6 +11,7 @@ import Tab from "@mui/material/Tab";
 import Tabs from "@mui/material/Tabs";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { formDesignerPageStyles } from "./-index.style";
+import Button from "@mui/material/Button";
 
 const token = "placeholder";
 
@@ -64,7 +65,14 @@ function RouteComponent() {
 
   return (
     <Page sx={formDesignerPageStyles.page}>
-      <PageTitle name={form.name} description={form.description} />
+      <Box sx={formDesignerPageStyles.header}>
+        <PageTitle name={form.name} description={form.description} />
+        <Box sx={formDesignerPageStyles.headerActions}>
+          <Button variant="text">Save Draft</Button>
+          <Button>Preview</Button>
+          <Button>Publish</Button>
+        </Box>
+      </Box>
       <Box>
         <Tabs value={tab} onChange={handleTabChange}>
           <Tab label="Build" value={FormDesignerTab.Build} />

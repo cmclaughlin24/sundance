@@ -3,7 +3,7 @@ import { findPaletteItem } from "../panels/ToolboxPanel/palette";
 import { PaletteItem } from "../panels/ToolboxPanel/PaletteItem";
 import {
   useFormDesignerDispatch,
-  useFormDesignerSelect,
+  // useFormDesignerSelect,
 } from "@/store/formDesigner";
 import {
   FormDragEventSource,
@@ -36,7 +36,7 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
     const [activeDragData, setActiveDragData] =
       useState<FormDragEventData | null>(null);
     const { dispatch } = useFormDesignerDispatch();
-    const { select } = useFormDesignerSelect();
+    // const { select } = useFormDesignerSelect();
 
     const handlePaletteDragEnd = (
       dragData: PaletteDragEventData,
@@ -66,7 +66,8 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
       }
 
       dispatch(event);
-      select({ type: dragData.objectType, id });
+      // FIXME: Fix the automatic select on the canvas item.
+      // select({ type: dragData.objectType, id });
     };
 
     const handleCanvasDragEnd = (

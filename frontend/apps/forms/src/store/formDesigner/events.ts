@@ -1,17 +1,21 @@
 import type { ElementType, IElement } from "@/types/element";
+import type { IPage } from "@/types/page";
 import type { ISection } from "@/types/section";
 
 export type FormDesignerEvent =
   | AddPageEvent
   | MovePageEvent
   | RemovePageEvent
+  | PastePageEvent
   | AddSectionEvent
   | MoveSectionEvent
+  | UpdateSectionEvent
   | RemoveSectionEvent
   | ReorderSectionEvent
   | PasteSectionEvent
   | AddElementEvent
   | MoveElementEvent
+  | UpdateElementEvent
   | RemoveElementEvent
   | ReorderElementEvent
   | PasteElementEvent;
@@ -32,6 +36,11 @@ export type RemovePageEvent = {
   pageId: string;
 };
 
+export type PastePageEvent = {
+  type: "PastePage";
+  page: IPage;
+};
+
 export type AddSectionEvent = {
   type: "AddSection";
   id: string;
@@ -44,6 +53,12 @@ export type MoveSectionEvent = {
   sectionId: string;
   targetPageId: string;
   position: number;
+};
+
+export type UpdateSectionEvent = {
+  type: "UpdateSection";
+  sectionId: string;
+  changes: Partial<Pick<ISection, "key" | "name">>;
 };
 
 export type RemoveSectionEvent = {
@@ -76,6 +91,12 @@ export type MoveElementEvent = {
   elementId: string;
   targetSectionId: string;
   position: number;
+};
+
+export type UpdateElementEvent = {
+  type: "UpdateElement";
+  elementId: string;
+  changes: Partial<Pick<IElement, "key" | "name" | "description">>;
 };
 
 export type RemoveElementEvent = {

@@ -5,6 +5,7 @@ import type {
   PasteElementEvent,
   ReorderElementEvent,
   RemoveElementEvent,
+  UpdateElementEvent,
 } from "../events";
 import type { IFormAggregate } from "./eventHandler";
 import type { ISection } from "@/types/section";
@@ -19,7 +20,7 @@ export function onAddElement(
   aggregate: IFormAggregate,
   event: AddElementEvent,
 ): IFormAggregate {
-  const element = createElementFromType(event.elementType, event.id);
+  const element = createElementFromType(event.elementType);
 
   const pages = aggregate.version.pages.map((page): IPage => {
     const hasSection = page.sections.some((s) => s.id === event.sectionId);
@@ -141,6 +142,38 @@ export function onMoveElement(
       }
 
       return section;
+    });
+
+    return { ...page, sections };
+  });
+
+  return {
+    ...aggregate,
+    version: { ...aggregate.version, pages },
+  };
+}
+
+export function onUpdateElement(
+  aggregate: IFormAggregate,
+  event: UpdateElementEvent,
+): IFormAggregate {
+  const pages = aggregate.version.pages.map((page): IPage => {
+    const sections = page.sections.map((section): ISection => {
+      const hasElement = section.elements.some((e) => e.id === event.elementId);
+
+      if (!hasElement) {
+        return section;
+      }
+
+      const elements = section.elements.map((element) => {
+        if (element.id !== event.elementId) {
+          return element;
+        }
+
+        return { ...element, ...event.changes };
+      });
+
+      return { ...section, elements };
     });
 
     return { ...page, sections };

@@ -1,4 +1,4 @@
-import type { HasName } from "./hasName";
+import type { HasName } from "./formObject";
 
 export interface IForm extends HasName {
   id: string;

@@ -1,10 +1,7 @@
-import type { HasKey } from "./hasKey";
-import type { HasName } from "./hasName";
-import type { HasPosition } from "./hasPosition";
+import type { IFormObject } from "./formObject";
 import type { HasRules } from "./rule";
 import type { ISection } from "./section";
 
-export interface IPage extends HasKey, HasPosition, HasName, HasRules {
-    id: string;
+export interface IPage extends IFormObject, HasRules {
     sections: ISection[];
 }

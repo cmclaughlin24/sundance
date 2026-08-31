@@ -84,17 +84,13 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
 
   const handleClk: MouseEventHandler<HTMLLIElement> = (event) => {
     event.stopPropagation();
-    select(!isSelected ? { type: "section", id: section.id } : null);
+    select(!isSelected ? { type: "section", item: section } : null);
   };
 
   const handleCopy = () => {
-    // TODO: If multi-page forms are enabled, the clipboard data would need to carry a
-    // targetPageId so the user can choose which page to paste into, rather than always
-    // pasting back to the source page.
     const data: CopySectionClipboardData = {
       type: ClipboardEventType.CopySection,
       section,
-      pageId: parentId,
     };
 
     navigator.clipboard.writeText(JSON.stringify(data));

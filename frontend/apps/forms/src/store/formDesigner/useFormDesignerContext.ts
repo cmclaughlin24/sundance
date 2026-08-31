@@ -58,7 +58,7 @@ export function useFormDesignerSelect(id?: string) {
     store,
     useShallow((s) => ({
       selected: s.selected,
-      isSelected: !!s.selected && s.selected.id === id,
+      isSelected: !!s.selected && s.selected.item.id === id,
       select: s.select,
     })),
   );

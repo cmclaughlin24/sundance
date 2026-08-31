@@ -1,6 +1,8 @@
 export interface KeyCombination {
   key: string;
   ctrlOrMeta?: boolean;
+  ctrl?: boolean;
+  meta?: boolean;
   shift?: boolean;
   alt?: boolean;
 }
@@ -20,6 +22,20 @@ export function isMatch(
   }
 
   if (shortcut.combination.ctrlOrMeta && !(event.ctrlKey || event.metaKey)) {
+    return false;
+  }
+
+  if (
+    !shortcut.combination.ctrlOrMeta &&
+    !!shortcut.combination.ctrl !== event.ctrlKey
+  ) {
+    return false;
+  }
+
+  if (
+    !shortcut.combination.ctrlOrMeta &&
+    !!shortcut.combination.meta !== event.metaKey
+  ) {
     return false;
   }
 

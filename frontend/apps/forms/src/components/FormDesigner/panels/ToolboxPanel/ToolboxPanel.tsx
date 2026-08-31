@@ -11,7 +11,7 @@ export const ToolboxPanel: React.FC = function () {
     value: searchTerm,
     debounceValue: debounceSearchTerm,
     setValue: setSearchTerm,
-  } = useDebounce("");
+  } = useDebounce("", []);
 
   const handleChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
