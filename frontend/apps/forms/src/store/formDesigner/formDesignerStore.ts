@@ -8,6 +8,7 @@ import {
   reduce,
   type IFormAggregate,
 } from "./eventHandlers/eventHandler";
+import { findSelectedById } from "@/utils/form";
 
 export interface IFormDesignerStore {
   snapshot: IFormAggregate;
@@ -35,8 +36,18 @@ export function createFormDesignerStore(form: IForm, version: IFormVersion) {
         const cursor = s.cursor + 1;
         const events = [...s.events.slice(0, cursor), event];
         const snapshot = apply(s.snapshot!, event);
+        let selected = s.selected;
 
-        return { ...s, events, cursor, snapshot };
+        if (isAddEvent(event)) {
+          selected = findSelectedById(
+            snapshot.version.pages,
+            (event as { id: string }).id,
+          );
+        } else if (isRemoveEvent(event)) {
+          selected = null;
+        }
+
+        return { ...s, events, cursor, snapshot, selected };
       }),
     undo: () =>
       set((s) => {
@@ -56,4 +67,21 @@ export function createFormDesignerStore(form: IForm, version: IFormVersion) {
       }),
     select: (item) => set((s) => ({ ...s, selected: item })),
   }));
+}
+
+function isAddEvent(event: FormDesignerEvent): boolean {
+  return (
+    event.type === "AddPage" ||
+    event.type === "AddSection" ||
+    event.type === "AddElement"
+  );
+}
+
+function isRemoveEvent(event: FormDesignerEvent): boolean {
+  return (
+    event.type === "RemoveSection" ||
+    event.type === "CutSection" ||
+    event.type === "RemoveElement" ||
+    event.type === "CutElement"
+  );
 }

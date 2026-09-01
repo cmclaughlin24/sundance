@@ -28,12 +28,14 @@ const handlers: Readonly<Handlers> = {
   RemoveSection: sectionHandlers.onRemoveSection,
   ReorderSection: sectionHandlers.onReorderSection,
   PasteSection: sectionHandlers.onPasteSection,
+  CutSection: sectionHandlers.onCutSection,
   AddElement: elementHandlers.onAddElement,
   MoveElement: elementHandlers.onMoveElement,
   UpdateElement: elementHandlers.onUpdateElement,
   RemoveElement: elementHandlers.onRemoveElement,
   ReorderElement: elementHandlers.onReorderElement,
   PasteElement: elementHandlers.onPasteElement,
+  CutElement: elementHandlers.onCutElement,
 };
 
 export function reduce(

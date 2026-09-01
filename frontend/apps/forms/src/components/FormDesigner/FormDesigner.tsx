@@ -9,6 +9,7 @@ import { ObjectSettingsPanel } from "./panels/ObjectSettingsPanel/ObjectSettings
 import { Border } from "@/constants/colors";
 import { FormDesignerDragProvider } from "./providers/FormDesignerDragProvider";
 import { KeyboardShortcutProvider } from "@/store/keyboardShortcut/KeyboardShortcutProvider";
+import { FormDesignerKeyboardShortcuts } from "./FormDesignerKeyboardShorts";
 
 export interface FormDesignerProps {
   form: IForm;
@@ -23,15 +24,17 @@ export const FormDesigner: React.FC<FormDesignerProps> = function ({
     <KeyboardShortcutProvider>
       <FormDesignerProvider form={form} version={version}>
         <FormDesignerDragProvider>
-          <Box sx={formDesignerStyles.container}>
-            <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
-              <ToolboxPanel />
+          <FormDesignerKeyboardShortcuts>
+            <Box sx={formDesignerStyles.container}>
+              <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
+                <ToolboxPanel />
+              </Box>
+              <CanvasPanel />
+              <Box sx={{ borderLeft: `1px solid ${Border.Primary}` }}>
+                <ObjectSettingsPanel />
+              </Box>
             </Box>
-            <CanvasPanel />
-            <Box sx={{ borderLeft: `1px solid ${Border.Primary}` }}>
-              <ObjectSettingsPanel />
-            </Box>
-          </Box>
+          </FormDesignerKeyboardShortcuts>
         </FormDesignerDragProvider>
       </FormDesignerProvider>
     </KeyboardShortcutProvider>

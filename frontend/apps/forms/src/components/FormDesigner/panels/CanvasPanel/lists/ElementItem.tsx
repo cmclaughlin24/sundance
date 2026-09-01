@@ -25,7 +25,7 @@ import { useSortable } from "@dnd-kit/react/sortable";
 import { motion, type Variants } from "motion/react";
 import {
   ClipboardEventType,
-  type CopyElementClipboardData,
+  type ElementClipboardData,
 } from "@/types/clipboard";
 
 export interface ElementItemProps extends ItemComponentProps {
@@ -73,7 +73,7 @@ export const ElementItem: React.FC<ElementItemProps> = function ({
   };
 
   const handleCopy = () => {
-    const data: CopyElementClipboardData = {
+    const data: ElementClipboardData = {
       type: ClipboardEventType.CopyElement,
       element,
     };

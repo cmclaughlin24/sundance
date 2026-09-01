@@ -6,6 +6,7 @@ import type {
   ReorderElementEvent,
   RemoveElementEvent,
   UpdateElementEvent,
+  CutElementEvent,
 } from "../events";
 import type { IFormAggregate } from "./eventHandler";
 import type { ISection } from "@/types/section";
@@ -15,12 +16,13 @@ import { createElementFromType } from "@/factories/elementFactory";
 import { swapPositions, getNextPosition } from "@/utils/position";
 import { generatedID } from "@/utils/id";
 import { copyKey, copyName } from "@/utils/copy";
+import { ClipboardEventType } from "@/types/clipboard";
 
 export function onAddElement(
   aggregate: IFormAggregate,
   event: AddElementEvent,
 ): IFormAggregate {
-  const element = createElementFromType(event.elementType);
+  const element = createElementFromType(event.elementType, event.id);
 
   const pages = aggregate.version.pages.map((page): IPage => {
     const hasSection = page.sections.some((s) => s.id === event.sectionId);
@@ -189,9 +191,23 @@ export function onRemoveElement(
   aggregate: IFormAggregate,
   event: RemoveElementEvent,
 ): IFormAggregate {
+  return removeElementById(aggregate, event.elementId);
+}
+
+export function onCutElement(
+  aggregate: IFormAggregate,
+  event: CutElementEvent,
+): IFormAggregate {
+  return removeElementById(aggregate, event.elementId);
+}
+
+function removeElementById(
+  aggregate: IFormAggregate,
+  elementId: string,
+): IFormAggregate {
   const pages = aggregate.version.pages.map((page): IPage => {
     const sections = page.sections.map((section): ISection => {
-      const hasElement = section.elements.some((e) => e.id === event.elementId);
+      const hasElement = section.elements.some((e) => e.id === elementId);
 
       if (!hasElement) {
         return section;
@@ -199,7 +215,7 @@ export function onRemoveElement(
 
       return {
         ...section,
-        elements: removeById(section.elements, event.elementId),
+        elements: removeById(section.elements, elementId),
       };
     });
 
@@ -222,11 +238,13 @@ export function onPasteElement(
   aggregate: IFormAggregate,
   event: PasteElementEvent,
 ): IFormAggregate {
+  const perserve = event.clipboardOp === ClipboardEventType.CutElement;
+
   const element: IElement = {
     ...event.element,
-    id: generatedID(),
-    key: copyKey(event.element.key),
-    name: copyName(event.element.name),
+    id: perserve ? event.element.id : generatedID(),
+    key: perserve ? event.element.key : copyKey(event.element.key),
+    name: perserve ? event.element.name : copyName(event.element.name),
   };
 
   const pages = aggregate.version.pages.map((page): IPage => {

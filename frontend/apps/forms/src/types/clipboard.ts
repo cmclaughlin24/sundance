@@ -4,16 +4,18 @@ import type { ISection } from "./section";
 export enum ClipboardEventType {
   CopyElement = "copy-element",
   CopySection = "copy-section",
+  CutElement = "cut-element",
+  CutSection = "cut-section",
 }
 
-export interface CopyElementClipboardData {
-  type: ClipboardEventType.CopyElement;
+export interface ElementClipboardData {
+  type: ClipboardEventType.CopyElement | ClipboardEventType.CutElement;
   element: IElement;
 }
 
-export interface CopySectionClipboardData {
-  type: ClipboardEventType.CopySection;
+export interface SectionClipboardData {
+  type: ClipboardEventType.CopySection | ClipboardEventType.CutSection;
   section: ISection;
 }
 
-export type ClipboardData = CopyElementClipboardData | CopySectionClipboardData;
+export type ClipboardData = ElementClipboardData | SectionClipboardData;

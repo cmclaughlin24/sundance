@@ -32,7 +32,7 @@ import type { ItemComponentProps } from "@/components/FormDesigner/types/compone
 import { useSortable } from "@dnd-kit/react/sortable";
 import {
   ClipboardEventType,
-  type CopySectionClipboardData,
+  type SectionClipboardData,
 } from "@/types/clipboard";
 
 const variants: Variants = {
@@ -88,7 +88,7 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
   };
 
   const handleCopy = () => {
-    const data: CopySectionClipboardData = {
+    const data: SectionClipboardData = {
       type: ClipboardEventType.CopySection,
       section,
     };

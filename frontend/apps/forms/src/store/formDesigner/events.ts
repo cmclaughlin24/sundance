@@ -1,3 +1,4 @@
+import type { ClipboardEventType } from "@/types/clipboard";
 import type { ElementType, IElement } from "@/types/element";
 import type { IPage } from "@/types/page";
 import type { ISection } from "@/types/section";
@@ -13,12 +14,14 @@ export type FormDesignerEvent =
   | RemoveSectionEvent
   | ReorderSectionEvent
   | PasteSectionEvent
+  | CutSectionEvent
   | AddElementEvent
   | MoveElementEvent
   | UpdateElementEvent
   | RemoveElementEvent
   | ReorderElementEvent
-  | PasteElementEvent;
+  | PasteElementEvent
+  | CutElementEvent;
 
 export type AddPageEvent = {
   type: "AddPage";
@@ -72,10 +75,16 @@ export type ReorderSectionEvent = {
   inc: -1 | 1;
 };
 
+export type CutSectionEvent = {
+  type: "CutSection";
+  sectionId: string;
+};
+
 export type PasteSectionEvent = {
   type: "PasteSection";
   section: ISection;
   targetPageId: string;
+  clipboardOp: ClipboardEventType.CutSection | ClipboardEventType.CopySection;
 };
 
 export type AddElementEvent = {
@@ -110,8 +119,14 @@ export type ReorderElementEvent = {
   inc: -1 | 1;
 };
 
+export type CutElementEvent = {
+  type: "CutElement";
+  elementId: string;
+};
+
 export type PasteElementEvent = {
   type: "PasteElement";
   element: IElement;
   targetSectionId: string;
+  clipboardOp: ClipboardEventType.CutElement | ClipboardEventType.CopyElement;
 };
