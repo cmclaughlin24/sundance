@@ -1,6 +1,7 @@
 import { Panel } from "@/components/layout/Panel";
 import {
   selectedToPaletteType,
+  useFormDesignerDispatch,
   useFormDesignerSelect,
   type SelectedItem,
 } from "@/store/formDesigner";
@@ -15,9 +16,15 @@ import { TextElementSettings } from "./settings/TextElementSettings";
 import { NumberElementSettings } from "./settings/NumberElementSettings";
 import {
   IdentitySettings,
+  type IdentitySettingsEvent,
   type IdentitySettingsProps,
 } from "./settings/IdentitySettings";
 import { BehaviorSettings } from "./settings/BehaviorSettings";
+import type {
+  FormDesignerEvent,
+  UpdateElementEvent,
+  UpdateSectionEvent,
+} from "@/store/formDesigner/events";
 
 export type ElementSettingsComponent = React.FC<{
   element: IElement;
@@ -30,10 +37,30 @@ const registry = new Map<ElementType, ElementSettingsComponent>([
 ]);
 
 export const ObjectSettingsPanel: React.FC = function () {
+  const { dispatch } = useFormDesignerDispatch();
   const { selected } = useFormDesignerSelect();
 
-  const handleChanges = (elementId: string, attr: ElementAttributes) => {
-    console.log(elementId, attr);
+  const handleIdentityChanges = (e: IdentitySettingsEvent) => {
+    let event: FormDesignerEvent;
+
+    switch (e.type) {
+      case "section":
+        event = {
+          type: "UpdateSection",
+          sectionId: selected!.item.id,
+          changes: e.changes,
+        } satisfies UpdateSectionEvent;
+        break;
+      case "element":
+        event = {
+          type: "UpdateElement",
+          elementId: selected!.item.id,
+          changes: e.changes,
+        } satisfies UpdateElementEvent;
+        break;
+    }
+
+    dispatch(event!);
   };
 
   let content = (
@@ -44,6 +71,10 @@ export const ObjectSettingsPanel: React.FC = function () {
 
   if (selected) {
     const elementType = selectedToPaletteType(selected);
+    let PropertyComponent =
+      selected.type === "element"
+        ? registry.get(selected.item.type)
+        : undefined;
 
     content = (
       <>
@@ -59,13 +90,26 @@ export const ObjectSettingsPanel: React.FC = function () {
           }}
         >
           <Collapisble summary="Identity">
-            <IdentitySettings {...selectedToIdentityProps(selected)} />
+            <IdentitySettings
+              onChange={handleIdentityChanges}
+              {...selectedToIdentityProps(selected)}
+            />
           </Collapisble>
-          <Collapisble summary="Properties">Identity Content</Collapisble>
-          <Collapisble summary="Data Sources">Identity Content</Collapisble>
-          <Collapisble summary="Behavior">
-            <BehaviorSettings />
-          </Collapisble>
+          {selected.type === "element" && (
+            <>
+              {PropertyComponent && (
+                <Collapisble summary="Properties">
+                  <PropertyComponent
+                    element={selected.item}
+                    onChange={() => {}}
+                  />
+                </Collapisble>
+              )}
+              <Collapisble summary="Behavior">
+                <BehaviorSettings />
+              </Collapisble>
+            </>
+          )}
         </Box>
       </>
     );

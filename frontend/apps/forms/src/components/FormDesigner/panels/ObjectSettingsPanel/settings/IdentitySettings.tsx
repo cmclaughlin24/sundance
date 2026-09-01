@@ -1,11 +1,9 @@
 import Box from "@mui/material/Box";
 import { settingsStyle } from "./Settings.style";
 import TextField from "@mui/material/TextField";
-import { useFormDesignerDispatch } from "@/store/formDesigner";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useEffect, type ChangeEvent } from "react";
 import type {
-  FormDesignerEvent,
   UpdateElementEvent,
   UpdateSectionEvent,
 } from "@/store/formDesigner/events";
@@ -33,12 +31,22 @@ export type IdentitySettingsProps =
   | PageIdentitySettingsProps
   | ElementIdentitySettingsProps;
 
-export const IdentitySettings: React.FC<IdentitySettingsProps> = function ({
-  type,
-  object,
-}) {
-  const { dispatch } = useFormDesignerDispatch();
+interface SectionIdentitySettingsEvent {
+  type: "section";
+  changes: UpdateSectionEvent["changes"];
+}
 
+interface ElementIdentitySettingsEvent {
+  type: "element";
+  changes: UpdateElementEvent["changes"];
+}
+
+export type IdentitySettingsEvent =
+  SectionIdentitySettingsEvent | ElementIdentitySettingsEvent;
+
+export const IdentitySettings: React.FC<
+  IdentitySettingsProps & { onChange: (event: IdentitySettingsEvent) => void }
+> = function ({ type, object, onChange }) {
   const {
     value: name,
     debounceValue: debounceName,
@@ -60,7 +68,7 @@ export const IdentitySettings: React.FC<IdentitySettingsProps> = function ({
   } = useDebounce(object.key ?? "", [object]);
 
   useEffect(() => {
-    let event: FormDesignerEvent;
+    let event: IdentitySettingsEvent;
 
     switch (type) {
       case "page":
@@ -68,25 +76,23 @@ export const IdentitySettings: React.FC<IdentitySettingsProps> = function ({
         break;
       case "section":
         event = {
-          type: "UpdateSection",
-          sectionId: object.id,
+          type: "section",
           changes: { name: debounceName, key: debounceTechnicalKey },
-        } satisfies UpdateSectionEvent;
+        } satisfies SectionIdentitySettingsEvent;
         break;
       case "element":
         event = {
-          type: "UpdateElement",
-          elementId: object.id,
+          type: "element",
           changes: {
             name: debounceName,
             description: debounceDescription,
             key: debounceTechnicalKey,
           },
-        } satisfies UpdateElementEvent;
+        } satisfies ElementIdentitySettingsEvent;
         break;
     }
 
-    dispatch(event!);
+    onChange(event!);
   }, [debounceName, debounceDescription, debounceTechnicalKey]);
 
   const handleChange = (field: "name" | "description" | "key") => {
