@@ -9,6 +9,7 @@ import type {
   CutSectionEvent,
   FormDesignerEvent,
   PasteElementEvent,
+  PastePageEvent,
   PasteSectionEvent,
   RemoveElementEvent,
   RemoveSectionEvent,
@@ -61,6 +62,12 @@ export const FormDesignerKeyboardShortcuts: React.FC<
                 targetPageId: pages[0].id,
                 clipboardOp: data.type,
               } satisfies PasteSectionEvent);
+              break;
+            case ClipboardEventType.CopyPage:
+              dispatch({
+                type: "PastePage",
+                page: data.page,
+              } satisfies PastePageEvent);
               break;
           }
 

@@ -11,10 +11,22 @@ import IconButton from "@mui/material/IconButton";
 import RedoIcon from "@mui/icons-material/Redo";
 import UndoIcon from "@mui/icons-material/Undo";
 import Tooltip from "@mui/material/Tooltip";
+import ContentCopy from "@mui/icons-material/ContentCopy";
+import { ClipboardEventType, type PagesClipboardData } from "@/types/clipboard";
 
 export const CanvasPanel: React.FC = function () {
   const { undo, redo } = useFormDesignerUndo();
   const pages = useFormPagesSnapshot();
+
+  const handleCopy = () => {
+    // FIXME: When multi-page support is enabled, need to move into PageItem.
+    const data: PagesClipboardData = {
+      type: ClipboardEventType.CopyPage,
+      page: pages[0],
+    };
+
+    navigator.clipboard.writeText(JSON.stringify(data));
+  };
 
   return (
     <Panel sx={canvasPanelStyles.canvas}>
@@ -39,6 +51,16 @@ export const CanvasPanel: React.FC = function () {
               onClick={redo}
             >
               <RedoIcon fontSize="inherit" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Copy">
+            <IconButton
+              size="small"
+              aria-label="copy"
+              data-testid="copy-btn"
+              onClick={handleCopy}
+            >
+              <ContentCopy fontSize="inherit" />
             </IconButton>
           </Tooltip>
         </Box>
