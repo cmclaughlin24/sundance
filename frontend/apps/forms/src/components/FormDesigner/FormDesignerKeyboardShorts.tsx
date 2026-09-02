@@ -3,7 +3,7 @@ import {
   useFormDesignerSelect,
   useFormDesignerUndo,
   useFormPagesSnapshot,
-  // type SelectedItem,
+  type SelectedItem,
 } from "@/store/formDesigner";
 import type {
   CutElementEvent,
@@ -24,8 +24,7 @@ import {
 } from "@/types/clipboard";
 import { ContextMenu } from "../ContextMenu";
 import { FORMS_HUB_PORTAL_REF } from "@/constants/portalRef";
-import Typography from "@mui/material/Typography";
-import Divider from "@mui/material/Divider";
+import { FormDesignerContextMenu } from "./FormDesignerContextMenu";
 
 export const FormDesignerKeyboardShortcuts: React.FC<
   React.PropsWithChildren<{}>
@@ -178,47 +177,9 @@ export const FormDesignerKeyboardShortcuts: React.FC<
     <>
       {children}
       <ContextMenu container={document.getElementById(FORMS_HUB_PORTAL_REF)!}>
-        {(_data: unknown) => {
-          /* const target = data as SelectedItem; */
-
-          return (
-            <>
-              <ContextMenu.Button>Copy</ContextMenu.Button>
-              <ContextMenu.Button
-                sx={{ display: "flex", justifyContent: "space-between" }}
-              >
-                <Typography>Cut</Typography>
-                <Typography sx={{ fontSize: "0.75rem", color: "#4B4444" }}>
-                  Ctrl+x
-                </Typography>
-              </ContextMenu.Button>
-              <ContextMenu.Button
-                sx={{ display: "flex", justifyContent: "space-between" }}
-              >
-                <Typography>Paste</Typography>
-                <Typography sx={{ fontSize: "0.75rem", color: "#4B4444" }}>
-                  Ctrl+v
-                </Typography>
-              </ContextMenu.Button>
-              <Divider sx={{ my: 1 }} />
-              <ContextMenu.Button
-                sx={{ display: "flex", justifyContent: "space-between" }}
-              >
-                <Typography>Undo</Typography>
-                <Typography sx={{ fontSize: "0.75rem", color: "#4B4444" }}>
-                  Ctrl+z
-                </Typography>
-              </ContextMenu.Button>
-              <ContextMenu.Button
-                sx={{ display: "flex", justifyContent: "space-between" }}
-              >
-                <Typography>Undo</Typography>
-                <Typography sx={{ fontSize: "0.75rem", color: "#4B4444" }}>
-                  Ctrl+Shift+z
-                </Typography>
-              </ContextMenu.Button>
-            </>
-          );
+        {(data: unknown) => {
+          const target = data as SelectedItem;
+          return <FormDesignerContextMenu target={target} />;
         }}
       </ContextMenu>
     </>
