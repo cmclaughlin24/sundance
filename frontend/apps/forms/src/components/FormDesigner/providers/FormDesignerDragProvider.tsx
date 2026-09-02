@@ -36,7 +36,6 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
     const [activeDragData, setActiveDragData] =
       useState<FormDragEventData | null>(null);
     const { dispatch } = useFormDesignerDispatch();
-    // const { select } = useFormDesignerSelect();
 
     const handlePaletteDragEnd = (
       dragData: PaletteDragEventData,
@@ -66,8 +65,6 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
       }
 
       dispatch(event);
-      // FIXME: Fix the automatic select on the canvas item.
-      // select({ type: dragData.objectType, id });
     };
 
     const handleCanvasDragEnd = (
