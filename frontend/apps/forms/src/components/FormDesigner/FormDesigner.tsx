@@ -7,7 +7,10 @@ import { Border } from "@/constants/colors";
 import { FormDesignerDragProvider } from "./providers/FormDesignerDragProvider";
 import { KeyboardShortcutProvider } from "@/store/keyboardShortcut/KeyboardShortcutProvider";
 import { FormDesignerKeyboardShortcuts } from "./FormDesignerKeyboardShorts";
-import { ContextMenuProvider } from "../ContextMenu";
+import { ContextMenu, ContextMenuProvider } from "../ContextMenu";
+import { FORMS_HUB_PORTAL_REF } from "@/constants/portalRef";
+import type { SelectedItem } from "@/store/formDesigner";
+import { FormDesignerContextMenu } from "./FormDesignerContextMenu";
 
 export interface FormDesignerProps {}
 
@@ -26,6 +29,14 @@ export const FormDesigner: React.FC<FormDesignerProps> = function () {
                 <ObjectSettingsPanel />
               </Box>
             </Box>
+            <ContextMenu
+              container={document.getElementById(FORMS_HUB_PORTAL_REF)!}
+            >
+              {(data: unknown) => {
+                const target = data as SelectedItem;
+                return <FormDesignerContextMenu target={target} />;
+              }}
+            </ContextMenu>
           </FormDesignerKeyboardShortcuts>
         </FormDesignerDragProvider>
       </ContextMenuProvider>

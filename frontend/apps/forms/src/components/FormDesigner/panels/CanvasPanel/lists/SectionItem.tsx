@@ -1,6 +1,5 @@
 import type { ISection } from "@/types/section";
 import Box from "@mui/material/Box";
-import { ElementList } from "./ElementList";
 import {
   useFormDesignerDispatch,
   useFormDesignerSelect,
@@ -36,6 +35,7 @@ import {
   type SectionClipboardData,
 } from "@/types/clipboard";
 import { useContextMenuDispatch } from "@/components/ContextMenu";
+import { ElementList } from "./ElementList";
 
 const variants: Variants = {
   initial: { opacity: 0, height: 0, marginBottom: 0 },

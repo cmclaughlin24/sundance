@@ -3,7 +3,6 @@ import {
   useFormDesignerSelect,
   useFormDesignerUndo,
   useFormPagesSnapshot,
-  type SelectedItem,
 } from "@/store/formDesigner";
 import type {
   CutElementEvent,
@@ -22,9 +21,6 @@ import {
   type ElementClipboardData,
   type SectionClipboardData,
 } from "@/types/clipboard";
-import { ContextMenu } from "../ContextMenu";
-import { FORMS_HUB_PORTAL_REF } from "@/constants/portalRef";
-import { FormDesignerContextMenu } from "./FormDesignerContextMenu";
 
 export const FormDesignerKeyboardShortcuts: React.FC<
   React.PropsWithChildren<{}>
@@ -173,15 +169,5 @@ export const FormDesignerKeyboardShortcuts: React.FC<
     [dispatch, selected],
   );
 
-  return (
-    <>
-      {children}
-      <ContextMenu container={document.getElementById(FORMS_HUB_PORTAL_REF)!}>
-        {(data: unknown) => {
-          const target = data as SelectedItem;
-          return <FormDesignerContextMenu target={target} />;
-        }}
-      </ContextMenu>
-    </>
-  );
+  return children;
 };

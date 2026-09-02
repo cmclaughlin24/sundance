@@ -11,6 +11,8 @@ import type {
   PasteElementEvent,
   PastePageEvent,
   PasteSectionEvent,
+  RemoveElementEvent,
+  RemoveSectionEvent,
 } from "@/store/formDesigner/events";
 import { ContextMenu, useContextMenuDispatch } from "../ContextMenu";
 import Typography from "@mui/material/Typography";
@@ -178,6 +180,24 @@ export const FormDesignerContextMenu: React.FC<{ target: SelectedItem }> =
       }
     };
 
+    const handleDelete = () => {
+      switch (target.type) {
+        case "section":
+          dispatch({
+            type: "RemoveSection",
+            sectionId: target.item.id,
+          } satisfies RemoveSectionEvent);
+          break;
+        default:
+          dispatch({
+            type: "RemoveElement",
+            elementId: target.item.id,
+          } satisfies RemoveElementEvent);
+          break;
+      }
+      close();
+    };
+
     const canPasteItem = !canPaste(clipboardData, target);
 
     return (
@@ -203,6 +223,11 @@ export const FormDesignerContextMenu: React.FC<{ target: SelectedItem }> =
         <ContextMenu.Button sx={styles.btnWithShortcut} onClick={redo}>
           <Typography>Redo</Typography>
           <Typography sx={styles.shortcutText}>Ctrl+Shift+z</Typography>
+        </ContextMenu.Button>
+        <Divider sx={{ my: 1 }} />
+        <ContextMenu.Button sx={styles.btnWithShortcut} onClick={handleDelete}>
+          <Typography>Delete</Typography>
+          <Typography sx={styles.shortcutText}>Del</Typography>
         </ContextMenu.Button>
       </>
     );
