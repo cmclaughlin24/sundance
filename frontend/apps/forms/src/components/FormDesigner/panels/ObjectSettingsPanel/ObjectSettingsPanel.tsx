@@ -28,7 +28,7 @@ import type {
 
 export type ElementSettingsComponent = React.FC<{
   element: IElement;
-  onChange: (attr: ElementAttributes) => void;
+  onChange: (attr: Partial<ElementAttributes>) => void;
 }>;
 
 const registry = new Map<ElementType, ElementSettingsComponent>([
