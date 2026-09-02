@@ -1,6 +1,3 @@
-import { FormDesignerProvider } from "@/store/formDesigner";
-import type { IForm } from "@/types/form";
-import type { IFormVersion } from "@/types/formVersion";
 import Box from "@mui/material/Box";
 import { formDesignerStyles } from "./FormDesigner.styles";
 import { ToolboxPanel } from "./panels/ToolboxPanel/ToolboxPanel";
@@ -12,33 +9,25 @@ import { KeyboardShortcutProvider } from "@/store/keyboardShortcut/KeyboardShort
 import { FormDesignerKeyboardShortcuts } from "./FormDesignerKeyboardShorts";
 import { ContextMenuProvider } from "../ContextMenu";
 
-export interface FormDesignerProps {
-  form: IForm;
-  version: IFormVersion;
-}
+export interface FormDesignerProps {}
 
-export const FormDesigner: React.FC<FormDesignerProps> = function ({
-  form,
-  version,
-}) {
+export const FormDesigner: React.FC<FormDesignerProps> = function () {
   return (
     <KeyboardShortcutProvider>
       <ContextMenuProvider>
-        <FormDesignerProvider form={form} version={version}>
-          <FormDesignerDragProvider>
-            <FormDesignerKeyboardShortcuts>
-              <Box sx={formDesignerStyles.container}>
-                <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
-                  <ToolboxPanel />
-                </Box>
-                <CanvasPanel />
-                <Box sx={{ borderLeft: `1px solid ${Border.Primary}` }}>
-                  <ObjectSettingsPanel />
-                </Box>
+        <FormDesignerDragProvider>
+          <FormDesignerKeyboardShortcuts>
+            <Box sx={formDesignerStyles.container}>
+              <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
+                <ToolboxPanel />
               </Box>
-            </FormDesignerKeyboardShortcuts>
-          </FormDesignerDragProvider>
-        </FormDesignerProvider>
+              <CanvasPanel />
+              <Box sx={{ borderLeft: `1px solid ${Border.Primary}` }}>
+                <ObjectSettingsPanel />
+              </Box>
+            </Box>
+          </FormDesignerKeyboardShortcuts>
+        </FormDesignerDragProvider>
       </ContextMenuProvider>
     </KeyboardShortcutProvider>
   );

@@ -34,6 +34,22 @@ export class FormsService extends BaseHttpService {
   }
 
   /**
+   * Gets a list of version for a form.
+   * @param formId The ID of the form.
+   * @param options The default request options.
+   * @returns A promise that resolves to a list of versions.
+   */
+  async getFormVersions(
+    formId: string,
+    options: DefaultRequestOptions,
+  ): Promise<IFormVersion[]> {
+    return await this._get<IFormVersion[]>(
+      `/api/v1/forms/${formId}/versions`,
+      options,
+    );
+  }
+
+  /**
    * Gets a form version.
    * @param formId The ID of the form.
    * @param versionId The ID of the form version.

@@ -12,6 +12,8 @@ import Tabs from "@mui/material/Tabs";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { formDesignerPageStyles } from "./-index.style";
 import Button from "@mui/material/Button";
+import type { DefaultRequestOptions } from "@/services/baseHttpService";
+import { FormDesignerProvider } from "@/store/formDesigner";
 
 const token = "placeholder";
 
@@ -34,24 +36,21 @@ const TAB_ORDER = [
 export const Route = createFileRoute("/designer/forms/$formId/{-$tab}/")({
   component: RouteComponent,
   loader: async (context) => {
+    const options: DefaultRequestOptions = { tenantId: TENANT_ID, token };
     const service = resolveHttpService(FormsService);
-    const [form, version] = await service.getFormAndVersion(
-      context.params.formId,
-      "01a03f78-640b-7185-aae6-915ce419a506",
-      {
-        tenantId: TENANT_ID,
-        token,
-      },
-    );
+    const [form, versions] = await Promise.all([
+      service.getForm(context.params.formId, options),
+      service.getFormVersions(context.params.formId, options),
+    ]);
 
-    return { form, version };
+    return { form, versions };
   },
 });
 
 function RouteComponent() {
   const navigate = useNavigate();
   const { formId, tab = FormDesignerTab.Build } = Route.useParams();
-  const { form, version } = Route.useLoaderData();
+  const { form, versions } = Route.useLoaderData();
 
   const handleTabChange = (
     _event: React.SyntheticEvent,
@@ -82,17 +81,19 @@ function RouteComponent() {
           <Tab label="Settings" value={FormDesignerTab.Settings} />
         </Tabs>
       </Box>
-      <TabPanelGroup active={tab} order={TAB_ORDER}>
-        <TabPanel value={FormDesignerTab.Build}>
-          <FormDesigner form={form} version={version} />
-        </TabPanel>
-        <TabPanel value={FormDesignerTab.Rules}>Rules Tab</TabPanel>
-        <TabPanel value={FormDesignerTab.DataSources}>
-          Reference Data Tab
-        </TabPanel>
-        <TabPanel value={FormDesignerTab.Versions}>Versions Tab</TabPanel>
-        <TabPanel value={FormDesignerTab.Settings}>Settings Tab</TabPanel>
-      </TabPanelGroup>
+      <FormDesignerProvider form={form} version={versions[0]}>
+        <TabPanelGroup active={tab} order={TAB_ORDER}>
+          <TabPanel value={FormDesignerTab.Build}>
+            <FormDesigner />
+          </TabPanel>
+          <TabPanel value={FormDesignerTab.Rules}>Rules Tab</TabPanel>
+          <TabPanel value={FormDesignerTab.DataSources}>
+            Reference Data Tab
+          </TabPanel>
+          <TabPanel value={FormDesignerTab.Versions}>Versions Tab</TabPanel>
+          <TabPanel value={FormDesignerTab.Settings}>Settings Tab</TabPanel>
+        </TabPanelGroup>
+      </FormDesignerProvider>
     </Page>
   );
 }
