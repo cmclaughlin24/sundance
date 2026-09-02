@@ -4,6 +4,7 @@ import { ElementList } from "./ElementList";
 import {
   useFormDesignerDispatch,
   useFormDesignerSelect,
+  type SelectedSection,
 } from "@/store/formDesigner";
 import { useMemo, type MouseEventHandler } from "react";
 import { getSectionItemStyles } from "./SectionItem.style";
@@ -34,6 +35,7 @@ import {
   ClipboardEventType,
   type SectionClipboardData,
 } from "@/types/clipboard";
+import { useContextMenuDispatch } from "@/components/ContextMenu";
 
 const variants: Variants = {
   initial: { opacity: 0, height: 0, marginBottom: 0 },
@@ -54,6 +56,7 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
   const elements = sortPositioned(section.elements);
   const { dispatch } = useFormDesignerDispatch();
   const { select, isSelected } = useFormDesignerSelect(section.id);
+  const { open } = useContextMenuDispatch();
 
   const { ref: dragRef, handleRef } = useSortable({
     id: `canvas-section-${section.id}`,
@@ -85,6 +88,16 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
   const handleClk: MouseEventHandler<HTMLLIElement> = (event) => {
     event.stopPropagation();
     select(!isSelected ? { type: "section", item: section } : null);
+  };
+
+  const handleContext: MouseEventHandler<HTMLLIElement> = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+
+    open({
+      position: { x: event.clientX, y: event.clientY },
+      data: { type: "section", item: section } satisfies SelectedSection,
+    });
   };
 
   const handleCopy = () => {
@@ -134,6 +147,7 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
       transition={{ type: "spring", bounce: 0, duration: 0.35 }}
       sx={styles.item}
       onClick={handleClk}
+      onContextMenu={handleContext}
       ref={(el: Element) => {
         dragRef(el);
         dropRef(el);

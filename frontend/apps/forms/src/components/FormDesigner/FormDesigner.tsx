@@ -10,6 +10,7 @@ import { Border } from "@/constants/colors";
 import { FormDesignerDragProvider } from "./providers/FormDesignerDragProvider";
 import { KeyboardShortcutProvider } from "@/store/keyboardShortcut/KeyboardShortcutProvider";
 import { FormDesignerKeyboardShortcuts } from "./FormDesignerKeyboardShorts";
+import { ContextMenuProvider } from "../ContextMenu";
 
 export interface FormDesignerProps {
   form: IForm;
@@ -22,21 +23,23 @@ export const FormDesigner: React.FC<FormDesignerProps> = function ({
 }) {
   return (
     <KeyboardShortcutProvider>
-      <FormDesignerProvider form={form} version={version}>
-        <FormDesignerDragProvider>
-          <FormDesignerKeyboardShortcuts>
-            <Box sx={formDesignerStyles.container}>
-              <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
-                <ToolboxPanel />
+      <ContextMenuProvider>
+        <FormDesignerProvider form={form} version={version}>
+          <FormDesignerDragProvider>
+            <FormDesignerKeyboardShortcuts>
+              <Box sx={formDesignerStyles.container}>
+                <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
+                  <ToolboxPanel />
+                </Box>
+                <CanvasPanel />
+                <Box sx={{ borderLeft: `1px solid ${Border.Primary}` }}>
+                  <ObjectSettingsPanel />
+                </Box>
               </Box>
-              <CanvasPanel />
-              <Box sx={{ borderLeft: `1px solid ${Border.Primary}` }}>
-                <ObjectSettingsPanel />
-              </Box>
-            </Box>
-          </FormDesignerKeyboardShortcuts>
-        </FormDesignerDragProvider>
-      </FormDesignerProvider>
+            </FormDesignerKeyboardShortcuts>
+          </FormDesignerDragProvider>
+        </FormDesignerProvider>
+      </ContextMenuProvider>
     </KeyboardShortcutProvider>
   );
 };

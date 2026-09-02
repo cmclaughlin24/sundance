@@ -3,7 +3,7 @@ import {
   createKeyboardShortcutStore,
   type KeyboardShortcutApi,
 } from "./keyboardShortcutStore";
-import { isMatch } from "./keyboardShortcut";
+import { isMatch, isValidTarget } from "./keyboardShortcut";
 
 export const KeyboardShortcutStoreContext =
   createContext<KeyboardShortcutApi | null>(null);
@@ -21,7 +21,10 @@ export const KeyboardShortcutProvider: React.FC<React.PropsWithChildren<{}>> =
         const { shortcuts } = storeRef.current!.getState();
 
         for (const shortcut of shortcuts) {
-          if (isMatch(event, shortcut)) {
+          if (
+            isMatch(event, shortcut) &&
+            isValidTarget(shortcut, event.target)
+          ) {
             shortcut.action();
             break;
           }

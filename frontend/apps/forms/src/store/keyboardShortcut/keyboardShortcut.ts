@@ -10,6 +10,7 @@ export interface KeyCombination {
 export interface KeyboardShortcut {
   name: string;
   combination: KeyCombination;
+  allowInEditable?: boolean;
   action: () => void;
 }
 
@@ -48,4 +49,37 @@ export function isMatch(
   }
 
   return true;
+}
+
+export function isValidTarget(
+  shortcut: KeyboardShortcut,
+  target: EventTarget | null,
+): boolean {
+  if (shortcut.allowInEditable) {
+    return true;
+  }
+
+  return !isEditableTarget(target) && !hasTextSelection();
+}
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  if (target.isContentEditable) {
+    return true;
+  }
+
+  const role = target.getAttribute("role");
+
+  if (role && ["combobox", "listbox", "option", "textbox"].includes(role)) {
+    return true;
+  }
+  return false;
+}
+
+function hasTextSelection(): boolean {
+  const sel = window.getSelection();
+  return !!sel && !sel.isCollapsed && sel.toString().length > 0;
 }

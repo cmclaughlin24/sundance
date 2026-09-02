@@ -1,6 +1,7 @@
 import {
   useFormDesignerDispatch,
   useFormDesignerSelect,
+  type SelectedElement,
 } from "@/store/formDesigner";
 import type { IElement } from "@/types/element";
 import Box from "@mui/material/Box";
@@ -27,6 +28,7 @@ import {
   ClipboardEventType,
   type ElementClipboardData,
 } from "@/types/clipboard";
+import { useContextMenuDispatch } from "@/components/ContextMenu";
 
 export interface ElementItemProps extends ItemComponentProps {
   element: IElement;
@@ -46,6 +48,7 @@ export const ElementItem: React.FC<ElementItemProps> = function ({
 }) {
   const { select, isSelected } = useFormDesignerSelect(element.id);
   const { dispatch } = useFormDesignerDispatch();
+  const { open } = useContextMenuDispatch();
 
   const { ref, handleRef } = useSortable({
     id: `canvas-element-${element.id}`,
@@ -70,6 +73,16 @@ export const ElementItem: React.FC<ElementItemProps> = function ({
   const handleClk: MouseEventHandler<HTMLLIElement> = (event) => {
     event.stopPropagation();
     select(!isSelected ? { type: "element", item: element } : null);
+  };
+
+  const handleContext: MouseEventHandler<HTMLLIElement> = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+
+    open({
+      position: { x: event.clientX, y: event.clientY },
+      data: { type: "element", item: element } satisfies SelectedElement,
+    });
   };
 
   const handleCopy = () => {
@@ -111,6 +124,7 @@ export const ElementItem: React.FC<ElementItemProps> = function ({
         transition={{ type: "spring", bounce: 0, duration: 0.3 }}
         sx={styles.item}
         onClick={handleClk}
+        onContextMenu={handleContext}
         role="button"
         ref={ref}
       >
