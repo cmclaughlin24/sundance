@@ -4,9 +4,16 @@ import { settingsStyle } from "./Settings.style";
 import Box from "@mui/material/Box";
 import type { TextElementAttributes } from "@/types/elementAttributes";
 import TextField from "@mui/material/TextField";
-import { useDebounce } from "@/hooks/useDebounce";
-import { useEffect, type ChangeEvent } from "react";
+import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { stringToNumber } from "@/utils/utils";
+
+type Fields = {
+  minLength: string;
+  maxLength: string;
+  placeholder: string;
+  defaultValue: string;
+};
 
 export const TextElementSettings: ElementSettingsComponent = function ({
   element,
@@ -16,66 +23,62 @@ export const TextElementSettings: ElementSettingsComponent = function ({
 
   const attr = element.attributes as TextElementAttributes;
 
-  const {
-    value: minLength,
-    debounceValue: debounceMinLength,
-    setValue: setMinLength,
-  } = useDebounce(attr.minLength?.toString() ?? "", [attr.minLength]);
+  const [minLength, setMinLength] = useState(attr.minLength?.toString() ?? "");
+  const [maxLength, setMaxLength] = useState(attr.maxLength?.toString() ?? "");
+  const [placeholder, setPlaceholder] = useState(attr.placeholder ?? "");
+  const [defaultValue, setDefaultValue] = useState(attr.defaultValue ?? "");
 
   const {
-    value: maxLength,
-    debounceValue: debounceMaxLength,
-    setValue: setMaxLength,
-  } = useDebounce(attr.maxLength?.toString() ?? "", [attr.maxLength]);
-
-  const {
-    value: placeholder,
-    debounceValue: debouncePlaceholder,
-    setValue: setPlaceholder,
-  } = useDebounce(attr.placeholder, [attr.placeholder]);
-
-  const {
-    value: defaultValue,
-    debounceValue: debounceDefaultValue,
-    setValue: setDefaultValue,
-  } = useDebounce(attr.defaultValue, [attr.defaultValue]);
+    debounced: debounceEmit,
+    cancel,
+    flush,
+  } = useDebouncedCallback((next: Fields) => {
+    onChange({
+      minLength: stringToNumber(next.minLength),
+      maxLength: stringToNumber(next.maxLength),
+      placeholder: next.placeholder || undefined,
+      defaultValue: next.defaultValue || undefined,
+    });
+  });
 
   useEffect(() => {
-    const change: Partial<TextElementAttributes> = {
-      minLength: stringToNumber(debounceMinLength),
-      maxLength: stringToNumber(debounceMaxLength),
-      placeholder: debouncePlaceholder ?? undefined,
-      defaultValue: debounceDefaultValue ?? undefined,
-    };
+    cancel();
+    setMinLength(attr.minLength?.toString() ?? "");
+    setMaxLength(attr.maxLength?.toString() ?? "");
+    setPlaceholder(attr.placeholder ?? "");
+    setDefaultValue(attr.defaultValue ?? "");
+  }, [element]);
 
-    onChange(change);
-  }, [
-    debounceMinLength,
-    debounceMaxLength,
-    debouncePlaceholder,
-    debounceDefaultValue,
-  ]);
-
-  const handleChange = (field: keyof TextElementAttributes) => {
+  const handleChange = (field: keyof Fields) => {
     return (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const value = event.target.value;
+      const next: Fields = { minLength, maxLength, placeholder, defaultValue };
 
       switch (field) {
         case "minLength":
+          next.minLength = value;
           setMinLength(value);
           break;
         case "maxLength":
+          next.maxLength = value;
           setMaxLength(value);
           break;
         case "placeholder":
+          next.placeholder = value;
           setPlaceholder(value);
           break;
         case "defaultValue":
+          next.defaultValue = value;
           setDefaultValue(value);
           break;
       }
+
+      debounceEmit(next);
     };
   };
+
+  const handleBlur = () =>
+    flush({ minLength, maxLength, placeholder, defaultValue });
 
   return (
     <Box sx={settingsStyle.container}>
@@ -84,22 +87,26 @@ export const TextElementSettings: ElementSettingsComponent = function ({
         label="Min. Length"
         value={minLength}
         onChange={handleChange("minLength")}
+        onBlur={handleBlur}
       />
       <TextField
         type="number"
         label="Max Length"
         value={maxLength}
         onChange={handleChange("maxLength")}
+        onBlur={handleBlur}
       />
       <TextField
         label="Placeholder"
         value={placeholder}
         onChange={handleChange("placeholder")}
+        onBlur={handleBlur}
       />
       <TextField
         label="Default Value"
         value={defaultValue}
         onChange={handleChange("defaultValue")}
+        onBlur={handleBlur}
       />
     </Box>
   );

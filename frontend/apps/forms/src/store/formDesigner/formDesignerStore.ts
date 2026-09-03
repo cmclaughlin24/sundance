@@ -38,7 +38,7 @@ export function createFormDesignerStore(form: IForm, version: IFormVersion) {
         const snapshot = apply(s.snapshot!, event);
         let selected = s.selected;
 
-        if (isAddEvent(event)) {
+        if (isAddEvent(event) || isUpdateEvent(event)) {
           selected = findSelectedById(
             snapshot.version.pages,
             (event as { id: string }).id,

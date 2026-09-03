@@ -45,14 +45,14 @@ export function onUpdateSection(
   event: UpdateSectionEvent,
 ): IFormAggregate {
   const pages = aggregate.version.pages.map((page): IPage => {
-    const hasSection = page.sections.some((s) => s.id === event.sectionId);
+    const hasSection = page.sections.some((s) => s.id === event.id);
 
     if (!hasSection) {
       return page;
     }
 
     const sections = page.sections.map((section) => {
-      if (section.id !== event.sectionId) {
+      if (section.id !== event.id) {
         return section;
       }
 
@@ -146,7 +146,7 @@ export function onRemoveSection(
   aggregate: IFormAggregate,
   event: RemoveSectionEvent,
 ): IFormAggregate {
-  return removeSectionById(aggregate, event.sectionId);
+  return removeSectionById(aggregate, event.id);
 }
 
 export function onCutSection(

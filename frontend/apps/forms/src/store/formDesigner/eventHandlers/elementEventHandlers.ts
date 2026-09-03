@@ -161,14 +161,14 @@ export function onUpdateElement(
 ): IFormAggregate {
   const pages = aggregate.version.pages.map((page): IPage => {
     const sections = page.sections.map((section): ISection => {
-      const hasElement = section.elements.some((e) => e.id === event.elementId);
+      const hasElement = section.elements.some((e) => e.id === event.id);
 
       if (!hasElement) {
         return section;
       }
 
       const elements = section.elements.map((element) => {
-        if (element.id !== event.elementId) {
+        if (element.id !== event.id) {
           return element;
         }
 
@@ -197,7 +197,7 @@ export function onRemoveElement(
   aggregate: IFormAggregate,
   event: RemoveElementEvent,
 ): IFormAggregate {
-  return removeElementById(aggregate, event.elementId);
+  return removeElementById(aggregate, event.id);
 }
 
 export function onCutElement(

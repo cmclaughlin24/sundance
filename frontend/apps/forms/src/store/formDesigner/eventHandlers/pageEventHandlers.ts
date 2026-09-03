@@ -72,7 +72,7 @@ export function onRemovePage(
   aggregate: IFormAggregate,
   event: RemovePageEvent,
 ): IFormAggregate {
-  const pages = removeById(aggregate.version.pages, event.pageId);
+  const pages = removeById(aggregate.version.pages, event.id);
 
   return {
     ...aggregate,

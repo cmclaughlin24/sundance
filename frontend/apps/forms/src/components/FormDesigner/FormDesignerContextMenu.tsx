@@ -185,13 +185,13 @@ export const FormDesignerContextMenu: React.FC<{ target: SelectedItem }> =
         case "section":
           dispatch({
             type: "RemoveSection",
-            sectionId: target.item.id,
+            id: target.item.id,
           } satisfies RemoveSectionEvent);
           break;
         default:
           dispatch({
             type: "RemoveElement",
-            elementId: target.item.id,
+            id: target.item.id,
           } satisfies RemoveElementEvent);
           break;
       }

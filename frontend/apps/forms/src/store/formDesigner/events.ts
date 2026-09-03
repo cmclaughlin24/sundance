@@ -37,7 +37,7 @@ export type MovePageEvent = {
 
 export type RemovePageEvent = {
   type: "RemovePage";
-  pageId: string;
+  id: string;
 };
 
 export type PastePageEvent = {
@@ -61,13 +61,13 @@ export type MoveSectionEvent = {
 
 export type UpdateSectionEvent = {
   type: "UpdateSection";
-  sectionId: string;
+  id: string;
   changes: Partial<Pick<ISection, "key" | "name">>;
 };
 
 export type RemoveSectionEvent = {
   type: "RemoveSection";
-  sectionId: string;
+  id: string;
 };
 
 export type ReorderSectionEvent = {
@@ -105,7 +105,7 @@ export type MoveElementEvent = {
 
 export type UpdateElementEvent = {
   type: "UpdateElement";
-  elementId: string;
+  id: string;
   changes: Partial<
     Pick<IElement, "key" | "name" | "description"> & {
       attributes: Partial<ElementAttributes>;
@@ -115,7 +115,7 @@ export type UpdateElementEvent = {
 
 export type RemoveElementEvent = {
   type: "RemoveElement";
-  elementId: string;
+  id: string;
 };
 
 export type ReorderElementEvent = {

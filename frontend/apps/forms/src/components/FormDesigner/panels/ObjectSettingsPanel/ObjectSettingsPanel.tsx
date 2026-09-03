@@ -50,14 +50,14 @@ export const ObjectSettingsPanel: React.FC = function () {
       case "section":
         event = {
           type: "UpdateSection",
-          sectionId: selected!.item.id,
+          id: selected!.item.id,
           changes: e.changes,
         } satisfies UpdateSectionEvent;
         break;
       case "element":
         event = {
           type: "UpdateElement",
-          elementId: selected!.item.id,
+          id: selected!.item.id,
           changes: e.changes,
         } satisfies UpdateElementEvent;
         break;
@@ -69,7 +69,7 @@ export const ObjectSettingsPanel: React.FC = function () {
   const handleElementAttributeChanges = (attr: Partial<ElementAttributes>) => {
     dispatch({
       type: "UpdateElement",
-      elementId: selected!.item.id,
+      id: selected!.item.id,
       changes: { attributes: attr },
     } satisfies UpdateElementEvent);
   };
@@ -77,7 +77,7 @@ export const ObjectSettingsPanel: React.FC = function () {
   const handleBehaviorChanges = (event: BehaviorSettingsEvent) => {
     dispatch({
       type: "UpdateElement",
-      elementId: selected!.item.id,
+      id: selected!.item.id,
       changes: { attributes: event },
     } satisfies UpdateElementEvent);
   };

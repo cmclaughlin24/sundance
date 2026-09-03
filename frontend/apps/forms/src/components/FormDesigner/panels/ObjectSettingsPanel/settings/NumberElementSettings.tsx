@@ -4,9 +4,11 @@ import { settingsStyle } from "./Settings.style";
 import Box from "@mui/material/Box";
 import type { NumberElementAttributes } from "@/types/elementAttributes";
 import TextField from "@mui/material/TextField";
-import { useDebounce } from "@/hooks/useDebounce";
-import { useEffect, type ChangeEvent } from "react";
+import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { stringToNumber } from "@/utils/utils";
+
+type Fields = { min: string; max: string; step: string; defaultValue: string };
 
 export const NumberElementSettings: ElementSettingsComponent = function ({
   element,
@@ -16,61 +18,63 @@ export const NumberElementSettings: ElementSettingsComponent = function ({
 
   const attr = element.attributes as NumberElementAttributes;
 
-  const {
-    value: min,
-    debounceValue: debounceMin,
-    setValue: setMin,
-  } = useDebounce(attr.min?.toString() ?? "", [attr.min]);
+  const [min, setMin] = useState(attr.min?.toString() ?? "");
+  const [max, setMax] = useState(attr.max?.toString() ?? "");
+  const [step, setStep] = useState(attr.step?.toString() ?? "");
+  const [defaultValue, setDefaultValue] = useState(
+    attr.defaultValue?.toString() ?? "",
+  );
 
   const {
-    value: max,
-    debounceValue: debounceMax,
-    setValue: setMax,
-  } = useDebounce(attr.max?.toString() ?? "", [attr.max]);
-
-  const {
-    value: step,
-    debounceValue: debounceStep,
-    setValue: setStep,
-  } = useDebounce(attr.step?.toString() ?? "", [attr.step]);
-
-  const {
-    value: defaultValue,
-    debounceValue: debounceDefaultValue,
-    setValue: setDefaultValue,
-  } = useDebounce(attr.defaultValue?.toString() ?? "", [attr.defaultValue]);
+    debounced: debounceEmit,
+    cancel,
+    flush,
+  } = useDebouncedCallback((next: Fields) => {
+    onChange({
+      min: stringToNumber(next.min),
+      max: stringToNumber(next.max),
+      step: stringToNumber(next.step),
+      defaultValue: stringToNumber(next.defaultValue),
+    });
+  });
 
   useEffect(() => {
-    const change: Partial<NumberElementAttributes> = {
-      min: stringToNumber(debounceMin),
-      max: stringToNumber(debounceMax),
-      step: stringToNumber(debounceStep),
-      defaultValue: stringToNumber(debounceDefaultValue),
-    };
+    cancel();
+    setMin(attr.min?.toString() ?? "");
+    setMax(attr.max?.toString() ?? "");
+    setStep(attr.step?.toString() ?? "");
+    setDefaultValue(attr.defaultValue?.toString() ?? "");
+  }, [element]);
 
-    onChange(change);
-  }, [debounceMin, debounceMax, debounceStep, debounceDefaultValue]);
-
-  const handleChange = (field: keyof NumberElementAttributes) => {
+  const handleChange = (field: keyof Fields) => {
     return (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const value = event.target.value;
+      const next: Fields = { min, max, step, defaultValue };
 
       switch (field) {
         case "min":
+          next.min = value;
           setMin(value);
           break;
         case "max":
+          next.max = value;
           setMax(value);
           break;
         case "step":
+          next.step = value;
           setStep(value);
           break;
         case "defaultValue":
+          next.defaultValue = value;
           setDefaultValue(value);
           break;
       }
+
+      debounceEmit(next);
     };
   };
+
+  const handleBlur = () => flush({ min, max, step, defaultValue });
 
   return (
     <Box sx={settingsStyle.container}>
@@ -80,12 +84,14 @@ export const NumberElementSettings: ElementSettingsComponent = function ({
           label="Min"
           value={min}
           onChange={handleChange("min")}
+          onBlur={handleBlur}
         />
         <TextField
           type="number"
           label="Max"
           value={max}
           onChange={handleChange("max")}
+          onBlur={handleBlur}
         />
       </Box>
       <TextField
@@ -93,12 +99,14 @@ export const NumberElementSettings: ElementSettingsComponent = function ({
         label="Step"
         value={step}
         onChange={handleChange("step")}
+        onBlur={handleBlur}
       />
       <TextField
         type="number"
         label="Default Value"
         value={defaultValue}
         onChange={handleChange("defaultValue")}
+        onBlur={handleBlur}
       />
     </Box>
   );

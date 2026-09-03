@@ -136,7 +136,7 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
   const handleDelete = () => {
     dispatch({
       type: "RemoveSection",
-      sectionId: section.id,
+      id: section.id,
     } satisfies RemoveSectionEvent);
     isSelected && select(null);
   };

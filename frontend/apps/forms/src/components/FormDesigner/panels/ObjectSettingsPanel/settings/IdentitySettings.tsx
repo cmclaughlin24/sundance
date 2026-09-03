@@ -1,8 +1,7 @@
 import Box from "@mui/material/Box";
 import { settingsStyle } from "./Settings.style";
 import TextField from "@mui/material/TextField";
-import { useDebounce } from "@/hooks/useDebounce";
-import { useEffect, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import type {
   UpdateElementEvent,
   UpdateSectionEvent,
@@ -10,6 +9,7 @@ import type {
 import type { ISection } from "@/types/section";
 import type { IPage } from "@/types/page";
 import type { IElement } from "@/types/element";
+import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
 
 interface SectionIdentitySettingsProps {
   type: "section";
@@ -44,30 +44,22 @@ interface ElementIdentitySettingsEvent {
 export type IdentitySettingsEvent =
   SectionIdentitySettingsEvent | ElementIdentitySettingsEvent;
 
+type Fields = { name: string; description: string; key: string };
+
 export const IdentitySettings: React.FC<
   IdentitySettingsProps & { onChange: (event: IdentitySettingsEvent) => void }
 > = function ({ type, object, onChange }) {
-  const {
-    value: name,
-    debounceValue: debounceName,
-    setValue: setName,
-  } = useDebounce(object.name ?? "", [object]);
+  const [name, setName] = useState(object.name ?? "");
+  const [description, setDescription] = useState(
+    object && type === "element" ? object.description : "",
+  );
+  const [technicalKey, setTechnicalKey] = useState(object.key ?? "");
 
   const {
-    value: description,
-    debounceValue: debounceDescription,
-    setValue: setDescription,
-  } = useDebounce(object && type === "element" ? object.description : "", [
-    object,
-  ]);
-
-  const {
-    value: technicalKey,
-    debounceValue: debounceTechnicalKey,
-    setValue: setTechnicalKey,
-  } = useDebounce(object.key ?? "", [object]);
-
-  useEffect(() => {
+    debounced: debounceEmit,
+    cancel,
+    flush,
+  } = useDebouncedCallback((next: Fields) => {
     let event: IdentitySettingsEvent;
 
     switch (type) {
@@ -77,45 +69,65 @@ export const IdentitySettings: React.FC<
       case "section":
         event = {
           type: "section",
-          changes: { name: debounceName, key: debounceTechnicalKey },
+          changes: { name: next.name, key: next.key },
         } satisfies SectionIdentitySettingsEvent;
         break;
       case "element":
         event = {
           type: "element",
           changes: {
-            name: debounceName,
-            description: debounceDescription,
-            key: debounceTechnicalKey,
+            name: next.name,
+            description: next.description,
+            key: next.key,
           },
         } satisfies ElementIdentitySettingsEvent;
         break;
     }
 
     onChange(event!);
-  }, [debounceName, debounceDescription, debounceTechnicalKey]);
+  });
+
+  useEffect(() => {
+    cancel();
+    setName(object.name ?? "");
+    setDescription(object && type === "element" ? object.description : "");
+    setTechnicalKey(object.key ?? "");
+  }, [object]);
 
   const handleChange = (field: "name" | "description" | "key") => {
     return (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const value = event.target.value;
+      const next: Fields = { name, description, key: technicalKey };
 
       switch (field) {
         case "name":
+          next.name = value;
           setName(value);
           break;
         case "description":
+          next.description = value;
           setDescription(value);
           break;
         case "key":
+          next.key = value;
           setTechnicalKey(value);
           break;
       }
+
+      debounceEmit(next);
     };
   };
 
+  const handleBlur = () => flush({ name, description, key: technicalKey });
+
   return (
     <Box sx={settingsStyle.container}>
-      <TextField label="Title" value={name} onChange={handleChange("name")} />
+      <TextField
+        label="Title"
+        value={name}
+        onChange={handleChange("name")}
+        onBlur={handleBlur}
+      />
       {type === "element" && (
         <TextField
           multiline
@@ -123,12 +135,14 @@ export const IdentitySettings: React.FC<
           value={description}
           rows={3}
           onChange={handleChange("description")}
+          onBlur={handleBlur}
         />
       )}
       <TextField
         label="Technical Key"
         value={technicalKey}
         onChange={handleChange("key")}
+        onBlur={handleBlur}
       />
     </Box>
   );

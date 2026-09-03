@@ -112,13 +112,13 @@ export const FormDesignerKeyboardShortcuts: React.FC<
           case "section":
             dispatch({
               type: "RemoveSection",
-              sectionId: selected.item.id,
+              id: selected.item.id,
             } satisfies RemoveSectionEvent);
             break;
           default:
             dispatch({
               type: "RemoveElement",
-              elementId: selected.item.id,
+              id: selected.item.id,
             } satisfies RemoveElementEvent);
             break;
         }
