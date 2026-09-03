@@ -4,6 +4,8 @@ import type { ISubmissionValue } from "@/types/submission";
 import type { IFormProgress } from "./progress";
 import type { IPage } from "@/types/page";
 import type { SelectedItem } from "@/store/formDesigner";
+import type { FormVersionRequest } from "@/services/formService.type";
+import { stripTemporaryID } from "./id";
 
 /**
  * Returns a flat array of all elements across every page and section of the given form version.
@@ -100,4 +102,21 @@ export function findSelectedById(
   }
 
   return null;
+}
+
+export function versionToRequest(version: IFormVersion): FormVersionRequest {
+  const pages = version.pages.map((page) => ({
+    ...stripTemporaryID(page),
+    sections: page.sections.map((section) => ({
+      ...stripTemporaryID(section),
+      elements: section.elements.map((element) => ({
+        ...stripTemporaryID(element),
+        rules: element.rules.map((rule) => stripTemporaryID(rule)),
+      })),
+      rules: section.rules.map((rule) => stripTemporaryID(rule)),
+    })),
+    rules: page.rules.map((rule) => stripTemporaryID(rule)),
+  }));
+
+  return { metadata: {}, pages };
 }

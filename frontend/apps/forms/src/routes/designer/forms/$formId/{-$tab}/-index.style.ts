@@ -16,6 +16,16 @@ export const formDesignerPageStyles: Styles = {
     justifyContent: "space-between",
     width: "100%",
   },
+  headerTitle: {
+    display: "flex",
+    gap: 2,
+  },
+  headerIcons: {
+    mt: 2,
+    "> *:not(:last-child)": {
+      mr: 2,
+    },
+  },
   headerActions: {
     "> button": {
       marginLeft: 2.5,

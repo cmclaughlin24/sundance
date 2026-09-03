@@ -16,5 +16,6 @@ export type ElementType =
 export interface IElement extends IFormObject, HasRules {
   description: string;
   type: ElementType;
+  tags: any[];
   attributes: ElementAttributes;
 }

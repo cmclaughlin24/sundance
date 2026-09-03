@@ -10,7 +10,7 @@ export interface PageRequest {
   id?: string;
   key: string;
   name: string;
-  position: string;
+  position: number;
   sections: SectionRequest[];
   rules: RuleRequest[];
 }
@@ -19,7 +19,7 @@ export interface SectionRequest {
   id?: string;
   key: string;
   name: string;
-  position: string;
+  position: number;
   elements: ElementRequest[];
   rules: RuleRequest[];
 }
@@ -30,7 +30,7 @@ export interface ElementRequest {
   type: ElementType;
   name: string;
   description: string;
-  position: string;
+  position: number;
   attributes: ElementAttributes;
   tags: any[];
   rules: RuleRequest[];

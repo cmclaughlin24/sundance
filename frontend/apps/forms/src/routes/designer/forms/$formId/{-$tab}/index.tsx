@@ -14,6 +14,7 @@ import Button from "@mui/material/Button";
 import type { DefaultRequestOptions } from "@/services/baseHttpService";
 import { FormDesignerProvider } from "@/store/formDesigner";
 import { FormBuilder } from "@/components/FormDesigner/FormBuilder";
+import { FormVersionTag } from "@/components/FormVersionStatusTag";
 
 const token = "placeholder";
 
@@ -65,7 +66,13 @@ function RouteComponent() {
   return (
     <Page sx={formDesignerPageStyles.page}>
       <Box sx={formDesignerPageStyles.header}>
-        <PageTitle name={form.name} description={form.description} />
+        <Box sx={formDesignerPageStyles.headerTitle}>
+          <PageTitle name={form.name} description={form.description} />
+          <Box sx={formDesignerPageStyles.headerIcons}>
+            <FormVersionTag status="draft" text="Draft v2" />
+            <FormVersionTag status="active" text="Active v1" />
+          </Box>
+        </Box>
         <Box sx={formDesignerPageStyles.headerActions}>
           <Button variant="text">Save Draft</Button>
           <Button>Preview</Button>

@@ -125,7 +125,10 @@ export const ObjectSettingsPanel: React.FC = function () {
                 </Collapisble>
               )}
               <Collapisble summary="Behavior">
-                <BehaviorSettings onChange={handleBehaviorChanges} />
+                <BehaviorSettings
+                  element={selected.item}
+                  onChange={handleBehaviorChanges}
+                />
               </Collapisble>
             </>
           )}

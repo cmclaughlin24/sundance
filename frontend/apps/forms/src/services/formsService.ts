@@ -107,4 +107,27 @@ export class FormsService extends BaseHttpService {
 
     return resp.data;
   }
+
+  /**
+   * Updates a form version.
+   * @param formId The ID of the form.
+   * @param versionId The ID of the version.
+   * @param version The form version to create.
+   * @param options The default request options.
+   * @returns A promise that resolves to the created form version.
+   */
+  async updateFormVersion(
+    formId: string,
+    versionId: string,
+    version: FormVersionRequest,
+    options: DefaultRequestOptions,
+  ): Promise<IFormVersion> {
+    const resp = await this._put<FormVersionRequest, IFormVersion>(
+      `/api/v1/forms/${formId}/versions/${versionId}`,
+      version,
+      options,
+    );
+
+    return resp.data;
+  }
 }

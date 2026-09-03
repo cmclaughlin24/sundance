@@ -45,6 +45,7 @@ registerElementFactory("text", (id) => ({
   key: id,
   position: 0,
   rules: [],
+  tags: [],
   attributes: { ...base } satisfies TextElementAttributes,
 }));
 
@@ -56,6 +57,7 @@ registerElementFactory("number", (id) => ({
   key: id,
   position: 0,
   rules: [],
+  tags: [],
   attributes: { ...base } satisfies NumberElementAttributes,
 }));
 
@@ -67,6 +69,7 @@ registerElementFactory("date", (id) => ({
   key: id,
   position: 0,
   rules: [],
+  tags: [],
   attributes: { ...base } satisfies DateElementAttributes,
 }));
 
@@ -78,6 +81,7 @@ registerElementFactory("toggle", (id) => ({
   key: "",
   position: 0,
   rules: [],
+  tags: [],
   attributes: { ...base } satisfies ToggleElementAttributes,
 }));
 
@@ -89,6 +93,7 @@ registerElementFactory("checkbox", (id) => ({
   key: id,
   position: 0,
   rules: [],
+  tags: [],
   attributes: {
     ...base,
     isCheckedByDefault: false,
@@ -104,6 +109,7 @@ registerElementFactory("radio", (id) => ({
   key: id,
   position: 0,
   rules: [],
+  tags: [],
   attributes: {
     ...base,
     data: [],
@@ -119,6 +125,7 @@ registerElementFactory("select", (id) => ({
   key: id,
   position: 0,
   rules: [],
+  tags: [],
   attributes: {
     ...base,
     data: [],
@@ -134,6 +141,7 @@ registerElementFactory("segmented", (id) => ({
   key: id,
   position: 0,
   rules: [],
+  tags: [],
   attributes: { ...base, data: [] } satisfies SegmentedElementAttributes,
 }));
 
@@ -145,6 +153,7 @@ registerElementFactory("user", (id) => ({
   key: id,
   position: 0,
   rules: [],
+  tags: [],
   attributes: {
     ...base,
     canIncludeSelf: false,

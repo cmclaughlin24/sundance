@@ -85,3 +85,7 @@ function isRemoveEvent(event: FormDesignerEvent): boolean {
     event.type === "CutElement"
   );
 }
+
+function isUpdateEvent(event: FormDesignerEvent): boolean {
+  return event.type === "UpdateElement" || event.type === "UpdateSection";
+}
