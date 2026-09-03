@@ -19,7 +19,10 @@ import {
   type IdentitySettingsEvent,
   type IdentitySettingsProps,
 } from "./settings/IdentitySettings";
-import { BehaviorSettings } from "./settings/BehaviorSettings";
+import {
+  BehaviorSettings,
+  type BehaviorSettingsEvent,
+} from "./settings/BehaviorSettings";
 import type {
   FormDesignerEvent,
   UpdateElementEvent,
@@ -63,6 +66,22 @@ export const ObjectSettingsPanel: React.FC = function () {
     dispatch(event!);
   };
 
+  const handleElementAttributeChanges = (attr: Partial<ElementAttributes>) => {
+    dispatch({
+      type: "UpdateElement",
+      elementId: selected!.item.id,
+      changes: { attributes: attr },
+    } satisfies UpdateElementEvent);
+  };
+
+  const handleBehaviorChanges = (event: BehaviorSettingsEvent) => {
+    dispatch({
+      type: "UpdateElement",
+      elementId: selected!.item.id,
+      changes: { attributes: event },
+    } satisfies UpdateElementEvent);
+  };
+
   let content = (
     <Typography>
       Select an element in the canvas to view and edit it's properties.
@@ -101,12 +120,12 @@ export const ObjectSettingsPanel: React.FC = function () {
                 <Collapisble summary="Properties">
                   <PropertyComponent
                     element={selected.item}
-                    onChange={() => {}}
+                    onChange={handleElementAttributeChanges}
                   />
                 </Collapisble>
               )}
               <Collapisble summary="Behavior">
-                <BehaviorSettings />
+                <BehaviorSettings onChange={handleBehaviorChanges} />
               </Collapisble>
             </>
           )}

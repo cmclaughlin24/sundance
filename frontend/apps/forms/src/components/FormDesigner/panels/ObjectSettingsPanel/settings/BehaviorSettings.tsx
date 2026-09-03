@@ -2,8 +2,15 @@ import Box from "@mui/material/Box";
 import { settingsStyle } from "./Settings.style";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
+import type { ElementAttributes } from "@/types/elementAttributes";
 
-export const BehaviorSettings: React.FC = function () {
+export type BehaviorSettingsEvent = Partial<
+  Pick<ElementAttributes, "isRequired" | "isReadOnly">
+>;
+
+export const BehaviorSettings: React.FC<{
+  onChange: (event: BehaviorSettingsEvent) => void;
+}> = function () {
   return (
     <Box sx={settingsStyle.container}>
       <Box sx={{ flex: 1 }}>

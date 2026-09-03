@@ -172,7 +172,13 @@ export function onUpdateElement(
           return element;
         }
 
-        return { ...element, ...event.changes };
+        return {
+          ...element,
+          ...event.changes,
+          attributes: event.changes.attributes
+            ? { ...element.attributes, ...event.changes.attributes }
+            : element.attributes,
+        };
       });
 
       return { ...section, elements };

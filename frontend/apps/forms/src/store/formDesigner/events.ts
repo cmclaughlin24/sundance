@@ -1,5 +1,6 @@
 import type { ClipboardEventType } from "@/types/clipboard";
 import type { ElementType, IElement } from "@/types/element";
+import type { ElementAttributes } from "@/types/elementAttributes";
 import type { IPage } from "@/types/page";
 import type { ISection } from "@/types/section";
 
@@ -105,7 +106,11 @@ export type MoveElementEvent = {
 export type UpdateElementEvent = {
   type: "UpdateElement";
   elementId: string;
-  changes: Partial<Pick<IElement, "key" | "name" | "description">>;
+  changes: Partial<
+    Pick<IElement, "key" | "name" | "description"> & {
+      attributes: Partial<ElementAttributes>;
+    }
+  >;
 };
 
 export type RemoveElementEvent = {

@@ -5,7 +5,11 @@ import {
   useFormDesignerSelect,
   type SelectedSection,
 } from "@/store/formDesigner";
-import { useMemo, type MouseEventHandler } from "react";
+import {
+  useMemo,
+  type KeyboardEventHandler,
+  type MouseEventHandler,
+} from "react";
 import { getSectionItemStyles } from "./SectionItem.style";
 import { findPaletteItem } from "../../ToolboxPanel/palette";
 import { Tag } from "@/components/Tag";
@@ -90,6 +94,18 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
     select(!isSelected ? { type: "section", item: section } : null);
   };
 
+  const handleKeyDown: KeyboardEventHandler<HTMLLIElement> = (event) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      event.stopPropagation();
+      select(!isSelected ? { type: "section", item: section } : null);
+    }
+  };
+
   const handleContext: MouseEventHandler<HTMLLIElement> = (event) => {
     event.stopPropagation();
     event.preventDefault();
@@ -147,12 +163,15 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
       transition={{ type: "spring", bounce: 0, duration: 0.35 }}
       sx={styles.item}
       onClick={handleClk}
+      onKeyDown={handleKeyDown}
       onContextMenu={handleContext}
       ref={(el: Element) => {
         dragRef(el);
         dropRef(el);
       }}
       role="button"
+      tabIndex={0}
+      aria-pressed={isSelected}
     >
       <DraggableCard
         sx={styles.card}

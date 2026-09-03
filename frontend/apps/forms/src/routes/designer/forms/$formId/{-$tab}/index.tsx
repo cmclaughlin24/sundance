@@ -1,4 +1,3 @@
-import { FormDesigner } from "@/components/FormDesigner/FormDesigner";
 import { Page } from "@/components/layout/Page/Page";
 import { PageTitle } from "@/components/layout/Page/PageTitle";
 import { TabPanel } from "@/components/layout/Tab/TabPanel";
@@ -14,6 +13,7 @@ import { formDesignerPageStyles } from "./-index.style";
 import Button from "@mui/material/Button";
 import type { DefaultRequestOptions } from "@/services/baseHttpService";
 import { FormDesignerProvider } from "@/store/formDesigner";
+import { FormBuilder } from "@/components/FormDesigner/FormBuilder";
 
 const token = "placeholder";
 
@@ -84,7 +84,7 @@ function RouteComponent() {
       <FormDesignerProvider form={form} version={versions[0]}>
         <TabPanelGroup active={tab} order={TAB_ORDER}>
           <TabPanel value={FormDesignerTab.Build}>
-            <FormDesigner />
+            <FormBuilder />
           </TabPanel>
           <TabPanel value={FormDesignerTab.Rules}>Rules Tab</TabPanel>
           <TabPanel value={FormDesignerTab.DataSources}>

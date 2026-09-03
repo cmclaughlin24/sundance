@@ -1,5 +1,5 @@
 import Box from "@mui/material/Box";
-import { formDesignerStyles } from "./FormDesigner.styles";
+import { formBuilderStyles } from "./FormBuilder.styles";
 import { ToolboxPanel } from "./panels/ToolboxPanel/ToolboxPanel";
 import { CanvasPanel } from "./panels/CanvasPanel/CanvasPanel";
 import { ObjectSettingsPanel } from "./panels/ObjectSettingsPanel/ObjectSettingsPanel";
@@ -14,13 +14,13 @@ import { FormDesignerContextMenu } from "./FormDesignerContextMenu";
 
 export interface FormDesignerProps {}
 
-export const FormDesigner: React.FC<FormDesignerProps> = function () {
+export const FormBuilder: React.FC<FormDesignerProps> = function () {
   return (
     <KeyboardShortcutProvider>
       <ContextMenuProvider>
         <FormDesignerDragProvider>
           <FormDesignerKeyboardShortcuts>
-            <Box sx={formDesignerStyles.container}>
+            <Box sx={formBuilderStyles.container}>
               <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
                 <ToolboxPanel />
               </Box>

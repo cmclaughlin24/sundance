@@ -1,7 +1,7 @@
 import { Border } from "@/constants/colors";
 import type { Styles } from "@/types/styles";
 
-export const formDesignerStyles: Styles = {
+export const formBuilderStyles: Styles = {
   container: {
     display: "grid",
     gridTemplateColumns: "minmax(296px, 18.5rem) auto minmax(296px, 28rem)",

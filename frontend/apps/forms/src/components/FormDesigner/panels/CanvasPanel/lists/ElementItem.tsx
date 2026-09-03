@@ -5,7 +5,7 @@ import {
 } from "@/store/formDesigner";
 import type { IElement } from "@/types/element";
 import Box from "@mui/material/Box";
-import { type MouseEventHandler } from "react";
+import { type KeyboardEventHandler, type MouseEventHandler } from "react";
 import { getElementItemStyles } from "./ElementItem.style";
 import Typography from "@mui/material/Typography";
 import { ItemTools } from "../../../common/ItemTools";
@@ -75,6 +75,18 @@ export const ElementItem: React.FC<ElementItemProps> = function ({
     select(!isSelected ? { type: "element", item: element } : null);
   };
 
+  const handleKeyDown: KeyboardEventHandler<HTMLLIElement> = (event) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      event.stopPropagation();
+      select(!isSelected ? { type: "element", item: element } : null);
+    }
+  };
+
   const handleContext: MouseEventHandler<HTMLLIElement> = (event) => {
     event.stopPropagation();
     event.preventDefault();
@@ -124,8 +136,11 @@ export const ElementItem: React.FC<ElementItemProps> = function ({
         transition={{ type: "spring", bounce: 0, duration: 0.3 }}
         sx={styles.item}
         onClick={handleClk}
+        onKeyDown={handleKeyDown}
         onContextMenu={handleContext}
         role="button"
+        tabIndex={0}
+        aria-pressed={isSelected}
         ref={ref}
       >
         <DraggableCard sx={styles.card} handleRef={handleRef} dragHandleOnly>

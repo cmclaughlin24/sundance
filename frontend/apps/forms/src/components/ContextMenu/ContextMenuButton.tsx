@@ -32,6 +32,8 @@ export const ContextMenuButton: React.FC<ButtonProps> = function ({
 }) {
   return (
     <Button
+      role="menuitem"
+      tabIndex={-1}
       disableElevation
       disableRipple
       variant="text"
