@@ -12,10 +12,10 @@ import ViewStream from "@mui/icons-material/ViewStream";
 import WebAsset from "@mui/icons-material/WebAsset";
 import type { IPaletteCategory } from "../palette";
 
-export type PaletteItemType = ElementType | "section";
+export type FormObjectItemType = ElementType | "section";
 
 export const FORM_OBJECT_PALETTE: Readonly<
-  IPaletteCategory<PaletteItemType>[]
+  IPaletteCategory<FormObjectItemType>[]
 > = [
   {
     label: "Basic",

@@ -11,7 +11,7 @@ import {
   PaletteItemDragType,
   type FormDragEventData,
 } from "@/components/FormDesigner/types/formDragEvent";
-import { useFormDragEvent } from "@/components/FormDesigner/providers/FormDesignerDragProvider";
+import { useFormBuilderDragEvent } from "@/components/FormDesigner/providers/FormBuilderDragProvider";
 import { useMemo } from "react";
 import { getNextPosition, sortPositioned } from "@/utils/position";
 
@@ -35,12 +35,12 @@ export const PageItem: React.FC<{ page: IPage }> = function ({ page }) {
       position: getNextPosition(sections),
     } satisfies PaletteDropEventData,
   });
-  const dragData = useFormDragEvent();
+  const dragData = useFormBuilderDragEvent();
   const canDrop = canDropItem(dragData);
   const dragPaletteItem = useMemo(
     () =>
       dragData && dragData.source === "palette"
-        ? findFormObjectPaletteItem(dragData.objectType)
+        ? findFormObjectPaletteItem(dragData.itemType)
         : null,
     [dragData],
   );
@@ -64,5 +64,5 @@ function canDropItem(data: FormDragEventData | null): boolean {
 
   // TODO: Improve this conditional such that it will not introduce a bug if additional layout
   // elements are added.
-  return data.source === FormDragEventSource.Palette && data.objectType === "section";
+  return data.source === FormDragEventSource.Palette && data.itemType === "section";
 }

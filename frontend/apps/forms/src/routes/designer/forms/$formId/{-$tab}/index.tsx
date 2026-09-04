@@ -90,7 +90,7 @@ function RouteComponent() {
         </Tabs>
       </Box>
       <FormDesignerProvider form={form} version={versions[0]}>
-        <TabPanelGroup active={tab} order={TAB_ORDER}>
+        <TabPanelGroup active={tab} order={TAB_ORDER} sx={{ flex: 1 }}>
           <TabPanel value={FormDesignerTab.Build}>
             <FormBuilder />
           </TabPanel>

@@ -9,11 +9,12 @@ export enum FormDragEventSource {
 export enum PaletteItemDragType {
   Element = "palette-element",
   Section = "palette-section",
+  Rule = "palette-rule",
 }
 
-export interface PaletteDragEventData {
+export interface PaletteDragEventData<T> {
   source: FormDragEventSource.Palette;
-  objectType: ElementType | "section";
+  itemType: T;
 }
 
 export enum CanvasDragType {
@@ -36,6 +37,6 @@ export interface CanvasElementDragEventData {
 }
 
 export type FormDragEventData =
-  | PaletteDragEventData
+  | PaletteDragEventData<ElementType | "section">
   | CanvasElementDragEventData
   | CanvasSectionDragEventData;

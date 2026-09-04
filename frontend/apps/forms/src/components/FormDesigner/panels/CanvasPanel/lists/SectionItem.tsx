@@ -18,7 +18,7 @@ import { DraggableCard } from "@/components/DragDrop/DraggableCard";
 import { useDroppable } from "@dnd-kit/react";
 import type { PaletteDropEventData } from "@/components/FormDesigner/types/formDropEvent";
 import { DropZoneIndicator } from "@/components/DragDrop/DropZoneIndicator";
-import { useFormDragEvent } from "@/components/FormDesigner/providers/FormDesignerDragProvider";
+import { useFormBuilderDragEvent } from "@/components/FormDesigner/providers/FormBuilderDragProvider";
 import {
   CanvasDragType,
   FormDragEventSource,
@@ -87,7 +87,7 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
     } satisfies PaletteDropEventData,
   });
 
-  const dragData = useFormDragEvent();
+  const dragData = useFormBuilderDragEvent();
 
   const handleClk: MouseEventHandler<HTMLLIElement> = (event) => {
     event.stopPropagation();
@@ -145,7 +145,7 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
   const dragPaletteItem = useMemo(
     () =>
       dragData && dragData.source === "palette"
-        ? findFormObjectPaletteItem(dragData.objectType)
+        ? findFormObjectPaletteItem(dragData.itemType)
         : null,
     [dragData],
   );
@@ -208,6 +208,6 @@ function canDropItem(data: FormDragEventData | null): boolean {
   // TODO: Improve this conditional such that it will not introduce a bug if additional layout
   // elements are added.
   return (
-    data.source === FormDragEventSource.Palette && data.objectType !== "section"
+    data.source === FormDragEventSource.Palette && data.itemType !== "section"
   );
 }

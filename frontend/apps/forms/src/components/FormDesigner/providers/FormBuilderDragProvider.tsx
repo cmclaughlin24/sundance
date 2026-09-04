@@ -21,27 +21,28 @@ import type {
   FormDesignerEvent,
 } from "@/store/formDesigner/events";
 import { generatedID } from "@/utils/id";
+import type { ElementType } from "@/types/element";
 
-const FormDesignerDragContext = createContext<FormDragEventData | null>(null);
+const FormBuilderDragContext = createContext<FormDragEventData | null>(null);
 
-export function useFormDragEvent() {
-  return useContext(FormDesignerDragContext);
+export function useFormBuilderDragEvent() {
+  return useContext(FormBuilderDragContext);
 }
 
-export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
+export const FormBuilderDragProvider: React.FC<React.PropsWithChildren<{}>> =
   function ({ children }) {
     const [activeDragData, setActiveDragData] =
       useState<FormDragEventData | null>(null);
     const { dispatch } = useFormDesignerDispatch();
 
     const handlePaletteDragEnd = (
-      dragData: PaletteDragEventData,
+      dragData: PaletteDragEventData<ElementType | "section">,
       dropData: PaletteDropEventData,
     ) => {
       let event: FormDesignerEvent;
       const id = generatedID();
 
-      switch (dragData.objectType) {
+      switch (dragData.itemType) {
         case "section":
           event = {
             type: "AddSection",
@@ -54,7 +55,7 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
           event = {
             type: "AddElement",
             id,
-            elementType: dragData.objectType,
+            elementType: dragData.itemType,
             sectionId: dropData.parentId,
             position: dropData.position,
           } satisfies AddElementEvent;
@@ -72,7 +73,7 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
     };
 
     return (
-      <FormDesignerDragContext value={activeDragData}>
+      <FormBuilderDragContext value={activeDragData}>
         <DragDropProvider
           onDragStart={(event) =>
             setActiveDragData(event.operation.source?.data as FormDragEventData)
@@ -117,7 +118,7 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
               switch (data.source) {
                 case FormDragEventSource.Palette:
                   const paletteItem = findFormObjectPaletteItem(
-                    source.data.objectType,
+                    source.data.itemType,
                   );
                   return <PaletteItem item={paletteItem!} draggable={false} />;
                 case FormDragEventSource.Canvas:
@@ -130,6 +131,6 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
             }}
           </DragOverlay>
         </DragDropProvider>
-      </FormDesignerDragContext>
+      </FormBuilderDragContext>
     );
   };

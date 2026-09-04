@@ -2,7 +2,7 @@ import * as ArrayUtils from "@/utils/array";
 import { PaletteItemDragType } from "../../types/formDragEvent";
 import {
   FORM_OBJECT_PALETTE,
-  type PaletteItemType,
+  type FormObjectItemType,
 } from "./constants/formObjectPalette";
 
 export interface IPaletteCategory<T> {
@@ -53,8 +53,8 @@ export function filterPalette<T>(
  * @returns Teh pallette item if found, otherwise null.
  */
 export function findFormObjectPaletteItem(
-  type: PaletteItemType,
-): IPaletteItem<PaletteItemType> | null {
+  type: FormObjectItemType,
+): IPaletteItem<FormObjectItemType> | null {
   return findPaletteItem(type, FORM_OBJECT_PALETTE);
 }
 

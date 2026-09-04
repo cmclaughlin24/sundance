@@ -31,6 +31,7 @@ export const BehaviorSettings: React.FC<{
             <Switch
               checked={attr.isRequired}
               onChange={handleChange("isRequired")}
+              color="success"
             />
           }
         />
@@ -42,6 +43,7 @@ export const BehaviorSettings: React.FC<{
             <Switch
               checked={attr.isReadOnly}
               onChange={handleChange("isReadOnly")}
+              color="success"
             />
           }
         />

@@ -6,7 +6,7 @@ import { DraggableCard } from "@/components/DragDrop/DraggableCard";
 import { useDraggable } from "@dnd-kit/react";
 import {
   FormDragEventSource,
-  type FormDragEventData,
+  type PaletteDragEventData,
 } from "../../types/formDragEvent";
 import { mergeSx } from "merge-sx";
 
@@ -46,8 +46,8 @@ export function PaletteItem<T>({
     type: item.dragType,
     data: {
       source: FormDragEventSource.Palette,
-      objectType: item.type as any,
-    } satisfies FormDragEventData,
+      itemType: item.type as any,
+    } satisfies PaletteDragEventData<T>,
     disabled: !draggable,
   });
 

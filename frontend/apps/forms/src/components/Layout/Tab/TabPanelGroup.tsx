@@ -8,6 +8,8 @@ import {
   type ReactElement,
 } from "react";
 import { AnimatePresence, motion, type Variants } from "motion/react";
+import type { SxProps, Theme } from "@mui/material/styles";
+import { mergeSx } from "merge-sx";
 
 export type TabPanelComponent<T> = ReactElement<TabPanelProps<T>>;
 
@@ -15,6 +17,7 @@ export interface TabPanelGroupProps<T> {
   active: T;
   order: T[];
   children: TabPanelComponent<T>[];
+  sx?: SxProps<Theme>;
 }
 
 const variants: Variants = {
@@ -27,6 +30,7 @@ export const TabPanelGroup = function <T>({
   active,
   order,
   children,
+  sx,
 }: TabPanelGroupProps<T>) {
   const prevActiveRef = useRef<T>(active);
   const currentIndex = order.indexOf(active);
@@ -45,7 +49,12 @@ export const TabPanelGroup = function <T>({
   }) as TabPanelComponent<T> | undefined;
 
   return (
-    <Box sx={{ overflow: "hidden", position: "relative", width: "100%" }}>
+    <Box
+      sx={mergeSx(
+        { overflow: "hidden", position: "relative", width: "100%" },
+        sx,
+      )}
+    >
       <AnimatePresence initial={false} custom={direction} mode="wait">
         <Box
           key={String(active)}
@@ -61,6 +70,7 @@ export const TabPanelGroup = function <T>({
             type: "spring",
             bounce: 0.175,
           }}
+          sx={{ py: 2.5, height: "100%" }}
           role="tabpanel"
           id={`tab-panel-${active}`}
           aria-labelledby={`tab-panel-${active}`}

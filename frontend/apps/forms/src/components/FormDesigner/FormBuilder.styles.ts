@@ -6,5 +6,6 @@ export const formBuilderStyles: Styles = {
     display: "grid",
     gridTemplateColumns: "minmax(296px, 18.5rem) auto minmax(296px, 28rem)",
     border: `1px solid ${Border.Primary}`,
+    height: "100%",
   },
 };

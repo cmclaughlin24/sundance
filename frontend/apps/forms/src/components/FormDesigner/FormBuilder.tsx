@@ -4,7 +4,7 @@ import { ToolboxPanel } from "./panels/ToolboxPanel/ToolboxPanel";
 import { CanvasPanel } from "./panels/CanvasPanel/CanvasPanel";
 import { ObjectSettingsPanel } from "./panels/ObjectSettingsPanel/ObjectSettingsPanel";
 import { Border } from "@/constants/colors";
-import { FormDesignerDragProvider } from "./providers/FormDesignerDragProvider";
+import { FormBuilderDragProvider } from "./providers/FormBuilderDragProvider";
 import { KeyboardShortcutProvider } from "@/store/keyboardShortcut/KeyboardShortcutProvider";
 import { FormDesignerKeyboardShortcuts } from "./FormDesignerKeyboardShorts";
 import { ContextMenu, ContextMenuProvider } from "../ContextMenu";
@@ -15,7 +15,7 @@ import { ClipboardEventType, type PagesClipboardData } from "@/types/clipboard";
 import { PageList } from "./panels/CanvasPanel/lists/PageList";
 import {
   FORM_OBJECT_PALETTE,
-  type PaletteItemType,
+  type FormObjectItemType,
 } from "./panels/ToolboxPanel/constants/formObjectPalette";
 import type { IPaletteCategory } from "./panels/ToolboxPanel/palette";
 
@@ -37,13 +37,13 @@ export const FormBuilder: React.FC<FormDesignerProps> = function () {
   return (
     <KeyboardShortcutProvider>
       <ContextMenuProvider>
-        <FormDesignerDragProvider>
+        <FormBuilderDragProvider>
           <FormDesignerKeyboardShortcuts>
             <Box sx={formBuilderStyles.container}>
               <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
                 <ToolboxPanel
                   palette={
-                    FORM_OBJECT_PALETTE as IPaletteCategory<PaletteItemType>[]
+                    FORM_OBJECT_PALETTE as IPaletteCategory<FormObjectItemType>[]
                   }
                   helpText="Drag the form elements into the preferred section on the canvas."
                 />
@@ -64,7 +64,7 @@ export const FormBuilder: React.FC<FormDesignerProps> = function () {
               }}
             </ContextMenu>
           </FormDesignerKeyboardShortcuts>
-        </FormDesignerDragProvider>
+        </FormBuilderDragProvider>
       </ContextMenuProvider>
     </KeyboardShortcutProvider>
   );
