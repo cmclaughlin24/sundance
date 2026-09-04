@@ -9,12 +9,31 @@ import { KeyboardShortcutProvider } from "@/store/keyboardShortcut/KeyboardShort
 import { FormDesignerKeyboardShortcuts } from "./FormDesignerKeyboardShorts";
 import { ContextMenu, ContextMenuProvider } from "../ContextMenu";
 import { FORMS_HUB_PORTAL_REF } from "@/constants/portalRef";
-import type { SelectedItem } from "@/store/formDesigner";
+import { useFormPagesSnapshot, type SelectedItem } from "@/store/formDesigner";
 import { FormDesignerContextMenu } from "./FormDesignerContextMenu";
+import { ClipboardEventType, type PagesClipboardData } from "@/types/clipboard";
+import { PageList } from "./panels/CanvasPanel/lists/PageList";
+import {
+  FORM_OBJECT_PALETTE,
+  type PaletteItemType,
+} from "./panels/ToolboxPanel/constants/formObjectPalette";
+import type { IPaletteCategory } from "./panels/ToolboxPanel/palette";
 
 export interface FormDesignerProps {}
 
 export const FormBuilder: React.FC<FormDesignerProps> = function () {
+  const pages = useFormPagesSnapshot();
+
+  const handleCopy = () => {
+    // FIXME: When multi-page support is enabled, need to move into PageItem.
+    const data: PagesClipboardData = {
+      type: ClipboardEventType.CopyPage,
+      page: pages[0],
+    };
+
+    navigator.clipboard.writeText(JSON.stringify(data));
+  };
+
   return (
     <KeyboardShortcutProvider>
       <ContextMenuProvider>
@@ -22,9 +41,16 @@ export const FormBuilder: React.FC<FormDesignerProps> = function () {
           <FormDesignerKeyboardShortcuts>
             <Box sx={formBuilderStyles.container}>
               <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
-                <ToolboxPanel />
+                <ToolboxPanel
+                  palette={
+                    FORM_OBJECT_PALETTE as IPaletteCategory<PaletteItemType>[]
+                  }
+                  helpText="Drag the form elements into the preferred section on the canvas."
+                />
               </Box>
-              <CanvasPanel />
+              <CanvasPanel onCopy={handleCopy}>
+                <PageList pages={pages} />
+              </CanvasPanel>
               <Box sx={{ borderLeft: `1px solid ${Border.Primary}` }}>
                 <ObjectSettingsPanel />
               </Box>

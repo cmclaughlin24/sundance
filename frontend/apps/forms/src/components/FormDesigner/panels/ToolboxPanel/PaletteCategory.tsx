@@ -22,18 +22,21 @@ const styles: Styles = {
   },
 };
 
-export const PaletteCategory: React.FC<{ category: IPaletteCategory }> =
-  function ({ category }) {
-    return (
-      <Box component="section" sx={styles.category}>
-        <Typography component="h4" sx={styles.label}>
-          {category.label}
-        </Typography>
-        <Box component="ul" sx={styles.list}>
-          {category.items.map((item) => (
-            <PaletteItem key={item.type} item={item} />
-          ))}
-        </Box>
+export interface PaletteCategoryProps<T> {
+  category: IPaletteCategory<T>;
+}
+
+export function PaletteCategory<T>({ category }: PaletteCategoryProps<T>) {
+  return (
+    <Box component="section" sx={styles.category}>
+      <Typography component="h4" sx={styles.label}>
+        {category.label}
+      </Typography>
+      <Box component="ul" sx={styles.list}>
+        {category.items.map((item) => (
+          <PaletteItem<T> key={item.label} item={item} />
+        ))}
       </Box>
-    );
-  };
+    </Box>
+  );
+}

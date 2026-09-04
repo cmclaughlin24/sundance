@@ -1,9 +1,10 @@
 import Box from "@mui/material/Box";
-import { findPaletteItem } from "../ToolboxPanel/palette";
+import { findFormObjectPaletteItem } from "../ToolboxPanel/palette";
 import Typography from "@mui/material/Typography";
 import type { ElementType } from "@/types/element";
 import type { Styles } from "@/types/styles";
 import { Border } from "@/constants/colors";
+import type { PaletteItemType } from "../ToolboxPanel/constants/formObjectPalette";
 
 const styles: Styles = {
   activeObject: {
@@ -22,7 +23,7 @@ const styles: Styles = {
 export const ActiveObjectTitle: React.FC<{
   elementType: ElementType | "section" | "page";
 }> = function ({ elementType }) {
-  const paletteItem = findPaletteItem(elementType);
+  const paletteItem = findFormObjectPaletteItem(elementType as PaletteItemType);
 
   return (
     <Box sx={styles.activeObject}>

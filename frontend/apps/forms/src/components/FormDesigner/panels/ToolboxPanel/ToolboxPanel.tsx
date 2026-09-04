@@ -1,12 +1,17 @@
 import { Panel } from "@/components/layout/Panel";
 import Typography from "@mui/material/Typography";
-import { filterPalette } from "./palette";
+import { filterPalette, type IPaletteCategory } from "./palette";
 import { PaletteCategory } from "./PaletteCategory";
 import { useDebounce } from "@/hooks/useDebounce";
 import type { ChangeEvent } from "react";
 import TextField from "@mui/material/TextField";
 
-export const ToolboxPanel: React.FC = function () {
+export interface ToolboxPanelProps<T> {
+  palette: IPaletteCategory<T>[];
+  helpText: string;
+}
+
+export function ToolboxPanel<T>({ palette, helpText }: ToolboxPanelProps<T>) {
   const {
     value: searchTerm,
     debounceValue: debounceSearchTerm,
@@ -19,7 +24,7 @@ export const ToolboxPanel: React.FC = function () {
     setSearchTerm(event.target.value);
   };
 
-  const pallette = filterPalette(debounceSearchTerm);
+  const pallette = filterPalette(debounceSearchTerm, palette);
 
   return (
     <Panel sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
@@ -29,12 +34,10 @@ export const ToolboxPanel: React.FC = function () {
         value={searchTerm}
         onChange={handleChange}
       />
-      <Typography>
-        Drag the form elements into the preferred section on the canvas.
-      </Typography>
+      <Typography> {helpText} </Typography>
       {pallette.map((category) => (
         <PaletteCategory category={category} key={category.label} />
       ))}
     </Panel>
   );
-};
+}

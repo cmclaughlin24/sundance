@@ -32,16 +32,21 @@ const styles: Styles = {
   }),
 };
 
-export const PaletteItem: React.FC<{
-  item: IPaletteItem;
+export interface PaletteItemProps<T> {
+  item: IPaletteItem<T>;
   draggable?: boolean;
-}> = function ({ item, draggable = true }) {
+}
+
+export function PaletteItem<T>({
+  item,
+  draggable = true,
+}: PaletteItemProps<T>) {
   const { ref, handleRef, isDragging } = useDraggable({
     id: `palette-${item.type}`,
     type: item.dragType,
     data: {
       source: FormDragEventSource.Palette,
-      objectType: item.type,
+      objectType: item.type as any,
     } satisfies FormDragEventData,
     disabled: !draggable,
   });
@@ -57,4 +62,4 @@ export const PaletteItem: React.FC<{
       </DraggableCard>
     </Box>
   );
-};
+}

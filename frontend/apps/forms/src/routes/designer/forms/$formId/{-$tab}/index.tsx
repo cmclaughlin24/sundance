@@ -15,6 +15,7 @@ import type { DefaultRequestOptions } from "@/services/baseHttpService";
 import { FormDesignerProvider } from "@/store/formDesigner";
 import { FormBuilder } from "@/components/FormDesigner/FormBuilder";
 import { FormVersionTag } from "@/components/FormVersionStatusTag";
+import { FormRules } from "@/components/FormDesigner/FormRules";
 
 const token = "placeholder";
 
@@ -93,7 +94,9 @@ function RouteComponent() {
           <TabPanel value={FormDesignerTab.Build}>
             <FormBuilder />
           </TabPanel>
-          <TabPanel value={FormDesignerTab.Rules}>Rules Tab</TabPanel>
+          <TabPanel value={FormDesignerTab.Rules}>
+            <FormRules />
+          </TabPanel>
           <TabPanel value={FormDesignerTab.DataSources}>
             Reference Data Tab
           </TabPanel>

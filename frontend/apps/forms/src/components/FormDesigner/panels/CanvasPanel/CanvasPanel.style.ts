@@ -6,6 +6,7 @@ export const canvasPanelStyles: Styles = {
     display: "flex",
     flexDirection: "column",
     gap: 2.5,
+    height: '100%',
   },
   toolbar: {
     display: "flex",

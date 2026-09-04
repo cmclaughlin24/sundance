@@ -3,7 +3,7 @@ import Box from "@mui/material/Box";
 import { SectionList } from "./SectionList";
 import type { Styles } from "@/types/styles";
 import { useDroppable } from "@dnd-kit/react";
-import { findPaletteItem } from "../../ToolboxPanel/palette";
+import { findFormObjectPaletteItem } from "../../ToolboxPanel/palette";
 import type { PaletteDropEventData } from "@/components/FormDesigner/types/formDropEvent";
 import { DropZoneIndicator } from "@/components/DragDrop/DropZoneIndicator";
 import {
@@ -40,7 +40,7 @@ export const PageItem: React.FC<{ page: IPage }> = function ({ page }) {
   const dragPaletteItem = useMemo(
     () =>
       dragData && dragData.source === "palette"
-        ? findPaletteItem(dragData.objectType)
+        ? findFormObjectPaletteItem(dragData.objectType)
         : null,
     [dragData],
   );

@@ -11,7 +11,7 @@ import {
   type MouseEventHandler,
 } from "react";
 import { getSectionItemStyles } from "./SectionItem.style";
-import { findPaletteItem } from "../../ToolboxPanel/palette";
+import { findFormObjectPaletteItem } from "../../ToolboxPanel/palette";
 import { Tag } from "@/components/Tag";
 import { ItemTools } from "../../../common/ItemTools";
 import { DraggableCard } from "@/components/DragDrop/DraggableCard";
@@ -141,11 +141,11 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
     isSelected && select(null);
   };
 
-  const paletteItem = useMemo(() => findPaletteItem("section"), []);
+  const paletteItem = useMemo(() => findFormObjectPaletteItem("section"), []);
   const dragPaletteItem = useMemo(
     () =>
       dragData && dragData.source === "palette"
-        ? findPaletteItem(dragData.objectType)
+        ? findFormObjectPaletteItem(dragData.objectType)
         : null,
     [dragData],
   );

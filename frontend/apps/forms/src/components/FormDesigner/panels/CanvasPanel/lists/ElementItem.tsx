@@ -10,7 +10,7 @@ import { getElementItemStyles } from "./ElementItem.style";
 import Typography from "@mui/material/Typography";
 import { ItemTools } from "../../../common/ItemTools";
 import { Tag } from "@/components/Tag";
-import { findPaletteItem } from "../../ToolboxPanel/palette";
+import { findFormObjectPaletteItem } from "../../ToolboxPanel/palette";
 import { DraggableCard } from "@/components/DragDrop/DraggableCard";
 import type {
   ReorderElementEvent,
@@ -122,7 +122,7 @@ export const ElementItem: React.FC<ElementItemProps> = function ({
     isSelected && select(null);
   };
 
-  const paletteItem = findPaletteItem(element.type);
+  const paletteItem = findFormObjectPaletteItem(element.type);
 
   return (
     <>

@@ -1,10 +1,7 @@
 import { DragDropProvider, DragOverlay } from "@dnd-kit/react";
-import { findPaletteItem } from "../panels/ToolboxPanel/palette";
+import { findFormObjectPaletteItem } from "../panels/ToolboxPanel/palette";
 import { PaletteItem } from "../panels/ToolboxPanel/PaletteItem";
-import {
-  useFormDesignerDispatch,
-  // useFormDesignerSelect,
-} from "@/store/formDesigner";
+import { useFormDesignerDispatch } from "@/store/formDesigner";
 import {
   FormDragEventSource,
   type CanvasElementDragEventData,
@@ -119,7 +116,9 @@ export const FormDesignerDragProvider: React.FC<React.PropsWithChildren<{}>> =
 
               switch (data.source) {
                 case FormDragEventSource.Palette:
-                  const paletteItem = findPaletteItem(source.data.objectType);
+                  const paletteItem = findFormObjectPaletteItem(
+                    source.data.objectType,
+                  );
                   return <PaletteItem item={paletteItem!} draggable={false} />;
                 case FormDragEventSource.Canvas:
                   return;
