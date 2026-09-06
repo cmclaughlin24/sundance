@@ -14,7 +14,7 @@ import type {
   RemoveElementEvent,
   RemoveSectionEvent,
 } from "@/store/formDesigner/events";
-import { ContextMenu, useContextMenuDispatch } from "../ContextMenu";
+import { ContextMenu, useContextMenuDispatch } from "../../ContextMenu";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
 import type { Styles } from "@/types/styles";
@@ -38,7 +38,7 @@ const styles: Styles = {
   },
 };
 
-export const FormDesignerContextMenu: React.FC<{ target: SelectedItem }> =
+export const BuilderContextMenu: React.FC<{ target: SelectedItem }> =
   function ({ target }) {
     const { undo, redo } = useFormDesignerUndo();
     const { dispatch } = useFormDesignerDispatch();

@@ -22,9 +22,9 @@ import { useFormBuilderDragEvent } from "@/components/FormDesigner/providers/For
 import {
   CanvasDragType,
   FormDragEventSource,
-  PaletteItemDragType,
+  BuilderItemDragType,
   type CanvasSectionDragEventData,
-  type FormDragEventData,
+  type BuilderDragEventData,
 } from "@/components/FormDesigner/types/formDragEvent";
 import { getNextPosition, sortPositioned } from "@/utils/position";
 import { motion, type Variants } from "motion/react";
@@ -79,7 +79,7 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
 
   const { ref: dropRef, isDropTarget } = useDroppable({
     id: `section-${section.id}`,
-    accept: PaletteItemDragType.Element,
+    accept: BuilderItemDragType.Element,
     data: {
       source: "palette",
       parentId: section.id,
@@ -200,7 +200,7 @@ export const SectionItem: React.FC<SectionItemProps> = function ({
   );
 };
 
-function canDropItem(data: FormDragEventData | null): boolean {
+function canDropItem(data: BuilderDragEventData | null): boolean {
   if (!data) {
     return false;
   }

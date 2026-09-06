@@ -1,4 +1,4 @@
-import { PaletteItemDragType } from "@/components/FormDesigner/types/formDragEvent";
+import { BuilderItemDragType } from "@/components/FormDesigner/types/formDragEvent";
 import type { ElementType } from "@/types/element";
 import ArrowDropDownCircle from "@mui/icons-material/ArrowDropDownCircle";
 import CalendarToday from "@mui/icons-material/CalendarToday";
@@ -15,7 +15,7 @@ import type { IPaletteCategory } from "../palette";
 export type FormObjectItemType = ElementType | "section";
 
 export const FORM_OBJECT_PALETTE: Readonly<
-  IPaletteCategory<FormObjectItemType>[]
+  IPaletteCategory<FormObjectItemType, BuilderItemDragType>[]
 > = [
   {
     label: "Basic",
@@ -24,25 +24,25 @@ export const FORM_OBJECT_PALETTE: Readonly<
         icon: <TextFields />,
         label: "Text",
         type: "text",
-        dragType: PaletteItemDragType.Element,
+        dragType: BuilderItemDragType.Element,
       },
       {
         icon: <Numbers />,
         label: "Number",
         type: "number",
-        dragType: PaletteItemDragType.Element,
+        dragType: BuilderItemDragType.Element,
       },
       {
         icon: <CalendarToday />,
         label: "Date",
         type: "date",
-        dragType: PaletteItemDragType.Element,
+        dragType: BuilderItemDragType.Element,
       },
       {
         icon: <ToggleOn />,
         label: "Toggle",
         type: "toggle",
-        dragType: PaletteItemDragType.Element,
+        dragType: BuilderItemDragType.Element,
       },
     ],
   },
@@ -53,25 +53,25 @@ export const FORM_OBJECT_PALETTE: Readonly<
         icon: <CheckBox />,
         label: "Checkbox",
         type: "checkbox",
-        dragType: PaletteItemDragType.Element,
+        dragType: BuilderItemDragType.Element,
       },
       {
         icon: <RadioButtonChecked />,
         label: "Radio",
         type: "radio",
-        dragType: PaletteItemDragType.Element,
+        dragType: BuilderItemDragType.Element,
       },
       {
         icon: <ArrowDropDownCircle />,
         label: "Select",
         type: "select",
-        dragType: PaletteItemDragType.Element,
+        dragType: BuilderItemDragType.Element,
       },
       {
         icon: <ViewStream />,
         label: "Segmented",
         type: "segmented",
-        dragType: PaletteItemDragType.Element,
+        dragType: BuilderItemDragType.Element,
       },
     ],
   },
@@ -82,7 +82,7 @@ export const FORM_OBJECT_PALETTE: Readonly<
         icon: <Person />,
         label: "User",
         type: "user",
-        dragType: PaletteItemDragType.Element,
+        dragType: BuilderItemDragType.Element,
       },
     ],
   },
@@ -93,7 +93,7 @@ export const FORM_OBJECT_PALETTE: Readonly<
         icon: <WebAsset />,
         label: "Section",
         type: "section",
-        dragType: PaletteItemDragType.Section,
+        dragType: BuilderItemDragType.Section,
       },
     ],
   },

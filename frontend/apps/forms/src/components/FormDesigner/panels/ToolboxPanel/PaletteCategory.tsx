@@ -22,11 +22,13 @@ const styles: Styles = {
   },
 };
 
-export interface PaletteCategoryProps<T> {
-  category: IPaletteCategory<T>;
+export interface PaletteCategoryProps<IType, DType> {
+  category: IPaletteCategory<IType, DType>;
 }
 
-export function PaletteCategory<T>({ category }: PaletteCategoryProps<T>) {
+export function PaletteCategory<IType, DType>({
+  category,
+}: PaletteCategoryProps<IType, DType>) {
   return (
     <Box component="section" sx={styles.category}>
       <Typography component="h4" sx={styles.label}>
@@ -34,7 +36,7 @@ export function PaletteCategory<T>({ category }: PaletteCategoryProps<T>) {
       </Typography>
       <Box component="ul" sx={styles.list}>
         {category.items.map((item) => (
-          <PaletteItem<T> key={item.label} item={item} />
+          <PaletteItem key={item.label} item={item} />
         ))}
       </Box>
     </Box>

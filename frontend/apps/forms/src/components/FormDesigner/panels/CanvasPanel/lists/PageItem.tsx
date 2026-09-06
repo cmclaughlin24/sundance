@@ -8,8 +8,8 @@ import type { PaletteDropEventData } from "@/components/FormDesigner/types/formD
 import { DropZoneIndicator } from "@/components/DragDrop/DropZoneIndicator";
 import {
   FormDragEventSource,
-  PaletteItemDragType,
-  type FormDragEventData,
+  BuilderItemDragType,
+  type BuilderDragEventData,
 } from "@/components/FormDesigner/types/formDragEvent";
 import { useFormBuilderDragEvent } from "@/components/FormDesigner/providers/FormBuilderDragProvider";
 import { useMemo } from "react";
@@ -28,7 +28,7 @@ export const PageItem: React.FC<{ page: IPage }> = function ({ page }) {
   const sections = sortPositioned(page.sections);
   const { ref, isDropTarget } = useDroppable({
     id: `page-${page.id}`,
-    accept: PaletteItemDragType.Section,
+    accept: BuilderItemDragType.Section,
     data: {
       source: "palette",
       parentId: page.id,
@@ -57,7 +57,7 @@ export const PageItem: React.FC<{ page: IPage }> = function ({ page }) {
   );
 };
 
-function canDropItem(data: FormDragEventData | null): boolean {
+function canDropItem(data: BuilderDragEventData | null): boolean {
   if (!data) {
     return false;
   }

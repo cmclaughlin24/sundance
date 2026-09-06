@@ -1,10 +1,15 @@
 import { DropZoneIndicator } from "@/components/DragDrop/DropZoneIndicator";
+import { useFormRuleDragData } from "@/components/FormDesigner/providers/FormRuleDragProvider";
+import { RuleItemDragType } from "@/components/FormDesigner/types/formDragEvent";
 import type { IRule } from "@/types/rule";
 import type { Styles } from "@/types/styles";
+import { useDroppable } from "@dnd-kit/react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import { AnimatePresence } from "motion/react";
+import * as ArrayUtils from "@/utils/array";
+import { RuleItem } from "./RuleItem";
 
 const styles: Styles = {
   list: {
@@ -24,12 +29,31 @@ export interface RuleListProps {
   rules: IRule[];
 }
 
-export const RuleList: React.FC<RuleListProps> = function ({}) {
+export const RuleList: React.FC<RuleListProps> = function ({ rules }) {
+  const dragData = useFormRuleDragData();
+
+  const { ref: dropRef, isDropTarget } = useDroppable({
+    id: "rule-list",
+    accept: RuleItemDragType.Rule,
+    data: {},
+  });
+
+  let content = !ArrayUtils.hasLengthGreaterThan(rules, 0) ? (
+    <RuleInstructionCard key="instruction-card" />
+  ) : (
+    rules.map((rule) => <RuleItem rule={rule} key={rule.id} />)
+  );
+
   return (
-    <Box component="ul" sx={styles.list}>
+    <Box component="ul" sx={styles.list} ref={dropRef}>
       <AnimatePresence initial={false}>
-        <RuleInstructionCard />
-        <DropZoneIndicator text="Drop Rule here" isVisible={true} />
+        {content}
+        <DropZoneIndicator
+          text="Drop Rule here"
+          isVisible={!!dragData}
+          isDropTarget={isDropTarget}
+          key="drop-zone-indicator"
+        />
       </AnimatePresence>
     </Box>
   );

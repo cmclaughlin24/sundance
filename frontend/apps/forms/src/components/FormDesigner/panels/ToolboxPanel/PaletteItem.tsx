@@ -32,22 +32,22 @@ const styles: Styles = {
   }),
 };
 
-export interface PaletteItemProps<T> {
-  item: IPaletteItem<T>;
+export interface PaletteItemProps<IType, DType> {
+  item: IPaletteItem<IType, DType>;
   draggable?: boolean;
 }
 
-export function PaletteItem<T>({
+export function PaletteItem<IType, DType>({
   item,
   draggable = true,
-}: PaletteItemProps<T>) {
+}: PaletteItemProps<IType, DType>) {
   const { ref, handleRef, isDragging } = useDraggable({
     id: `palette-${item.type}`,
-    type: item.dragType,
+    type: item.dragType as any,
     data: {
       source: FormDragEventSource.Palette,
       itemType: item.type as any,
-    } satisfies PaletteDragEventData<T>,
+    } satisfies PaletteDragEventData<IType>,
     disabled: !draggable,
   });
 

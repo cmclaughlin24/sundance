@@ -6,7 +6,7 @@ import {
   FormDragEventSource,
   type CanvasElementDragEventData,
   type CanvasSectionDragEventData,
-  type FormDragEventData,
+  type BuilderDragEventData,
   type PaletteDragEventData,
 } from "../types/formDragEvent";
 import type {
@@ -23,7 +23,7 @@ import type {
 import { generatedID } from "@/utils/id";
 import type { ElementType } from "@/types/element";
 
-const FormBuilderDragContext = createContext<FormDragEventData | null>(null);
+const FormBuilderDragContext = createContext<BuilderDragEventData | null>(null);
 
 export function useFormBuilderDragEvent() {
   return useContext(FormBuilderDragContext);
@@ -32,7 +32,7 @@ export function useFormBuilderDragEvent() {
 export const FormBuilderDragProvider: React.FC<React.PropsWithChildren<{}>> =
   function ({ children }) {
     const [activeDragData, setActiveDragData] =
-      useState<FormDragEventData | null>(null);
+      useState<BuilderDragEventData | null>(null);
     const { dispatch } = useFormDesignerDispatch();
 
     const handlePaletteDragEnd = (
@@ -76,7 +76,7 @@ export const FormBuilderDragProvider: React.FC<React.PropsWithChildren<{}>> =
       <FormBuilderDragContext value={activeDragData}>
         <DragDropProvider
           onDragStart={(event) =>
-            setActiveDragData(event.operation.source?.data as FormDragEventData)
+            setActiveDragData(event.operation.source?.data as BuilderDragEventData)
           }
           onDragEnd={(event) => {
             setActiveDragData(null);
@@ -86,7 +86,7 @@ export const FormBuilderDragProvider: React.FC<React.PropsWithChildren<{}>> =
             }
 
             const { source, target } = event.operation;
-            const dragData = source?.data as FormDragEventData;
+            const dragData = source?.data as BuilderDragEventData;
             const dropData = target?.data as FormDropEventData;
 
             if (!dropData) {
@@ -113,7 +113,7 @@ export const FormBuilderDragProvider: React.FC<React.PropsWithChildren<{}>> =
           {children}
           <DragOverlay>
             {(source) => {
-              const data = source.data as FormDragEventData;
+              const data = source.data as BuilderDragEventData;
 
               switch (data.source) {
                 case FormDragEventSource.Palette:

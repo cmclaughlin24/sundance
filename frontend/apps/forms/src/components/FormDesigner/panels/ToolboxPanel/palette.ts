@@ -1,20 +1,20 @@
 import * as ArrayUtils from "@/utils/array";
-import { PaletteItemDragType } from "../../types/formDragEvent";
+import { BuilderItemDragType } from "../../types/formDragEvent";
 import {
   FORM_OBJECT_PALETTE,
   type FormObjectItemType,
 } from "./constants/formObjectPalette";
 
-export interface IPaletteCategory<T> {
+export interface IPaletteCategory<IType, DType> {
   label: string;
-  items: IPaletteItem<T>[];
+  items: IPaletteItem<IType, DType>[];
 }
 
-export interface IPaletteItem<T> {
+export interface IPaletteItem<IType, DType> {
   icon: React.ReactNode;
   label: string;
-  type: T;
-  dragType: PaletteItemDragType;
+  type: IType;
+  dragType: DType;
 }
 
 /**
@@ -22,15 +22,15 @@ export interface IPaletteItem<T> {
  * @param searchTerm The term to filter the pallette items by.
  * @returns The filtered pallette categories containing items that match the search term.
  */
-export function filterPalette<T>(
+export function filterPalette<IType, DType>(
   searchTerm: string,
-  palette: IPaletteCategory<T>[],
-): Readonly<IPaletteCategory<T>[]> {
+  palette: IPaletteCategory<IType, DType>[],
+): Readonly<IPaletteCategory<IType, DType>[]> {
   if (!searchTerm) {
     return palette;
   }
 
-  const filtered: IPaletteCategory<T>[] = [];
+  const filtered: IPaletteCategory<IType, DType>[] = [];
 
   for (const category of palette) {
     const items = category.items.filter((item) =>
@@ -54,14 +54,14 @@ export function filterPalette<T>(
  */
 export function findFormObjectPaletteItem(
   type: FormObjectItemType,
-): IPaletteItem<FormObjectItemType> | null {
+): IPaletteItem<FormObjectItemType, BuilderItemDragType> | null {
   return findPaletteItem(type, FORM_OBJECT_PALETTE);
 }
 
-export function findPaletteItem<T>(
-  type: T,
-  palette: Readonly<IPaletteCategory<T>[]>,
-): IPaletteItem<T> | null {
+export function findPaletteItem<IType, DType>(
+  type: IType,
+  palette: Readonly<IPaletteCategory<IType, DType>[]>,
+): IPaletteItem<IType, DType> | null {
   for (const category of palette) {
     const item = category.items.find((i) => i.type === type);
 

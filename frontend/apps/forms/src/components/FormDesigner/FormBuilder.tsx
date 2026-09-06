@@ -10,7 +10,7 @@ import { FormDesignerKeyboardShortcuts } from "./FormDesignerKeyboardShorts";
 import { ContextMenu, ContextMenuProvider } from "../ContextMenu";
 import { FORMS_HUB_PORTAL_REF } from "@/constants/portalRef";
 import { useFormPagesSnapshot, type SelectedItem } from "@/store/formDesigner";
-import { FormDesignerContextMenu } from "./FormDesignerContextMenu";
+import { BuilderContextMenu } from "./menus/BuilderContextMenu";
 import { ClipboardEventType, type PagesClipboardData } from "@/types/clipboard";
 import { PageList } from "./panels/CanvasPanel/lists/PageList";
 import {
@@ -18,6 +18,7 @@ import {
   type FormObjectItemType,
 } from "./panels/ToolboxPanel/constants/formObjectPalette";
 import type { IPaletteCategory } from "./panels/ToolboxPanel/palette";
+import type { BuilderItemDragType } from "./types/formDragEvent";
 
 export interface FormDesignerProps {}
 
@@ -43,7 +44,10 @@ export const FormBuilder: React.FC<FormDesignerProps> = function () {
               <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
                 <ToolboxPanel
                   palette={
-                    FORM_OBJECT_PALETTE as IPaletteCategory<FormObjectItemType>[]
+                    FORM_OBJECT_PALETTE as IPaletteCategory<
+                      FormObjectItemType,
+                      BuilderItemDragType
+                    >[]
                   }
                   helpText="Drag the form elements into the preferred section on the canvas."
                 />
@@ -60,7 +64,7 @@ export const FormBuilder: React.FC<FormDesignerProps> = function () {
             >
               {(data: unknown) => {
                 const target = data as SelectedItem;
-                return <FormDesignerContextMenu target={target} />;
+                return <BuilderContextMenu target={target} />;
               }}
             </ContextMenu>
           </FormDesignerKeyboardShortcuts>

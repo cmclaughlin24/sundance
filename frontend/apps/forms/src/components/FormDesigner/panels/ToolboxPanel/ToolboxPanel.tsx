@@ -6,12 +6,15 @@ import { useDebounce } from "@/hooks/useDebounce";
 import type { ChangeEvent } from "react";
 import TextField from "@mui/material/TextField";
 
-export interface ToolboxPanelProps<T> {
-  palette: IPaletteCategory<T>[];
+export interface ToolboxPanelProps<IType, DType> {
+  palette: IPaletteCategory<IType, DType>[];
   helpText: string;
 }
 
-export function ToolboxPanel<T>({ palette, helpText }: ToolboxPanelProps<T>) {
+export function ToolboxPanel<IType, DType>({
+  palette,
+  helpText,
+}: ToolboxPanelProps<IType, DType>) {
   const {
     value: searchTerm,
     debounceValue: debounceSearchTerm,
