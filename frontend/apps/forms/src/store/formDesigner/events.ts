@@ -2,6 +2,7 @@ import type { ClipboardEventType } from "@/types/clipboard";
 import type { ElementType, IElement } from "@/types/element";
 import type { ElementAttributes } from "@/types/elementAttributes";
 import type { IPage } from "@/types/page";
+import type { IFlatRule, RuleType } from "@/types/rule";
 import type { ISection } from "@/types/section";
 
 export type FormDesignerEvent =
@@ -22,7 +23,11 @@ export type FormDesignerEvent =
   | RemoveElementEvent
   | ReorderElementEvent
   | PasteElementEvent
-  | CutElementEvent;
+  | CutElementEvent
+  | AddRuleEvent
+  | UpdateRuleEvent
+  | RemoveRuleEvent
+  | PasteRuleEvent;
 
 export type AddPageEvent = {
   type: "AddPage";
@@ -134,4 +139,26 @@ export type PasteElementEvent = {
   element: IElement;
   targetSectionId: string;
   clipboardOp: ClipboardEventType.CutElement | ClipboardEventType.CopyElement;
+};
+
+export type AddRuleEvent = {
+  type: "AddRule";
+  id: string;
+  ruleType: RuleType;
+};
+
+export type UpdateRuleEvent = {
+  type: "UpdateRule";
+  id: string;
+  changes: Partial<Pick<IFlatRule, "expressions" | "parentId" | "parentType">>;
+};
+
+export type RemoveRuleEvent = {
+  type: "RemoveRule";
+  id: string;
+};
+
+export type PasteRuleEvent = {
+  type: "PasteRule";
+  rule: IFlatRule;
 };

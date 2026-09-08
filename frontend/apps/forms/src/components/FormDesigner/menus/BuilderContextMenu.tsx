@@ -250,4 +250,6 @@ function canPaste(
     case ClipboardEventType.CopyPage:
       return true;
   }
+
+  return false;
 }

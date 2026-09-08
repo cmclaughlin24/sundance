@@ -8,10 +8,8 @@ import type { IPaletteCategory } from "./panels/ToolboxPanel/palette";
 import { RuleList } from "./panels/CanvasPanel/lists/RuleList";
 import { FormRuleDragProvider } from "./providers/FormRuleDragProvider";
 import type { RuleItemDragType } from "./types/formDragEvent";
-import { useState } from "react";
-import type { IRule, RuleType } from "@/types/rule";
-import { createRule } from "@/factories/ruleFactory";
-import { generatedID } from "@/utils/id";
+import type { RuleType } from "@/types/rule";
+import { useFormSnapshot } from "@/store/formDesigner";
 
 const styles: Styles = {
   container: {
@@ -30,20 +28,10 @@ const styles: Styles = {
 };
 
 export const FormRules: React.FC = function () {
-  const [draftRules, setDraftRules] = useState<IRule[]>([]);
-
-  const handleRuleDrop = (itemType: RuleType) => {
-    const rule = createRule(generatedID(), itemType);
-
-    setDraftRules((current) => {
-      return [...current, rule];
-    });
-  };
-
-  // TODO: Pull existing rules from form designer provider & merge rulesets.
+  const { rules } = useFormSnapshot();
 
   return (
-    <FormRuleDragProvider onPaletteDrop={handleRuleDrop}>
+    <FormRuleDragProvider>
       <Box sx={styles.container}>
         <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
           <ToolboxPanel
@@ -58,7 +46,7 @@ export const FormRules: React.FC = function () {
         </Box>
         <CanvasPanel>
           <Box sx={styles.rules}>
-            <RuleList rules={draftRules} />
+            <RuleList rules={rules} />
           </Box>
         </CanvasPanel>
       </Box>

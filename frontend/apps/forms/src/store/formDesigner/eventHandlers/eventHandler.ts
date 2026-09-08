@@ -1,13 +1,16 @@
 import type { IForm } from "@/types/form";
 import type { IFormVersion } from "@/types/formVersion";
+import type { IFlatRule } from "@/types/rule";
 import type { FormDesignerEvent } from "../events";
 import * as pageHandlers from "./pageEventHandlers";
 import * as sectionHandlers from "./sectionEventHandlers";
 import * as elementHandlers from "./elementEventHandlers";
+import * as ruleHandlers from "./ruleEventHandlers";
 
 export interface IFormAggregate {
   form: IForm;
   version: IFormVersion;
+  rules: IFlatRule[];
 }
 
 type Handlers = {
@@ -36,6 +39,10 @@ const handlers: Readonly<Handlers> = {
   ReorderElement: elementHandlers.onReorderElement,
   PasteElement: elementHandlers.onPasteElement,
   CutElement: elementHandlers.onCutElement,
+  AddRule: ruleHandlers.onAddRule,
+  UpdateRule: ruleHandlers.onUpdateRule,
+  RemoveRule: ruleHandlers.onRemoveRule,
+  PasteRule: ruleHandlers.onPasteRule,
 };
 
 export function reduce(

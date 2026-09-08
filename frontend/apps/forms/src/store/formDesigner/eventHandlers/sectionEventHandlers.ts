@@ -16,6 +16,7 @@ import { swapPositions, getNextPosition } from "@/utils/position";
 import { generatedID } from "@/utils/id";
 import { copyKey, copyName } from "@/utils/copy";
 import { ClipboardEventType } from "@/types/clipboard";
+import { removeFlatRulesByIDs } from "@/utils/rule";
 
 export function onAddSection(
   aggregate: IFormAggregate,
@@ -160,6 +161,16 @@ function removeSectionById(
   aggregate: IFormAggregate,
   sectionId: string,
 ): IFormAggregate {
+  const section = aggregate.version.pages
+    .flatMap((p) => p.sections)
+    .find((s) => s.id === sectionId);
+
+  const rules = removeFlatRulesByIDs(
+    aggregate.rules,
+    sectionId,
+    ...(section?.elements ?? []),
+  );
+
   const pages = aggregate.version.pages.map((page): IPage => {
     const hasSection = page.sections.some((s) => s.id === sectionId);
 
@@ -173,6 +184,7 @@ function removeSectionById(
   return {
     ...aggregate,
     version: { ...aggregate.version, pages },
+    rules,
   };
 }
 

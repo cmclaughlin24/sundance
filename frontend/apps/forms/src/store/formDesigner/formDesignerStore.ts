@@ -9,6 +9,7 @@ import {
   type IFormAggregate,
 } from "./eventHandlers/eventHandler";
 import { findSelectedById } from "@/utils/form";
+import { extractFlatRules } from "@/utils/rule";
 
 export interface IFormDesignerStore {
   snapshot: IFormAggregate;
@@ -24,10 +25,14 @@ export interface IFormDesignerStore {
 export type FormDesignerStoreApi = ReturnType<typeof createFormDesignerStore>;
 
 export function createFormDesignerStore(form: IForm, version: IFormVersion) {
-  const initial: Readonly<IFormAggregate> = { form, version };
+  const initial: Readonly<IFormAggregate> = {
+    form,
+    version,
+    rules: extractFlatRules(version.pages),
+  };
 
   return createStore<IFormDesignerStore>((set) => ({
-    snapshot: { form, version },
+    snapshot: { ...initial },
     events: [],
     cursor: -1,
     selected: null,
@@ -38,7 +43,7 @@ export function createFormDesignerStore(form: IForm, version: IFormVersion) {
         const snapshot = apply(s.snapshot!, event);
         let selected = s.selected;
 
-        if (isAddEvent(event) || isUpdateEvent(event)) {
+        if (shouldUpdateSelection(event)) {
           selected = findSelectedById(
             snapshot.version.pages,
             (event as { id: string }).id,
@@ -69,6 +74,10 @@ export function createFormDesignerStore(form: IForm, version: IFormVersion) {
   }));
 }
 
+function shouldUpdateSelection(event: FormDesignerEvent): boolean {
+  return !isRuleEvent(event) && (isAddEvent(event) || isUpdateEvent(event));
+}
+
 function isAddEvent(event: FormDesignerEvent): boolean {
   return (
     event.type === "AddPage" ||
@@ -88,4 +97,13 @@ function isRemoveEvent(event: FormDesignerEvent): boolean {
 
 function isUpdateEvent(event: FormDesignerEvent): boolean {
   return event.type === "UpdateElement" || event.type === "UpdateSection";
+}
+
+function isRuleEvent(event: FormDesignerEvent): boolean {
+  return (
+    event.type === "AddRule" ||
+    event.type === "UpdateRule" ||
+    event.type === "RemoveRule" ||
+    event.type === "PasteRule"
+  );
 }

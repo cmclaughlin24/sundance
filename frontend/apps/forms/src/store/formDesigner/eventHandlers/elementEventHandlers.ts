@@ -17,6 +17,7 @@ import { swapPositions, getNextPosition } from "@/utils/position";
 import { generatedID } from "@/utils/id";
 import { copyKey, copyName } from "@/utils/copy";
 import { ClipboardEventType } from "@/types/clipboard";
+import { removeFlatRulesByIDs } from "@/utils/rule";
 
 export function onAddElement(
   aggregate: IFormAggregate,
@@ -237,6 +238,7 @@ function removeElementById(
   return {
     ...aggregate,
     version: { ...aggregate.version, pages },
+    rules: removeFlatRulesByIDs(aggregate.rules, elementId),
   };
 }
 

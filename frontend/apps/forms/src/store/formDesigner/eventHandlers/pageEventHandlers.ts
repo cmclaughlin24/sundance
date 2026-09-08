@@ -9,6 +9,7 @@ import { insertAtPosition, removeById } from "./utils";
 import { generatedID } from "@/utils/id";
 import { copyKey, copyName } from "@/utils/copy";
 import { getNextPosition } from "@/utils/position";
+import { removeFlatRulesByIDs } from "@/utils/rule";
 
 export function onAddPage(aggregate: IFormAggregate, _event: AddPageEvent) {
   return aggregate;
@@ -72,10 +73,24 @@ export function onRemovePage(
   aggregate: IFormAggregate,
   event: RemovePageEvent,
 ): IFormAggregate {
+  const page = aggregate.version.pages.find((p) => p.id === event.id);
   const pages = removeById(aggregate.version.pages, event.id);
+
+  let rules = aggregate.rules;
+
+  if (page) {
+    const elements = page.sections.flatMap((s) => s.elements);
+    rules = removeFlatRulesByIDs(
+      aggregate.rules,
+      event.id,
+      ...page.sections,
+      ...elements,
+    );
+  }
 
   return {
     ...aggregate,
     version: { ...aggregate.version, pages },
+    rules,
   };
 }

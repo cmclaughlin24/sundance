@@ -1,9 +1,14 @@
 import * as ArrayUtils from "@/utils/array";
-import { BuilderItemDragType } from "../../types/formDragEvent";
+import {
+  BuilderItemDragType,
+  RuleItemDragType,
+} from "../../types/formDragEvent";
 import {
   FORM_OBJECT_PALETTE,
   type FormObjectItemType,
 } from "./constants/formObjectPalette";
+import { FORM_RULES_PALETTE } from "./constants/formRulesPalette";
+import type { RuleType } from "@/types/rule";
 
 export interface IPaletteCategory<IType, DType> {
   label: string;
@@ -56,6 +61,12 @@ export function findFormObjectPaletteItem(
   type: FormObjectItemType,
 ): IPaletteItem<FormObjectItemType, BuilderItemDragType> | null {
   return findPaletteItem(type, FORM_OBJECT_PALETTE);
+}
+
+export function findFormRulePaletteItem(
+  type: RuleType,
+): IPaletteItem<RuleType, RuleItemDragType> | null {
+  return findPaletteItem(type, FORM_RULES_PALETTE);
 }
 
 export function findPaletteItem<IType, DType>(

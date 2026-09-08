@@ -18,6 +18,7 @@ const styles: Styles = {
     display: "flex",
     flexDirection: "column",
     gap: 1.5,
+    width: "100%",
   },
   instructionCard: {
     borderRadius: "10px",

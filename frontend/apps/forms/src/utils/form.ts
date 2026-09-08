@@ -5,6 +5,7 @@ import type { IFormProgress } from "./progress";
 import type { IPage } from "@/types/page";
 import type { SelectedItem } from "@/store/formDesigner";
 import type { FormVersionRequest } from "@/services/formService.type";
+import type { IFlatRule, IRule, RuleParentType } from "@/types/rule";
 import { stripTemporaryID } from "./id";
 
 /**
@@ -104,19 +105,39 @@ export function findSelectedById(
   return null;
 }
 
-export function versionToRequest(version: IFormVersion): FormVersionRequest {
+
+export function versionToRequest(
+  version: IFormVersion,
+  rules: IFlatRule[],
+): FormVersionRequest {
   const pages = version.pages.map((page) => ({
     ...stripTemporaryID(page),
     sections: page.sections.map((section) => ({
       ...stripTemporaryID(section),
       elements: section.elements.map((element) => ({
         ...stripTemporaryID(element),
-        rules: element.rules.map((rule) => stripTemporaryID(rule)),
+        rules: setRules("element", element.id, rules),
       })),
-      rules: section.rules.map((rule) => stripTemporaryID(rule)),
+      rules: setRules("section", section.id, rules),
     })),
-    rules: page.rules.map((rule) => stripTemporaryID(rule)),
+    rules: setRules("page", page.id, rules),
   }));
 
   return { metadata: {}, pages };
+}
+
+function setRules(
+  parentType: RuleParentType,
+  parentId: string,
+  rules: IFlatRule[],
+): IRule[] {
+  const toRule = ({
+    parentId: _parentId,
+    parentType: _parentType,
+    ...rule
+  }: IFlatRule) => stripTemporaryID(rule);
+
+  return rules
+    .filter((r) => r.parentType === parentType && r.parentId === parentId)
+    .map(toRule);
 }

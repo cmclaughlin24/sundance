@@ -76,16 +76,19 @@ export const FormBuilderDragProvider: React.FC<React.PropsWithChildren<{}>> =
       <FormBuilderDragContext value={activeDragData}>
         <DragDropProvider
           onDragStart={(event) =>
-            setActiveDragData(event.operation.source?.data as BuilderDragEventData)
+            setActiveDragData(
+              event.operation.source?.data as BuilderDragEventData,
+            )
           }
           onDragEnd={(event) => {
             setActiveDragData(null);
 
-            if (event.canceled) {
+            const { source, target } = event.operation;
+
+            if (event.canceled || !target) {
               return;
             }
 
-            const { source, target } = event.operation;
             const dragData = source?.data as BuilderDragEventData;
             const dropData = target?.data as FormDropEventData;
 

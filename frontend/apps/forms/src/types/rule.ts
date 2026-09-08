@@ -38,3 +38,10 @@ export interface IRuleState {
   readonly: boolean;
   visible: boolean;
 }
+
+export type RuleParentType = "element" | "section" | "page";
+
+export interface IFlatRule extends IRule {
+  parentId?: string;
+  parentType?: RuleParentType;
+}
