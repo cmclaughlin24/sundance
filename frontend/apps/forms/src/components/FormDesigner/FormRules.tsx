@@ -5,7 +5,7 @@ import { ToolboxPanel } from "./panels/ToolboxPanel/ToolboxPanel";
 import { CanvasPanel } from "./panels/CanvasPanel/CanvasPanel";
 import { FORM_RULES_PALETTE } from "./panels/ToolboxPanel/constants/formRulesPalette";
 import type { IPaletteCategory } from "./panels/ToolboxPanel/palette";
-import { RuleList } from "./panels/CanvasPanel/lists/RuleList";
+import { RuleList } from "./panels/CanvasPanel/lists/RuleList/RuleList";
 import { FormRuleDragProvider } from "./providers/FormRuleDragProvider";
 import type { RuleItemDragType } from "./types/formDragEvent";
 import type { RuleType } from "@/types/rule";

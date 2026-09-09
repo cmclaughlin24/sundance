@@ -7,7 +7,7 @@ import { useDroppable } from "@dnd-kit/react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, motion, type Variants } from "motion/react";
 import * as ArrayUtils from "@/utils/array";
 import { RuleItem } from "./RuleItem";
 
@@ -17,13 +17,21 @@ const styles: Styles = {
     p: 0,
     display: "flex",
     flexDirection: "column",
-    gap: 1.5,
     width: "100%",
+    "> *": {
+      mb: 1.5,
+    },
   },
   instructionCard: {
     borderRadius: "10px",
     p: 2.5,
   },
+};
+
+const variants: Variants = {
+  initial: { opacity: 0, height: 0, marginBottom: 0 },
+  animate: { opacity: 1, height: "auto", marginBottom: "0.75rem" },
+  exit: { opacity: 0, height: 0, marginBottom: 0 },
 };
 
 export interface RuleListProps {
@@ -42,7 +50,20 @@ export const RuleList: React.FC<RuleListProps> = function ({ rules }) {
   let content = !ArrayUtils.hasLengthGreaterThan(rules, 0) ? (
     <RuleInstructionCard key="instruction-card" />
   ) : (
-    rules.map((rule) => <RuleItem rule={rule} key={rule.id} />)
+    rules.map((rule) => (
+      <Box
+        component={motion.li}
+        variants={variants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        transition={{ type: "spring", bounce: 0, duration: 0.3 }}
+        sx={{ listStyle: "none" }}
+        key={rule.id}
+      >
+        <RuleItem rule={rule} key={rule.id} />
+      </Box>
+    ))
   );
 
   return (
