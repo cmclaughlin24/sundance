@@ -7,6 +7,7 @@ import type { SelectedItem } from "@/store/formDesigner";
 import type { FormVersionRequest } from "@/services/formService.type";
 import type { IFlatRule, IRule, RuleParentType } from "@/types/rule";
 import { stripTemporaryID } from "./id";
+import type { ISection } from "@/types/section";
 
 /**
  * Returns a flat array of all elements across every page and section of the given form version.
@@ -105,7 +106,6 @@ export function findSelectedById(
   return null;
 }
 
-
 export function versionToRequest(
   version: IFormVersion,
   rules: IFlatRule[],
@@ -140,4 +140,40 @@ function setRules(
   return rules
     .filter((r) => r.parentType === parentType && r.parentId === parentId)
     .map(toRule);
+}
+
+export function groupFormObjects(pages: IPage[]) {
+  const objects: {
+    pages: IPage[];
+    sections: ISection[];
+    elements: IElement[];
+  } = {
+    pages: [],
+    sections: [],
+    elements: [],
+  };
+
+  for (const page of pages) {
+    for (const section of page.sections) {
+      for (const element of section.elements) {
+        objects.elements.push(element);
+      }
+      objects.sections.push(section);
+    }
+    objects.pages.push(page);
+  }
+
+  return objects;
+}
+
+/**
+ * Returns a flat array of all elements across every page and section of the given pages.
+ *
+ * @param pages - The pages whose elements should be collected.
+ * @returns A flat array of all `IElement` instances.
+ */
+export function getFlattenedElements(pages: IPage[]): IElement[] {
+  return pages.flatMap((page) =>
+    (page.sections ?? []).flatMap((section) => section.elements ?? []),
+  );
 }

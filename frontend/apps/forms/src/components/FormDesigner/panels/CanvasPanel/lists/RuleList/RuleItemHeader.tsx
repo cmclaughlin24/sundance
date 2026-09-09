@@ -1,3 +1,4 @@
+import type { RuleType } from "@/types/rule";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 import ContentCopy from "@mui/icons-material/ContentCopy";
 import Delete from "@mui/icons-material/Delete";
@@ -10,18 +11,31 @@ import { Tag } from "@/components/Tag";
 import Tooltip from "@mui/material/Tooltip";
 import IconButton from "@mui/material/IconButton";
 import Snackbar from "@mui/material/Snackbar";
+import { mergeSx } from "merge-sx";
 
 export interface RuleItemHeaderProps {
   id: string;
   isCollapsed: boolean;
+  ruleType?: RuleType;
+  title?: string;
+  conditionCount?: number;
   onCollapse: (isCollapsed: boolean) => void;
   onCopy: () => void;
   onDelete: () => void;
 }
 
+const ruleTypeLabels: Record<RuleType, string> = {
+  required: "Required",
+  visible: "Visible",
+  readonly: "Read Only",
+};
+
 export const RuleItemHeader: React.FC<RuleItemHeaderProps> = function ({
   id,
   isCollapsed,
+  ruleType = "required",
+  title,
+  conditionCount,
   onCollapse,
   onCopy,
   onDelete,
@@ -49,7 +63,7 @@ export const RuleItemHeader: React.FC<RuleItemHeaderProps> = function ({
         sx={ruleItemHeaderStyles.ruleItemHeader}
         data-testid="rule-item-header"
       >
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <Box sx={ruleItemHeaderStyles.titleContainer}>
           <Box
             sx={ruleItemHeaderStyles.toggle}
             onClick={handleToggle}
@@ -66,9 +80,18 @@ export const RuleItemHeader: React.FC<RuleItemHeaderProps> = function ({
               transition={{ type: "spring", bounce: 0.6, duration: 0.4 }}
               aria-hidden="true"
             />
-            <Typography>Rule</Typography>
+            <Typography sx={ruleItemHeaderStyles.titleText}>
+              {title || "Rule"}
+            </Typography>
           </Box>
-          <Tag sx={{ alignSelf: "start" }}>Required</Tag>
+          <Tag sx={mergeSx(ruleItemHeaderStyles.tag)}>
+            {ruleTypeLabels[ruleType]}
+          </Tag>
+          {isCollapsed && conditionCount !== undefined && (
+            <Typography variant="caption" sx={{ color: "text.secondary" }}>
+              • {conditionCount} condition{conditionCount === 1 ? "" : "s"}
+            </Typography>
+          )}
         </Box>
         <Box>
           <Tooltip title="Copy">

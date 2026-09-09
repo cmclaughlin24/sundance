@@ -1,30 +1,31 @@
-import { useFormDesignerDispatch } from "@/store/formDesigner";
+import {
+  useFormDesignerDispatch,
+  useFormPagesSnapshot,
+} from "@/store/formDesigner";
 import { ClipboardEventType, type RuleClipboardData } from "@/types/clipboard";
-import type { IRule } from "@/types/rule";
+import type { IFlatRule, IRule } from "@/types/rule";
 import Card from "@mui/material/Card";
 import { useId, useState } from "react";
 import { RuleItemHeader } from "./RuleItemHeader";
 import { AnimatePresence, motion } from "motion/react";
 import Box from "@mui/material/Box";
-import type { Styles } from "@/types/styles";
+import { ruleItemStyles } from "./RuleItem.style";
+import { RuleActionSection } from "./sections/RuleActionSection";
+import { RuleConditionsSection } from "./sections/RuleConditionsSection";
+import { findSelectedById } from "@/utils/form";
+import type { IPage } from "@/types/page";
 
-const styles: Styles = {
-  ruleItem: {
-    borderRadius: "10px",
-    p: 2.5,
-  },
-  content: {
-    overflow: "hidden",
-    display: "flex",
-    flexDirection: "column",
-    gap: 2.5,
-  },
-};
+export interface RuleItemProps {
+  rule: IFlatRule | IRule;
+}
 
-export const RuleItem: React.FC<{ rule: IRule }> = function ({ rule }) {
+export const RuleItem: React.FC<RuleItemProps> = function ({ rule: rawRule }) {
+  const rule = rawRule as IFlatRule;
+  const pages = useFormPagesSnapshot();
   const { dispatch } = useFormDesignerDispatch();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const contentId = useId();
+  const headerTitle = createRuleTitle(rule, pages);
 
   const handleCopy = () => {
     const data: RuleClipboardData = { type: ClipboardEventType.CopyRule, rule };
@@ -33,11 +34,32 @@ export const RuleItem: React.FC<{ rule: IRule }> = function ({ rule }) {
 
   const handleDelete = () => dispatch({ type: "RemoveRule", id: rule.id });
 
+  const handleActionChange = (
+    changes: Partial<Pick<IFlatRule, "parentType" | "parentId">>,
+  ) => {
+    dispatch({
+      type: "UpdateRule",
+      id: rule.id,
+      changes,
+    });
+  };
+
+  const handleConditionsChange = (expressions: IFlatRule["expressions"]) => {
+    dispatch({
+      type: "UpdateRule",
+      id: rule.id,
+      changes: { expressions },
+    });
+  };
+
   return (
-    <Card sx={styles.ruleItem}>
+    <Card sx={ruleItemStyles.ruleItem}>
       <RuleItemHeader
         id={contentId}
         isCollapsed={isCollapsed}
+        ruleType={rule.type}
+        title={headerTitle}
+        conditionCount={rule.expressions?.length ?? 0}
         onCollapse={(value) => setIsCollapsed(value)}
         onCopy={handleCopy}
         onDelete={handleDelete}
@@ -52,10 +74,37 @@ export const RuleItem: React.FC<{ rule: IRule }> = function ({ rule }) {
             animate={{ height: "auto", opacity: 1, marginTop: "1.25rem" }}
             exit={{ height: 0, opacity: 0, marginTop: 0 }}
             transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-            sx={styles.content}
-          ></Box>
+            sx={ruleItemStyles.content}
+          >
+            <RuleActionSection
+              rule={rule}
+              pages={pages}
+              onChange={handleActionChange}
+            />
+            <RuleConditionsSection
+              expressions={rule.expressions}
+              pages={pages}
+              onChange={handleConditionsChange}
+            />
+          </Box>
         )}
       </AnimatePresence>
     </Card>
   );
 };
+
+function createRuleTitle(rule: IFlatRule, pages: IPage[]): string | undefined {
+  const targetItem = rule.parentId
+    ? findSelectedById(pages, rule.parentId)
+    : null;
+
+  if (!targetItem) {
+    return undefined;
+  }
+
+  const targetName = targetItem.item.name || targetItem.item.key;
+  const targetTypeLabel =
+    targetItem.type.charAt(0).toUpperCase() + targetItem.type.slice(1);
+
+  return targetName ? `${targetName} (${targetTypeLabel})` : undefined;
+}

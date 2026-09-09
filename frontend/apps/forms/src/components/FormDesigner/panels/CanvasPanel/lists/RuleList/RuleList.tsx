@@ -1,7 +1,7 @@
 import { DropZoneIndicator } from "@/components/DragDrop/DropZoneIndicator";
 import { useFormRuleDragData } from "@/components/FormDesigner/providers/FormRuleDragProvider";
 import { RuleItemDragType } from "@/components/FormDesigner/types/formDragEvent";
-import type { IRule } from "@/types/rule";
+import type { IFlatRule, IRule } from "@/types/rule";
 import type { Styles } from "@/types/styles";
 import { useDroppable } from "@dnd-kit/react";
 import Box from "@mui/material/Box";
@@ -35,7 +35,7 @@ const variants: Variants = {
 };
 
 export interface RuleListProps {
-  rules: IRule[];
+  rules: (IFlatRule | IRule)[];
 }
 
 export const RuleList: React.FC<RuleListProps> = function ({ rules }) {
@@ -47,7 +47,7 @@ export const RuleList: React.FC<RuleListProps> = function ({ rules }) {
     data: {},
   });
 
-  let content = !ArrayUtils.hasLengthGreaterThan(rules, 0) ? (
+  const content = !ArrayUtils.hasLengthGreaterThan(rules, 0) ? (
     <RuleInstructionCard key="instruction-card" />
   ) : (
     rules.map((rule) => (
