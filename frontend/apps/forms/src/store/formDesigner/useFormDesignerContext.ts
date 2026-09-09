@@ -25,7 +25,7 @@ export function useFormDesignerDispatch() {
   );
 }
 
-export function useFormDesignerUndo() {
+export function useFormDesignerHistory() {
   const store = useFormDesignerContext();
   return useStore(
     store,

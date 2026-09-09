@@ -1,7 +1,7 @@
 import { Panel } from "@/components/layout/Panel";
 import { canvasPanelStyles } from "./CanvasPanel.style";
 import {
-  useFormDesignerUndo,
+  useFormDesignerHistory,
   useFormPagesSnapshot,
 } from "@/store/formDesigner";
 import { FormSummary } from "../../common/FormSummary";
@@ -15,7 +15,7 @@ import ContentCopy from "@mui/icons-material/ContentCopy";
 export const CanvasPanel: React.FC<
   React.PropsWithChildren<{ onCopy?: () => void }>
 > = function ({ children, onCopy }) {
-  const { undo, redo } = useFormDesignerUndo();
+  const { undo, redo } = useFormDesignerHistory();
   const pages = useFormPagesSnapshot();
 
   return (

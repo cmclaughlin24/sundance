@@ -1,6 +1,6 @@
 import {
   useFormDesignerDispatch,
-  useFormDesignerUndo,
+  useFormDesignerHistory,
   useFormPagesSnapshot,
   type SelectedItem,
 } from "@/store/formDesigner";
@@ -40,7 +40,7 @@ const styles: Styles = {
 
 export const BuilderContextMenu: React.FC<{ target: SelectedItem }> =
   function ({ target }) {
-    const { undo, redo } = useFormDesignerUndo();
+    const { undo, redo } = useFormDesignerHistory();
     const { dispatch } = useFormDesignerDispatch();
     const { close } = useContextMenuDispatch();
     const pages = useFormPagesSnapshot();

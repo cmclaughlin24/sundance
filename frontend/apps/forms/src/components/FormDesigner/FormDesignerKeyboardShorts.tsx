@@ -1,7 +1,7 @@
 import {
   useFormDesignerDispatch,
   useFormDesignerSelect,
-  useFormDesignerUndo,
+  useFormDesignerHistory,
   useFormPagesSnapshot,
 } from "@/store/formDesigner";
 import type {
@@ -26,7 +26,7 @@ export const FormDesignerKeyboardShortcuts: React.FC<
   React.PropsWithChildren<{}>
 > = function ({ children }) {
   const pages = useFormPagesSnapshot();
-  const { undo, redo } = useFormDesignerUndo();
+  const { undo, redo } = useFormDesignerHistory();
   const { dispatch } = useFormDesignerDispatch();
   const { selected } = useFormDesignerSelect();
 
