@@ -84,16 +84,16 @@ export const RuleItemHeader: React.FC<RuleItemHeaderProps> = function ({
               {title || "Rule"}
             </Typography>
           </Box>
-          <Tag sx={mergeSx(ruleItemHeaderStyles.tag)}>
-            {ruleTypeLabels[ruleType]}
-          </Tag>
           {isCollapsed && conditionCount !== undefined && (
             <Typography variant="caption" sx={{ color: "text.secondary" }}>
               • {conditionCount} condition{conditionCount === 1 ? "" : "s"}
             </Typography>
           )}
         </Box>
-        <Box>
+        <Box sx={ruleItemHeaderStyles.toolbar}>
+          <Tag sx={mergeSx(ruleItemHeaderStyles.tag)}>
+            {ruleTypeLabels[ruleType]}
+          </Tag>
           <Tooltip title="Copy">
             <IconButton
               size="small"

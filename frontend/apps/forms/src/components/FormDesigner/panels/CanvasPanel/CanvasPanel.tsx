@@ -1,9 +1,6 @@
 import { Panel } from "@/components/layout/Panel";
 import { canvasPanelStyles } from "./CanvasPanel.style";
-import {
-  useFormDesignerHistory,
-  useFormPagesSnapshot,
-} from "@/store/formDesigner";
+import { useFormDesignerHistory, useFormSnapshot } from "@/store/formDesigner";
 import { FormSummary } from "../../common/FormSummary";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
@@ -11,17 +8,21 @@ import RedoIcon from "@mui/icons-material/Redo";
 import UndoIcon from "@mui/icons-material/Undo";
 import Tooltip from "@mui/material/Tooltip";
 import ContentCopy from "@mui/icons-material/ContentCopy";
+import type { MouseEventHandler } from "react";
 
 export const CanvasPanel: React.FC<
-  React.PropsWithChildren<{ onCopy?: () => void }>
-> = function ({ children, onCopy }) {
+  React.PropsWithChildren<{
+    onCopy?: () => void;
+    onContextMenu?: MouseEventHandler<HTMLDivElement>;
+  }>
+> = function ({ children, onCopy, onContextMenu }) {
   const { undo, redo } = useFormDesignerHistory();
-  const pages = useFormPagesSnapshot();
+  const { version, rules } = useFormSnapshot();
 
   return (
-    <Panel sx={canvasPanelStyles.canvas}>
+    <Panel sx={canvasPanelStyles.canvas} onContextMenu={onContextMenu}>
       <Box sx={canvasPanelStyles.toolbar}>
-        <FormSummary pages={pages} />
+        <FormSummary pages={version.pages} rules={rules} />
         <Box sx={canvasPanelStyles.buttons}>
           <Tooltip title="Undo">
             <IconButton

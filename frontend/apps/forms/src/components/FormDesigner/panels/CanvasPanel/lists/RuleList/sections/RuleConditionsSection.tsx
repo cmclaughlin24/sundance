@@ -57,13 +57,7 @@ export const RuleConditionsSection: React.FC<RuleConditionsSectionProps> =
 
     return (
       <RuleSectionCard title="Conditions">
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
+        <Box sx={ruleConditionsSectionStyles.content}>
           {sorted.length === 0 ? (
             <Typography sx={ruleConditionsSectionStyles.emptyState}>
               No conditions defined. This rule will always apply.
@@ -85,7 +79,6 @@ export const RuleConditionsSection: React.FC<RuleConditionsSectionProps> =
           <Button
             startIcon={<Add />}
             variant="outlined"
-            size="small"
             onClick={handleAddCondition}
             sx={ruleConditionsSectionStyles.addButton}
           >

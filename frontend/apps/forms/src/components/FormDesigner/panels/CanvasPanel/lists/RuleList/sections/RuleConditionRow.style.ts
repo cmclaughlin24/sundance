@@ -1,3 +1,4 @@
+import { Border } from "@/constants/colors";
 import type { Styles } from "@/types/styles";
 
 export const ruleConditionRowStyles: Styles = {
@@ -6,6 +7,10 @@ export const ruleConditionRowStyles: Styles = {
     alignItems: "center",
     flexWrap: "wrap",
     gap: 1.25,
+    borderRadius: 2.5,
+    border: `1px dashed ${Border.Primary}`,
+    px: 1,
+    py: 1.25,
   },
   joinOpSelect: {
     minWidth: "85px",

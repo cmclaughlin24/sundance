@@ -2,6 +2,7 @@ import type { IPage } from "@/types/page";
 import Typography from "@mui/material/Typography";
 import * as ArrayUtils from "@/utils/array";
 import type { Styles } from "@/types/styles";
+import type { IFlatRule } from "@/types/rule";
 
 const styles: Styles = {
   title: {
@@ -15,37 +16,32 @@ const styles: Styles = {
   },
 };
 
-export const FormSummary: React.FC<{ pages: IPage[] }> = function ({ pages }) {
-  const { fields, rules } = getCount(pages);
+export const FormSummary: React.FC<{ pages: IPage[]; rules: IFlatRule[] }> =
+  function ({ pages, rules }) {
+    const fields = getFieldCount(pages);
 
-  return (
-    <Typography sx={styles.title}>
-      <Typography component="span" sx={styles.bold}>
-        Form Layout:{" "}
+    return (
+      <Typography sx={styles.title}>
+        <Typography component="span" sx={styles.bold}>
+          Form Layout:{" "}
+        </Typography>
+        {fields} fields · {rules?.length ?? 0} rules
       </Typography>
-      {fields} fields · {rules} rules
-    </Typography>
-  );
-};
+    );
+  };
 
-function getCount(pages: IPage[]): { fields: number; rules: number } {
+function getFieldCount(pages: IPage[]): number {
   let fields: number = 0;
-  let rules: number = 0;
 
   if (!ArrayUtils.hasLengthGreaterThan(pages, 0)) {
-    return { fields, rules };
+    return fields;
   }
 
   for (const page of pages) {
     for (const section of page.sections) {
-      for (const element of section.elements) {
-        fields++;
-        rules += element.rules.length;
-      }
-      rules += section.rules.length;
+      fields += section.elements?.length ?? 0;
     }
-    rules += page.rules.length;
   }
 
-  return { fields, rules };
+  return fields;
 }

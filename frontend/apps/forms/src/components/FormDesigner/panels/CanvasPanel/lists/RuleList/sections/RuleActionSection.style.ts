@@ -22,7 +22,6 @@ export const ruleActionSectionStyles: Styles = {
     gap: 1.5,
   },
   actionText: {
-    fontWeight: 500,
     fontSize: "0.9rem",
     color: "text.secondary",
   },

@@ -25,11 +25,12 @@ export const ruleItemHeaderStyles: Styles = {
     fontWeight: 600,
     lineHeight: 1.2,
   },
+  toolbar: {
+    display: "flex",
+    gap: 1,
+  },
   tag: {
     alignSelf: "center",
-    fontWeight: 600,
-    fontSize: "0.75rem",
-    letterSpacing: "0.02em",
     px: 1,
     py: 0.25,
     color: "white",
