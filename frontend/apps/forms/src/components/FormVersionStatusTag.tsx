@@ -9,7 +9,6 @@ const styles: Styles = {
     fontWeight: 600,
     px: 1,
     py: 0.5,
-    textTransform: "capitalize",
   },
   draft: (theme) => ({
     color: theme.palette.primary.main,
@@ -25,9 +24,21 @@ const styles: Styles = {
   }),
 };
 
+const versionStatusLabels: Readonly<Record<FormVersionStatus, string>> = {
+  draft: "Draft",
+  active: "Published",
+  retired: "Retired",
+};
+
 export const FormVersionTag: React.FC<{
   status: FormVersionStatus;
-  text: string;
-}> = function ({ status, text }) {
+  version?: number;
+}> = function ({ status, version }) {
+  let text = versionStatusLabels[status];
+
+  if (version != null) {
+    text += ` v${version}`;
+  }
+
   return <Tag sx={mergeSx(styles.base, styles[status])}>{text}</Tag>;
 };

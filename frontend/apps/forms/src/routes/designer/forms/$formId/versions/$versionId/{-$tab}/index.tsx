@@ -12,12 +12,28 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { formDesignerPageStyles } from "./-index.style";
 import Button from "@mui/material/Button";
 import type { DefaultRequestOptions } from "@/services/baseHttpService";
-import { FormDesignerProvider } from "@/store/formDesigner";
+import { FormDesignerProvider, useFormSnapshot } from "@/store/formDesigner";
 import { FormBuilder } from "@/components/FormDesigner/FormBuilder";
 import { FormVersionTag } from "@/components/FormVersionStatusTag";
 import { FormRules } from "@/components/FormDesigner/FormRules";
 
 const token = "placeholder";
+
+export const Route = createFileRoute(
+  "/designer/forms/$formId/versions/$versionId/{-$tab}/",
+)({
+  component: RouteComponent,
+  loader: async (context) => {
+    const options: DefaultRequestOptions = { tenantId: TENANT_ID, token };
+    const service = resolveHttpService(FormsService);
+    const [form, versions] = await Promise.all([
+      service.getForm(context.params.formId, options),
+      service.getFormVersions(context.params.formId, options),
+    ]);
+
+    return { form, versions };
+  },
+});
 
 enum FormDesignerTab {
   Build = "build",
@@ -35,34 +51,38 @@ const TAB_ORDER = [
   FormDesignerTab.Settings,
 ];
 
-export const Route = createFileRoute("/designer/forms/$formId/{-$tab}/")({
-  component: RouteComponent,
-  loader: async (context) => {
-    const options: DefaultRequestOptions = { tenantId: TENANT_ID, token };
-    const service = resolveHttpService(FormsService);
-    const [form, versions] = await Promise.all([
-      service.getForm(context.params.formId, options),
-      service.getFormVersions(context.params.formId, options),
-    ]);
-
-    return { form, versions };
-  },
-});
-
 function RouteComponent() {
-  const navigate = useNavigate();
-  const { formId, tab = FormDesignerTab.Build } = Route.useParams();
   const { form, versions } = Route.useLoaderData();
+  const { formId, versionId, tab } = Route.useParams();
+  const navigate = useNavigate();
+
+  const handleTabChange = (tab: FormDesignerTab) => {
+    navigate({
+      to: "/designer/forms/$formId/versions/$versionId/{-$tab}",
+      params: { formId, versionId, tab },
+    });
+  };
+
+  return (
+    <FormDesignerProvider form={form} version={versions[0]}>
+      <PageComponent
+        tab={tab as FormDesignerTab}
+        onTabChange={handleTabChange}
+      />
+    </FormDesignerProvider>
+  );
+}
+
+const PageComponent: React.FC<{
+  tab?: FormDesignerTab;
+  onTabChange: (tab: FormDesignerTab) => void;
+}> = function ({ tab = FormDesignerTab.Build, onTabChange }) {
+  const { form, version } = useFormSnapshot();
 
   const handleTabChange = (
     _event: React.SyntheticEvent,
     tab: FormDesignerTab,
-  ) => {
-    navigate({
-      to: "/designer/forms/$formId/{-$tab}",
-      params: { formId, tab },
-    });
-  };
+  ) => onTabChange(tab);
 
   return (
     <Page sx={formDesignerPageStyles.page}>
@@ -70,8 +90,8 @@ function RouteComponent() {
         <Box sx={formDesignerPageStyles.headerTitle}>
           <PageTitle name={form.name} description={form.description} />
           <Box sx={formDesignerPageStyles.headerIcons}>
-            <FormVersionTag status="draft" text="Draft v2" />
-            <FormVersionTag status="active" text="Active v1" />
+            <FormVersionTag status={version.status} version={version.version} />
+            <FormVersionTag status="active" />
           </Box>
         </Box>
         <Box sx={formDesignerPageStyles.headerActions}>
@@ -89,21 +109,19 @@ function RouteComponent() {
           <Tab label="Settings" value={FormDesignerTab.Settings} />
         </Tabs>
       </Box>
-      <FormDesignerProvider form={form} version={versions[0]}>
-        <TabPanelGroup active={tab} order={TAB_ORDER} sx={{ flex: 1 }}>
-          <TabPanel value={FormDesignerTab.Build}>
-            <FormBuilder />
-          </TabPanel>
-          <TabPanel value={FormDesignerTab.Rules}>
-            <FormRules />
-          </TabPanel>
-          <TabPanel value={FormDesignerTab.DataSources}>
-            Reference Data Tab
-          </TabPanel>
-          <TabPanel value={FormDesignerTab.Versions}>Versions Tab</TabPanel>
-          <TabPanel value={FormDesignerTab.Settings}>Settings Tab</TabPanel>
-        </TabPanelGroup>
-      </FormDesignerProvider>
+      <TabPanelGroup active={tab} order={TAB_ORDER} sx={{ flex: 1 }}>
+        <TabPanel value={FormDesignerTab.Build}>
+          <FormBuilder />
+        </TabPanel>
+        <TabPanel value={FormDesignerTab.Rules}>
+          <FormRules />
+        </TabPanel>
+        <TabPanel value={FormDesignerTab.DataSources}>
+          Reference Data Tab
+        </TabPanel>
+        <TabPanel value={FormDesignerTab.Versions}>Versions Tab</TabPanel>
+        <TabPanel value={FormDesignerTab.Settings}>Settings Tab</TabPanel>
+      </TabPanelGroup>
     </Page>
   );
-}
+};

@@ -1,5 +1,5 @@
 import { Page } from "@/components/layout/Page/Page";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { designerStyles } from "./-index.styles";
 import { PageTitle } from "@/components/layout/Page/PageTitle";
 import Box from "@mui/material/Box";
@@ -17,6 +17,7 @@ export const Route = createFileRoute("/designer/forms/")({
 
 function DesignerRouteComponent() {
   const formsService = useFormsService();
+  const navigate = useNavigate();
 
   const { data, isLoading, error } = useAsyncData(
     async (accessToken) => {
@@ -37,7 +38,10 @@ function DesignerRouteComponent() {
   };
 
   const handleFormClick = (form: IForm) => {
-    console.log(form);
+    navigate({
+      to: "/designer/forms/$formId",
+      params: { formId: form.id },
+    });
   };
 
   const handleNewClick = () => {
