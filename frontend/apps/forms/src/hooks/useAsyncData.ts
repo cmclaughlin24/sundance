@@ -1,4 +1,4 @@
-import { useEffect, useState, type DependencyList } from "react";
+import { useCallback, useEffect, useState, type DependencyList } from "react";
 
 /**
  * `resolveHttpService` returns an instance of the specified HTTP service class. It checks the `instanceCache`
@@ -11,12 +11,15 @@ import { useEffect, useState, type DependencyList } from "react";
  */
 export function useAsyncData<T>(
   operation: (token: string) => Promise<T>,
-  deps?: DependencyList,
+  deps: DependencyList = [],
 ) {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const [reload, setReload] = useState(0);
   const token = "placeholder";
+
+  const refetch = useCallback(() => setReload((i) => i + 1), []);
 
   useEffect(() => {
     let isCancelled = false;
@@ -51,7 +54,7 @@ export function useAsyncData<T>(
     return () => {
       isCancelled = true;
     };
-  }, deps);
+  }, [...deps, reload]);
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, refetch };
 }

@@ -130,4 +130,46 @@ export class FormsService extends BaseHttpService {
 
     return resp.data;
   }
+
+  /**
+   * Publishes a form version.
+   * @param formId The ID of the form.
+   * @param versionId The ID of the version.
+   * @param options The default request options.
+   * @returns A promise that resolves to a form version.
+   */
+  async publishFormVersion(
+    formId: string,
+    versionId: string,
+    options: DefaultRequestOptions,
+  ): Promise<IFormVersion> {
+    const resp = await this._post<null, IFormVersion>(
+      `/api/v1/forms/${formId}/versions/${versionId}/publish`,
+      null,
+      options,
+    );
+
+    return resp.data;
+  }
+
+  /**
+   * Retire a form version.
+   * @param formId The ID of the form.
+   * @param versionId The ID of the version.
+   * @param options The default request options.
+   * @returns A promise that resolves to a form version.
+   */
+  async retireFormVersion(
+    formId: string,
+    versionId: string,
+    options: DefaultRequestOptions,
+  ): Promise<IFormVersion> {
+    const resp = await this._post<null, IFormVersion>(
+      `/api/v1/forms/${formId}/versions/${versionId}/retire`,
+      null,
+      options,
+    );
+
+    return resp.data;
+  }
 }

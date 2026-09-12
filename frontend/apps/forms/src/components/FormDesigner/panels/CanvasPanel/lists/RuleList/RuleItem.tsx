@@ -5,7 +5,7 @@ import {
 import { ClipboardEventType, type RuleClipboardData } from "@/types/clipboard";
 import type { IFlatRule, IRule } from "@/types/rule";
 import Card from "@mui/material/Card";
-import { useId, useState } from "react";
+import { useId, useState, type MouseEventHandler } from "react";
 import { RuleItemHeader } from "./RuleItemHeader";
 import { AnimatePresence, motion } from "motion/react";
 import Box from "@mui/material/Box";
@@ -14,6 +14,7 @@ import { RuleActionSection } from "./sections/RuleActionSection";
 import { RuleConditionsSection } from "./sections/RuleConditionsSection";
 import { findSelectedById } from "@/utils/form";
 import type { IPage } from "@/types/page";
+import { useContextMenuDispatch } from "@/components/ContextMenu";
 
 export interface RuleItemProps {
   rule: IFlatRule | IRule;
@@ -23,6 +24,7 @@ export const RuleItem: React.FC<RuleItemProps> = function ({ rule: rawRule }) {
   const rule = rawRule as IFlatRule;
   const pages = useFormPagesSnapshot();
   const { dispatch } = useFormDesignerDispatch();
+  const { open } = useContextMenuDispatch();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const contentId = useId();
   const headerTitle = createRuleTitle(rule, pages);
@@ -52,8 +54,14 @@ export const RuleItem: React.FC<RuleItemProps> = function ({ rule: rawRule }) {
     });
   };
 
+  const handleContext: MouseEventHandler<HTMLDivElement> = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    open({ position: { x: event.clientX, y: event.clientY }, data: rule });
+  };
+
   return (
-    <Card sx={ruleItemStyles.ruleItem}>
+    <Card sx={ruleItemStyles.ruleItem} onContextMenu={handleContext}>
       <RuleItemHeader
         id={contentId}
         isCollapsed={isCollapsed}

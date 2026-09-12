@@ -5,8 +5,7 @@ import { CanvasPanel } from "./panels/CanvasPanel/CanvasPanel";
 import { ObjectSettingsPanel } from "./panels/ObjectSettingsPanel/ObjectSettingsPanel";
 import { Border } from "@/constants/colors";
 import { FormBuilderDragProvider } from "./providers/FormBuilderDragProvider";
-import { KeyboardShortcutProvider } from "@/store/keyboardShortcut/KeyboardShortcutProvider";
-import { FormDesignerKeyboardShortcuts } from "./FormDesignerKeyboardShorts";
+import { BuilderKeyboardShortcuts } from "./providers/BuilderKeyboardShortcuts";
 import { ContextMenu, ContextMenuProvider } from "../ContextMenu";
 import { FORMS_HUB_PORTAL_REF } from "@/constants/portalRef";
 import { useFormPagesSnapshot, type SelectedItem } from "@/store/formDesigner";
@@ -36,40 +35,38 @@ export const FormBuilder: React.FC<FormDesignerProps> = function () {
   };
 
   return (
-    <KeyboardShortcutProvider>
+    <BuilderKeyboardShortcuts>
       <ContextMenuProvider>
         <FormBuilderDragProvider>
-          <FormDesignerKeyboardShortcuts>
-            <Box sx={formBuilderStyles.container}>
-              <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
-                <ToolboxPanel
-                  palette={
-                    FORM_OBJECT_PALETTE as IPaletteCategory<
-                      FormObjectItemType,
-                      BuilderItemDragType
-                    >[]
-                  }
-                  helpText="Drag the form elements into the preferred section on the canvas."
-                />
-              </Box>
-              <CanvasPanel onCopy={handleCopy}>
-                <PageList pages={pages} />
-              </CanvasPanel>
-              <Box sx={{ borderLeft: `1px solid ${Border.Primary}` }}>
-                <ObjectSettingsPanel />
-              </Box>
+          <Box sx={formBuilderStyles.container}>
+            <Box sx={{ borderRight: `1px solid ${Border.Primary}` }}>
+              <ToolboxPanel
+                palette={
+                  FORM_OBJECT_PALETTE as IPaletteCategory<
+                    FormObjectItemType,
+                    BuilderItemDragType
+                  >[]
+                }
+                helpText="Drag the form elements into the preferred section on the canvas."
+              />
             </Box>
-            <ContextMenu
-              container={document.getElementById(FORMS_HUB_PORTAL_REF)!}
-            >
-              {(data: unknown) => {
-                const target = data as SelectedItem;
-                return <BuilderContextMenu target={target} />;
-              }}
-            </ContextMenu>
-          </FormDesignerKeyboardShortcuts>
+            <CanvasPanel onCopy={handleCopy}>
+              <PageList pages={pages} />
+            </CanvasPanel>
+            <Box sx={{ borderLeft: `1px solid ${Border.Primary}` }}>
+              <ObjectSettingsPanel />
+            </Box>
+          </Box>
+          <ContextMenu
+            container={document.getElementById(FORMS_HUB_PORTAL_REF)!}
+          >
+            {(data: unknown) => {
+              const target = data as SelectedItem;
+              return <BuilderContextMenu target={target} />;
+            }}
+          </ContextMenu>
         </FormBuilderDragProvider>
       </ContextMenuProvider>
-    </KeyboardShortcutProvider>
+    </BuilderKeyboardShortcuts>
   );
 };

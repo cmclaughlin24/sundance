@@ -1,12 +1,12 @@
 import type { IElement } from "@/types/element";
-import type { IFormVersion } from "@/types/formVersion";
+import type { FormVersionStatus, IFormVersion } from "@/types/formVersion";
 import type { ISubmissionValue } from "@/types/submission";
 import type { IFormProgress } from "./progress";
 import type { IPage } from "@/types/page";
 import type { SelectedItem } from "@/store/formDesigner";
 import type { FormVersionRequest } from "@/services/formService.type";
 import type { IFlatRule, IRule, RuleParentType } from "@/types/rule";
-import { stripTemporaryID } from "./id";
+import { stripID, stripTemporaryID } from "./id";
 import type { ISection } from "@/types/section";
 
 /**
@@ -126,6 +126,18 @@ export function versionToRequest(
   return { metadata: {}, pages };
 }
 
+export function copyVersion(version: IFormVersion): FormVersionRequest {
+  const pages = version.pages.map((page) => ({
+    ...stripID(page),
+    sections: page.sections.map((section) => ({
+      ...stripID(section),
+      elements: section.elements.map((element) => stripID(element)),
+    })),
+  }));
+
+  return { metadata: {}, pages };
+}
+
 function setRules(
   parentType: RuleParentType,
   parentId: string,
@@ -140,6 +152,14 @@ function setRules(
   return rules
     .filter((r) => r.parentType === parentType && r.parentId === parentId)
     .map(toRule);
+}
+
+export function isDraftVersion(status: FormVersionStatus): boolean {
+  return status === "draft";
+}
+
+export function isActiveVersion(status: FormVersionStatus): boolean {
+  return status === "active";
 }
 
 export function groupFormObjects(pages: IPage[]) {
@@ -176,4 +196,15 @@ export function getFlattenedElements(pages: IPage[]): IElement[] {
   return pages.flatMap((page) =>
     (page.sections ?? []).flatMap((section) => section.elements ?? []),
   );
+}
+
+/**
+ * Returns a default form version object with empty metadata and pages.
+ * @returns A default `FormVersionRequest` objet with empty metadata and pages.
+ */
+export function defaultFormVersion(): FormVersionRequest {
+  return {
+    metadata: {},
+    pages: [],
+  };
 }

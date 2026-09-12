@@ -11,10 +11,7 @@ const styles: Styles = {
     borderRadius: "10px",
   },
   sectionHeader: {
-    fontSize: "0.75rem",
     fontWeight: 600,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase",
     color: "text.secondary",
   },
 };

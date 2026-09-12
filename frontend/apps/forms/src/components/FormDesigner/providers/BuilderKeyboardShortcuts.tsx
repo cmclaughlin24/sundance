@@ -14,6 +14,7 @@ import type {
   RemoveElementEvent,
   RemoveSectionEvent,
 } from "@/store/formDesigner/events";
+import { KeyboardShortcutProvider } from "@/store/keyboardShortcut/KeyboardShortcutProvider";
 import { useKeyboardShortcut } from "@/store/keyboardShortcut/useKeyboardShortcut";
 import {
   ClipboardEventType,
@@ -22,9 +23,18 @@ import {
   type SectionClipboardData,
 } from "@/types/clipboard";
 
-export const FormDesignerKeyboardShortcuts: React.FC<
-  React.PropsWithChildren<{}>
-> = function ({ children }) {
+export const BuilderKeyboardShortcuts: React.FC<React.PropsWithChildren<{}>> =
+  function ({ children }) {
+    return (
+      <KeyboardShortcutProvider>
+        <Component>{children}</Component>
+      </KeyboardShortcutProvider>
+    );
+  };
+
+const Component: React.FC<React.PropsWithChildren<{}>> = function ({
+  children,
+}) {
   const pages = useFormPagesSnapshot();
   const { undo, redo } = useFormDesignerHistory();
   const { dispatch } = useFormDesignerDispatch();

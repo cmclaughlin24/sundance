@@ -31,7 +31,10 @@ export function useFormDesignerHistory() {
     store,
     useShallow((s) => ({
       undo: s.undo,
+      canUndo: s.cursor !== -1,
       redo: s.redo,
+      canRedo: s.cursor + 1 < s.events.length,
+      commit: s.commit,
     })),
   );
 }

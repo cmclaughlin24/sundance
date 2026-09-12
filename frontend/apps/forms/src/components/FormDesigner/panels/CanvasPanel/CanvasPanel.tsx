@@ -16,7 +16,7 @@ export const CanvasPanel: React.FC<
     onContextMenu?: MouseEventHandler<HTMLDivElement>;
   }>
 > = function ({ children, onCopy, onContextMenu }) {
-  const { undo, redo } = useFormDesignerHistory();
+  const { undo, canUndo, redo, canRedo } = useFormDesignerHistory();
   const { version, rules } = useFormSnapshot();
 
   return (
@@ -30,6 +30,7 @@ export const CanvasPanel: React.FC<
               aria-label="undo"
               data-testid="undo-btn"
               onClick={undo}
+              disabled={!canUndo}
             >
               <UndoIcon fontSize="inherit" />
             </IconButton>
@@ -40,6 +41,7 @@ export const CanvasPanel: React.FC<
               aria-label="redo"
               data-testid="redo-btn"
               onClick={redo}
+              disabled={!canRedo}
             >
               <RedoIcon fontSize="inherit" />
             </IconButton>

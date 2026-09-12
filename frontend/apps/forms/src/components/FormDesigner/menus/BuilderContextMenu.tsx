@@ -2,6 +2,7 @@ import {
   useFormDesignerDispatch,
   useFormDesignerHistory,
   useFormPagesSnapshot,
+  useFormSnapshot,
   type SelectedItem,
 } from "@/store/formDesigner";
 import type {
@@ -26,6 +27,9 @@ import {
   type PagesClipboardData,
   type ClipboardData,
 } from "@/types/clipboard";
+import { isDraftVersion, versionToRequest } from "@/utils/form";
+import { useFormsService } from "@/hooks/useHttpService";
+import { TENANT_ID } from "@/constants/tenant";
 
 const styles: Styles = {
   btnWithShortcut: {
@@ -40,9 +44,11 @@ const styles: Styles = {
 
 export const BuilderContextMenu: React.FC<{ target: SelectedItem }> =
   function ({ target }) {
-    const { undo, redo } = useFormDesignerHistory();
+    const { undo, canUndo, redo, canRedo, commit } = useFormDesignerHistory();
     const { dispatch } = useFormDesignerDispatch();
     const { close } = useContextMenuDispatch();
+    const { form, version, rules } = useFormSnapshot();
+    const formsService = useFormsService();
     const pages = useFormPagesSnapshot();
     const [clipboardData, setClipboardData] = useState<ClipboardData | null>(
       null,
@@ -130,54 +136,71 @@ export const BuilderContextMenu: React.FC<{ target: SelectedItem }> =
     };
 
     const handlePaste = async () => {
-      try {
-        const text = await navigator.clipboard.readText();
-        const data: ClipboardData = JSON.parse(text);
-        let event: FormDesignerEvent;
-
-        switch (data.type) {
-          case ClipboardEventType.CopyElement:
-          case ClipboardEventType.CutElement:
-            if (target.type !== "section") {
-              return;
-            }
-            event = {
-              type: "PasteElement",
-              element: data.element,
-              targetSectionId: target.item.id,
-              clipboardOp: data.type,
-            } satisfies PasteElementEvent;
-            break;
-          case ClipboardEventType.CopySection:
-          case ClipboardEventType.CutSection:
-            event = {
-              type: "PasteSection",
-              section: data.section,
-              targetPageId: pages[0].id,
-              clipboardOp: data.type,
-            } satisfies PasteSectionEvent;
-            break;
-          case ClipboardEventType.CopyPage:
-            event = {
-              type: "PastePage",
-              page: data.page,
-            } satisfies PastePageEvent;
-            break;
-        }
-
-        dispatch(event!);
-
-        if (
-          data.type === ClipboardEventType.CutElement ||
-          data.type === ClipboardEventType.CutSection
-        ) {
-          navigator.clipboard.writeText("");
-        }
-
-        close();
-      } catch {
+      if (!clipboardData) {
         return;
       }
+
+      let event: FormDesignerEvent;
+
+      switch (clipboardData.type) {
+        case ClipboardEventType.CopyElement:
+        case ClipboardEventType.CutElement:
+          if (target.type !== "section") {
+            return;
+          }
+          event = {
+            type: "PasteElement",
+            element: clipboardData.element,
+            targetSectionId: target.item.id,
+            clipboardOp: clipboardData.type,
+          } satisfies PasteElementEvent;
+          break;
+        case ClipboardEventType.CopySection:
+        case ClipboardEventType.CutSection:
+          event = {
+            type: "PasteSection",
+            section: clipboardData.section,
+            targetPageId: pages[0].id,
+            clipboardOp: clipboardData.type,
+          } satisfies PasteSectionEvent;
+          break;
+        case ClipboardEventType.CopyPage:
+          event = {
+            type: "PastePage",
+            page: clipboardData.page,
+          } satisfies PastePageEvent;
+          break;
+      }
+
+      dispatch(event!);
+
+      if (
+        clipboardData.type === ClipboardEventType.CutElement ||
+        clipboardData.type === ClipboardEventType.CutSection
+      ) {
+        navigator.clipboard.writeText("");
+      }
+
+      close();
+    };
+
+    const handleSaveDraft = async () => {
+      if (!isDraftVersion(version.status)) {
+        throw new Error("cannot update a non-draft-version");
+      }
+
+      const request = versionToRequest(version, rules);
+      const updated = await formsService.updateFormVersion(
+        form.id,
+        version.id,
+        request,
+        {
+          tenantId: TENANT_ID,
+          token: "placeholder",
+        },
+      );
+      commit(updated);
+      close();
     };
 
     const handleDelete = () => {
@@ -216,15 +239,29 @@ export const BuilderContextMenu: React.FC<{ target: SelectedItem }> =
           <Typography sx={styles.shortcutText}>Ctrl+v</Typography>
         </ContextMenu.Button>
         <Divider sx={{ my: 1 }} />
-        <ContextMenu.Button sx={styles.btnWithShortcut} onClick={undo}>
+        <ContextMenu.Button
+          sx={styles.btnWithShortcut}
+          onClick={undo}
+          disabled={!canUndo}
+        >
           <Typography>Undo</Typography>
           <Typography sx={styles.shortcutText}>Ctrl+z</Typography>
         </ContextMenu.Button>
-        <ContextMenu.Button sx={styles.btnWithShortcut} onClick={redo}>
+        <ContextMenu.Button
+          sx={styles.btnWithShortcut}
+          onClick={redo}
+          disabled={!canRedo}
+        >
           <Typography>Redo</Typography>
           <Typography sx={styles.shortcutText}>Ctrl+Shift+z</Typography>
         </ContextMenu.Button>
         <Divider sx={{ my: 1 }} />
+        <ContextMenu.Button
+          sx={styles.btnWithShortcut}
+          onClick={handleSaveDraft}
+        >
+          <Typography>Save Draft</Typography>
+        </ContextMenu.Button>
         <ContextMenu.Button sx={styles.btnWithShortcut} onClick={handleDelete}>
           <Typography>Delete</Typography>
           <Typography sx={styles.shortcutText}>Del</Typography>

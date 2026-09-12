@@ -11,5 +11,13 @@ export function isTemporaryID(id: string): boolean {
 }
 
 export function stripTemporaryID<T extends HasID>(item: T): T {
-  return { ...item, id: isTemporaryID(item.id) ? undefined : item.id };
+  if (isTemporaryID(item.id)) {
+    return stripID(item);
+  }
+
+  return item;
+}
+
+export function stripID<T extends HasID>(item: T): T {
+  return { ...item, id: undefined };
 }

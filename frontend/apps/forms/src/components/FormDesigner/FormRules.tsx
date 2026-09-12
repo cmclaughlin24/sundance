@@ -8,7 +8,7 @@ import type { IPaletteCategory } from "./panels/ToolboxPanel/palette";
 import { RuleList } from "./panels/CanvasPanel/lists/RuleList/RuleList";
 import { FormRuleDragProvider } from "./providers/FormRuleDragProvider";
 import type { RuleItemDragType } from "./types/formDragEvent";
-import type { RuleType } from "@/types/rule";
+import type { IFlatRule, RuleType } from "@/types/rule";
 import { useFormSnapshot } from "@/store/formDesigner";
 import {
   ContextMenu,
@@ -18,6 +18,7 @@ import {
 import { FORMS_HUB_PORTAL_REF } from "@/constants/portalRef";
 import { RuleContextMenu } from "./menus/RuleContextMenu";
 import type { MouseEventHandler } from "react";
+import { RuleKeyboardShortcuts } from "./providers/RuleKeyboardShortcuts";
 
 const styles: Styles = {
   container: {
@@ -39,7 +40,9 @@ export const FormRules: React.FC = function () {
   return (
     <FormRuleDragProvider>
       <ContextMenuProvider>
-        <Component />
+        <RuleKeyboardShortcuts>
+          <Component />
+        </RuleKeyboardShortcuts>
       </ContextMenuProvider>
     </FormRuleDragProvider>
   );
@@ -75,8 +78,9 @@ const Component: React.FC = function () {
           </Box>
         </CanvasPanel>
         <ContextMenu container={document.getElementById(FORMS_HUB_PORTAL_REF)!}>
-          {(_data: unknown) => {
-            return <RuleContextMenu />;
+          {(data: unknown) => {
+            const target = data as IFlatRule | undefined;
+            return <RuleContextMenu target={target} />;
           }}
         </ContextMenu>
       </Box>
