@@ -1,6 +1,7 @@
 import type { IElement } from "@/types/element";
 import type { IPage } from "@/types/page";
 import type { ISection } from "@/types/section";
+import type { FormDesignerEvent } from "./events";
 
 export interface SelectedElement {
   type: "element";
@@ -26,4 +27,11 @@ export function selectedToPaletteType(selected: SelectedItem) {
     default:
       return selected.type;
   }
+}
+
+export interface FormDesignerDraft {
+  versionId: string;
+  events: FormDesignerEvent[];
+  cursor: number;
+  updatedAt: number;
 }

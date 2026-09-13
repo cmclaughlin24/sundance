@@ -2,7 +2,7 @@ import { createStore } from "zustand";
 import type { FormDesignerEvent } from "./events";
 import type { IFormVersion } from "@/types/formVersion";
 import type { IForm } from "@/types/form";
-import type { SelectedItem } from "./formDesigner.type";
+import type { FormDesignerDraft, SelectedItem } from "./formDesigner.type";
 import {
   apply,
   reduce,
@@ -10,6 +10,8 @@ import {
 } from "./eventHandlers/eventHandler";
 import { findSelectedById } from "@/utils/form";
 import { extractFlatRules } from "@/utils/rule";
+import type { StorageService } from "@/types/storageService";
+import { debounce } from "@/utils/debounce";
 
 export interface IFormDesignerStore {
   baseline: IFormAggregate;
@@ -22,11 +24,20 @@ export interface IFormDesignerStore {
   redo: () => void;
   commit: (version: IFormVersion) => void;
   select: (item: SelectedItem | null) => void;
+  hydrate: (draft: FormDesignerDraft) => void;
 }
 
 export type FormDesignerStoreApi = ReturnType<typeof createFormDesignerStore>;
 
-export function createFormDesignerStore(form: IForm, version: IFormVersion) {
+export function createFormDesignerStore(
+  form: IForm,
+  version: IFormVersion,
+  storage: StorageService<string, FormDesignerDraft>,
+) {
+  const debounceSave = debounce((draft: FormDesignerDraft) => {
+    storage.upsert(draft);
+  });
+
   return createStore<IFormDesignerStore>((set) => {
     const rules = extractFlatRules(version.pages);
 
@@ -52,10 +63,20 @@ export function createFormDesignerStore(form: IForm, version: IFormVersion) {
             selected = null;
           }
 
+          debounceSave({
+            versionId: version.id,
+            events: events,
+            cursor,
+            updatedAt: Date.now(),
+          });
+
           return { ...s, events, cursor, snapshot, selected };
         }),
       commit: (version) =>
         set((s) => {
+          debounceSave.cancel();
+          storage.delete(version.id);
+
           const selected = s.selected
             ? findSelectedById(version.pages, s.selected.item.id)
             : null;
@@ -75,6 +96,13 @@ export function createFormDesignerStore(form: IForm, version: IFormVersion) {
           const events = cursor !== -1 ? s.events.slice(0, s.cursor) : [];
           const snapshot = reduce(s.baseline, events);
 
+          debounceSave({
+            versionId: version.id,
+            events: s.events,
+            cursor,
+            updatedAt: Date.now(),
+          });
+
           return { ...s, cursor, snapshot };
         }),
       redo: () =>
@@ -84,9 +112,24 @@ export function createFormDesignerStore(form: IForm, version: IFormVersion) {
           const events = s.events.slice(0, cursor + 1);
           const snapshot = reduce(s.baseline, events);
 
+          debounceSave({
+            versionId: version.id,
+            events: s.events,
+            cursor,
+            updatedAt: Date.now(),
+          });
+
           return { ...s, cursor, snapshot };
         }),
       select: (item) => set((s) => ({ ...s, selected: item })),
+      hydrate: (draft) =>
+        set((s) => {
+          const events =
+            draft.cursor >= 0 ? draft.events.slice(0, draft.cursor + 1) : [];
+          const snapshot = reduce(s.baseline, events);
+
+          return { snapshot, cursor: draft.cursor, events: draft.events };
+        }),
     };
   });
 }

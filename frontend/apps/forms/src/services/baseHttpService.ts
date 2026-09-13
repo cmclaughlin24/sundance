@@ -53,7 +53,7 @@ export abstract class BaseHttpService {
   protected async _get<R>(
     url: string,
     options: DefaultRequestOptions,
-    params?: URLSearchParams
+    params?: URLSearchParams,
   ): Promise<R> {
     const headers = this._defaultRequestHeaders(options);
     const response = await this._client.get<R>(url, { headers, params });
