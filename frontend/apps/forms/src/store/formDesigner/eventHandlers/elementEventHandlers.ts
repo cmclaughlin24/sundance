@@ -13,7 +13,12 @@ import type { ISection } from "@/types/section";
 import type { IPage } from "@/types/page";
 import { insertAtPosition, removeById } from "./utils";
 import { createElementFromType } from "@/factories/elementFactory";
-import { swapPositions, getNextPosition } from "@/utils/position";
+import {
+  swapPositions,
+  getNextPosition,
+  getBetweenPosition,
+  sortPositioned,
+} from "@/utils/position";
 import { generatedID } from "@/utils/id";
 import { copyKey, copyName } from "@/utils/copy";
 import { ClipboardEventType } from "@/types/clipboard";
@@ -58,16 +63,31 @@ export function onReorderElement(
 ): IFormAggregate {
   const pages = aggregate.version.pages.map((page): IPage => {
     const sections = page.sections.map((section): ISection => {
-      const hasElement = section.elements.some((e) => e.id === event.elementId);
+      const element = section.elements.find((e) => e.id === event.elementId);
 
-      if (!hasElement) {
+      if (!element) {
         return section;
       }
 
-      return {
-        ...section,
-        elements: swapPositions(section.elements, event.elementId, event.inc),
-      };
+      if (event.inc !== undefined) {
+        return {
+          ...section,
+          elements: swapPositions(section.elements, event.elementId, event.inc),
+        };
+      }
+
+      if (event.targetIndex !== undefined) {
+        const sorted = sortPositioned(section.elements);
+        const without = sorted.filter((e) => e.id !== event.elementId);
+        const position = getBetweenPosition(event.targetIndex, without);
+
+        return {
+          ...section,
+          elements: insertAtPosition(without, element, position),
+        };
+      }
+
+      return section;
     });
 
     return { ...page, sections };

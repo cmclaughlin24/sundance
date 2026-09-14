@@ -9,19 +9,18 @@ import {
   type BuilderDragEventData,
   type PaletteDragEventData,
 } from "../types/formDragEvent";
-import type {
-  CanvasDropEventData,
-  FormDropEventData,
-  PaletteDropEventData,
-} from "../types/formDropEvent";
+import type { PaletteDropEventData } from "../types/formDropEvent";
 import { createContext, useContext, useState } from "react";
 import type {
   AddElementEvent,
   AddSectionEvent,
   FormDesignerEvent,
+  ReorderElementEvent,
+  ReorderSectionEvent,
 } from "@/store/formDesigner/events";
 import { generatedID } from "@/utils/id";
 import type { ElementType } from "@/types/element";
+import { isSortable } from "@dnd-kit/react/sortable";
 
 const FormBuilderDragContext = createContext<BuilderDragEventData | null>(null);
 
@@ -67,9 +66,28 @@ export const FormBuilderDragProvider: React.FC<React.PropsWithChildren<{}>> =
 
     const handleCanvasDragEnd = (
       dragData: CanvasElementDragEventData | CanvasSectionDragEventData,
-      dropData: CanvasDropEventData,
+      targetIndex: number,
     ) => {
-      console.log(dragData, dropData);
+      let event: FormDesignerEvent;
+
+      switch (dragData.type) {
+        case "section":
+          event = {
+            type: "ReorderSection",
+            sectionId: dragData.section.id,
+            targetIndex,
+          } satisfies ReorderSectionEvent;
+          break;
+        case "element":
+          event = {
+            type: "ReorderElement",
+            elementId: dragData.element.id,
+            targetIndex,
+          } satisfies ReorderElementEvent;
+          break;
+      }
+
+      dispatch(event);
     };
 
     return (
@@ -85,27 +103,42 @@ export const FormBuilderDragProvider: React.FC<React.PropsWithChildren<{}>> =
 
             const { source, target } = event.operation;
 
-            if (event.canceled || !target) {
+            if (event.canceled || !source || !target) {
               return;
             }
 
-            const dragData = source?.data as BuilderDragEventData;
-            const dropData = target?.data as FormDropEventData;
+            const dragData = source.data as BuilderDragEventData;
 
-            if (!dropData) {
+            if (!dragData) {
               return;
             }
 
             switch (dragData.source) {
-              case FormDragEventSource.Palette:
-                handlePaletteDragEnd(
-                  dragData,
-                  dropData as PaletteDropEventData,
-                );
+              case FormDragEventSource.Palette: {
+                const dropData = target.data as PaletteDropEventData;
+                if (dropData) {
+                  handlePaletteDragEnd(dragData, dropData);
+                }
                 break;
-              case FormDragEventSource.Canvas:
-                handleCanvasDragEnd(dragData, dropData as CanvasDropEventData);
+              }
+              case FormDragEventSource.Canvas: {
+                if (!isSortable(source) && !isSortable(target)) {
+                  return;
+                }
+
+                if (isSortable(source) && source.index === source.initialIndex) {
+                  return;
+                }
+
+                const targetIndex = isSortable(source)
+                  ? source.index
+                  : target.index;
+
+                if (typeof targetIndex === "number") {
+                  handleCanvasDragEnd(dragData, targetIndex);
+                }
                 break;
+              }
               default:
                 throw new Error(
                   "failed to handle onDragEnd event; unknown FormDragEventData source",
@@ -119,11 +152,12 @@ export const FormBuilderDragProvider: React.FC<React.PropsWithChildren<{}>> =
               const data = source.data as BuilderDragEventData;
 
               switch (data.source) {
-                case FormDragEventSource.Palette:
+                case FormDragEventSource.Palette: {
                   const paletteItem = findFormObjectPaletteItem(
                     source.data.itemType,
                   );
                   return <PaletteItem item={paletteItem!} draggable={false} />;
+                }
                 case FormDragEventSource.Canvas:
                   return;
                 default:

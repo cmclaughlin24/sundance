@@ -78,7 +78,8 @@ export type RemoveSectionEvent = {
 export type ReorderSectionEvent = {
   type: "ReorderSection";
   sectionId: string;
-  inc: -1 | 1;
+  inc?: -1 | 1;
+  targetIndex?: number;
 };
 
 export type CutSectionEvent = {
@@ -126,7 +127,8 @@ export type RemoveElementEvent = {
 export type ReorderElementEvent = {
   type: "ReorderElement";
   elementId: string;
-  inc: -1 | 1;
+  inc?: -1 | 1;
+  targetIndex?: number;
 };
 
 export type CutElementEvent = {
