@@ -25,6 +25,7 @@ import type { IFormVersion } from "@/types/formVersion";
 import {
   copyVersion,
   defaultFormVersion,
+  getLatestVersionByStatus,
   isActiveVersion,
   isDraftVersion,
   versionToRequest,
@@ -96,7 +97,7 @@ const PageComponent: React.FC<{
   const formsService = useFormsService();
   const { form, version, rules } = useFormSnapshot();
 
-  const { data: _versions, refetch: refetchVersions } = useAsyncData<
+  const { data: versions, refetch: refetchVersions } = useAsyncData<
     IFormVersion[]
   >(
     async (token) => {
@@ -202,6 +203,8 @@ const PageComponent: React.FC<{
     }
   };
 
+  const latestActive = getLatestVersionByStatus(versions, "active");
+
   return (
     <Page sx={formDesignerPageStyles.page}>
       <Box sx={formDesignerPageStyles.header}>
@@ -209,7 +212,12 @@ const PageComponent: React.FC<{
           <PageTitle name={form.name} description={form.description} />
           <Box sx={formDesignerPageStyles.headerIcons}>
             <FormVersionTag status={version.status} version={version.version} />
-            <FormVersionTag status="active" />
+            {latestActive && latestActive.id !== version.id && (
+              <FormVersionTag
+                status={latestActive.status}
+                version={latestActive.version}
+              />
+            )}
           </Box>
         </Box>
         <Box sx={formDesignerPageStyles.headerActions}>

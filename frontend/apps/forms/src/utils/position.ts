@@ -24,7 +24,9 @@ export function getBetweenPosition<T extends HasPosition>(
   items: T[],
 ): number {
   if (index === 0) {
-    return ArrayUtils.hasLengthGreaterThan(items, 0) ? items[0].position - 1 : 0;
+    return ArrayUtils.hasLengthGreaterThan(items, 0)
+      ? items[0].position - 1
+      : 0;
   }
 
   if (index === items.length) {
@@ -67,5 +69,21 @@ export function swapPositions<T extends HasPosition & { id: string }>(
     }
 
     return item;
+  });
+}
+
+export function normalizePositions<T extends HasPosition>(items: T[]): T[] {
+  if (!items) {
+    return [];
+  }
+
+  const rankByItem = new Map<T, number>();
+  sortPositioned(items).forEach((item, index) => {
+    rankByItem.set(item, index);
+  });
+
+  return items.map((item) => {
+    const next = rankByItem.get(item);
+    return item.position === next ? item : { ...item, position: next };
   });
 }

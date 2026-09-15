@@ -3,17 +3,18 @@ import { resolveHttpService } from "@/hooks/useHttpService";
 import type { DefaultRequestOptions } from "@/services/baseHttpService";
 import { FormsService } from "@/services/formsService";
 import type { IFormVersion } from "@/types/formVersion";
+import { sortFormVersions, getLatestVersionByStatus } from "@/utils/form";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 function pickDefaultVersion(versions: IFormVersion[]): IFormVersion {
-  const sorted = versions.sort((a, b) => b.version - a.version);
+  const sorted = sortFormVersions(versions);
 
-  const highestDraft = sorted.find((v) => v.status === "draft");
+  const highestDraft = getLatestVersionByStatus(sorted, "draft");
   if (highestDraft) {
     return highestDraft;
   }
 
-  const highestActive = sorted.find((v) => v.status === "active");
+  const highestActive = getLatestVersionByStatus(sorted, "active");
   if (highestActive) {
     return highestActive;
   }

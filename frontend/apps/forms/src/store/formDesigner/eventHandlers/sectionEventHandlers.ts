@@ -17,6 +17,7 @@ import {
   getNextPosition,
   getBetweenPosition,
   sortPositioned,
+  normalizePositions,
 } from "@/utils/position";
 import { generatedID } from "@/utils/id";
 import { copyKey, copyName } from "@/utils/copy";
@@ -88,7 +89,9 @@ export function onReorderSection(
     if (event.inc !== undefined) {
       return {
         ...page,
-        sections: swapPositions(page.sections, event.sectionId, event.inc),
+        sections: normalizePositions(
+          swapPositions(page.sections, event.sectionId, event.inc),
+        ),
       };
     }
 
@@ -99,7 +102,9 @@ export function onReorderSection(
 
       return {
         ...page,
-        sections: insertAtPosition(without, section, position),
+        sections: normalizePositions(
+          insertAtPosition(without, section, position),
+        ),
       };
     }
 
