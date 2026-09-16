@@ -1,6 +1,11 @@
 import type { ElementType } from "@/types/element";
 import type { ElementAttributes } from "@/types/elementAttributes";
 
+export interface FormRequest {
+  name: string;
+  description: string;
+}
+
 export interface FormVersionRequest {
   metadata: Record<string, string>;
   pages: PageRequest[];

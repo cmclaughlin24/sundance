@@ -8,8 +8,15 @@ import { useFormsService } from "@/hooks/useHttpService";
 import { TENANT_ID } from "@/constants/tenant";
 import { FormList } from "./-components/FormList";
 import type { IForm } from "@/types/form";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import { FormListToolbar } from "./-components/FormListToolbar";
+import { useRef, useState } from "react";
+import {
+  CreateFormDrawer,
+  type CreateFormEvent,
+} from "./-components/CreateFormDrawer";
+import type { DrawerHandle } from "@/components/Drawer";
+import type { DefaultRequestOptions } from "@/services/baseHttpService";
+import { defaultFormVersion } from "@/utils/form";
 
 export const Route = createFileRoute("/designer/forms/")({
   component: DesignerRouteComponent,
@@ -18,6 +25,8 @@ export const Route = createFileRoute("/designer/forms/")({
 function DesignerRouteComponent() {
   const formsService = useFormsService();
   const navigate = useNavigate();
+  const [search, setSearch] = useState("");
+  const drawerRef = useRef<DrawerHandle>(null);
 
   const { data, isLoading, error } = useAsyncData(
     async (accessToken) => {
@@ -37,15 +46,38 @@ function DesignerRouteComponent() {
     console.log("filters");
   };
 
-  const handleFormClick = (form: IForm) => {
+  const handleFormClk = (form: IForm) => {
     navigate({
       to: "/designer/forms/$formId",
       params: { formId: form.id },
     });
   };
 
-  const handleNewClick = () => {
-    console.log("new");
+  const handleNewClk = () => {
+    drawerRef.current?.open();
+  };
+
+  const handleCreate = async ({ name, description }: CreateFormEvent) => {
+    try {
+      const opts: DefaultRequestOptions = {
+        token: "placeholder",
+        tenantId: TENANT_ID,
+      };
+
+      const form = await formsService.createForm({ name, description }, opts);
+      const version = await formsService.createFormVersion(
+        form.id,
+        defaultFormVersion(),
+        opts,
+      );
+
+      navigate({
+        to: "/designer/forms/$formId/versions/$versionId/{-$tab}",
+        params: { formId: form.id, versionId: version.id },
+      });
+    } catch (error) {
+      // TOOD: Implement error handling.
+    }
   };
 
   if (isLoading) {
@@ -57,28 +89,23 @@ function DesignerRouteComponent() {
   }
 
   return (
-    <Page sx={designerStyles["page"]}>
-      <PageTitle
-        name="Forms Hub"
-        description="View and manage request forms for your assets"
-      />
-      <Box>FORM COUNTS</Box>
-      <Box>
-        <Box sx={designerStyles["toolbar"]}>
-          <Box sx={designerStyles["toolbarLeft"]}>
-            <Button onClick={handleFilterClick}>Filter</Button>
-            <Button onClick={handleNewClick}>New Form +</Button>
-          </Box>
-          <Box>
-            <TextField
-              variant="outlined"
-              placeholder="Search Forms"
-              sx={designerStyles["searchInput"]}
-            />
-          </Box>
+    <>
+      <Page sx={designerStyles["page"]}>
+        <PageTitle
+          name="Forms Hub"
+          description="View and manage request forms for your assets"
+        />
+        <Box>FORM COUNTS</Box>
+        <Box>
+          <FormListToolbar
+            onNew={handleNewClk}
+            search={search}
+            onSearch={(value) => setSearch(value)}
+          />
+          <FormList forms={data} onClick={handleFormClk} />
         </Box>
-        <FormList forms={data} onClick={handleFormClick} />
-      </Box>
-    </Page>
+      </Page>
+      <CreateFormDrawer ref={drawerRef} onCreate={handleCreate} />
+    </>
   );
 }

@@ -2,7 +2,7 @@ import { type IForm } from "@/types/form";
 import { BaseHttpService, type DefaultRequestOptions } from "./baseHttpService";
 import { type IFormVersion } from "@/types/formVersion";
 import { CONFIG } from "@/constants/config";
-import type { FormVersionRequest } from "./formService.type";
+import type { FormRequest, FormVersionRequest } from "./formService.type";
 
 export class FormsService extends BaseHttpService {
   static readonly serviceKey = "FormsService";
@@ -31,6 +31,25 @@ export class FormsService extends BaseHttpService {
     options: DefaultRequestOptions,
   ): Promise<IForm> {
     return await this._get<IForm>(`/api/v1/forms/${formId}`, options);
+  }
+
+  /**
+   * Creates a new form.
+   * @param form The form to create.
+   * @param options The default request options.
+   * @returns A promise that resolves to the created form.
+   */
+  async createForm(
+    form: FormRequest,
+    options: DefaultRequestOptions,
+  ): Promise<IForm> {
+    const resp = await this._post<FormRequest, IForm>(
+      `/api/v1/forms`,
+      form,
+      options,
+    );
+
+    return resp.data;
   }
 
   /**
