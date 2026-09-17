@@ -18,6 +18,7 @@ type SubmissionDocument struct {
 	Attempts      []*submissionAttemptDocument `bson:"attempts"`
 	Facts         []*canonicalFact             `bson:"facts"`
 	Values        []*submissionValueDocument   `bson:"values"`
+	EvalContext   domain.EvaluationContext     `bson:"evaluation_context"`
 }
 
 func ToSubmissionDocument(s *domain.Submission) (*SubmissionDocument, error) {
@@ -55,6 +56,7 @@ func ToSubmissionDocument(s *domain.Submission) (*SubmissionDocument, error) {
 		Attempts:      attempts,
 		Facts:         facts,
 		Values:        values,
+		EvalContext:   s.GetEvalContext(),
 	}, nil
 }
 
@@ -85,6 +87,7 @@ func FromSubmissionDocument(s *SubmissionDocument) (*domain.Submission, error) {
 		values,
 		facts,
 		attempts,
+		s.EvalContext,
 		s.CreatedAt,
 		s.UpdatedAt,
 	), nil

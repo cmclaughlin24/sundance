@@ -39,7 +39,8 @@ func (e *ExprRuleEvaluator) Evaluate(ctx context.Context, r *domain.Rule, evalCt
 		return false, fmt.Errorf("%w: %w", ErrInvalidExpression, err)
 	}
 
-	output, err := expr.Run(program, evalCtx)
+	env := newExprEnv(evalCtx)
+	output, err := expr.Run(program, env)
 	if err != nil {
 		e.logger.ErrorContext(ctx, "expression execution failed", "statement", stmt, "error", err)
 		return false, err
@@ -114,6 +115,16 @@ func newDefaultStatementFn(operator string) statementFn {
 			val = strconv.Quote(v)
 		}
 
-		return fmt.Sprintf("%s %s %v", re.FieldKey, operator, val)
+		return fmt.Sprintf("%s[%q] %s %v", string(re.Source.Type), re.Source.Key, operator, val)
 	}
+}
+
+func newExprEnv(evalCtx domain.EvaluationContext) map[string]map[string]any {
+	env := make(map[string]map[string]any)
+
+	for sourceType, values := range evalCtx {
+		env[string(sourceType)] = values
+	}
+
+	return env
 }

@@ -2,8 +2,13 @@ package commands
 
 import "sundance/backend/services/forms/internal/core/domain"
 
+type RuleExprSourceData struct {
+	Type string
+	Key  string
+}
+
 type RuleExpressionData struct {
-	FieldKey         string
+	Source           RuleExprSourceData
 	Operator         string
 	Value            any
 	JoinWithPrevious *string

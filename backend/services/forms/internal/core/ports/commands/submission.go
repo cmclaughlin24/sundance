@@ -11,6 +11,7 @@ type CreateSubmissionCommand struct {
 	VersionID     domain.FormVersionID      `validate:"required"`
 	IdempotencyID domain.IdempotencyID      `validate:"required"`
 	Values        []*domain.SubmissionValue `validate:"required,min=1"`
+	EvalContext   domain.EvaluationContext
 }
 
 func NewCreateSubmissionCommand(
@@ -19,6 +20,7 @@ func NewCreateSubmissionCommand(
 	versionID domain.FormVersionID,
 	idempotencyID domain.IdempotencyID,
 	values []*domain.SubmissionValue,
+	evalContext domain.EvaluationContext,
 ) *CreateSubmissionCommand {
 	return &CreateSubmissionCommand{
 		TenantID:      tenantID,
@@ -26,6 +28,7 @@ func NewCreateSubmissionCommand(
 		VersionID:     versionID,
 		IdempotencyID: idempotencyID,
 		Values:        values,
+		EvalContext:   evalContext,
 	}
 }
 
@@ -34,10 +37,11 @@ func (c *CreateSubmissionCommand) Validate() error {
 }
 
 type NormalizeSubmissionCommand struct {
-	TenantID  string                    `validate:"required"`
-	FormID    domain.FormID             `validate:"required"`
-	VersionID domain.FormVersionID      `validate:"required"`
-	Values    []*domain.SubmissionValue `validate:"required,min=1"`
+	TenantID    string                    `validate:"required"`
+	FormID      domain.FormID             `validate:"required"`
+	VersionID   domain.FormVersionID      `validate:"required"`
+	Values      []*domain.SubmissionValue `validate:"required,min=1"`
+	EvalContext domain.EvaluationContext
 }
 
 func NewNormalizeSubmissionCommand(
@@ -45,12 +49,14 @@ func NewNormalizeSubmissionCommand(
 	formID domain.FormID,
 	versionID domain.FormVersionID,
 	values []*domain.SubmissionValue,
+	evalContext domain.EvaluationContext,
 ) *NormalizeSubmissionCommand {
 	return &NormalizeSubmissionCommand{
-		TenantID:  tenantID,
-		FormID:    formID,
-		VersionID: versionID,
-		Values:    values,
+		TenantID:    tenantID,
+		FormID:      formID,
+		VersionID:   versionID,
+		Values:      values,
+		EvalContext: evalContext,
 	}
 }
 

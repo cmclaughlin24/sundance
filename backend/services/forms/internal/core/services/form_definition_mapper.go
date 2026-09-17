@@ -328,7 +328,10 @@ func (m *formDefinitionMapper) createRule(r commands.RuleData) (*domain.Rule, er
 
 	for _, re := range r.Expressions {
 		expression, err := domain.NewRuleExpression(
-			re.FieldKey,
+			domain.RuleExprSource{
+				Type: domain.RuleExprSourceType(re.Source.Type),
+				Key:  re.Source.Key,
+			},
 			domain.ExprOperator(re.Operator),
 			re.Value,
 			(*domain.JoinOperator)(re.JoinWithPrevious),
@@ -342,7 +345,9 @@ func (m *formDefinitionMapper) createRule(r commands.RuleData) (*domain.Rule, er
 			return nil, err
 		}
 
-		m.trackExpressionKeys(expression.FieldKey)
+		if expression.Source.Type == domain.RuleExprSourceTypeField {
+			m.trackExpressionKeys(expression.Source.Key)
+		}
 	}
 
 	return rule, nil

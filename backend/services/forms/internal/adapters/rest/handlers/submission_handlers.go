@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sundance/backend/pkg/auth"
 	"sundance/backend/pkg/common/httputil"
 	"sundance/backend/services/forms/internal/adapters/rest/dto"
 	"sundance/backend/services/forms/internal/core/domain"
@@ -129,6 +130,9 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 		values = append(values, domain.NewSubmissionValue(fv.ElementID, fv.Value, fv.CollectionIndex))
 	}
 
+	evalContext := domain.EvaluationContext{
+		domain.RuleExprSourceTypeUserClaim: extractClaimsMap(auth.GetClaimsFromContext(r.Context())),
+	}
 	tenantID := httputil.TenantFromContext(r.Context())
 	idempotencyID := httputil.IdempotencyFromContext(r.Context())
 	command := commands.NewCreateSubmissionCommand(
@@ -137,6 +141,7 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 		domain.FormVersionID(body.VersionID),
 		domain.IdempotencyID(idempotencyID),
 		values,
+		evalContext,
 	)
 	resultChan := make(chan result[*domain.Submission], 1)
 
@@ -191,12 +196,16 @@ func (h *Handlers) NormalizeSubmission(w http.ResponseWriter, r *http.Request) {
 		values = append(values, domain.NewSubmissionValue(fv.ElementID, fv.Value, fv.CollectionIndex))
 	}
 
+	evalContext := domain.EvaluationContext{
+		domain.RuleExprSourceTypeUserClaim: extractClaimsMap(auth.GetClaimsFromContext(r.Context())),
+	}
 	tenantID := httputil.TenantFromContext(r.Context())
 	command := commands.NewNormalizeSubmissionCommand(
 		tenantID,
 		domain.FormID(body.FormID),
 		domain.FormVersionID(body.VersionID),
 		values,
+		evalContext,
 	)
 	resultChan := make(chan result[domain.FactMap], 1)
 
@@ -374,4 +383,8 @@ func (h *Handlers) ReplaySubmission(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) getReferenceIDPathValue(r *http.Request) domain.ReferenceID {
 	id := chi.URLParam(r, "referenceId")
 	return domain.ReferenceID(id)
+}
+
+func extractClaimsMap(c auth.Claims) map[string]any {
+	return nil
 }

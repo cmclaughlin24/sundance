@@ -66,14 +66,14 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.FormResponse"
+                                "$ref": "#/definitions/FormResponse"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -127,7 +127,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.UpsertFormRequest"
+                            "$ref": "#/definitions/UpsertFormRequest"
                         }
                     }
                 ],
@@ -135,19 +135,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormResponse"
+                            "$ref": "#/definitions/APIResponse-FormResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -209,19 +209,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.FormResponse"
+                            "$ref": "#/definitions/FormResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -282,7 +282,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.UpsertFormRequest"
+                            "$ref": "#/definitions/UpsertFormRequest"
                         }
                     }
                 ],
@@ -290,25 +290,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormResponse"
+                            "$ref": "#/definitions/APIResponse-FormResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -372,19 +372,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -448,14 +448,14 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.FormVersionResponse"
+                                "$ref": "#/definitions/FormVersionResponse"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -517,7 +517,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.UpsertFormVersionRequest"
+                            "$ref": "#/definitions/UpsertFormVersionRequest"
                         }
                     }
                 ],
@@ -525,19 +525,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormVersionResponse"
+                            "$ref": "#/definitions/APIResponse-FormVersionResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -606,19 +606,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.FormVersionResponse"
+                            "$ref": "#/definitions/FormVersionResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -687,7 +687,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.UpsertFormVersionRequest"
+                            "$ref": "#/definitions/UpsertFormVersionRequest"
                         }
                     }
                 ],
@@ -695,25 +695,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormVersionResponse"
+                            "$ref": "#/definitions/APIResponse-FormVersionResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -783,25 +783,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormVersionResponse"
+                            "$ref": "#/definitions/APIResponse-FormVersionResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -871,25 +871,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormVersionResponse"
+                            "$ref": "#/definitions/APIResponse-FormVersionResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -946,14 +946,14 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionResponse"
+                                "$ref": "#/definitions/SubmissionResponse"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -1015,7 +1015,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionRequest"
+                            "$ref": "#/definitions/SubmissionRequest"
                         }
                     }
                 ],
@@ -1023,19 +1023,19 @@ const docTemplate = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_SubmissionResponse"
+                            "$ref": "#/definitions/APIResponse-SubmissionResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -1097,19 +1097,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionResponse"
+                            "$ref": "#/definitions/SubmissionResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -1178,19 +1178,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -1263,13 +1263,13 @@ const docTemplate = `{
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -1326,7 +1326,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionRequest"
+                            "$ref": "#/definitions/SubmissionRequest"
                         }
                     }
                 ],
@@ -1334,19 +1334,19 @@ const docTemplate = `{
                     "200": {
                         "description": "Canonical fact map keyed by tag paths",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_core_domain_FactMap"
+                            "$ref": "#/definitions/APIResponse-sundance_backend_services_forms_internal_core_domain_FactMap"
                         }
                     },
                     "400": {
                         "description": "Validation failure or invalid form version status",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -1409,19 +1409,19 @@ const docTemplate = `{
                     "202": {
                         "description": "Accepted",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_SubmissionResponse"
+                            "$ref": "#/definitions/APIResponse-SubmissionResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -1478,14 +1478,14 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.TagResponse"
+                                "$ref": "#/definitions/TagResponse"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -1540,7 +1540,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.CreateTagRequest"
+                            "$ref": "#/definitions/CreateTagRequest"
                         }
                     }
                 ],
@@ -1548,19 +1548,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagResponse"
+                            "$ref": "#/definitions/APIResponse-TagResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -1622,19 +1622,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.TagResponse"
+                            "$ref": "#/definitions/TagResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -1696,7 +1696,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.UpdateTagRequest"
+                            "$ref": "#/definitions/UpdateTagRequest"
                         }
                     }
                 ],
@@ -1704,25 +1704,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagResponse"
+                            "$ref": "#/definitions/APIResponse-TagResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -1786,25 +1786,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "409": {
                         "description": "Conflict",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -1868,20 +1868,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.TagVersionResponse"
+                                "$ref": "#/definitions/TagVersionResponse"
                             }
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -1943,7 +1943,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.UpsertTagVersionRequest"
+                            "$ref": "#/definitions/UpsertTagVersionRequest"
                         }
                     }
                 ],
@@ -1951,25 +1951,25 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagVersionResponse"
+                            "$ref": "#/definitions/APIResponse-TagVersionResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -2038,19 +2038,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.TagVersionResponse"
+                            "$ref": "#/definitions/TagVersionResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -2120,25 +2120,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagVersionResponse"
+                            "$ref": "#/definitions/APIResponse-TagVersionResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -2208,25 +2208,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagVersionResponse"
+                            "$ref": "#/definitions/APIResponse-TagVersionResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -2296,25 +2296,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagVersionResponse"
+                            "$ref": "#/definitions/APIResponse-TagVersionResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/httputil.APIErrorResponse"
+                            "$ref": "#/definitions/APIErrorResponse"
                         }
                     }
                 }
@@ -2322,7 +2322,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "httputil.APIErrorResponse": {
+        "APIErrorResponse": {
             "type": "object",
             "properties": {
                 "error": {
@@ -2336,73 +2336,73 @@ const docTemplate = `{
                 }
             }
         },
-        "httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormResponse": {
+        "APIResponse-FormResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.FormResponse"
+                    "$ref": "#/definitions/FormResponse"
                 },
                 "message": {
                     "type": "string"
                 }
             }
         },
-        "httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_FormVersionResponse": {
+        "APIResponse-FormVersionResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.FormVersionResponse"
+                    "$ref": "#/definitions/FormVersionResponse"
                 },
                 "message": {
                     "type": "string"
                 }
             }
         },
-        "httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_SubmissionResponse": {
+        "APIResponse-SubmissionResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionResponse"
+                    "$ref": "#/definitions/SubmissionResponse"
                 },
                 "message": {
                     "type": "string"
                 }
             }
         },
-        "httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagResponse": {
+        "APIResponse-TagResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.TagResponse"
+                    "$ref": "#/definitions/TagResponse"
                 },
                 "message": {
                     "type": "string"
                 }
             }
         },
-        "httputil.APIResponse-sundance_backend_services_forms_internal_adapters_rest_dto_TagVersionResponse": {
+        "APIResponse-TagVersionResponse": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.TagVersionResponse"
+                    "$ref": "#/definitions/TagVersionResponse"
                 },
                 "message": {
                     "type": "string"
                 }
             }
         },
-        "httputil.APIResponse-sundance_backend_services_forms_internal_core_domain_FactMap": {
+        "APIResponse-sundance_backend_services_forms_internal_core_domain_FactMap": {
             "type": "object",
             "properties": {
                 "data": {
-                    "$ref": "#/definitions/sundance_backend_services_forms_internal_core_domain.FactMap"
+                    "$ref": "#/definitions/FactMap"
                 },
                 "message": {
                     "type": "string"
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.CreateTagRequest": {
+        "CreateTagRequest": {
             "type": "object",
             "properties": {
                 "displayName": {
@@ -2422,7 +2422,7 @@ const docTemplate = `{
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.ElementRequest": {
+        "ElementRequest": {
             "type": "object",
             "required": [
                 "attributes",
@@ -2453,13 +2453,13 @@ const docTemplate = `{
                 "rules": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleRequest"
+                        "$ref": "#/definitions/RuleRequest"
                     }
                 },
                 "tags": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.upsertElementTagMappingRequest"
+                        "$ref": "#/definitions/upsertElementTagMappingRequest"
                     }
                 },
                 "type": {
@@ -2467,7 +2467,7 @@ const docTemplate = `{
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.ElementResponse": {
+        "ElementResponse": {
             "type": "object",
             "properties": {
                 "attributes": {
@@ -2488,13 +2488,13 @@ const docTemplate = `{
                 "rules": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleResponse"
+                        "$ref": "#/definitions/RuleResponse"
                     }
                 },
                 "tags": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.ElementTagMappingResponse"
+                        "$ref": "#/definitions/ElementTagMappingResponse"
                     }
                 },
                 "type": {
@@ -2502,7 +2502,7 @@ const docTemplate = `{
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.ElementTagMappingResponse": {
+        "ElementTagMappingResponse": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -2525,7 +2525,11 @@ const docTemplate = `{
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.FormResponse": {
+        "FactMap": {
+            "type": "object",
+            "additionalProperties": {}
+        },
+        "FormResponse": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -2548,7 +2552,7 @@ const docTemplate = `{
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.FormVersionResponse": {
+        "FormVersionResponse": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -2569,7 +2573,7 @@ const docTemplate = `{
                 "pages": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.PageResponse"
+                        "$ref": "#/definitions/PageResponse"
                     }
                 },
                 "publishedAt": {
@@ -2585,7 +2589,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/sundance_backend_services_forms_internal_core_domain.FormVersionStatus"
+                    "$ref": "#/definitions/FormVersionStatus"
                 },
                 "updatedAt": {
                     "type": "string"
@@ -2595,7 +2599,20 @@ const docTemplate = `{
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.PageRequest": {
+        "FormVersionStatus": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "active",
+                "retired"
+            ],
+            "x-enum-varnames": [
+                "FormVersionStatusDraft",
+                "FormVersionStatusActive",
+                "FormVersionStatusRetired"
+            ]
+        },
+        "PageRequest": {
             "type": "object",
             "required": [
                 "key",
@@ -2621,18 +2638,18 @@ const docTemplate = `{
                 "rules": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleRequest"
+                        "$ref": "#/definitions/RuleRequest"
                     }
                 },
                 "sections": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SectionRequest"
+                        "$ref": "#/definitions/SectionRequest"
                     }
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.PageResponse": {
+        "PageResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -2650,27 +2667,49 @@ const docTemplate = `{
                 "rules": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleResponse"
+                        "$ref": "#/definitions/RuleResponse"
                     }
                 },
                 "sections": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SectionResponse"
+                        "$ref": "#/definitions/SectionResponse"
                     }
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.RuleExpressionRequest": {
+        "RuleExprSourceRequest": {
             "type": "object",
             "required": [
-                "fieldKey",
+                "key",
+                "type"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "RuleExprSourceResponse": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "RuleExpressionRequest": {
+            "type": "object",
+            "required": [
                 "operator"
             ],
             "properties": {
-                "fieldKey": {
-                    "type": "string"
-                },
                 "joinWithPrevious": {
                     "type": "string"
                 },
@@ -2681,15 +2720,15 @@ const docTemplate = `{
                     "type": "number",
                     "minimum": 0
                 },
+                "source": {
+                    "$ref": "#/definitions/RuleExprSourceRequest"
+                },
                 "value": {}
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.RuleExpressionResponse": {
+        "RuleExpressionResponse": {
             "type": "object",
             "properties": {
-                "fieldKey": {
-                    "type": "string"
-                },
                 "joinWithPrevious": {
                     "type": "string"
                 },
@@ -2699,10 +2738,13 @@ const docTemplate = `{
                 "position": {
                     "type": "number"
                 },
+                "source": {
+                    "$ref": "#/definitions/RuleExprSourceResponse"
+                },
                 "value": {}
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.RuleRequest": {
+        "RuleRequest": {
             "type": "object",
             "required": [
                 "type"
@@ -2711,7 +2753,7 @@ const docTemplate = `{
                 "expressions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleExpressionRequest"
+                        "$ref": "#/definitions/RuleExpressionRequest"
                     }
                 },
                 "id": {
@@ -2722,24 +2764,37 @@ const docTemplate = `{
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.RuleResponse": {
+        "RuleResponse": {
             "type": "object",
             "properties": {
                 "expressions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleExpressionResponse"
+                        "$ref": "#/definitions/RuleExpressionResponse"
                     }
                 },
                 "id": {
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/sundance_backend_services_forms_internal_core_domain.RuleType"
+                    "$ref": "#/definitions/RuleType"
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.SectionRequest": {
+        "RuleType": {
+            "type": "string",
+            "enum": [
+                "visible",
+                "required",
+                "readonly"
+            ],
+            "x-enum-varnames": [
+                "RuleTypeVisible",
+                "RuleTypeRequired",
+                "RuleTypeReadOnly"
+            ]
+        },
+        "SectionRequest": {
             "type": "object",
             "required": [
                 "key",
@@ -2749,7 +2804,7 @@ const docTemplate = `{
                 "elements": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.ElementRequest"
+                        "$ref": "#/definitions/ElementRequest"
                     }
                 },
                 "id": {
@@ -2771,18 +2826,18 @@ const docTemplate = `{
                 "rules": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleRequest"
+                        "$ref": "#/definitions/RuleRequest"
                     }
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.SectionResponse": {
+        "SectionResponse": {
             "type": "object",
             "properties": {
                 "elements": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.ElementResponse"
+                        "$ref": "#/definitions/ElementResponse"
                     }
                 },
                 "id": {
@@ -2800,12 +2855,12 @@ const docTemplate = `{
                 "rules": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.RuleResponse"
+                        "$ref": "#/definitions/RuleResponse"
                     }
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionRequest": {
+        "SubmissionRequest": {
             "type": "object",
             "required": [
                 "formId",
@@ -2818,7 +2873,7 @@ const docTemplate = `{
                 "values": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionValueDto"
+                        "$ref": "#/definitions/SubmissionValueDto"
                     }
                 },
                 "versionId": {
@@ -2826,7 +2881,7 @@ const docTemplate = `{
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionResponse": {
+        "SubmissionResponse": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -2842,7 +2897,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/sundance_backend_services_forms_internal_core_domain.SubmissionStatus"
+                    "$ref": "#/definitions/SubmissionStatus"
                 },
                 "tenantId": {
                     "type": "string"
@@ -2853,7 +2908,7 @@ const docTemplate = `{
                 "values": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionValueDto"
+                        "$ref": "#/definitions/SubmissionValueDto"
                     }
                 },
                 "versionId": {
@@ -2861,7 +2916,22 @@ const docTemplate = `{
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.SubmissionValueDto": {
+        "SubmissionStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "accepted",
+                "rejected",
+                "failed"
+            ],
+            "x-enum-varnames": [
+                "SubmissionStatusPending",
+                "SubmissionStatusAccepted",
+                "SubmissionStatusRejected",
+                "SubmissionStatusFailed"
+            ]
+        },
+        "SubmissionValueDto": {
             "type": "object",
             "required": [
                 "elementId",
@@ -2877,7 +2947,18 @@ const docTemplate = `{
                 "value": {}
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.TagResponse": {
+        "TagNodeType": {
+            "type": "string",
+            "enum": [
+                "primitive",
+                "object"
+            ],
+            "x-enum-varnames": [
+                "TagNodeTypePrimitive",
+                "TagNodeTypeObject"
+            ]
+        },
+        "TagResponse": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -2893,7 +2974,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "nodeType": {
-                    "$ref": "#/definitions/sundance_backend_services_forms_internal_core_domain.TagNodeType"
+                    "$ref": "#/definitions/TagNodeType"
                 },
                 "primitiveType": {
                     "type": "string"
@@ -2903,7 +2984,22 @@ const docTemplate = `{
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.TagVersionResponse": {
+        "TagStatus": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "active",
+                "deprecated",
+                "retired"
+            ],
+            "x-enum-varnames": [
+                "TagStatusDraft",
+                "TagStatusActive",
+                "TagStatusDeprecated",
+                "TagStatusRetired"
+            ]
+        },
+        "TagVersionResponse": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -2922,7 +3018,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "status": {
-                    "$ref": "#/definitions/sundance_backend_services_forms_internal_core_domain.TagStatus"
+                    "$ref": "#/definitions/TagStatus"
                 },
                 "tagId": {
                     "type": "string"
@@ -2932,7 +3028,7 @@ const docTemplate = `{
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.UpdateTagRequest": {
+        "UpdateTagRequest": {
             "type": "object",
             "properties": {
                 "displayName": {
@@ -2940,7 +3036,7 @@ const docTemplate = `{
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.UpsertFormRequest": {
+        "UpsertFormRequest": {
             "type": "object",
             "required": [
                 "name"
@@ -2956,7 +3052,7 @@ const docTemplate = `{
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.UpsertFormVersionRequest": {
+        "UpsertFormVersionRequest": {
             "type": "object",
             "properties": {
                 "metadata": {
@@ -2968,15 +3064,15 @@ const docTemplate = `{
                 "pages": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/sundance_backend_services_forms_internal_adapters_rest_dto.PageRequest"
+                        "$ref": "#/definitions/PageRequest"
                     }
                 }
             }
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.UpsertTagVersionRequest": {
+        "UpsertTagVersionRequest": {
             "type": "object"
         },
-        "sundance_backend_services_forms_internal_adapters_rest_dto.upsertElementTagMappingRequest": {
+        "upsertElementTagMappingRequest": {
             "type": "object",
             "properties": {
                 "priority": {
@@ -2986,77 +3082,14 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
-        },
-        "sundance_backend_services_forms_internal_core_domain.FactMap": {
-            "type": "object",
-            "additionalProperties": {}
-        },
-        "sundance_backend_services_forms_internal_core_domain.FormVersionStatus": {
-            "type": "string",
-            "enum": [
-                "draft",
-                "active",
-                "retired"
-            ],
-            "x-enum-varnames": [
-                "FormVersionStatusDraft",
-                "FormVersionStatusActive",
-                "FormVersionStatusRetired"
-            ]
-        },
-        "sundance_backend_services_forms_internal_core_domain.RuleType": {
-            "type": "string",
-            "enum": [
-                "visible",
-                "required",
-                "readonly"
-            ],
-            "x-enum-varnames": [
-                "RuleTypeVisible",
-                "RuleTypeRequired",
-                "RuleTypeReadOnly"
-            ]
-        },
-        "sundance_backend_services_forms_internal_core_domain.SubmissionStatus": {
-            "type": "string",
-            "enum": [
-                "pending",
-                "accepted",
-                "rejected",
-                "failed"
-            ],
-            "x-enum-varnames": [
-                "SubmissionStatusPending",
-                "SubmissionStatusAccepted",
-                "SubmissionStatusRejected",
-                "SubmissionStatusFailed"
-            ]
-        },
-        "sundance_backend_services_forms_internal_core_domain.TagNodeType": {
-            "type": "string",
-            "enum": [
-                "primitive",
-                "object"
-            ],
-            "x-enum-varnames": [
-                "TagNodeTypePrimitive",
-                "TagNodeTypeObject"
-            ]
-        },
-        "sundance_backend_services_forms_internal_core_domain.TagStatus": {
-            "type": "string",
-            "enum": [
-                "draft",
-                "active",
-                "deprecated",
-                "retired"
-            ],
-            "x-enum-varnames": [
-                "TagStatusDraft",
-                "TagStatusActive",
-                "TagStatusDeprecated",
-                "TagStatusRetired"
-            ]
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Bearer JWT. Format: \"Bearer \u003ctoken\u003e\"",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

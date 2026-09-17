@@ -10,6 +10,8 @@ type ExprOperator string
 
 type JoinOperator string
 
+type RuleExprSourceType string
+
 const (
 	ExprOperatorEquals  ExprOperator = "equal"
 	ExprOperatorNEquals ExprOperator = "nequal"
@@ -20,15 +22,24 @@ const (
 
 	JoinOperatorAnd JoinOperator = "and"
 	JoinOperatorOr  JoinOperator = "or"
+
+	RuleExprSourceTypeField     RuleExprSourceType = "field"
+	RuleExprSourceTypeUserClaim RuleExprSourceType = "user_claim"
 )
 
 var (
-	ErrInvalidExprOperator = errors.New("invalid expression operator")
-	ErrInvalidJoinOperator = errors.New("invalid join operator")
+	ErrInvalidExprOperator       = errors.New("invalid expression operator")
+	ErrInvalidJoinOperator       = errors.New("invalid join operator")
+	ErrInvalidRuleExprSourceType = errors.New("invalid rule expression source type")
 )
 
+type RuleExprSource struct {
+	Type RuleExprSourceType
+	Key  string
+}
+
 type RuleExpression struct {
-	FieldKey         string
+	Source           RuleExprSource
 	Operator         ExprOperator
 	Value            any
 	JoinWithPrevious *JoinOperator
@@ -36,7 +47,7 @@ type RuleExpression struct {
 }
 
 func NewRuleExpression(
-	fieldID string,
+	source RuleExprSource,
 	operator ExprOperator,
 	value any,
 	joinWithPrevious *JoinOperator,
@@ -50,8 +61,12 @@ func NewRuleExpression(
 		return nil, ErrInvalidJoinOperator
 	}
 
+	if !isValidExprSourceType(source.Type) {
+		return nil, ErrInvalidRuleExprSourceType
+	}
+
 	return &RuleExpression{
-		FieldKey:         fieldID,
+		Source:           source,
 		Operator:         operator,
 		Value:            value,
 		JoinWithPrevious: joinWithPrevious,
@@ -62,14 +77,14 @@ func NewRuleExpression(
 }
 
 func HydrateRuleExpression(
-	fieldID string,
+	source RuleExprSource,
 	operator ExprOperator,
 	value any,
 	joinWithPrevious *JoinOperator,
 	position float32,
 ) *RuleExpression {
 	return &RuleExpression{
-		FieldKey:         fieldID,
+		Source:           source,
 		Operator:         operator,
 		Value:            value,
 		JoinWithPrevious: joinWithPrevious,
@@ -91,4 +106,9 @@ var isValidExprOperator = validate.NewTypeValidator([]ExprOperator{
 	ExprOperatorGT,
 	ExprOperatorLTE,
 	ExprOperatorGTE,
+})
+
+var isValidExprSourceType = validate.NewTypeValidator([]RuleExprSourceType{
+	RuleExprSourceTypeField,
+	RuleExprSourceTypeUserClaim,
 })

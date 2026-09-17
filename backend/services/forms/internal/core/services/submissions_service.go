@@ -113,6 +113,7 @@ func (s *submissionsService) Create(ctx context.Context, cmd *commands.CreateSub
 		cmd.VersionID,
 		cmd.IdempotencyID,
 		cmd.Values,
+		cmd.EvalContext,
 	)
 	if err != nil {
 		s.logger.WarnContext(ctx, "submission creation failed; domain invariant violation", "tenant_id", cmd.TenantID, "error", err)
@@ -144,6 +145,7 @@ func (s *submissionsService) Normalize(ctx context.Context, cmd *commands.Normal
 		cmd.VersionID,
 		domain.IdempotencyID(domain.NewID()),
 		cmd.Values,
+		cmd.EvalContext,
 	)
 	if err != nil {
 		s.logger.WarnContext(ctx, "submission normalization failed; domain invariant violation", "tenant_id", cmd.TenantID, "error", err)

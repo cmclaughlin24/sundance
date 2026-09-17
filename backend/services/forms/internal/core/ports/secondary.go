@@ -84,7 +84,7 @@ type ElementValidatorStrategy interface {
 
 type ElementValidatorRegistry = stratreg.StrategyRegistry[domain.ElementType, ElementValidatorStrategy]
 
-type RuleEvaluationContext = map[string]any
+type RuleEvaluationContext = domain.EvaluationContext
 
 type RuleEvaluator interface {
 	Evaluate(context.Context, *domain.Rule, RuleEvaluationContext) (bool, error)

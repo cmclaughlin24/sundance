@@ -18,6 +18,8 @@ type IdempotencyID string
 
 type SubmissionStatus string
 
+type EvaluationContext map[RuleExprSourceType]map[string]any
+
 type FactMap map[string]any
 
 const (
@@ -48,6 +50,7 @@ type Submission struct {
 	Values        []*SubmissionValue
 	Facts         []*CanonicalFact
 	Attempts      []*SubmissionAttempt
+	evalContext   EvaluationContext
 	withEvents
 }
 
@@ -57,6 +60,7 @@ func NewSubmission(
 	versionID FormVersionID,
 	idempotencyID IdempotencyID,
 	values []*SubmissionValue,
+	evalContext EvaluationContext,
 ) (*Submission, error) {
 	s := &Submission{
 		ID:            SubmissionID(NewID()),
@@ -69,6 +73,7 @@ func NewSubmission(
 		Values:        values,
 		Facts:         make([]*CanonicalFact, 0),
 		Attempts:      make([]*SubmissionAttempt, 0),
+		evalContext:   evalContext,
 		CreatedAt:     Now(),
 	}
 
@@ -90,6 +95,7 @@ func HydrateSubmission(
 	values []*SubmissionValue,
 	facts []*CanonicalFact,
 	attempts []*SubmissionAttempt,
+	evalContext EvaluationContext,
 	createdAt time.Time,
 	updatedAt time.Time,
 ) *Submission {
@@ -104,6 +110,7 @@ func HydrateSubmission(
 		Values:        values,
 		Facts:         facts,
 		Attempts:      attempts,
+		evalContext:   evalContext,
 		CreatedAt:     createdAt,
 		UpdatedAt:     updatedAt,
 	}
@@ -119,6 +126,13 @@ func (s *Submission) GetValue(id ElementID) (*SubmissionValue, bool) {
 	}
 
 	return s.Values[idx], true
+}
+
+func (s *Submission) GetEvalContext() EvaluationContext {
+	if s.evalContext == nil {
+		return make(EvaluationContext)
+	}
+	return s.evalContext
 }
 
 func (s *Submission) Accept(facts []*CanonicalFact) {

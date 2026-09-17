@@ -35,18 +35,21 @@ func (r *submissionResolver) resolve(ctx context.Context, s *domain.Submission, 
 		return nil, domain.ErrInvalidVersionStatus
 	}
 
-	evalCtx := make(ports.RuleEvaluationContext, len(s.Values))
+	evalContext := s.GetEvalContext()
+	fieldCtx := make(map[string]any, len(s.Values))
+
 	for _, element := range fv.FlatElements() {
 		if val, ok := s.GetValue(element.ID); ok {
-			evalCtx[element.Key] = val.Value
+			fieldCtx[element.Key] = val.Value
 		}
 	}
+	evalContext[domain.RuleExprSourceTypeField] = fieldCtx
 
 	resolved := make([]resolveElement, 0)
 
 pageLoop:
 	for _, page := range fv.GetPages() {
-		visible, err := r.shouldValidate(ctx, page, evalCtx)
+		visible, err := r.shouldValidate(ctx, page, evalContext)
 
 		if err != nil {
 			return nil, err
@@ -58,7 +61,7 @@ pageLoop:
 
 	sectionLoop:
 		for _, section := range page.GetSections() {
-			visible, err := r.shouldValidate(ctx, section, evalCtx)
+			visible, err := r.shouldValidate(ctx, section, evalContext)
 
 			if err != nil {
 				return nil, err
@@ -70,7 +73,7 @@ pageLoop:
 
 		elementLoop:
 			for _, element := range section.GetElements() {
-				visible, err := r.shouldValidate(ctx, element, evalCtx)
+				visible, err := r.shouldValidate(ctx, element, evalContext)
 
 				if err != nil {
 					return nil, err
@@ -80,7 +83,7 @@ pageLoop:
 					continue elementLoop
 				}
 
-				required, err := r.isRequired(ctx, element, evalCtx)
+				required, err := r.isRequired(ctx, element, evalContext)
 				if err != nil {
 					return nil, err
 				}

@@ -65,17 +65,25 @@ func fromRuleDocument(doc *ruleDocument) (*domain.Rule, error) {
 	return r, nil
 }
 
+type ruleExprSource struct {
+	Type string `bson:"type"`
+	Key  string `bson:"key"`
+}
+
 type ruleExpressionDocument struct {
-	FieldKey         string  `bson:"field_key"`
-	Operator         string  `bson:"operator"`
-	Value            any     `bson:"value"`
-	JoinWithPrevious *string `bson:"join_with_previous"`
-	Position         float32 `bson:"position"`
+	Source           ruleExprSource `bson:"source"`
+	Operator         string         `bson:"operator"`
+	Value            any            `bson:"value"`
+	JoinWithPrevious *string        `bson:"join_with_previous"`
+	Position         float32        `bson:"position"`
 }
 
 func toRuleExpressionDocument(e *domain.RuleExpression) *ruleExpressionDocument {
 	return &ruleExpressionDocument{
-		FieldKey:         e.FieldKey,
+		Source: ruleExprSource{
+			Type: string(e.Source.Type),
+			Key:  e.Source.Key,
+		},
 		Operator:         string(e.Operator),
 		Value:            e.Value,
 		JoinWithPrevious: (*string)(e.JoinWithPrevious),
@@ -85,7 +93,10 @@ func toRuleExpressionDocument(e *domain.RuleExpression) *ruleExpressionDocument 
 
 func fromRuleExpressionDocument(e *ruleExpressionDocument) *domain.RuleExpression {
 	return domain.HydrateRuleExpression(
-		e.FieldKey,
+		domain.RuleExprSource{
+			Type: domain.RuleExprSourceType(e.Source.Type),
+			Key:  e.Source.Key,
+		},
 		domain.ExprOperator(e.Operator),
 		e.Value,
 		(*domain.JoinOperator)(e.JoinWithPrevious),
