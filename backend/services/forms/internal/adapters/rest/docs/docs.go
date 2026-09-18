@@ -2511,12 +2511,16 @@ const docTemplate = `{
                 "elementId": {
                     "type": "string"
                 },
+                "hasStaticValue": {
+                    "type": "boolean"
+                },
                 "id": {
                     "type": "string"
                 },
                 "priority": {
                     "type": "integer"
                 },
+                "staticValue": {},
                 "tagVersionId": {
                     "type": "string"
                 },
@@ -3075,9 +3079,13 @@ const docTemplate = `{
         "upsertElementTagMappingRequest": {
             "type": "object",
             "properties": {
+                "hasStaticValue": {
+                    "type": "boolean"
+                },
                 "priority": {
                     "type": "integer"
                 },
+                "staticValue": {},
                 "tagVersionId": {
                     "type": "string"
                 }

@@ -7,17 +7,21 @@ import (
 )
 
 type upsertElementTagMappingRequest struct {
-	TagVersionID string `json:"tagVersionId"`
-	Priority     int    `json:"priority"`
+	TagVersionID   string `json:"tagVersionId"`
+	Priority       int    `json:"priority"`
+	HasStaticValue bool   `json:"hasStaticValue"`
+	StaticValue    any    `json:"staticValue"`
 }
 
 type ElementTagMappingResponse struct {
-	ID           domain.ElementTagMappingID `json:"id"`
-	ElementID    domain.ElementID           `json:"elementId"`
-	TagVersionID domain.TagVersionID        `json:"tagVersionId"`
-	Priority     int                        `json:"priority"`
-	CreatedAt    time.Time                  `json:"createdAt"`
-	UpdatedAt    time.Time                  `json:"updatedAt"`
+	ID             domain.ElementTagMappingID `json:"id"`
+	ElementID      domain.ElementID           `json:"elementId"`
+	TagVersionID   domain.TagVersionID        `json:"tagVersionId"`
+	Priority       int                        `json:"priority"`
+	HasStaticValue bool                       `json:"hasStaticValue"`
+	StaticValue    any                        `json:"staticValue"`
+	CreatedAt      time.Time                  `json:"createdAt"`
+	UpdatedAt      time.Time                  `json:"updatedAt"`
 }
 
 func requestToElementTagMappingData(dtos []upsertElementTagMappingRequest) []commands.ElementTagMappingData {
@@ -25,8 +29,10 @@ func requestToElementTagMappingData(dtos []upsertElementTagMappingRequest) []com
 
 	for _, dto := range dtos {
 		configs = append(configs, commands.ElementTagMappingData{
-			TagVersionID: dto.TagVersionID,
-			Priority:     dto.Priority,
+			TagVersionID:   dto.TagVersionID,
+			Priority:       dto.Priority,
+			HasStaticValue: dto.HasStaticValue,
+			StaticValue:    dto.StaticValue,
 		})
 	}
 
@@ -38,12 +44,14 @@ func elementTagMappingsToResponses(tags []*domain.ElementTagMapping) []*ElementT
 
 	for _, tag := range tags {
 		dtos = append(dtos, &ElementTagMappingResponse{
-			ID:           tag.ID,
-			ElementID:    tag.ElementID,
-			TagVersionID: tag.TagVersionID,
-			Priority:     tag.Priority,
-			CreatedAt:    tag.CreatedAt,
-			UpdatedAt:    tag.UpdatedAt,
+			ID:             tag.ID,
+			ElementID:      tag.ElementID,
+			TagVersionID:   tag.TagVersionID,
+			Priority:       tag.Priority,
+			HasStaticValue: tag.HasStaticValue,
+			StaticValue:    tag.StaticValue,
+			CreatedAt:      tag.CreatedAt,
+			UpdatedAt:      tag.UpdatedAt,
 		})
 	}
 

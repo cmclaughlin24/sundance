@@ -120,11 +120,12 @@ func (n *submissionNormalizer) evaluateCollectionCandidates(tag domain.Tag, vers
 
 	for idx, group := range byCollectionIdx {
 		winner := rankCandidates(group)
+
 		facts = append(facts, domain.NewCanonicalFact(
 			winner.etm.ElementID,
 			version.ID,
 			tag.KeyPath,
-			winner.value,
+			pickValue(winner),
 			&idx,
 		))
 	}
@@ -136,16 +137,11 @@ func (n *submissionNormalizer) evaluateScalarCandidates(tag domain.Tag, version 
 	facts := make([]*domain.CanonicalFact, 0)
 	winner := rankCandidates(candidates)
 
-	var value any
-	if winner.value != nil {
-		value = winner.value.Value
-	}
-
 	facts = append(facts, domain.NewCanonicalFact(
 		winner.etm.ElementID,
 		version.ID,
 		tag.KeyPath,
-		value,
+		pickValue(winner),
 		nil,
 	))
 
@@ -157,4 +153,16 @@ func rankCandidates(candidates []candidate) candidate {
 		return cmp.Compare(c2.etm.Priority, c1.etm.Priority)
 	})
 	return candidates[0]
+}
+
+func pickValue(c candidate) any {
+	if c.etm.HasStaticValue {
+		return c.etm.StaticValue
+	}
+
+	if c.value == nil {
+		return nil
+	}
+
+	return c.value.Value
 }

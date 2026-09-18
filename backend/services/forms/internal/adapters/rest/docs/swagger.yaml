@@ -124,10 +124,13 @@ definitions:
         type: string
       elementId:
         type: string
+      hasStaticValue:
+        type: boolean
       id:
         type: string
       priority:
         type: integer
+      staticValue: {}
       tagVersionId:
         type: string
       updatedAt:
@@ -507,8 +510,11 @@ definitions:
     type: object
   upsertElementTagMappingRequest:
     properties:
+      hasStaticValue:
+        type: boolean
       priority:
         type: integer
+      staticValue: {}
       tagVersionId:
         type: string
     type: object

@@ -114,7 +114,7 @@ func (e *Element) AddTags(mappings ...ElementTagMappingConfig) error {
 			return fmt.Errorf("%w: tagVersion=%s", ErrDuplicateElementTagMapping, tag.TagVersionID)
 		}
 
-		etm, err := NewElementTagMapping(e.ID, tag.TagVersionID, tag.Priority)
+		etm, err := NewElementTagMapping(e.ID, tag.TagVersionID, tag.Priority, tag.HasStaticValue, tag.StaticValue)
 		if err != nil {
 			return err
 		}
@@ -136,7 +136,7 @@ func (e *Element) ReplaceTags(mappings ...ElementTagMappingConfig) error {
 			return fmt.Errorf("%w: tagVersion=%s", ErrDuplicateElementTagMapping, tag.TagVersionID)
 		}
 
-		etm, err := NewElementTagMapping(e.ID, tag.TagVersionID, tag.Priority)
+		etm, err := NewElementTagMapping(e.ID, tag.TagVersionID, tag.Priority, tag.HasStaticValue, tag.StaticValue)
 		if err != nil {
 			return err
 		}

@@ -8,8 +8,10 @@ import (
 type ElementTagMappingID string
 
 type ElementTagMappingConfig struct {
-	TagVersionID TagVersionID
-	Priority     int
+	TagVersionID   TagVersionID
+	Priority       int
+	HasStaticValue bool
+	StaticValue    any
 }
 
 type ElementTagMapping struct {
@@ -20,13 +22,21 @@ type ElementTagMapping struct {
 	ElementTagMappingConfig
 }
 
-func NewElementTagMapping(elementID ElementID, tagVersionID TagVersionID, priority int) (*ElementTagMapping, error) {
+func NewElementTagMapping(
+	elementID ElementID,
+	tagVersionID TagVersionID,
+	priority int,
+	hasStaticValue bool,
+	staticValue any,
+) (*ElementTagMapping, error) {
 	etm := &ElementTagMapping{
 		ID:        ElementTagMappingID(NewID()),
 		ElementID: elementID,
 		ElementTagMappingConfig: ElementTagMappingConfig{
-			TagVersionID: tagVersionID,
-			Priority:     priority,
+			TagVersionID:   tagVersionID,
+			Priority:       priority,
+			HasStaticValue: hasStaticValue,
+			StaticValue:    staticValue,
 		},
 		CreatedAt: Now(),
 	}
@@ -43,6 +53,8 @@ func HydrateElementTagMapping(
 	elementID ElementID,
 	tagVersionID TagVersionID,
 	priority int,
+	hasStaticValue bool,
+	staticValue any,
 	createdAt time.Time,
 	updatedAt time.Time,
 ) *ElementTagMapping {
@@ -50,8 +62,10 @@ func HydrateElementTagMapping(
 		ID:        id,
 		ElementID: elementID,
 		ElementTagMappingConfig: ElementTagMappingConfig{
-			TagVersionID: tagVersionID,
-			Priority:     priority,
+			TagVersionID:   tagVersionID,
+			Priority:       priority,
+			HasStaticValue: hasStaticValue,
+			StaticValue:    staticValue,
 		},
 		CreatedAt: createdAt,
 		UpdatedAt: updatedAt,

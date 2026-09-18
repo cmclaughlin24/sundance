@@ -6,22 +6,26 @@ import (
 )
 
 type elementTagMappingDocument struct {
-	ID           string
-	ElementID    string
-	TagVersionID string
-	Priority     int
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID             string    `bson:"_id"`
+	ElementID      string    `bson:"element_id"`
+	TagVersionID   string    `bson:"tag_version_id"`
+	Priority       int       `bson:"priority"`
+	HasStaticValue bool      `bson:"has_static_value"`
+	StaticValue    any       `bson:"static_value"`
+	CreatedAt      time.Time `bson:"created_at"`
+	UpdatedAt      time.Time `bson:"updated_at"`
 }
 
 func toElementTagMappingDocument(etm *domain.ElementTagMapping) *elementTagMappingDocument {
 	return &elementTagMappingDocument{
-		ID:           string(etm.ID),
-		ElementID:    string(etm.ElementID),
-		TagVersionID: string(etm.TagVersionID),
-		Priority:     etm.Priority,
-		CreatedAt:    etm.CreatedAt,
-		UpdatedAt:    etm.UpdatedAt,
+		ID:             string(etm.ID),
+		ElementID:      string(etm.ElementID),
+		TagVersionID:   string(etm.TagVersionID),
+		Priority:       etm.Priority,
+		HasStaticValue: etm.HasStaticValue,
+		StaticValue:    etm.StaticValue,
+		CreatedAt:      etm.CreatedAt,
+		UpdatedAt:      etm.UpdatedAt,
 	}
 }
 
@@ -41,6 +45,8 @@ func fromElementTagMappingDocument(doc *elementTagMappingDocument) *domain.Eleme
 		domain.ElementID(doc.ElementID),
 		domain.TagVersionID(doc.TagVersionID),
 		doc.Priority,
+		doc.HasStaticValue,
+		doc.StaticValue,
 		doc.CreatedAt,
 		doc.UpdatedAt,
 	)

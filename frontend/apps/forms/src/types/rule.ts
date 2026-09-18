@@ -22,7 +22,7 @@ export enum RuleExpressionJoinOp {
   Or = "or",
 }
 
-export type RuleExprSourceType = "field" | "userClaim";
+export type RuleExprSourceType = "field" | "user_claim";
 
 export interface IRuleExprSource {
   type: RuleExprSourceType;

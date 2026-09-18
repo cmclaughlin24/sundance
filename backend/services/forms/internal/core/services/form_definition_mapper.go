@@ -237,8 +237,10 @@ func (m *formDefinitionMapper) createElement(f commands.ElementData) (*domain.El
 
 	for _, t := range f.Tags {
 		err := element.AddTags(domain.ElementTagMappingConfig{
-			TagVersionID: domain.TagVersionID(t.TagVersionID),
-			Priority:     t.Priority,
+			TagVersionID:   domain.TagVersionID(t.TagVersionID),
+			Priority:       t.Priority,
+			HasStaticValue: t.HasStaticValue,
+			StaticValue:    t.StaticValue,
 		})
 
 		if err != nil {
@@ -268,8 +270,10 @@ func (m *formDefinitionMapper) updateElement(f commands.ElementData, element *do
 	tags := make([]domain.ElementTagMappingConfig, 0, len(f.Tags))
 	for _, etm := range f.Tags {
 		tags = append(tags, domain.ElementTagMappingConfig{
-			TagVersionID: domain.TagVersionID(etm.TagVersionID),
-			Priority:     etm.Priority,
+			TagVersionID:   domain.TagVersionID(etm.TagVersionID),
+			Priority:       etm.Priority,
+			HasStaticValue: etm.HasStaticValue,
+			StaticValue:    etm.StaticValue,
 		})
 	}
 

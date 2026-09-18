@@ -22,8 +22,10 @@ type RuleData struct {
 }
 
 type ElementTagMappingData struct {
-	TagVersionID string
-	Priority     int
+	TagVersionID   string
+	Priority       int
+	HasStaticValue bool
+	StaticValue    any
 }
 
 type ElementData struct {
