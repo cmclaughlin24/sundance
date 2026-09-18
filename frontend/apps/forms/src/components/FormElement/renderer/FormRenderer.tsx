@@ -11,7 +11,7 @@ import {
 } from "@/store/submission/useSubmissionContext";
 import { filterVisible } from "@/utils/filter";
 import { EvalContextContext } from "@/store/submission/evalContext";
-import { buildEvalContext, type EvalContext } from "@/utils/evaluate";
+import { buildFieldEvalNamespace, type EvalContext } from "@/utils/evaluate";
 import { rendererStyles } from "./renderer.style";
 import { FormFooter } from "../layout/FormFooter/FormFooter";
 import { FormFooterActions } from "../layout/FormFooter/FormFooterActions";
@@ -37,7 +37,9 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
   const [pageIndex, setPageIndex] = useState(0);
   const evalCtx = useMemo<EvalContext>(() => {
     const pages = version?.pages ?? [];
-    return buildEvalContext(pages, values);
+    const field = buildFieldEvalNamespace(pages, values);
+    // TODO: Add userClaims namespace.
+    return { field };
   }, [version, values]);
 
   let pages = sortPositioned(version!.pages);
@@ -56,6 +58,17 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
     const submission: ISubmissionValue[] = [];
 
     for (const [elementId, value] of Object.entries(values)) {
+      if (Array.isArray(value)) {
+        submission.push(
+          ...value.map((v, idx) => ({
+            value: v,
+            elementId,
+            collectionIndex: idx,
+          })),
+        );
+        continue;
+      }
+
       submission.push({ elementId, value });
     }
 

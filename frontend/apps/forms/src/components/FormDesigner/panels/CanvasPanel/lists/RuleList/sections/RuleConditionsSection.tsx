@@ -29,7 +29,7 @@ export const RuleConditionsSection: React.FC<RuleConditionsSectionProps> =
     const handleAddCondition = () => {
       const defaultFieldKey = elements[0]?.key ?? "";
       const newExpression: IRuleExpression = {
-        fieldKey: defaultFieldKey,
+        source: { type: "field", key: defaultFieldKey },
         operator: RuleExpressionOp.Equal,
         value: "",
         joinWithPrevious: RuleExpressionJoinOp.And,

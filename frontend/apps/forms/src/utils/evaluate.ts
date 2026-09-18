@@ -4,6 +4,7 @@ import {
   type IRule,
   type IRuleExpression,
   type IRuleState,
+  type RuleExprSourceType,
 } from "@/types/rule";
 import { sortPositioned } from "./position";
 import type { IPage } from "@/types/page";
@@ -20,16 +21,18 @@ const evaluatorRegistry = new Map<RuleExpressionOp, EvaluatorFn>([
   [RuleExpressionOp.GreaterThanEqualTo, (a, b) => a >= b],
 ]);
 
-export type EvalContext = Record<string, any>;
+export type EvalNamespace = Record<string, any>;
 
-export function buildEvalContext(
+export type EvalContext = Partial<Record<RuleExprSourceType, EvalNamespace>>;
+
+export function buildFieldEvalNamespace(
   pages: IPage[] | null,
   values: FormValues,
-): EvalContext {
-  const evalCtx: EvalContext = {};
+): EvalNamespace {
+  const namespace: EvalNamespace = {};
 
   if (!pages || pages.length === 0) {
-    return evalCtx;
+    return namespace;
   }
 
   pageLoop: for (const page of pages) {
@@ -43,12 +46,12 @@ export function buildEvalContext(
       }
 
       for (const element of section.elements) {
-        evalCtx[element.key] = values[element.id];
+        namespace[element.key] = values[element.id];
       }
     }
   }
 
-  return evalCtx;
+  return namespace;
 }
 
 export function evaluateRules(
@@ -107,7 +110,7 @@ export function evaluateRule(rule: IRule, evalCtx: EvalContext): boolean {
 
 function evaluateExpression(
   exp: IRuleExpression,
-  values: Record<string, any>,
+  evalCtx: EvalContext,
 ): boolean {
   const evaluator = evaluatorRegistry.get(exp.operator);
 
@@ -115,9 +118,10 @@ function evaluateExpression(
     throw new Error(`invalid expression operator: ${exp.operator}`);
   }
 
-  const fieldValue = values[exp.fieldKey];
+  const namespace: EvalNamespace = evalCtx[exp.source.type] ?? {};
+  const value = namespace[exp.source.key];
 
-  return evaluator(fieldValue, exp.value);
+  return evaluator(value, exp.value);
 }
 
 function applyJoinOp(

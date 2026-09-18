@@ -56,7 +56,7 @@ function resolveBindings(
     if (binding.type === "static") {
       filters[key] = binding.value;
     } else if (binding.type === "field") {
-      filters[key] = evalCtx[binding.key];
+      filters[key] = evalCtx.field?.[binding.key];
     }
   }
 

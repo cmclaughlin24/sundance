@@ -55,7 +55,7 @@ export const RuleConditionRow: React.FC<RuleConditionRowProps> = function ({
   const handleFieldChange = (event: SelectChangeEvent<string>) => {
     onChange({
       ...expression,
-      fieldKey: event.target.value,
+      source: { type: "field", key: event.target.value },
     });
   };
 
@@ -89,7 +89,7 @@ export const RuleConditionRow: React.FC<RuleConditionRowProps> = function ({
 
       <FormControl size="small" sx={ruleConditionRowStyles.fieldSelect}>
         <Select
-          value={expression.fieldKey || ""}
+          value={expression.source.key || ""}
           onChange={handleFieldChange}
           displayEmpty
         >

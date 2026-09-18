@@ -22,8 +22,15 @@ export enum RuleExpressionJoinOp {
   Or = "or",
 }
 
+export type RuleExprSourceType = "field" | "userClaim";
+
+export interface IRuleExprSource {
+  type: RuleExprSourceType;
+  key: string;
+}
+
 export interface IRuleExpression extends HasPosition {
-  fieldKey: string;
+  source: IRuleExprSource;
   operator: RuleExpressionOp;
   value: any;
   joinWithPrevious: RuleExpressionJoinOp;
