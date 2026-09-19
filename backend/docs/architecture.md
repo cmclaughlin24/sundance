@@ -178,7 +178,7 @@ C4Container
   Rel(endUser, formsService, "Renders forms and submits responses", "REST/JSON HTTPS")
   Rel(endUser, tenantsService, "Fetches lookup options at render time", "REST/JSON HTTPS")
   Rel(formsService, tenantsService, "Validates lookup values at submission time", "REST/JSON HTTPS")
-  Rel(formsHub, messageBroker, "Publishes domain events (submissions and form lifecycle)", "async")
+  Rel(formsService, messageBroker, "Publishes domain events (submissions and form lifecycle)", "async")
 ```
 
 | Building Block            | Responsibility                                                                                                                                                                                                                                   | Source                      |
