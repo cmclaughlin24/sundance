@@ -1,0 +1,2237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tags Tab - Design 3: IAM / IGA Hybrid Contract Studio | Sundance Forms</title>
+  <style>
+    :root {
+      --bg-primary: #242424;
+      --bg-panel: #1b1b1b;
+      --bg-card: #252525;
+      --bg-card-hover: #2e2e2e;
+      --border-primary: #2b2b2b;
+      --border-subtle: #3a3a3a;
+      --border-highlight: #a855f7;
+      --sundance-navy: #0C1F40;
+      --sundance-red: #E51837;
+      --sundance-gold: #FFC425;
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #c084fc;
+      --text-primary: rgba(255, 255, 255, 0.92);
+      --text-secondary: rgba(255, 255, 255, 0.65);
+      --text-muted: rgba(255, 255, 255, 0.45);
+      --tag-green-text: #34d399;
+      --tag-green-bg: rgba(52, 211, 153, 0.15);
+      --tag-blue-text: #60a5fa;
+      --tag-blue-bg: rgba(96, 165, 250, 0.18);
+      --tag-amber-text: #fbbf24;
+      --tag-amber-bg: rgba(251, 191, 36, 0.18);
+      --tag-red-text: #f87171;
+      --tag-red-bg: rgba(248, 113, 113, 0.18);
+      --tag-purple-text: #d8b4fe;
+      --tag-purple-bg: rgba(192, 132, 252, 0.18);
+      --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Top Switcher Navigation Bar */
+    .prototype-nav {
+      background: #151515;
+      border-bottom: 1px solid #333;
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .prototype-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .prototype-badge {
+      background: var(--sundance-red);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .prototype-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .prototype-links {
+      display: flex;
+      gap: 8px;
+    }
+    .proto-link {
+      font-size: 0.8rem;
+      padding: 6px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      background: #222;
+      border: 1px solid #333;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    .proto-link:hover {
+      background: #2a2a2a;
+      color: white;
+    }
+    .proto-link.active {
+      background: var(--sundance-navy);
+      border-color: #3b82f6;
+      color: #93c5fd;
+    }
+
+    /* Design Concept Banner */
+    .concept-banner {
+      background: linear-gradient(90deg, rgba(88, 28, 135, 0.5) 0%, rgba(12, 31, 64, 0.7) 50%, rgba(20, 20, 20, 0.95) 100%);
+      border-bottom: 1px solid #6b21a8;
+      padding: 12px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+    .concept-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .concept-tag {
+      background: rgba(168, 85, 247, 0.25);
+      color: #e9d5ff;
+      border: 1px solid rgba(168, 85, 247, 0.5);
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+    .concept-text strong {
+      color: white;
+    }
+
+    /* Page Layout */
+    .page-wrapper {
+      max-width: 1840px;
+      margin: 0 auto;
+      padding: 24px 32px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Header */
+    .form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+    }
+    .header-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .form-title {
+      font-size: 2.2rem;
+      font-weight: 300;
+      line-height: 1.25;
+      letter-spacing: -0.5px;
+      color: white;
+    }
+    .form-description {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 3px 12px;
+      border-radius: 9999px;
+      line-height: 1.2;
+    }
+    .status-tag.draft {
+      color: var(--tag-blue-text);
+      background: var(--tag-blue-bg);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+    }
+    .status-tag.published {
+      color: var(--tag-green-text);
+      background: var(--tag-green-bg);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+    .iga-connector-pill {
+      font-size: 0.75rem;
+      background: #172554;
+      color: #93c5fd;
+      border: 1px solid #1e40af;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn {
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-text {
+      background: transparent;
+      color: var(--text-primary);
+    }
+    .btn-text:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .btn-outlined {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+    }
+    .btn-outlined:hover {
+      border-color: #555;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .btn-primary {
+      background: var(--sundance-navy);
+      border: 1px solid #1e3a6d;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #142a54;
+      border-color: var(--accent-blue);
+    }
+
+    /* Tabs Bar */
+    .tabs-bar {
+      display: flex;
+      border-bottom: 1px solid var(--border-primary);
+      width: 100%;
+    }
+    .tab-button {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+      font-family: inherit;
+      transition: color 0.2s;
+    }
+    .tab-button:hover {
+      color: white;
+    }
+    .tab-button.active {
+      color: #d8b4fe;
+      font-weight: 600;
+    }
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-purple);
+    }
+    .tab-pill {
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: rgba(168, 85, 247, 0.25);
+      color: #d8b4fe;
+      margin-left: 6px;
+    }
+
+    /* IAM / IGA Governance Deck */
+    .iga-governance-deck {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      background: #1e1e1e;
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+    .kpi-card {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      border-right: 1px solid #2d2d2d;
+      padding-right: 16px;
+    }
+    .kpi-card:last-of-type {
+      border-right: none;
+    }
+    .kpi-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .kpi-value {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: white;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .kpi-sub {
+      font-size: 0.8rem;
+      font-weight: normal;
+      color: var(--text-secondary);
+    }
+
+    .perspective-switch {
+      display: flex;
+      background: #131313;
+      padding: 4px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      gap: 4px;
+    }
+    .perspective-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .perspective-btn:hover {
+      color: white;
+    }
+    .perspective-btn.active {
+      background: #2e1065;
+      color: #e9d5ff;
+      font-weight: 600;
+      border: 1px solid #7e22ce;
+    }
+
+    /* Dual-Pane Workspace */
+    .dual-workspace {
+      display: grid;
+      grid-template-columns: 1fr 200px 1.25fr;
+      border: 1px solid var(--border-primary);
+      background: var(--bg-panel);
+      border-radius: 8px;
+      min-height: 780px;
+      overflow: hidden;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .dual-workspace.linking-tag-mode {
+      border-color: #a855f7;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+    }
+    .dual-workspace.linking-field-mode {
+      border-color: #38bdf8;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+    }
+
+    /* Panes */
+    .pane-column {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow-y: auto;
+      max-height: 820px;
+    }
+    .pane-column.left-pane {
+      background: #1a1a1a;
+      border-right: 1px solid var(--border-primary);
+    }
+    .pane-column.right-pane {
+      background: #1a1a1a;
+      border-left: 1px solid var(--border-primary);
+    }
+    .pane-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-primary);
+      padding-bottom: 12px;
+    }
+    .pane-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pane-badge {
+      font-size: 0.72rem;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: #282828;
+      color: #999;
+      border: 1px solid #333;
+    }
+
+    .pane-search {
+      background: #121212;
+      border: 1px solid var(--border-primary);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.84rem;
+      color: white;
+      outline: none;
+      font-family: inherit;
+    }
+    .pane-search:focus {
+      border-color: var(--accent-purple);
+    }
+
+    .tree-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .tree-group-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.6px;
+      padding-left: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .tree-node-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Left Source Node */
+    .source-node {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 6px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .source-node:hover {
+      background: var(--bg-card-hover);
+      border-color: #555;
+    }
+    .source-node.active-link {
+      background: rgba(168, 85, 247, 0.16);
+      border: 1px solid var(--accent-purple);
+      box-shadow: 0 0 0 1px var(--accent-purple);
+    }
+    .source-node.unmapped {
+      border-style: dashed;
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.05);
+    }
+    .source-node.unmapped:hover {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: #fbbf24;
+    }
+    .source-node.unmapped.active-link {
+      background: rgba(245, 158, 11, 0.18);
+      border-color: #fbbf24;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+    }
+    .source-node.fanout-source {
+      border-left: 4px solid #a855f7;
+    }
+    .source-node.convergent-source {
+      border-left: 4px solid #38bdf8;
+    }
+
+    /* Action button shown when right tag wants to link a candidate field */
+    .btn-candidate-action {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #0284c7;
+      color: white;
+      border: 1px solid #38bdf8;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      z-index: 10;
+    }
+    .btn-candidate-action:hover {
+      background: #0369a1;
+    }
+    .linking-field-mode .source-node:hover .btn-candidate-action {
+      display: block;
+    }
+
+    .node-info-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .node-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: white;
+    }
+    .node-subtitle {
+      font-size: 0.72rem;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      color: var(--text-muted);
+    }
+    .node-tag-pills-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .node-type-tag {
+      font-size: 0.68rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: #181818;
+      border: 1px solid #333;
+      color: #aaa;
+    }
+    .cardinality-chip {
+      font-size: 0.68rem;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .cardinality-chip.purple {
+      background: rgba(192, 132, 252, 0.18);
+      color: #d8b4fe;
+      border: 1px solid rgba(192, 132, 252, 0.4);
+    }
+    .cardinality-chip.blue {
+      background: rgba(56, 189, 248, 0.18);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+    }
+    .cardinality-chip.amber {
+      background: rgba(245, 158, 11, 0.18);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    /* Center Connector Lane */
+    .connector-lane {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #141414;
+      padding: 16px 12px;
+      gap: 12px;
+      border-left: 1px solid #222;
+      border-right: 1px solid #222;
+    }
+    .connector-header {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+    .mapping-bridge {
+      width: 100%;
+      background: #202020;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      text-align: center;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+    .mapping-bridge.fanout {
+      background: rgba(168, 85, 247, 0.18);
+      border-color: var(--accent-purple);
+      color: #e9d5ff;
+      box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);
+    }
+    .mapping-bridge.convergent {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: #0284c7;
+      color: #7dd3fc;
+      box-shadow: 0 0 12px rgba(2, 132, 199, 0.25);
+    }
+    .mapping-bridge.connecting-mode {
+      background: rgba(245, 158, 11, 0.18);
+      border-color: #f59e0b;
+      color: #fde68a;
+      box-shadow: 0 0 14px rgba(245, 158, 11, 0.35);
+      animation: pulse-border 1.8s infinite ease-in-out;
+    }
+    @keyframes pulse-border {
+      0%, 100% { border-color: #f59e0b; }
+      50% { border-color: #fbbf24; box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+    }
+
+    /* Direct Action Buttons in Center Lane */
+    .btn-bridge-action {
+      width: 100%;
+      padding: 7px 10px;
+      border-radius: 5px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .btn-add-fanout {
+      background: #3b0764;
+      border: 1px solid #7e22ce;
+      color: #f3e8ff;
+    }
+    .btn-add-fanout:hover {
+      background: #581c87;
+      border-color: var(--accent-purple);
+    }
+    .btn-add-candidate {
+      background: #075985;
+      border: 1px solid #0284c7;
+      color: #e0f2fe;
+    }
+    .btn-add-candidate:hover {
+      background: #0369a1;
+      border-color: #38bdf8;
+    }
+    .btn-cancel-linking {
+      background: #27272a;
+      border: 1px solid #52525b;
+      color: #e4e4e7;
+    }
+    .btn-cancel-linking:hover {
+      background: #3f3f46;
+    }
+
+    /* Right Target Node: IGA Schema */
+    .target-node {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 6px;
+      padding: 12px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .target-node:hover {
+      background: var(--bg-card-hover);
+      border-color: #555;
+    }
+    .target-node.active-link {
+      background: rgba(168, 85, 247, 0.16);
+      border: 1px solid var(--accent-purple);
+      box-shadow: 0 0 0 1px var(--accent-purple);
+    }
+    .target-node.fanout-target {
+      border-left: 4px solid #a855f7;
+    }
+    .target-node.convergent-target {
+      border-left: 4px solid #38bdf8;
+    }
+
+    /* Button shown when left field wants to link to a tag */
+    .btn-link-action {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #7e22ce;
+      color: white;
+      border: 1px solid #c084fc;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+      z-index: 10;
+    }
+    .btn-link-action:hover {
+      background: #9333ea;
+    }
+    .linking-tag-mode .target-node:hover .btn-link-action,
+    .connecting-active .target-node:hover .btn-link-action {
+      display: block;
+    }
+
+    .tag-keypath-display {
+      font-size: 0.82rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      color: #d8b4fe;
+      font-weight: 500;
+    }
+    .tag-desc-display {
+      font-size: 0.73rem;
+      color: var(--text-muted);
+    }
+    .tag-meta-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+    }
+    .tag-version-pill {
+      font-size: 0.68rem;
+      background: rgba(52, 211, 153, 0.2);
+      color: #34d399;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .scim-pill {
+      font-size: 0.68rem;
+      background: #1e1b4b;
+      color: #a5b4fc;
+      border: 1px solid #3730a3;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    /* Slide-Over Transformation Inspector */
+    .slide-inspector {
+      position: fixed;
+      top: 0;
+      right: -480px;
+      width: 480px;
+      height: 100vh;
+      background: #1a1a1a;
+      border-left: 1px solid #333;
+      box-shadow: -10px 0 35px rgba(0,0,0,0.7);
+      transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+    }
+    .slide-inspector.open {
+      right: 0;
+    }
+    .inspector-header {
+      padding: 20px 24px;
+      background: #212121;
+      border-bottom: 1px solid #2f2f2f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .inspector-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: white;
+    }
+    .inspector-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.3rem;
+      cursor: pointer;
+    }
+    .inspector-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .inspector-card {
+      background: #242424;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .inspector-card-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid #333;
+      padding-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Mapped Tags List inside Inspector */
+    .mapped-tag-item-box {
+      background: #191919;
+      border: 1px solid #333;
+      border-radius: 5px;
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+    }
+    .mapped-tag-path {
+      font-family: ui-monospace, SFMono-Regular, monospace;
+      color: #d8b4fe;
+    }
+    .btn-unlink-tag {
+      background: transparent;
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .btn-unlink-tag:hover {
+      color: #f87171;
+      background: rgba(248, 113, 113, 0.1);
+    }
+
+    /* Searchable Taxonomy Popover inside Inspector */
+    .taxonomy-picker-box {
+      border: 1px dashed #7e22ce;
+      background: rgba(168, 85, 247, 0.08);
+      border-radius: 6px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .picker-search {
+      background: #141414;
+      border: 1px solid #444;
+      border-radius: 4px;
+      padding: 6px 10px;
+      color: white;
+      font-size: 0.78rem;
+      outline: none;
+    }
+    .picker-options-list {
+      max-height: 140px;
+      overflow-y: auto;
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .picker-option-row {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 5px 8px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.74rem;
+      transition: all 0.15s;
+    }
+    .picker-option-row:hover {
+      border-color: var(--accent-purple);
+      background: #281b3c;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .form-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-select, .form-input {
+      background: #141414;
+      border: 1px solid #333;
+      border-radius: 5px;
+      padding: 7px 10px;
+      color: white;
+      font-size: 0.84rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .form-select:focus, .form-input:focus {
+      border-color: var(--accent-purple);
+    }
+
+    .switch-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 0;
+    }
+    .switch-title {
+      font-size: 0.82rem;
+      color: white;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #3f3f46; transition: .2s; border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
+      background-color: white; transition: .2s; border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--accent-purple); }
+    input:checked + .slider:before { transform: translateX(16px); }
+
+    .backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.5);
+      z-index: 1999;
+      display: none;
+    }
+    .backdrop.open { display: block; }
+
+    /* Bottom Simulator Drawer */
+    .bottom-drawer {
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      background: #181818;
+      overflow: hidden;
+    }
+    .drawer-header {
+      padding: 12px 20px;
+      background: #202020;
+      border-bottom: 1px solid var(--border-primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .drawer-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .drawer-body {
+      padding: 16px 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      background: #131313;
+    }
+    .sim-column {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .sim-heading {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+    }
+    .json-box {
+      background: #0d0d0d;
+      border: 1px solid #292929;
+      border-radius: 6px;
+      padding: 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.78rem;
+      color: #d8b4fe;
+      line-height: 1.5;
+      overflow-x: auto;
+      white-space: pre;
+      max-height: 250px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #3b0764;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      border: 1px solid var(--accent-purple);
+      display: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Prototype Switcher Bar -->
+  <div class="prototype-nav">
+    <div class="prototype-brand">
+      <span class="prototype-badge">Sundance UI</span>
+      <span class="prototype-title">Form Designer &mdash; "Tags" Tab Exploration</span>
+    </div>
+    <div class="prototype-links">
+      <a href="tags-designs-overview.html" class="proto-link" style="color: #FFC425; border-color: rgba(255, 196, 37, 0.4);">&#9776; Overview</a>
+      <a href="tags-design-1-canvas-inspector.html" class="proto-link">Design 1: Canvas & Inspector</a>
+      <a href="tags-design-2-dual-pane-contract.html" class="proto-link">Design 2: Dual-Pane Contract</a>
+      <a href="tags-design-3-matrix-grid.html" class="proto-link active">Design 3: IAM/IGA Hybrid Studio</a>
+    </div>
+  </div>
+
+  <!-- Design Concept Summary Banner -->
+  <div class="concept-banner">
+    <div class="concept-info">
+      <span class="concept-tag">Interactive Assignment Demo</span>
+      <span class="concept-text">
+        <strong>Direct Linking Ready:</strong> 
+        (1) To link a 2nd tag to a field: click <strong>"+ Link Another Tag (Fan-Out)"</strong> in the center. 
+        (2) To link a 2nd field to a tag: click any tag on the right &rarr; click <strong>"+ Link Candidate Field"</strong>!
+      </span>
+    </div>
+    <button class="btn btn-outlined" style="font-size:0.75rem; padding:4px 10px;" onclick="showToast('Tip: Use center buttons to initiate Fan-Out (Field → Tags) or Convergence (Tag ← Fields)!')">Quick Guide</button>
+  </div>
+
+  <!-- Main Sundance Form Designer Workspace -->
+  <div class="page-wrapper">
+
+    <!-- Form Designer Header -->
+    <header class="form-header">
+      <div class="header-title-group">
+        <h1 class="form-title">Contractor Onboarding & Privileged Role Grant</h1>
+        <p class="form-description">Worker identity provisioning, birthright access rules, and SOX audit justification mapped directly to Saviynt EARS and SailPoint IdentityNow.</p>
+        <div class="header-meta">
+          <span class="status-tag draft">Draft v3</span>
+          <span class="status-tag published">Published v2</span>
+          <span class="iga-connector-pill">Connector: SailPoint IDN &bull; Saviynt EARS</span>
+          <span style="color:var(--text-muted); font-size:0.8rem;">Tenant: <strong>sundance-corp</strong></span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-text" onclick="showToast('Draft version saved (Dispatched event log flushed)')">Save Draft</button>
+        <button class="btn btn-outlined" onclick="toggleBottomDrawer()">Simulate Provisioning Payload</button>
+        <button class="btn btn-primary" onclick="showToast('Published version v3 to SailPoint IdentityNow connector endpoint')">Publish to IGA</button>
+      </div>
+    </header>
+
+    <!-- Form Tabs Navigation -->
+    <nav class="tabs-bar">
+      <button class="tab-button" onclick="showToast('Navigate to Build tab')">Build</button>
+      <button class="tab-button" onclick="showToast('Navigate to Rules tab')">Rules</button>
+      <button class="tab-button" onclick="showToast('Navigate to Reference Data tab')">Reference Data</button>
+      <button class="tab-button" onclick="showToast('Navigate to Version tab')">Version</button>
+      <button class="tab-button active">
+        Tags
+        <span class="tab-pill" id="totalMappingsPill">12 IGA Mappings Active</span>
+      </button>
+      <button class="tab-button" onclick="showToast('Navigate to Settings tab')">Settings</button>
+    </nav>
+
+    <!-- IAM / IGA Governance Deck -->
+    <section class="iga-governance-deck">
+      <div class="kpi-card">
+        <span class="kpi-label">SCIM 2.0 Compliance</span>
+        <div class="kpi-value" id="kpiCompleteness" style="color:var(--tag-green-text);">
+          90%
+          <span class="kpi-sub" id="kpiCompletenessSub">9 of 10 fields mapped</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Identity Fan-Out</span>
+        <div class="kpi-value" style="color:#d8b4fe;" id="kpiFanout">
+          2 Fields
+          <span class="kpi-sub">&rarr; 5 IGA destinations</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Candidate Conflict</span>
+        <div class="kpi-value" style="color:#38bdf8;" id="kpiCandidateCount">
+          1 Location
+          <span class="kpi-sub">Priority 1 (Facility) vs P2 (Remote)</span>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Contract Perspective</span>
+        <div class="perspective-switch">
+          <button class="perspective-btn active" id="btnPerspSource" onclick="setPerspective('source')">Fields &rarr; IGA Schema</button>
+          <button class="perspective-btn" id="btnPerspTarget" onclick="setPerspective('target')">IGA Schema &larr; Fields</button>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" style="font-size:0.8rem;" onclick="showToast('Pre-flight audit: Ready for JML provisioning.')">&#10003; Pre-Flight Check</button>
+      </div>
+    </section>
+
+    <!-- Dual-Pane Workspace -->
+    <div class="dual-workspace" id="dualWorkspace">
+
+      <!-- LEFT PANE: Form Source Schema Tree -->
+      <section class="pane-column left-pane">
+        <div class="pane-header">
+          <h2 class="pane-title">
+            <span>Form Fields (User Input)</span>
+          </h2>
+          <span class="pane-badge">10 Fields</span>
+        </div>
+
+        <input type="text" class="pane-search" placeholder="Filter onboarding fields..." oninput="filterLeftNodes(this.value)">
+
+        <!-- Section 1: Worker Core Profile -->
+        <div class="tree-group">
+          <div class="tree-group-title">
+            <span>Section 1: Worker Core Profile</span>
+            <span>4 Fields</span>
+          </div>
+
+          <ul class="tree-node-list">
+            <!-- UNMAPPED DEMO FIELD: Job Title -->
+            <li class="source-node unmapped" id="src-job_title" onclick="selectFieldFlow('job_title')">
+              <div class="node-info-main">
+                <span class="node-title">Job Title / Functional Role *</span>
+                <span class="node-subtitle">key: job_title</span>
+                <div class="node-tag-pills-row" id="tagPills-job_title">
+                  <span class="node-type-tag">Text Input</span>
+                  <span class="cardinality-chip amber" id="badge-job_title">&#9888; Unassigned (Click to Link)</span>
+                </div>
+              </div>
+              <div class="node-status-indicator" id="dot-job_title">
+                <span style="color:#fbbf24; font-size:1.1rem;">&#9888;</span>
+              </div>
+              <button class="btn-candidate-action" onclick="event.stopPropagation(); attachCandidateFromLeft('job_title')">+ Link Candidate</button>
+            </li>
+
+            <!-- Full Legal Name -->
+            <li class="source-node" id="src-legal_name" onclick="selectFieldFlow('legal_name')">
+              <div class="node-info-main">
+                <span class="node-title">Full Legal Name *</span>
+                <span class="node-subtitle">key: legal_name</span>
+                <div class="node-tag-pills-row" id="tagPills-legal_name">
+                  <span class="node-type-tag">Text Input</span>
+                  <span style="font-size:0.68rem; color:#888;">1 Tag &bull; SCIM</span>
+                </div>
+              </div>
+              <div class="node-status-indicator" id="dot-legal_name">
+                <span style="color:#34d399; font-size:1.1rem;">&bull;</span>
+              </div>
+              <button class="btn-candidate-action" onclick="event.stopPropagation(); attachCandidateFromLeft('legal_name')">+ Link Candidate</button>
+            </li>
+
+            <!-- Work Email (Fan-Out) -->
+            <li class="source-node fanout-source" id="src-work_email" onclick="selectFieldFlow('work_email')">
+              <div class="node-info-main">
+                <span class="node-title">Work Email Address *</span>
+                <span class="node-subtitle">key: work_email</span>
+                <div class="node-tag-pills-row" id="tagPills-work_email">
+                  <span class="node-type-tag">Text Input</span>
+                  <span class="cardinality-chip purple">&#x21C4; 2 Tags (Fan-Out)</span>
+                </div>
+              </div>
+              <div class="node-status-indicator" id="dot-work_email">
+                <span style="color:#d8b4fe; font-size:1.1rem;">&bull;&bull;</span>
+              </div>
+              <button class="btn-candidate-action" onclick="event.stopPropagation(); attachCandidateFromLeft('work_email')">+ Link Candidate</button>
+            </li>
+
+            <!-- Department (3-Way Fan-Out) -->
+            <li class="source-node active-link fanout-source" id="src-dept_code" onclick="selectFieldFlow('dept_code')">
+              <div class="node-info-main">
+                <span class="node-title">Department Assignment *</span>
+                <span class="node-subtitle">key: dept_code</span>
+                <div class="node-tag-pills-row" id="tagPills-dept_code">
+                  <span class="node-type-tag">Select Dropdown</span>
+                  <span class="cardinality-chip purple">&#x21C4; 3 Destinations (Role Fan-Out)</span>
+                </div>
+              </div>
+              <div class="node-status-indicator" id="dot-dept_code">
+                <span style="color:#d8b4fe; font-size:1.1rem;">&bull;&bull;&bull;</span>
+              </div>
+              <button class="btn-candidate-action" onclick="event.stopPropagation(); attachCandidateFromLeft('dept_code')">+ Link Candidate</button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Section 2: Governance & Location -->
+        <div class="tree-group">
+          <div class="tree-group-title">
+            <span>Section 2: Governance & Access</span>
+            <span>Candidate Fields</span>
+          </div>
+
+          <ul class="tree-node-list">
+            <!-- Sponsoring Manager -->
+            <li class="source-node" id="src-sponsor_user" onclick="selectFieldFlow('sponsor_user')">
+              <div class="node-info-main">
+                <span class="node-title">Sponsoring Manager / Approver *</span>
+                <span class="node-subtitle">key: sponsor_user</span>
+                <div class="node-tag-pills-row" id="tagPills-sponsor_user">
+                  <span class="node-type-tag">User Selector</span>
+                  <span style="font-size:0.68rem; color:#888;">SCIM Manager</span>
+                </div>
+              </div>
+              <div class="node-status-indicator" id="dot-sponsor_user">
+                <span style="color:#34d399; font-size:1.1rem;">&bull;</span>
+              </div>
+              <button class="btn-candidate-action" onclick="event.stopPropagation(); attachCandidateFromLeft('sponsor_user')">+ Link Candidate</button>
+            </li>
+
+            <!-- Facility Location (Candidate Winner) -->
+            <li class="source-node convergent-source" id="src-facility_location" onclick="selectFieldFlow('facility_location')">
+              <div class="node-info-main">
+                <span class="node-title">Primary Facility Office</span>
+                <span class="node-subtitle">key: facility_location</span>
+                <div class="node-tag-pills-row" id="tagPills-facility_location">
+                  <span class="node-type-tag">Select Dropdown</span>
+                  <span class="cardinality-chip blue">Priority #1 (Winner)</span>
+                </div>
+              </div>
+              <div class="node-status-indicator" id="dot-facility_location">
+                <span style="color:#38bdf8; font-size:0.75rem; font-weight:700;">#1</span>
+              </div>
+              <button class="btn-candidate-action" onclick="event.stopPropagation(); attachCandidateFromLeft('facility_location')">+ Link Candidate</button>
+            </li>
+
+            <!-- Remote Address (Candidate Fallback) -->
+            <li class="source-node convergent-source" id="src-remote_address" onclick="selectFieldFlow('remote_address')">
+              <div class="node-info-main">
+                <span class="node-title">Remote Home Address</span>
+                <span class="node-subtitle">key: remote_address</span>
+                <div class="node-tag-pills-row" id="tagPills-remote_address">
+                  <span class="node-type-tag">Text Input</span>
+                  <span class="cardinality-chip" style="background:#222; color:#9ca3af; border:1px solid #444;">Priority #2 (Fallback)</span>
+                </div>
+              </div>
+              <div class="node-status-indicator" id="dot-remote_address">
+                <span style="color:#9ca3af; font-size:0.75rem; font-weight:700;">#2</span>
+              </div>
+              <button class="btn-candidate-action" onclick="event.stopPropagation(); attachCandidateFromLeft('remote_address')">+ Link Candidate</button>
+            </li>
+
+            <!-- End Date -->
+            <li class="source-node" id="src-contract_end_date" onclick="selectFieldFlow('contract_end_date')">
+              <div class="node-info-main">
+                <span class="node-title">Contract Expiration Date</span>
+                <span class="node-subtitle">key: contract_end_date</span>
+                <div class="node-tag-pills-row" id="tagPills-contract_end_date">
+                  <span class="node-type-tag">Date Picker</span>
+                  <span style="font-size:0.68rem; color:#fbbf24;">Static: +90d</span>
+                </div>
+              </div>
+              <div class="node-status-indicator" id="dot-contract_end_date">
+                <span style="color:#34d399; font-size:1.1rem;">&bull;</span>
+              </div>
+              <button class="btn-candidate-action" onclick="event.stopPropagation(); attachCandidateFromLeft('contract_end_date')">+ Link Candidate</button>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- CENTER LANE: Interactive Mapping Bridge -->
+      <div class="connector-lane">
+        <span class="connector-header" id="laneHeader">Contract Flow</span>
+
+        <div class="mapping-bridge fanout" id="centerBridge">
+          <span style="font-size:1.2rem;" id="bridgeIcon">&#x21C4;</span>
+          <strong id="bridgeStatus">3-Way IGA Fan-Out</strong>
+          <span id="bridgeDetail">Dept → Profile + Roles + Cost Center</span>
+          <span style="font-size:0.65rem; color:#c084fc;" id="bridgeSub">Deterministic Mapping</span>
+        </div>
+
+        <!-- PRIMARY ACTION: Link Another Tag / Link Candidate Field -->
+        <button class="btn-bridge-action btn-add-fanout" id="btnLinkAnotherTag" onclick="startLinkingTagMode()">
+          <span>&#x21C4;</span>
+          <span id="btnLinkAnotherTagText">+ Link Another Tag (Fan-Out)</span>
+        </button>
+
+        <button class="btn-bridge-action btn-add-candidate" id="btnLinkCandidateField" style="display:none;" onclick="startLinkingCandidateMode()">
+          <span>&#x21F9;</span>
+          <span>+ Link Candidate Field (Priority)</span>
+        </button>
+
+        <button class="btn-bridge-action btn-cancel-linking" id="btnCancelLinking" style="display:none;" onclick="cancelLinkingMode()">
+          <span>&times;</span>
+          <span>Cancel Linking Mode</span>
+        </button>
+
+        <!-- Configure rules button -->
+        <button class="btn-inspect-bridge" id="btnConfigureMapping" onclick="openInspector()">
+          <span>&#x2699;</span>
+          <span>Configure Mapping Rules</span>
+        </button>
+
+        <button class="btn btn-outlined" id="btnUnlinkField" style="width:100%; font-size:0.72rem; color:#f87171; border-color:#7f1d1d; justify-content:center; padding:4px;" onclick="unlinkCurrentField()">
+          <span>&times; Unlink All Tags</span>
+        </button>
+
+        <div class="mapping-bridge" style="cursor:pointer;" onclick="openInspector()">
+          <span style="font-size:1.1rem;">&#x21C6;</span>
+          <span>Transform Policy</span>
+          <span style="color:#38bdf8; font-size:0.68rem;" id="bridgeTransformText">Normalize & Trim</span>
+        </div>
+
+        <div class="mapping-bridge" style="cursor:pointer;" onclick="openInspector()">
+          <span style="font-size:1.1rem;">&#x21A9;</span>
+          <span>Static Fallback</span>
+          <span style="color:#aaa; font-size:0.68rem;" id="bridgeFallbackText">Configured</span>
+        </div>
+      </div>
+
+      <!-- RIGHT PANE: Canonical IGA Taxonomy Schema (Target) -->
+      <section class="pane-column right-pane">
+        <div class="pane-header">
+          <h2 class="pane-title">
+            <span>Canonical IGA Schema (Target)</span>
+          </h2>
+          <span class="pane-badge" style="color:#d8b4fe; border-color:#7e22ce;">SCIM 2.0 / Saviynt EARS</span>
+        </div>
+
+        <input type="text" class="pane-search" placeholder="Filter IGA attributes, roles, endpoints..." oninput="filterRightNodes(this.value)">
+
+        <!-- SCIM 2.0 Core User -->
+        <div class="tree-group">
+          <div class="tree-group-title">
+            <span>identity.profile.* (SCIM Core 2.0)</span>
+            <span>User Object</span>
+          </div>
+
+          <ul class="tree-node-list">
+            <!-- TARGET FOR JOB TITLE: identity.profile.title -->
+            <li class="target-node" id="tgt-identity-profile-title" onclick="handleTargetNodeClick('identity.profile.title')">
+              <div>
+                <div class="tag-keypath-display">identity.profile.title</div>
+                <div class="tag-desc-display">Worker official business title / designation</div>
+              </div>
+              <div class="tag-meta-box">
+                <span class="scim-pill">SCIM Core</span>
+                <span class="tag-version-pill">v1 Active</span>
+              </div>
+              <button class="btn-link-action" onclick="event.stopPropagation(); assignTagToActiveField('identity.profile.title')">+ Link to Field</button>
+            </li>
+
+            <li class="target-node" id="tgt-identity-profile-displayName" onclick="handleTargetNodeClick('identity.profile.displayName')">
+              <div>
+                <div class="tag-keypath-display">identity.profile.displayName</div>
+                <div class="tag-desc-display">SCIM core formatted name</div>
+              </div>
+              <div class="tag-meta-box">
+                <span class="scim-pill">SCIM Core</span>
+                <span class="tag-version-pill">v1 Active</span>
+              </div>
+              <button class="btn-link-action" onclick="event.stopPropagation(); assignTagToActiveField('identity.profile.displayName')">+ Link to Field</button>
+            </li>
+
+            <li class="target-node" id="tgt-identity-profile-primaryEmail" onclick="handleTargetNodeClick('identity.profile.primaryEmail')">
+              <div>
+                <div class="tag-keypath-display">identity.profile.primaryEmail</div>
+                <div class="tag-desc-display">Primary work email address</div>
+              </div>
+              <div class="tag-meta-box">
+                <span class="scim-pill">SCIM Core</span>
+                <span class="tag-version-pill">v1 Active</span>
+              </div>
+              <button class="btn-link-action" onclick="event.stopPropagation(); assignTagToActiveField('identity.profile.primaryEmail')">+ Link to Field</button>
+            </li>
+
+            <li class="target-node active-link fanout-target" id="tgt-identity-profile-department" onclick="handleTargetNodeClick('identity.profile.department')">
+              <div>
+                <div class="tag-keypath-display">identity.profile.department</div>
+                <div class="tag-desc-display">Enterprise extension department</div>
+              </div>
+              <div class="tag-meta-box">
+                <span class="scim-pill">Enterprise Ext</span>
+                <span class="tag-version-pill">v1 Active</span>
+              </div>
+              <button class="btn-link-action" onclick="event.stopPropagation(); assignTagToActiveField('identity.profile.department')">+ Link to Field</button>
+            </li>
+
+            <li class="target-node" id="tgt-identity-governance-managerId" onclick="handleTargetNodeClick('identity.governance.managerId')">
+              <div>
+                <div class="tag-keypath-display">identity.governance.managerId</div>
+                <div class="tag-desc-display">Identity manager / approval owner</div>
+              </div>
+              <div class="tag-meta-box">
+                <span class="scim-pill">Governance</span>
+                <span class="tag-version-pill">v1 Active</span>
+              </div>
+              <button class="btn-link-action" onclick="event.stopPropagation(); assignTagToActiveField('identity.governance.managerId')">+ Link to Field</button>
+            </li>
+
+            <li class="target-node" id="tgt-identity-location-officeLocation" onclick="handleTargetNodeClick('identity.location.officeLocation')">
+              <div>
+                <div class="tag-keypath-display">identity.location.officeLocation</div>
+                <div class="tag-desc-display">Physical operating location</div>
+              </div>
+              <div class="tag-meta-box">
+                <span style="font-size:0.68rem; color:#38bdf8;" id="candidateCountLabel">2 Candidates (P1 vs P2)</span>
+                <span class="tag-version-pill">v1 Active</span>
+              </div>
+              <button class="btn-link-action" onclick="event.stopPropagation(); assignTagToActiveField('identity.location.officeLocation')">+ Link to Field</button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- SailPoint Birthright Entitlements -->
+        <div class="tree-group">
+          <div class="tree-group-title">
+            <span>sailpoint.birthright.* (Role Correlation)</span>
+            <span>Access Group</span>
+          </div>
+
+          <ul class="tree-node-list">
+            <li class="target-node active-link fanout-target" id="tgt-sailpoint-birthright-entitlementGroup" onclick="handleTargetNodeClick('sailpoint.birthright.entitlementGroup')">
+              <div>
+                <div class="tag-keypath-display">sailpoint.birthright.entitlementGroup</div>
+                <div class="tag-desc-display">Active Directory & AWS birthright access</div>
+              </div>
+              <div class="tag-meta-box">
+                <span class="scim-pill" style="border-color:#7e22ce; color:#d8b4fe;">Entitlement</span>
+                <span class="tag-version-pill">v1 Active</span>
+              </div>
+              <button class="btn-link-action" onclick="event.stopPropagation(); assignTagToActiveField('sailpoint.birthright.entitlementGroup')">+ Link to Field</button>
+            </li>
+
+            <li class="target-node" id="tgt-sailpoint-birthright-jobRole" onclick="handleTargetNodeClick('sailpoint.birthright.jobRole')">
+              <div>
+                <div class="tag-keypath-display">sailpoint.birthright.jobRole</div>
+                <div class="tag-desc-display">SailPoint functional role mapping</div>
+              </div>
+              <div class="tag-meta-box">
+                <span class="scim-pill" style="border-color:#7e22ce; color:#d8b4fe;">Role Profile</span>
+                <span class="tag-version-pill">v1 Active</span>
+              </div>
+              <button class="btn-link-action" onclick="event.stopPropagation(); assignTagToActiveField('sailpoint.birthright.jobRole')">+ Link to Field</button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Saviynt EARS / Cross-Domain -->
+        <div class="tree-group">
+          <div class="tree-group-title">
+            <span>billing & saviynt.* (Cross-Domain Consumer)</span>
+            <span>Finance & Audit</span>
+          </div>
+
+          <ul class="tree-node-list">
+            <li class="target-node active-link fanout-target" id="tgt-billing-costCenter" onclick="handleTargetNodeClick('billing.costCenter')">
+              <div>
+                <div class="tag-keypath-display">billing.costCenter</div>
+                <div class="tag-desc-display">Corporate GL billing ledger code</div>
+              </div>
+              <div class="tag-meta-box">
+                <span class="scim-pill" style="border-color:#333; color:#aaa;">Finance</span>
+                <span class="tag-version-pill">v1 Active</span>
+              </div>
+              <button class="btn-link-action" onclick="event.stopPropagation(); assignTagToActiveField('billing.costCenter')">+ Link to Field</button>
+            </li>
+
+            <li class="target-node" id="tgt-saviynt-ears-notificationEmail" onclick="handleTargetNodeClick('saviynt.ears.notificationEmail')">
+              <div>
+                <div class="tag-keypath-display">saviynt.ears.notificationEmail</div>
+                <div class="tag-desc-display">Saviynt approval workflow recipient</div>
+              </div>
+              <div class="tag-meta-box">
+                <span class="scim-pill" style="border-color:#333; color:#aaa;">Saviynt</span>
+                <span class="tag-version-pill">v1 Active</span>
+              </div>
+              <button class="btn-link-action" onclick="event.stopPropagation(); assignTagToActiveField('saviynt.ears.notificationEmail')">+ Link to Field</button>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Live Contract Simulation Bottom Drawer -->
+    <section class="bottom-drawer" id="bottomDrawer">
+      <div class="drawer-header" onclick="toggleBottomDrawer()">
+        <div class="drawer-title">
+          <span>&#x25BC;</span>
+          <span>Live Normalized IGA Fact Map & Provisioning Payload Simulator</span>
+          <span style="font-size:0.75rem; color:#c084fc; font-weight:normal;">[POST /api/v1/submissions/normalize &bull; SailPoint IdentityProfile Ready]</span>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-outlined" style="font-size:0.72rem; padding:3px 10px;" onclick="event.stopPropagation(); refreshSim();">Re-Simulate</button>
+        </div>
+      </div>
+      <div class="drawer-body" id="drawerBody">
+        <div class="sim-column">
+          <span class="sim-heading">Normalized SCIM 2.0 / IGA Output Payload</span>
+          <div class="json-box" id="factMapJson"></div>
+        </div>
+        <div class="sim-column">
+          <span class="sim-heading">IGA Pre-Flight & Event-Sourced Audit Log</span>
+          <div class="json-box" style="color:#d1d5db;" id="diagnosticsLog"></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Slide-Over Attribute Transformation Inspector (With Tag Picker) -->
+  <div class="backdrop" id="inspectorBackdrop" onclick="closeInspector()"></div>
+  <aside class="slide-inspector" id="slideInspector">
+    <div class="inspector-header">
+      <h3 class="inspector-title">Attribute Mapping Inspector</h3>
+      <button class="inspector-close-btn" onclick="closeInspector()">&times;</button>
+    </div>
+    <div class="inspector-body">
+      <!-- Active Mapping Context -->
+      <div class="inspector-card">
+        <span class="inspector-card-title">
+          <span>Active Form Field</span>
+          <span class="tag-type-badge" id="inspFieldType">text</span>
+        </span>
+        <div style="display:flex; flex-direction:column; gap:4px;">
+          <strong style="color:white; font-size:1rem;" id="inspFieldName">Department Assignment</strong>
+          <span style="font-family:ui-monospace; font-size:0.75rem; color:var(--text-muted);" id="inspFieldKey">key: dept_code</span>
+        </div>
+      </div>
+
+      <!-- Bound IGA Targets with Unlink and Add Button -->
+      <div class="inspector-card">
+        <span class="inspector-card-title">
+          <span>Bound IGA Targets (<span id="inspTagCount">3</span>)</span>
+          <button class="btn btn-outlined" style="font-size:0.7rem; padding:2px 8px; color:#d8b4fe; border-color:#7e22ce;" onclick="toggleTaxonomyPicker()">+ Add Tag (Fan-Out)</button>
+        </span>
+        
+        <div id="inspTagsList" style="display:flex; flex-direction:column; gap:8px;"></div>
+
+        <!-- Inline Searchable Taxonomy Picker Popover -->
+        <div class="taxonomy-picker-box" id="taxonomyPickerBox" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="color:#e9d5ff; font-size:0.78rem;">Select Target IGA Tag:</strong>
+            <button style="background:none; border:none; color:#aaa; cursor:pointer;" onclick="toggleTaxonomyPicker()">&times;</button>
+          </div>
+          <input type="text" class="picker-search" placeholder="Search SCIM, SailPoint, Saviynt tags..." oninput="filterPickerOptions(this.value)">
+          <ul class="picker-options-list" id="pickerOptionsList">
+            <li class="picker-option-row" onclick="addTagFromPicker('identity.profile.title')">
+              <span style="font-family:ui-monospace; color:#d8b4fe;">identity.profile.title</span>
+              <span style="color:#888;">SCIM Core</span>
+            </li>
+            <li class="picker-option-row" onclick="addTagFromPicker('sailpoint.birthright.jobRole')">
+              <span style="font-family:ui-monospace; color:#d8b4fe;">sailpoint.birthright.jobRole</span>
+              <span style="color:#888;">SailPoint</span>
+            </li>
+            <li class="picker-option-row" onclick="addTagFromPicker('saviynt.ears.jobRole')">
+              <span style="font-family:ui-monospace; color:#d8b4fe;">saviynt.ears.jobRole</span>
+              <span style="color:#888;">Saviynt</span>
+            </li>
+            <li class="picker-option-row" onclick="addTagFromPicker('billing.costCenter')">
+              <span style="font-family:ui-monospace; color:#d8b4fe;">billing.costCenter</span>
+              <span style="color:#888;">GL Finance</span>
+            </li>
+            <li class="picker-option-row" onclick="addTagFromPicker('sailpoint.birthright.entitlementGroup')">
+              <span style="font-family:ui-monospace; color:#d8b4fe;">sailpoint.birthright.entitlementGroup</span>
+              <span style="color:#888;">Entitlement</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Transformation Policy -->
+      <div class="inspector-card">
+        <span class="inspector-card-title">Data Transformation & Normalization</span>
+        <div class="form-group">
+          <label class="form-label">Normalization Function</label>
+          <select class="form-select" id="inspTransformSelect" onchange="showToast('Updated transform policy')">
+            <option selected>Trim & Clean Whitespace</option>
+            <option>Uppercase All (for Employee ID)</option>
+            <option>Lowercase RFC 822 Email Format</option>
+            <option>Generate SAMAccountName (%first_initial%%last_name%)</option>
+            <option>Custom CEL Expression</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Candidate Resolution Priority</label>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input type="number" class="form-input" id="inspPriorityInput" value="1" min="1" max="20" style="width:70px;" onchange="showToast('Updated candidate priority rank')">
+            <span style="font-size:0.75rem; color:var(--text-muted);">1 = Highest priority (Wins during conflict)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Static Fallback Default -->
+      <div class="inspector-card">
+        <span class="inspector-card-title">Static Governance Defaults</span>
+        <div class="switch-row">
+          <span class="switch-title">Provide Static Fallback Value</span>
+          <label class="switch">
+            <input type="checkbox" id="inspFallbackToggle" checked onchange="showToast('Toggled static fallback policy')">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Default Value Literal</label>
+          <input type="text" class="form-input" id="inspFallbackVal" value="CC-UNDERWRITING-770" placeholder="e.g. N/A or Default">
+          <span style="font-size:0.7rem; color:var(--text-muted);">Used if actor leaves field blank to avoid IGA provisioning failure</span>
+        </div>
+      </div>
+
+      <div style="margin-top:auto; display:flex; flex-direction:column; gap:8px;">
+        <button class="btn btn-primary" style="justify-content:center;" onclick="saveInspectorChanges()">Save Mapping Settings</button>
+        <button class="btn btn-outlined" style="justify-content:center;" onclick="closeInspector()">Close</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toastMessage">Simulation updated</div>
+
+  <script>
+    // In-memory state of form fields and their 1-to-many tag mappings
+    const formFieldsState = {
+      'job_title': {
+        name: 'Job Title / Functional Role',
+        key: 'job_title',
+        type: 'text',
+        tags: [] // UNMAPPED INITIALLY to show assignment workflow
+      },
+      'legal_name': {
+        name: 'Full Legal Name',
+        key: 'legal_name',
+        type: 'text',
+        tags: ['identity.profile.displayName']
+      },
+      'work_email': {
+        name: 'Work Email Address',
+        key: 'work_email',
+        type: 'text',
+        tags: ['identity.profile.primaryEmail', 'saviynt.ears.notificationEmail']
+      },
+      'dept_code': {
+        name: 'Department Assignment',
+        key: 'dept_code',
+        type: 'select',
+        tags: ['identity.profile.department', 'sailpoint.birthright.entitlementGroup', 'billing.costCenter']
+      },
+      'sponsor_user': {
+        name: 'Sponsoring Manager / Approver',
+        key: 'sponsor_user',
+        type: 'user',
+        tags: ['identity.governance.managerId']
+      },
+      'facility_location': {
+        name: 'Primary Facility Office',
+        key: 'facility_location',
+        type: 'select',
+        tags: ['identity.location.officeLocation']
+      },
+      'remote_address': {
+        name: 'Remote Home Address',
+        key: 'remote_address',
+        type: 'text',
+        tags: ['identity.location.officeLocation']
+      },
+      'contract_end_date': {
+        name: 'Contract Expiration Date',
+        key: 'contract_end_date',
+        type: 'date',
+        tags: ['identity.lifecycle.endDate']
+      }
+    };
+
+    let activeFieldKey = 'dept_code';
+    let activeTagPath = null;
+    let currentFlowPerspective = 'source'; // 'source' or 'target'
+    let currentLinkingMode = 'idle'; // 'idle' | 'linking-tag' | 'linking-field'
+
+    function cancelLinkingMode() {
+      currentLinkingMode = 'idle';
+      const dualWorkspace = document.getElementById('dualWorkspace');
+      dualWorkspace.classList.remove('linking-tag-mode', 'linking-field-mode', 'connecting-active');
+      document.getElementById('btnCancelLinking').style.display = 'none';
+
+      if (currentFlowPerspective === 'source') {
+        selectFieldFlow(activeFieldKey);
+      } else {
+        selectTagFlow(activeTagPath);
+      }
+    }
+
+    // DIRECTION 1: Field is selected -> User clicks "+ Link Another Tag (Fan-Out)"
+    function startLinkingTagMode() {
+      currentLinkingMode = 'linking-tag';
+      const dualWorkspace = document.getElementById('dualWorkspace');
+      dualWorkspace.classList.add('linking-tag-mode');
+      dualWorkspace.classList.remove('linking-field-mode');
+
+      const fieldData = formFieldsState[activeFieldKey];
+      const bridge = document.getElementById('centerBridge');
+      bridge.className = 'mapping-bridge connecting-mode';
+      document.getElementById('bridgeIcon').innerHTML = '&#x1F517;';
+      document.getElementById('bridgeStatus').innerText = 'Select IGA Tag';
+      document.getElementById('bridgeDetail').innerText = `Click any tag on the right pane to add to "${fieldData.name}"`;
+      document.getElementById('bridgeSub').innerText = 'Fan-Out Linking Active';
+
+      document.getElementById('btnLinkAnotherTag').style.display = 'none';
+      document.getElementById('btnLinkCandidateField').style.display = 'none';
+      document.getElementById('btnCancelLinking').style.display = 'flex';
+
+      showToast(`Linking mode active: Click any tag on the right pane to bind to "${fieldData.name}"`);
+    }
+
+    // DIRECTION 2: Tag is selected -> User clicks "+ Link Candidate Field (Priority)"
+    function startLinkingCandidateMode() {
+      currentLinkingMode = 'linking-field';
+      const dualWorkspace = document.getElementById('dualWorkspace');
+      dualWorkspace.classList.add('linking-field-mode');
+      dualWorkspace.classList.remove('linking-tag-mode');
+
+      const bridge = document.getElementById('centerBridge');
+      bridge.className = 'mapping-bridge connecting-mode';
+      document.getElementById('bridgeIcon').innerHTML = '&#x1F517;';
+      document.getElementById('bridgeStatus').innerText = 'Select Candidate Field';
+      document.getElementById('bridgeDetail').innerText = `Click any form field on left pane to add as a candidate for "${activeTagPath}"`;
+      document.getElementById('bridgeSub').innerText = 'Candidate Convergence Active';
+
+      document.getElementById('btnLinkAnotherTag').style.display = 'none';
+      document.getElementById('btnLinkCandidateField').style.display = 'none';
+      document.getElementById('btnCancelLinking').style.display = 'flex';
+
+      showToast(`Candidate mode active: Click any form field on the left pane to attach to "${activeTagPath}"`);
+    }
+
+    // Clicked from left pane candidate action button
+    function attachCandidateFromLeft(fieldKey) {
+      if (!activeTagPath) {
+        showToast('Please select a target tag on the right pane first');
+        return;
+      }
+      const fieldData = formFieldsState[fieldKey];
+      if (!fieldData.tags.includes(activeTagPath)) {
+        fieldData.tags.push(activeTagPath);
+      }
+
+      // Count candidate fields
+      const candidates = Object.keys(formFieldsState).filter(k => formFieldsState[k].tags.includes(activeTagPath));
+      const priority = candidates.length;
+
+      showToast(`Dispatched: AddElementTag (field: "${fieldKey}" -> tag: "${activeTagPath}", Priority: ${priority})`);
+      cancelLinkingMode();
+      selectTagFlow(activeTagPath);
+      updateKpis();
+      updateSimulation();
+    }
+
+    function selectFieldFlow(fieldKey) {
+      currentFlowPerspective = 'source';
+      activeFieldKey = fieldKey;
+      const fieldData = formFieldsState[fieldKey];
+
+      // Update active selection on left pane
+      document.querySelectorAll('.source-node').forEach(n => n.classList.remove('active-link'));
+      const activeSrc = document.getElementById('src-' + fieldKey);
+      if (activeSrc) activeSrc.classList.add('active-link');
+
+      // Clear right targets
+      document.querySelectorAll('.target-node').forEach(n => {
+        n.classList.remove('active-link', 'fanout-target', 'convergent-target');
+      });
+
+      const dualWorkspace = document.getElementById('dualWorkspace');
+      const bridge = document.getElementById('centerBridge');
+      const bridgeIcon = document.getElementById('bridgeIcon');
+      const bridgeStatus = document.getElementById('bridgeStatus');
+      const bridgeDetail = document.getElementById('bridgeDetail');
+      const bridgeSub = document.getElementById('bridgeSub');
+      const bridgeTransformText = document.getElementById('bridgeTransformText');
+      const btnUnlink = document.getElementById('btnUnlinkField');
+      const btnLinkAnotherTag = document.getElementById('btnLinkAnotherTag');
+      const btnLinkCandidate = document.getElementById('btnLinkCandidateField');
+      const btnCancel = document.getElementById('btnCancelLinking');
+
+      btnLinkCandidate.style.display = 'none';
+      btnCancel.style.display = 'none';
+
+      // Check if this field is unmapped
+      if (fieldData.tags.length === 0) {
+        dualWorkspace.classList.add('connecting-active');
+        dualWorkspace.classList.remove('linking-tag-mode', 'linking-field-mode');
+        bridge.className = 'mapping-bridge connecting-mode';
+        bridgeIcon.innerHTML = '&#x1F517;';
+        bridgeStatus.innerText = 'Connecting Mode';
+        bridgeDetail.innerText = 'Click any IGA target tag on the right pane to bind';
+        bridgeSub.innerText = 'Click-to-Link active';
+        bridgeTransformText.innerText = 'Pending Binding';
+        btnUnlink.style.display = 'none';
+        btnLinkAnotherTag.style.display = 'none';
+        showToast(`Selected "${fieldData.name}" (Unassigned) — Click any tag on right pane to link!`);
+        return;
+      }
+
+      // Field has mappings!
+      dualWorkspace.classList.remove('connecting-active', 'linking-tag-mode', 'linking-field-mode');
+      btnUnlink.style.display = 'flex';
+      btnLinkAnotherTag.style.display = 'flex';
+      document.getElementById('btnLinkAnotherTagText').innerText = `+ Link Another Tag (${fieldData.tags.length} Active)`;
+
+      if (fieldData.tags.length > 1) {
+        bridge.className = 'mapping-bridge fanout';
+        bridgeIcon.innerHTML = '&#x21C4;';
+        bridgeStatus.innerText = `${fieldData.tags.length}-Way IGA Fan-Out`;
+        bridgeDetail.innerText = `${fieldData.name} → Multiple Destinations`;
+        bridgeSub.innerText = 'Deterministic Mapping';
+        bridgeTransformText.innerText = 'Normalize & Trim';
+
+        // Highlight right targets
+        fieldData.tags.forEach(tagPath => {
+          const domId = 'tgt-' + tagPath.replace(/\./g, '-');
+          const tgt = document.getElementById(domId);
+          if (tgt) tgt.classList.add('active-link', 'fanout-target');
+        });
+      } else {
+        const singleTag = fieldData.tags[0];
+        if (singleTag === 'identity.location.officeLocation') {
+          bridge.className = 'mapping-bridge convergent';
+          bridgeIcon.innerHTML = '&#x21F9;';
+          bridgeStatus.innerText = fieldKey === 'facility_location' ? 'Convergent Winner (P1)' : 'Fallback Candidate (P2)';
+          bridgeDetail.innerText = 'Resolves with Remote Address';
+          bridgeSub.innerText = 'Priority Rank Active';
+          bridgeTransformText.innerText = 'Direct Passthrough';
+          const tgt = document.getElementById('tgt-identity-location-officeLocation');
+          if (tgt) tgt.classList.add('active-link', 'convergent-target');
+        } else {
+          bridge.className = 'mapping-bridge active';
+          bridgeIcon.innerHTML = '&#x21C6;';
+          bridgeStatus.innerText = '1-to-1 Mapping';
+          bridgeDetail.innerText = singleTag;
+          bridgeSub.innerText = 'SCIM Core / Target';
+          bridgeTransformText.innerText = 'Trim & Clean';
+          const domId = 'tgt-' + singleTag.replace(/\./g, '-');
+          const tgt = document.getElementById(domId);
+          if (tgt) tgt.classList.add('active-link');
+        }
+      }
+
+      updateSimulation();
+    }
+
+    function handleTargetNodeClick(tagPath) {
+      if (currentLinkingMode === 'linking-tag') {
+        assignTagToActiveField(tagPath);
+        cancelLinkingMode();
+        return;
+      }
+
+      const fieldData = formFieldsState[activeFieldKey];
+      if (fieldData.tags.length === 0) {
+        assignTagToActiveField(tagPath);
+      } else {
+        selectTagFlow(tagPath);
+      }
+    }
+
+    function selectTagFlow(tagPath) {
+      currentFlowPerspective = 'target';
+      activeTagPath = tagPath;
+
+      document.querySelectorAll('.source-node').forEach(n => n.classList.remove('active-link'));
+      document.querySelectorAll('.target-node').forEach(n => {
+        n.classList.remove('active-link', 'fanout-target', 'convergent-target');
+      });
+
+      const domId = 'tgt-' + tagPath.replace(/\./g, '-');
+      const tgt = document.getElementById(domId);
+      if (tgt) tgt.classList.add('active-link');
+
+      // Find fields that map to this tag
+      const matchedFields = Object.keys(formFieldsState).filter(k => formFieldsState[k].tags.includes(tagPath));
+      matchedFields.forEach(k => {
+        const src = document.getElementById('src-' + k);
+        if (src) src.classList.add('active-link');
+      });
+
+      const bridge = document.getElementById('centerBridge');
+      const bridgeIcon = document.getElementById('bridgeIcon');
+      const bridgeStatus = document.getElementById('bridgeStatus');
+      const bridgeDetail = document.getElementById('bridgeDetail');
+      const bridgeSub = document.getElementById('bridgeSub');
+      const btnLinkAnotherTag = document.getElementById('btnLinkAnotherTag');
+      const btnLinkCandidate = document.getElementById('btnLinkCandidateField');
+      const btnCancel = document.getElementById('btnCancelLinking');
+
+      btnLinkAnotherTag.style.display = 'none';
+      btnLinkCandidate.style.display = 'flex';
+      btnCancel.style.display = 'none';
+
+      if (tagPath === 'identity.location.officeLocation') {
+        bridge.className = 'mapping-bridge convergent';
+        bridgeIcon.innerHTML = '&#x21F9;';
+        bridgeStatus.innerText = `${matchedFields.length} Candidates Converge`;
+        bridgeDetail.innerText = 'P1: Facility (Winner) • P2: Remote (Fallback)';
+        bridgeSub.innerText = 'Conflict Resolution Active';
+      } else {
+        bridge.className = 'mapping-bridge fanout';
+        bridgeIcon.innerHTML = '&#x21C4;';
+        bridgeStatus.innerText = `${matchedFields.length} Source Field${matchedFields.length === 1 ? '' : 's'}`;
+        bridgeDetail.innerText = tagPath;
+        bridgeSub.innerText = 'Target Tag Selected';
+      }
+
+      showToast(`Selected "${tagPath}" — To link another candidate field, click "+ Link Candidate Field"`);
+    }
+
+    // Direct Click-to-Link Assignment (Adds tagPath to activeFieldKey)
+    function assignTagToActiveField(tagPath) {
+      const fieldData = formFieldsState[activeFieldKey];
+      if (!fieldData.tags.includes(tagPath)) {
+        fieldData.tags.push(tagPath);
+      }
+
+      // Update Left Node UI
+      const srcNode = document.getElementById('src-' + activeFieldKey);
+      srcNode.classList.remove('unmapped');
+      if (fieldData.tags.length > 1) {
+        srcNode.classList.add('fanout-source');
+      }
+
+      const pillsContainer = document.getElementById('tagPills-' + activeFieldKey);
+      if (pillsContainer) {
+        pillsContainer.innerHTML = `
+          <span class="node-type-tag">${fieldData.type}</span>
+          <span class="cardinality-chip ${fieldData.tags.length > 1 ? 'purple' : ''}">
+            ${fieldData.tags.length > 1 ? `&#x21C4; ${fieldData.tags.length} Tags (Fan-Out)` : `&#10003; 1 Tag &bull; SCIM`}
+          </span>
+        `;
+      }
+      const dot = document.getElementById('dot-' + activeFieldKey);
+      if (dot) {
+        dot.innerHTML = `<span style="color:#34d399; font-size:1.1rem;">${'&bull;'.repeat(fieldData.tags.length)}</span>`;
+      }
+
+      // Dispatch simulated event
+      showToast(`Dispatched: AddElementTag (field: "${activeFieldKey}" -> tag: "${tagPath}")`);
+
+      cancelLinkingMode();
+      selectFieldFlow(activeFieldKey);
+      updateKpis();
+      updateSimulation();
+    }
+
+    // Unlinking / Severing mappings
+    function unlinkCurrentField() {
+      const fieldData = formFieldsState[activeFieldKey];
+      fieldData.tags = [];
+
+      const srcNode = document.getElementById('src-' + activeFieldKey);
+      srcNode.className = 'source-node unmapped';
+
+      const pillsContainer = document.getElementById('tagPills-' + activeFieldKey);
+      if (pillsContainer) {
+        pillsContainer.innerHTML = `
+          <span class="node-type-tag">${fieldData.type}</span>
+          <span class="cardinality-chip amber">&#9888; Unassigned (Click to Link)</span>
+        `;
+      }
+      const dot = document.getElementById('dot-' + activeFieldKey);
+      if (dot) {
+        dot.innerHTML = '<span style="color:#fbbf24; font-size:1.1rem;">&#9888;</span>';
+      }
+
+      showToast(`Dispatched: RemoveElementTag (cleared all tags for "${fieldData.name}")`);
+      selectFieldFlow(activeFieldKey);
+      updateKpis();
+      updateSimulation();
+    }
+
+    // Inspector functions
+    function openInspector() {
+      const fieldData = formFieldsState[activeFieldKey];
+      document.getElementById('inspFieldName').innerText = fieldData.name;
+      document.getElementById('inspFieldKey').innerText = `key: ${fieldData.key}`;
+      document.getElementById('inspFieldType').innerText = fieldData.type;
+      document.getElementById('inspTagCount').innerText = fieldData.tags.length;
+
+      renderInspectorTagsList(fieldData);
+
+      document.getElementById('slideInspector').classList.add('open');
+      document.getElementById('inspectorBackdrop').classList.add('open');
+    }
+
+    function renderInspectorTagsList(fieldData) {
+      const list = document.getElementById('inspTagsList');
+      list.innerHTML = '';
+
+      if (fieldData.tags.length === 0) {
+        list.innerHTML = '<span style="color:#fbbf24; font-size:0.8rem; font-style:italic;">No IGA tags currently assigned. Use button below to add.</span>';
+        return;
+      }
+
+      fieldData.tags.forEach((tagPath, index) => {
+        const item = document.createElement('div');
+        item.className = 'mapped-tag-item-box';
+        item.innerHTML = `
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span style="font-size:0.7rem; color:#888;">#${index + 1}</span>
+            <span class="mapped-tag-path">${tagPath}</span>
+          </div>
+          <button class="btn-unlink-tag" title="Remove mapping" onclick="removeTagByIndex(${index})">&times; Remove</button>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function toggleTaxonomyPicker() {
+      const box = document.getElementById('taxonomyPickerBox');
+      box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    function addTagFromPicker(tagPath) {
+      assignTagToActiveField(tagPath);
+      renderInspectorTagsList(formFieldsState[activeFieldKey]);
+      document.getElementById('inspTagCount').innerText = formFieldsState[activeFieldKey].tags.length;
+      toggleTaxonomyPicker();
+    }
+
+    function removeTagByIndex(index) {
+      const fieldData = formFieldsState[activeFieldKey];
+      const removed = fieldData.tags.splice(index, 1)[0];
+      showToast(`Dispatched: RemoveElementTag (tag: "${removed}")`);
+
+      renderInspectorTagsList(fieldData);
+      document.getElementById('inspTagCount').innerText = fieldData.tags.length;
+
+      if (fieldData.tags.length === 0) {
+        unlinkCurrentField();
+      } else {
+        selectFieldFlow(activeFieldKey);
+      }
+      updateKpis();
+      updateSimulation();
+    }
+
+    function filterPickerOptions(val) {
+      val = val.toLowerCase();
+      document.querySelectorAll('#pickerOptionsList li').forEach(li => {
+        li.style.display = li.innerText.toLowerCase().includes(val) ? 'flex' : 'none';
+      });
+    }
+
+    function closeInspector() {
+      document.getElementById('slideInspector').classList.remove('open');
+      document.getElementById('inspectorBackdrop').classList.remove('open');
+      document.getElementById('taxonomyPickerBox').style.display = 'none';
+    }
+
+    function saveInspectorChanges() {
+      closeInspector();
+      showToast('Dispatched: UpdateElementTag (saved transformation policies & fallback literals)');
+    }
+
+    function updateKpis() {
+      const totalFields = Object.keys(formFieldsState).length;
+      const mappedFields = Object.keys(formFieldsState).filter(k => formFieldsState[k].tags.length > 0).length;
+      const pct = Math.round((mappedFields / totalFields) * 100);
+
+      document.getElementById('kpiCompleteness').innerHTML = `${pct}% <span class="kpi-sub">${mappedFields} of ${totalFields} fields mapped</span>`;
+      document.getElementById('kpiCompleteness').style.color = pct === 100 ? 'var(--tag-green-text)' : 'var(--tag-amber-text)';
+
+      const fanoutCount = Object.keys(formFieldsState).filter(k => formFieldsState[k].tags.length > 1).length;
+      let totalTargets = 0;
+      Object.keys(formFieldsState).forEach(k => totalTargets += formFieldsState[k].tags.length);
+
+      document.getElementById('kpiFanout').innerHTML = `${fanoutCount} Fields <span class="kpi-sub">&rarr; ${totalTargets} IGA destinations</span>`;
+      document.getElementById('totalMappingsPill').innerText = `${totalTargets} IGA Mappings Active`;
+
+      // Candidate count for officeLocation
+      const officeCandidates = Object.keys(formFieldsState).filter(k => formFieldsState[k].tags.includes('identity.location.officeLocation')).length;
+      document.getElementById('kpiCandidateCount').innerHTML = `${officeCandidates} Candidates <span class="kpi-sub">Priority resolved</span>`;
+      const candLabel = document.getElementById('candidateCountLabel');
+      if (candLabel) candLabel.innerText = `${officeCandidates} Candidates (Priority)`;
+    }
+
+    function updateSimulation() {
+      const jsonBox = document.getElementById('factMapJson');
+      const diagBox = document.getElementById('diagnosticsLog');
+
+      let payload = {
+        schemas: [
+          "urn:ietf:params:scim:schemas:core:2.0:User",
+          "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User"
+        ],
+        identity: { profile: {}, governance: {}, location: {} },
+        sailpoint: { birthright: {} },
+        billing: {}
+      };
+
+      // Populate from state
+      if (formFieldsState['legal_name'].tags.length > 0) payload.identity.profile.displayName = "Jane Doe";
+      if (formFieldsState['work_email'].tags.length > 0) payload.identity.profile.primaryEmail = "j.doe@sundance.com";
+      if (formFieldsState['job_title'].tags.includes('identity.profile.title')) payload.identity.profile.title = "Senior Underwriting Consultant";
+      if (formFieldsState['job_title'].tags.includes('sailpoint.birthright.jobRole')) payload.sailpoint.birthright.jobRole = "ROLE_SENIOR_CONSULTANT";
+      if (formFieldsState['job_title'].tags.includes('saviynt.ears.jobRole')) payload.saviynt = { ears: { jobRole: "CONSULTANT_TIER_2" } };
+
+      if (formFieldsState['dept_code'].tags.includes('identity.profile.department')) payload.identity.profile.department = "Commercial Underwriting";
+      if (formFieldsState['dept_code'].tags.includes('sailpoint.birthright.entitlementGroup')) payload.sailpoint.birthright.entitlementGroup = "ROLE_COMMERCIAL_UNDERWRITER_LEVEL2";
+      if (formFieldsState['dept_code'].tags.includes('billing.costCenter')) payload.billing.costCenter = "CC-UNDERWRITING-770";
+      if (formFieldsState['sponsor_user'].tags.length > 0) payload.identity.governance.managerId = "usr_mgr_88410";
+
+      // Priority resolution for location
+      const locationCandidates = Object.keys(formFieldsState).filter(k => formFieldsState[k].tags.includes('identity.location.officeLocation'));
+      if (locationCandidates.length > 0) {
+        payload.identity.location.officeLocation = `HQ Dallas - Building B (Elected winner from ${locationCandidates.length} candidate fields)`;
+      }
+
+      jsonBox.innerText = JSON.stringify(payload, null, 2);
+
+      const unmapped = Object.keys(formFieldsState).filter(k => formFieldsState[k].tags.length === 0);
+      diagBox.innerText = `[PRE-FLIGHT NORMALIZATION LOG: ${unmapped.length === 0 ? '200 OK — Ready' : '400 PENDING'}]
+${unmapped.length === 0 ? '✔ 100% Governance Compliance. Zero unmapped mandatory attributes.' : `⚠ ATTENTION: ${unmapped.length} unassigned field (${unmapped.join(', ')}). Link to target tag to proceed.`}
+✔ 1-TO-MANY FAN-OUT DISPATCH:
+  - 'dept_code' mapped to ${formFieldsState['dept_code'].tags.length} targets
+  - 'job_title' mapped to ${formFieldsState['job_title'].tags.length} targets
+✔ CONVERGENT MULTI-SOURCE RESOLUTION:
+  - 'identity.location.officeLocation' evaluated ${locationCandidates.length} candidate fields (Priority resolved)
+✔ EVENT SOURCING LOG:
+  - AddElementTag & UpdateElementTag events recorded in append-only draft log.`;
+    }
+
+    function setPerspective(type) {
+      document.getElementById('btnPerspSource').classList.toggle('active', type === 'source');
+      document.getElementById('btnPerspTarget').classList.toggle('active', type === 'target');
+      if (type === 'source') {
+        selectFieldFlow(activeFieldKey);
+        showToast('Perspective: Form Fields → IGA Schema (Tracing Fan-Out)');
+      } else {
+        selectTagFlow('identity.location.officeLocation');
+        showToast('Perspective: IGA Schema ← Form Fields (Tracing Candidate Convergence)');
+      }
+    }
+
+    function toggleBottomDrawer() {
+      const body = document.getElementById('drawerBody');
+      const header = document.querySelector('.drawer-title span:first-child');
+      if (body.style.display === 'none') {
+        body.style.display = 'grid';
+        header.innerText = '▼';
+      } else {
+        body.style.display = 'none';
+        header.innerText = '►';
+      }
+    }
+
+    function refreshSim() {
+      updateSimulation();
+      showToast('Re-simulated IGA provisioning payload against SailPoint & Saviynt schemas.');
+    }
+
+    function filterLeftNodes(val) {
+      val = val.toLowerCase();
+      document.querySelectorAll('.source-node').forEach(node => {
+        const text = node.innerText.toLowerCase();
+        node.style.display = text.includes(val) ? 'flex' : 'none';
+      });
+    }
+
+    function filterRightNodes(val) {
+      val = val.toLowerCase();
+      document.querySelectorAll('.target-node').forEach(node => {
+        const text = node.innerText.toLowerCase();
+        node.style.display = text.includes(val) ? 'flex' : 'none';
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastMessage');
+      toast.innerText = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2800);
+    }
+
+    // Initialize
+    updateKpis();
+    selectFieldFlow('dept_code');
+  </script>
+</body>
+</html>
