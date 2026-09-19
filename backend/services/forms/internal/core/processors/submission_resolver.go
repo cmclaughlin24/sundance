@@ -39,6 +39,7 @@ func (r *submissionResolver) resolve(ctx context.Context, s *domain.Submission, 
 	fieldCtx := make(map[string]any, len(s.Values))
 
 	for _, element := range fv.FlatElements() {
+		// FIXME: Can result in a bug where only the first found element is checked in rule expressions.
 		if val, ok := s.GetValue(element.ID); ok {
 			fieldCtx[element.Key] = val.Value
 		}
@@ -93,12 +94,23 @@ pageLoop:
 					required = &req
 				}
 
-				val, _ := s.GetValue(element.ID)
-				resolved = append(resolved, resolveElement{
-					element:  element,
-					value:    val,
-					required: *required,
-				})
+				values := s.GetValues(element.ID)
+				if len(values) == 0 {
+					resolved = append(resolved, resolveElement{
+						element:  element,
+						value:    nil,
+						required: *required,
+					})
+					continue elementLoop
+				}
+
+				for _, v := range values {
+					resolved = append(resolved, resolveElement{
+						element:  element,
+						value:    v,
+						required: *required,
+					})
+				}
 			}
 		}
 	}

@@ -128,6 +128,18 @@ func (s *Submission) GetValue(id ElementID) (*SubmissionValue, bool) {
 	return s.Values[idx], true
 }
 
+func (s *Submission) GetValues(id ElementID) []*SubmissionValue {
+	var values []*SubmissionValue
+
+	for _, v := range s.Values {
+		if v.ElementID == id {
+			values = append(values, v)
+		}
+	}
+
+	return values
+}
+
 func (s *Submission) GetEvalContext() EvaluationContext {
 	if s.evalContext == nil {
 		return make(EvaluationContext)
