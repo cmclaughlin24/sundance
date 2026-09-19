@@ -23,7 +23,7 @@ type TagNodeType string
 const (
 	TagNodeTypePrimitive TagNodeType = "primitive"
 	TagNodeTypeObject    TagNodeType = "object"
-	collectionSegment    string      = "[*]"
+	TagCollectionSegment string      = "[*]"
 	pathSeparator        string      = "."
 )
 
@@ -47,7 +47,7 @@ func NewTag(tenantID, keyPath, displayName string, nodeType TagNodeType, primiti
 		return nil, ErrNodeTypeObjectPrimitiveType
 	}
 
-	if strings.Count(keyPath, collectionSegment) > 1 {
+	if strings.Count(keyPath, TagCollectionSegment) > 1 {
 		return nil, ErrCollectionCount
 	}
 
@@ -109,7 +109,7 @@ func (t *Tag) Update(displayName string) error {
 }
 
 func (t *Tag) HasCollectionAncestor() bool {
-	return strings.Contains(t.KeyPath, collectionSegment)
+	return strings.Contains(t.KeyPath, TagCollectionSegment)
 }
 
 var isTagValueKind = validate.NewTypeValidator([]TagNodeType{

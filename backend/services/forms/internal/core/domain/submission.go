@@ -204,8 +204,8 @@ func ToFactMap(facts []*CanonicalFact) FactMap {
 
 func setNestedValue(node map[string]any, segments []string, value any, collectionIndex *int) {
 	raw := segments[0]
-	isCollection := strings.HasSuffix(raw, collectionSegment)
-	key := strings.TrimSuffix(raw, collectionSegment)
+	isCollection := strings.HasSuffix(raw, TagCollectionSegment)
+	key := strings.TrimSuffix(raw, TagCollectionSegment)
 
 	if len(segments) == 1 {
 		node[key] = value

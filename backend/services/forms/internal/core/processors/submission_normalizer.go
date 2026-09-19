@@ -55,21 +55,26 @@ func (n *submissionNormalizer) normalize(ctx context.Context, resolved []resolve
 		return nil, err
 	}
 
+	indexer := newCollectionIndexer()
 	facts := make([]*domain.CanonicalFact, 0)
+
 	for _, ta := range tags {
 		version, err := domain.ResolveTagVersion(ta.versions)
 		if err != nil {
 			return nil, err
 		}
 
-		var evalFn func(domain.Tag, domain.TagVersion, []candidate) ([]*domain.CanonicalFact, error)
 		if ta.tag.HasCollectionAncestor() {
-			evalFn = n.evaluateCollectionCandidates
-		} else {
-			evalFn = n.evaluateScalarCandidates
+			f, err := n.evaluateCollectionCandidates(ta.tag, *version, candidatesByVersion[version.ID], indexer)
+			if err != nil {
+				return nil, err
+			}
+
+			facts = append(facts, f...)
+			continue
 		}
 
-		f, err := evalFn(ta.tag, *version, candidatesByVersion[version.ID])
+		f, err := n.evaluateScalarCandidates(ta.tag, *version, candidatesByVersion[version.ID])
 		if err != nil {
 			return nil, err
 		}
@@ -104,18 +109,22 @@ func (n *submissionNormalizer) getTags(ctx context.Context, ids []domain.TagVers
 	return aggregates, nil
 }
 
-func (n *submissionNormalizer) evaluateCollectionCandidates(tag domain.Tag, version domain.TagVersion, candidates []candidate) ([]*domain.CanonicalFact, error) {
+func (n *submissionNormalizer) evaluateCollectionCandidates(
+	tag domain.Tag,
+	version domain.TagVersion,
+	candidates []candidate,
+	indexer *collectionIndexer,
+) ([]*domain.CanonicalFact, error) {
 	facts := make([]*domain.CanonicalFact, 0)
 
 	byCollectionIdx := make(map[int][]candidate)
 	for _, c := range candidates {
-		value := c.value
-
-		if value == nil || value.CollectionIndex == nil {
-			return nil, ErrMissingCollectionIndex
+		index, err := indexer.resolveIndex(c, tag.KeyPath)
+		if err != nil {
+			return nil, err
 		}
 
-		byCollectionIdx[*value.CollectionIndex] = append(byCollectionIdx[*value.CollectionIndex], c)
+		byCollectionIdx[*index] = append(byCollectionIdx[*index], c)
 	}
 
 	for idx, group := range byCollectionIdx {
