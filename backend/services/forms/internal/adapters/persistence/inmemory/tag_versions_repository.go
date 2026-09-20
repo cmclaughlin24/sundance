@@ -39,18 +39,16 @@ func (r *inMemoryTagVersionsRepository) Find(ctx context.Context, filters ports.
 		return false
 	}
 
-	if filters.TagID != "" {
-		tagVersions, ok := r.versions[string(filters.TagID)]
+	if len(filters.TagIDs) > 0 {
+		versions := make([]*domain.TagVersion, 0)
 
-		if !ok {
-			return make([]*domain.TagVersion, 0), nil
-		}
-
-		versions := make([]*domain.TagVersion, 0, len(tagVersions))
-
-		for _, version := range tagVersions {
-			if matchesStatus(version) {
-				versions = append(versions, version)
+		for _, tagID := range filters.TagIDs {
+			if tagVersions, ok := r.versions[string(tagID)]; ok {
+				for _, version := range tagVersions {
+					if matchesStatus(version) {
+						versions = append(versions, version)
+					}
+				}
 			}
 		}
 

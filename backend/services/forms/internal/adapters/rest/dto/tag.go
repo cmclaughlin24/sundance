@@ -25,6 +25,7 @@ type TagResponse struct {
 	PrimitiveType *domain.TagPrimitiveType `json:"primitiveType"`
 	CreatedAt     time.Time                `json:"createdAt"`
 	UpdatedAt     time.Time                `json:"updatedAt"`
+	Versions      []TagVersionResponse     `json:"versions,omitempty"`
 }
 
 func TagToResponse(ct *domain.Tag) TagResponse {

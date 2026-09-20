@@ -19,6 +19,7 @@ import (
 // @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
 // @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
 // @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @param		include query string false "Include related resources (e.g. 'versions')"
 // @success		200 {array} dto.TagResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
@@ -26,12 +27,53 @@ import (
 func (h *Handlers) GetTags(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	query := ports.NewTagsQuery(tenantID)
-	resultChan := make(chan result[[]*domain.Tag], 1)
+	includeVersions := r.URL.Query().Get("include") == "versions"
+	resultChan := make(chan result[[]dto.TagResponse], 1)
 
 	go func() {
 		defer close(resultChan)
+
 		tags, err := h.app.API.Tags.Find(r.Context(), query)
-		resultChan <- result[[]*domain.Tag]{tags, err}
+		if err != nil {
+			resultChan <- result[[]dto.TagResponse]{err: err}
+			return
+		}
+
+		dtos := make([]dto.TagResponse, 0, len(tags))
+		for _, tag := range tags {
+			dtos = append(dtos, dto.TagToResponse(tag))
+		}
+
+		if !includeVersions || len(tags) == 0 {
+			resultChan <- result[[]dto.TagResponse]{data: dtos}
+			return
+		}
+
+		ids := make([]domain.TagID, 0, len(tags))
+		for _, t := range tags {
+			ids = append(ids, t.ID)
+		}
+
+		versions, err := h.app.API.Tags.FindVersions(r.Context(), ports.NewFindTagVersionsQuery(tenantID, ids))
+		if err != nil {
+			resultChan <- result[[]dto.TagResponse]{err: err}
+			return
+		}
+
+		versionsByTag := make(map[domain.TagID][]dto.TagVersionResponse)
+		for _, v := range versions {
+			versionsByTag[v.TagID] = append(versionsByTag[v.TagID], dto.TagVersionToResponse(v))
+		}
+
+		for i := range dtos {
+			if v, ok := versionsByTag[dtos[i].ID]; ok {
+				dtos[i].Versions = v
+			} else {
+				dtos[i].Versions = []dto.TagVersionResponse{}
+			}
+		}
+
+		resultChan <- result[[]dto.TagResponse]{data: dtos}
 	}()
 
 	select {
@@ -44,12 +86,7 @@ func (h *Handlers) GetTags(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		dtos := make([]dto.TagResponse, 0, len(res.data))
-		for _, tag := range res.data {
-			dtos = append(dtos, dto.TagToResponse(tag))
-		}
-
-		httputil.SendJSONResponse(w, http.StatusOK, dtos)
+		httputil.SendJSONResponse(w, http.StatusOK, res.data)
 	}
 }
 
@@ -270,7 +307,7 @@ func (h *Handlers) DeleteTag(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) GetTagVersions(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
-	query := ports.NewFindTagVersionsQuery(tenantID, tagID)
+	query := ports.NewFindTagVersionsQuery(tenantID, []domain.TagID{tagID})
 	resultChan := make(chan result[[]*domain.TagVersion], 1)
 
 	go func() {

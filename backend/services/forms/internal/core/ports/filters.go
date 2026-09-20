@@ -20,7 +20,7 @@ type TagFilters struct {
 }
 
 type TagVersionFilters struct {
-	TagID    domain.TagID
+	TagIDs   []domain.TagID
 	Statuses []domain.TagStatus
 }
 

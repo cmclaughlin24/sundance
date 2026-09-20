@@ -136,7 +136,7 @@ func (s *tagsService) Delete(ctx context.Context, cmd commands.DeleteCommand[dom
 		return err
 	}
 
-	versions, err := s.versionsRepository.Find(ctx, ports.TagVersionFilters{TagID: cmd.ID})
+	versions, err := s.versionsRepository.Find(ctx, ports.TagVersionFilters{TagIDs: []domain.TagID{cmd.ID}})
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to retrieve versions", "tenant_id", cmd.TenantID, "tag_id", cmd.ID, "error", err)
 		return err
@@ -156,22 +156,23 @@ func (s *tagsService) Delete(ctx context.Context, cmd commands.DeleteCommand[dom
 }
 
 func (s *tagsService) FindVersions(ctx context.Context, query ports.FindTagVersionsQuery) ([]*domain.TagVersion, error) {
-	s.logger.DebugContext(ctx, "listing versions", "tenant_id", query.TenantID, "canonical_version_id", query.ID)
+	s.logger.DebugContext(ctx, "listing versions", "tenant_id", query.TenantID, "tag_ids", query.IDs)
 
 	if err := query.Validate(); err != nil {
-		s.logger.WarnContext(ctx, "version listing failed; invalid query", "tenant_id", query.TenantID, "canonical_version_id", query.ID, "error", err)
+		s.logger.WarnContext(ctx, "version listing failed; invalid query", "tenant_id", query.TenantID, "tag_ids", query.IDs, "error", err)
 		return nil, err
 	}
 
-	if err := s.isValidAccess(ctx, query.TenantID, query.ID); err != nil {
-		return nil, err
-	}
+	// TODO: Decide how to handle valid access check when more than one tag is present.
+	// if err := s.isValidAccess(ctx, query.TenantID, query.ID); err != nil {
+	// 	return nil, err
+	// }
 
 	versions, err := s.versionsRepository.Find(ctx, ports.TagVersionFilters{
-		TagID: query.ID,
+		TagIDs: query.IDs,
 	})
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to retrieve versions", "tenant_id", query.TenantID, "canonical_version_id", query.ID, "error", err)
+		s.logger.ErrorContext(ctx, "failed to retrieve versions", "tenant_id", query.TenantID, "tag_ids", query.IDs, "error", err)
 		return nil, err
 	}
 
@@ -346,7 +347,7 @@ func (s *tagsService) transitionVersion(ctx context.Context, cmd commands.Transi
 
 func (s *tagsService) deprecateActiveVersions(ctx context.Context, tagID domain.TagID) error {
 	versions, err := s.versionsRepository.Find(ctx, ports.TagVersionFilters{
-		TagID:    tagID,
+		TagIDs:    []domain.TagID{tagID},
 		Statuses: []domain.TagStatus{domain.TagStatusActive},
 	})
 

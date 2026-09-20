@@ -21,7 +21,10 @@ export const FormTags: React.FC = function () {
     isLoading: _isLoadingTags,
     error: _tagError,
   } = useAsyncData(async (token) => {
-    return await tagsService.getTags({ token, tenantId: TENANT_ID });
+    return await tagsService.getTags(
+      { token, tenantId: TENANT_ID },
+      { include: "versions" },
+    );
   }, []);
 
   const elements = getFlattenedElements(pages);

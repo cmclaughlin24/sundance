@@ -10,6 +10,7 @@ export interface ITag {
   nodeType: TagNodeType;
   createdAt: Date;
   updatedAt: Date;
+  versions?: ITagVersion[];
 }
 
 export type TagVersionStatus = "draft" | "active" | "deprecated" | "retired";

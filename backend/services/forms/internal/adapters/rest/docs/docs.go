@@ -1470,6 +1470,12 @@ const docTemplate = `{
                         "description": "Client-supplied request date in ISO 8601 format",
                         "name": "X-Request-Date",
                         "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Include related resources (e.g. 'versions')",
+                        "name": "include",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2985,6 +2991,12 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                },
+                "versions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/TagVersionResponse"
+                    }
                 }
             }
         },

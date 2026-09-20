@@ -447,6 +447,10 @@ definitions:
         type: string
       updatedAt:
         type: string
+      versions:
+        items:
+          $ref: '#/definitions/TagVersionResponse'
+        type: array
     type: object
   TagStatus:
     enum:
@@ -1474,6 +1478,10 @@ paths:
         format: date
         in: header
         name: X-Request-Date
+        type: string
+      - description: Include related resources (e.g. 'versions')
+        in: query
+        name: include
         type: string
       produces:
       - application/json

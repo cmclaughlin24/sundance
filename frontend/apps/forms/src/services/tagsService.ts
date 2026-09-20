@@ -14,8 +14,13 @@ export class TagsService extends BaseHttpService {
     super(CONFIG.formsUrl);
   }
 
-  getTags(options: DefaultRequestOptions): Promise<ITag[]> {
-    return this._get<ITag[]>(`/api/v1/tags`, options);
+  getTags(
+    options: DefaultRequestOptions,
+    params: { include: "versions" | "" } = { include: "" },
+  ): Promise<ITag[]> {
+    const search = new URLSearchParams();
+    params.include && search.set("include", params.include);
+    return this._get<ITag[]>(`/api/v1/tags`, options, search);
   }
 
   getTag(id: string, options: DefaultRequestOptions): Promise<ITag> {

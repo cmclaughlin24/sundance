@@ -36,15 +36,14 @@ func (q FindTagsQuery) Validate() error {
 }
 
 type FindTagVersionsQuery struct {
-	FindByIDQuery[domain.TagID]
+	TenantID string         `validate:"required"`
+	IDs      []domain.TagID `validate:"required,min=1"`
 }
 
-func NewFindTagVersionsQuery(tenantID string, tagID domain.TagID) FindTagVersionsQuery {
+func NewFindTagVersionsQuery(tenantID string, tagIDs []domain.TagID) FindTagVersionsQuery {
 	return FindTagVersionsQuery{
-		FindByIDQuery[domain.TagID]{
-			TenantID: tenantID,
-			ID:       tagID,
-		},
+		TenantID: tenantID,
+		IDs:       tagIDs,
 	}
 }
 
