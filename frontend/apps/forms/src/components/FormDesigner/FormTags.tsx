@@ -4,14 +4,19 @@ import Typography from "@mui/material/Typography";
 import { formTagsStyles as styles } from "./FormTags.styles";
 import type { IElement } from "@/types/element";
 import type { ITag } from "@/types/tag";
-import { useFormPagesSnapshot } from "@/store/formDesigner";
+import {
+  useFormDesignerSelect,
+  useFormPagesSnapshot,
+} from "@/store/formDesigner";
 import { getFlattenedElements } from "@/utils/form";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { useTagsService } from "@/hooks/useHttpService";
 import { TENANT_ID } from "@/constants/tenant";
+import { useCallback } from "react";
 
 export const FormTags: React.FC = function () {
   const pages = useFormPagesSnapshot();
+  const { selected, select } = useFormDesignerSelect();
   const tagsService = useTagsService();
 
   const {
@@ -21,6 +26,42 @@ export const FormTags: React.FC = function () {
   } = useAsyncData(async (token) => {
     return await tagsService.getTags({ token, tenantId: TENANT_ID });
   }, []);
+
+  const handleElement = (element: IElement) => {
+    const isSelected = selected?.item.id === element.id;
+    select(!isSelected ? { type: "element", item: element } : null);
+  };
+
+  const elementToTagsPanelCard = useCallback(
+    (element: IElement) => {
+      const isSelected = selected?.item.id === element.id;
+      const isRequired = element.attributes.isRequired;
+
+      return (
+        <TagsPanel.Card
+          title={element.name}
+          description={element.key}
+          isSelected={isSelected}
+          onClick={() => handleElement(element)}
+          onKeyDown={() => handleElement(element)}
+          slotProps={{
+            title: {
+              sx: isRequired
+                ? {
+                    "::after": {
+                      content: '"*"',
+                      color: "#971E28",
+                      marginLeft: 0.25,
+                    },
+                  }
+                : {},
+            },
+          }}
+        ></TagsPanel.Card>
+      );
+    },
+    [selected],
+  );
 
   const elements = getFlattenedElements(pages);
 
@@ -39,11 +80,14 @@ export const FormTags: React.FC = function () {
           data={elements}
           placeholder="Filter fields..."
           filterFn={filterElements}
+          keyFn={(e) => e.id}
         >
-          {(element) => element.id}
+          {elementToTagsPanelCard}
         </TagsPanel.Content>
       </TagsPanel>
-      <Box></Box>
+      <Box sx={styles.contract}>
+        <Typography sx={{ fontWeight: 600 }}>Contract Flow</Typography>
+      </Box>
       <TagsPanel sx={styles.tags}>
         <TagsPanel.Header
           title="Canonical IGA Schema (Target)"
@@ -57,8 +101,11 @@ export const FormTags: React.FC = function () {
           data={tags}
           placeholder="Filter canonical tags..."
           filterFn={filterTags}
+          keyFn={(t) => t.id}
         >
-          {(tag) => tag.id}
+          {(t) => (
+            <TagsPanel.Card title={t.keyPath} description={t.displayName} />
+          )}
         </TagsPanel.Content>
       </TagsPanel>
     </Box>

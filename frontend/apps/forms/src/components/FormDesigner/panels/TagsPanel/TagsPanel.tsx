@@ -4,6 +4,7 @@ import type { Styles } from "@/types/styles";
 import type { SxProps, Theme } from "@mui/material/styles";
 import { mergeSx } from "merge-sx";
 import { TagsPanelContent } from "./TagPanelContent";
+import { TagsPanelCard } from "./TagsPanelCard";
 
 const styles: Styles = {
   panel: {
@@ -21,6 +22,7 @@ export interface TagsPanelProps extends React.PropsWithChildren {
 interface TagsPanelComponent extends React.FC<TagsPanelProps> {
   Header: typeof TagsPanelHeader;
   Content: typeof TagsPanelContent;
+  Card: typeof TagsPanelCard;
 }
 
 const TagsPanel: TagsPanelComponent = function ({ children, sx }) {
@@ -33,5 +35,6 @@ const TagsPanel: TagsPanelComponent = function ({ children, sx }) {
 
 TagsPanel.Header = TagsPanelHeader;
 TagsPanel.Content = TagsPanelContent;
+TagsPanel.Card = TagsPanelCard;
 
 export default TagsPanel;

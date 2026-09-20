@@ -15,6 +15,13 @@ export const formTagsStyles: Styles = {
   fields: {
     borderRight: `1px solid ${Border.Primary}`,
   },
+  contract: {
+    px: 2.5,
+    py: 5,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
   tags: {
     borderLeft: `1px solid ${Border.Primary}`,
   },

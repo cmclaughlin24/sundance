@@ -21,6 +21,7 @@ export interface TagsPanelContentProps<IType> {
   data: IType[] | undefined | null;
   children: (item: IType) => React.ReactNode | undefined;
   filterFn: (search: string, item: IType) => boolean;
+  keyFn: (item: IType) => string;
   placeholder?: string;
 }
 
@@ -29,6 +30,7 @@ export function TagsPanelContent<IType>({
   placeholder = "",
   children,
   filterFn,
+  keyFn,
 }: TagsPanelContentProps<IType>) {
   const {
     value: searchTerm,
@@ -66,7 +68,7 @@ export function TagsPanelContent<IType>({
       {hasItems && (
         <Box component="ul" sx={styles.list}>
           {filtered!.map((item) => (
-            <Box component="li" sx={styles.listItem}>
+            <Box component="li" sx={styles.listItem} key={keyFn(item)}>
               {children(item)}
             </Box>
           ))}
