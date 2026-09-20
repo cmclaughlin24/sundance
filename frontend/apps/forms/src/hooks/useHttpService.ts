@@ -2,6 +2,7 @@ import type { BaseHttpService } from "@/services/baseHttpService";
 import { DataSourcesService } from "@/services/dataSourcesService";
 import { FormsService } from "@/services/formsService";
 import { SubmissionsService } from "@/services/submissionService";
+import { TagsService } from "@/services/tagsService";
 import { UsersService } from "@/services/usersService";
 import type { CreateAxiosDefaults } from "axios";
 
@@ -70,4 +71,12 @@ export function useSubmissionsService() {
  */
 export function useUsersService() {
   return resolveHttpService(UsersService);
+}
+
+/**
+ * `useTagsService` is a custom hook that provides an instance of the `TagsService` class.
+ * @returns An instance of the `TagsService` class.
+ */
+export function useTagsService() {
+  return resolveHttpService(TagsService);
 }

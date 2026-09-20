@@ -7,6 +7,9 @@ import type {
   RemoveElementEvent,
   UpdateElementEvent,
   CutElementEvent,
+  AddElementTagEvent,
+  UpdateElementTagEvent,
+  RemoveElementTagEvent,
 } from "../events";
 import type { IFormAggregate } from "./eventHandler";
 import type { ISection } from "@/types/section";
@@ -302,6 +305,124 @@ export function onPasteElement(
           getNextPosition(section.elements),
         ),
       };
+    });
+
+    return { ...page, sections };
+  });
+
+  return {
+    ...aggregate,
+    version: { ...aggregate.version, pages },
+  };
+}
+
+export function onAddElementTag(
+  aggregate: IFormAggregate,
+  event: AddElementTagEvent,
+): IFormAggregate {
+  const pages = aggregate.version.pages.map((page): IPage => {
+    const sections = page.sections.map((section): ISection => {
+      const hasElement = section.elements.some((e) => e.id === event.elementId);
+
+      if (!hasElement) {
+        return section;
+      }
+
+      const elements = section.elements.map((element) => {
+        if (element.id !== event.elementId) {
+          return element;
+        }
+
+        const currentTags = element.tags ?? [];
+        const exists = currentTags.some(
+          (t) => t.tagVersionId === event.mapping.tagVersionId,
+        );
+        const tags = exists
+          ? currentTags.map((t) =>
+              t.tagVersionId === event.mapping.tagVersionId ? event.mapping : t,
+            )
+          : [...currentTags, event.mapping];
+
+        return { ...element, tags };
+      });
+
+      return { ...section, elements };
+    });
+
+    return { ...page, sections };
+  });
+
+  return {
+    ...aggregate,
+    version: { ...aggregate.version, pages },
+  };
+}
+
+export function onUpdateElementTag(
+  aggregate: IFormAggregate,
+  event: UpdateElementTagEvent,
+): IFormAggregate {
+  const pages = aggregate.version.pages.map((page): IPage => {
+    const sections = page.sections.map((section): ISection => {
+      const hasElement = section.elements.some((e) => e.id === event.elementId);
+
+      if (!hasElement) {
+        return section;
+      }
+
+      const elements = section.elements.map((element) => {
+        if (element.id !== event.elementId) {
+          return element;
+        }
+
+        const tags = (element.tags ?? []).map((tag) => {
+          if (tag.tagVersionId !== event.tagVersionId) {
+            return tag;
+          }
+
+          return { ...tag, ...event.mapping };
+        });
+
+        return { ...element, tags };
+      });
+
+      return { ...section, elements };
+    });
+
+    return { ...page, sections };
+  });
+
+  return {
+    ...aggregate,
+    version: { ...aggregate.version, pages },
+  };
+}
+
+export function onRemoveElementTag(
+  aggregate: IFormAggregate,
+  event: RemoveElementTagEvent,
+): IFormAggregate {
+  const pages = aggregate.version.pages.map((page): IPage => {
+    const sections = page.sections.map((section): ISection => {
+      const hasElement = section.elements.some((e) => e.id === event.elementId);
+
+      if (!hasElement) {
+        return section;
+      }
+
+      const elements = section.elements.map((element) => {
+        if (element.id !== event.elementId) {
+          return element;
+        }
+
+        const tags = (element.tags ?? []).filter(
+          (tag) => tag.tagVersionId !== event.tagVersionId,
+        );
+
+        return { ...element, tags };
+      });
+
+      return { ...section, elements };
     });
 
     return { ...page, sections };

@@ -4,8 +4,11 @@ import type { ISubmissionValue } from "@/types/submission";
 import type { IFormProgress } from "./progress";
 import type { IPage } from "@/types/page";
 import type { SelectedItem } from "@/store/formDesigner";
-import type { FormVersionRequest } from "@/services/formService.type";
-import type { IFlatRule, IRule, RuleParentType } from "@/types/rule";
+import type {
+  FormVersionRequest,
+  RuleRequest,
+} from "@/services/formService.type";
+import type { IFlatRule, RuleParentType } from "@/types/rule";
 import { stripID, stripTemporaryID } from "./id";
 import type { ISection } from "@/types/section";
 import * as ArrayUtils from "./array";
@@ -143,7 +146,7 @@ function setRules(
   parentType: RuleParentType,
   parentId: string,
   rules: IFlatRule[],
-): IRule[] {
+): RuleRequest[] {
   const toRule = ({
     parentId: _parentId,
     parentType: _parentType,

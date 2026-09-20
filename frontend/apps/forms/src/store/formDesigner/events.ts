@@ -1,5 +1,9 @@
 import type { ClipboardEventType } from "@/types/clipboard";
-import type { ElementType, IElement } from "@/types/element";
+import type {
+  ElementType,
+  IElement,
+  IElementTagMapping,
+} from "@/types/element";
 import type { ElementAttributes } from "@/types/elementAttributes";
 import type { IPage } from "@/types/page";
 import type { IFlatRule, RuleType } from "@/types/rule";
@@ -24,6 +28,9 @@ export type FormDesignerEvent =
   | ReorderElementEvent
   | PasteElementEvent
   | CutElementEvent
+  | AddElementTagEvent
+  | UpdateElementTagEvent
+  | RemoveElementTagEvent
   | AddRuleEvent
   | UpdateRuleEvent
   | RemoveRuleEvent
@@ -141,6 +148,25 @@ export type PasteElementEvent = {
   element: IElement;
   targetSectionId: string;
   clipboardOp: ClipboardEventType.CutElement | ClipboardEventType.CopyElement;
+};
+
+export type AddElementTagEvent = {
+  type: "AddElementTag";
+  elementId: string;
+  mapping: IElementTagMapping;
+};
+
+export type UpdateElementTagEvent = {
+  type: "UpdateElementTag";
+  elementId: string;
+  tagVersionId: string;
+  mapping: Partial<IElementTagMapping>;
+};
+
+export type RemoveElementTagEvent = {
+  type: "RemoveElementTag";
+  elementId: string;
+  tagVersionId: string;
 };
 
 export type AddRuleEvent = {

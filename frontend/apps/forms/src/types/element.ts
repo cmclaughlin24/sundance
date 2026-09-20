@@ -16,6 +16,13 @@ export type ElementType =
 export interface IElement extends IFormObject, HasRules {
   description: string;
   type: ElementType;
-  tags: any[];
+  tags: IElementTagMapping[];
   attributes: ElementAttributes;
+}
+
+export interface IElementTagMapping {
+  tagVersionId: string;
+  priority: number;
+  hasStaticValue: boolean;
+  staticValue: any;
 }

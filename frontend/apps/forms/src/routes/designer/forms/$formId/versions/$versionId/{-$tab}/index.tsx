@@ -30,6 +30,7 @@ import {
   isDraftVersion,
   versionToRequest,
 } from "@/utils/form";
+import { FormTags } from "@/components/FormDesigner/FormTags";
 
 const token = "placeholder";
 
@@ -53,15 +54,15 @@ export const Route = createFileRoute(
 enum FormDesignerTab {
   Build = "build",
   Rules = "rules",
-  DataSources = "dataSources",
-  Versions = "versions",
   Settings = "settings",
+  Tags = "tags",
+  Versions = "versions",
 }
 
 const TAB_ORDER = [
   FormDesignerTab.Build,
   FormDesignerTab.Rules,
-  FormDesignerTab.DataSources,
+  FormDesignerTab.Tags,
   FormDesignerTab.Versions,
   FormDesignerTab.Settings,
 ];
@@ -241,7 +242,7 @@ const PageComponent: React.FC<{
         <Tabs value={tab} onChange={handleTabChange}>
           <Tab label="Build" value={FormDesignerTab.Build} />
           <Tab label="Rules" value={FormDesignerTab.Rules} />
-          <Tab label="Reference Data" value={FormDesignerTab.DataSources} />
+          <Tab label="Tags" value={FormDesignerTab.Tags} />
           <Tab label="Version" value={FormDesignerTab.Versions} />
           <Tab label="Settings" value={FormDesignerTab.Settings} />
         </Tabs>
@@ -253,8 +254,8 @@ const PageComponent: React.FC<{
         <TabPanel value={FormDesignerTab.Rules}>
           <FormRules />
         </TabPanel>
-        <TabPanel value={FormDesignerTab.DataSources}>
-          Reference Data Tab
+        <TabPanel value={FormDesignerTab.Tags}>
+          <FormTags />
         </TabPanel>
         <TabPanel value={FormDesignerTab.Versions}>Versions Tab</TabPanel>
         <TabPanel value={FormDesignerTab.Settings}>Settings Tab</TabPanel>

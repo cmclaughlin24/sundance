@@ -1,5 +1,11 @@
 import type { ElementType } from "@/types/element";
 import type { ElementAttributes } from "@/types/elementAttributes";
+import type {
+  RuleExpressionJoinOp,
+  RuleExpressionOp,
+  RuleExprSourceType,
+  RuleType,
+} from "@/types/rule";
 
 export interface FormRequest {
   name: string;
@@ -37,8 +43,27 @@ export interface ElementRequest {
   description: string;
   position: number;
   attributes: ElementAttributes;
-  tags: any[];
   rules: RuleRequest[];
+  tags: ElementTagMappingRequest[];
 }
 
-export interface RuleRequest {}
+export interface RuleRequest {
+  id?: string;
+  type: RuleType;
+  expressions: RuleExpressionRequest[];
+}
+
+export interface RuleExpressionRequest {
+  source: { type: RuleExprSourceType; key: string };
+  operator: RuleExpressionOp;
+  joinWithPrevious?: RuleExpressionJoinOp;
+  value: any;
+  position: number;
+}
+
+export interface ElementTagMappingRequest {
+  tagVersionId: string;
+  priority: number;
+  hasStaticValue: boolean;
+  staticValue: any;
+}
