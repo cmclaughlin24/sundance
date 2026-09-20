@@ -6,7 +6,6 @@ export const tagsPanelCardStyles = (
   isClickable: boolean = false,
 ): Styles => ({
   card: (theme) => ({
-    mb: 2.5,
     p: 1.5,
     display: 'flex',
     borderRadius: 2.5,

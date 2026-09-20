@@ -12,6 +12,7 @@ export type TagsPanelCardProps = React.PropsWithChildren<{
   isSelected?: boolean;
   onClick?: MouseEventHandler<HTMLDivElement>;
   onKeyDown?: KeyboardEventHandler<HTMLDivElement>;
+  sx?: SxProps<Theme>;
   slotProps?: Partial<{
     title: { sx: SxProps<Theme> };
     content: { sx: SxProps<Theme> };
@@ -23,6 +24,7 @@ export const TagsPanelCard: React.FC<TagsPanelCardProps> = function ({
   description,
   isSelected = false,
   children,
+  sx,
   slotProps = {},
   onClick,
   onKeyDown,
@@ -50,7 +52,7 @@ export const TagsPanelCard: React.FC<TagsPanelCardProps> = function ({
   return (
     <Card
       variant="outlined"
-      sx={styles.card}
+      sx={mergeSx(styles.card, sx)}
       onClick={onClick}
       onKeyDown={handleKeyDown}
       role="button"

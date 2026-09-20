@@ -44,6 +44,7 @@ export const ElementTagsPanelCard: React.FC<ElementTagsPanelCardProps> =
         isSelected={isSelected}
         onClick={() => handleElement(element)}
         onKeyDown={() => handleElement(element)}
+        sx={{ mb: 2.5 }}
         slotProps={{
           title: {
             sx: element.attributes.isRequired ? styles.required : {},

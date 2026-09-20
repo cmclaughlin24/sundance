@@ -10,7 +10,7 @@ import { useTagsService } from "@/hooks/useHttpService";
 import { TENANT_ID } from "@/constants/tenant";
 import { ElementTagsPanelCard } from "./ElementTagsPanelCard";
 import { groupTags, type TagGroup } from "@/utils/tag";
-import { TagGroupList } from "./TagsList";
+import { TagGroupList } from "./TagGroupList";
 
 export const FormTags: React.FC = function () {
   const pages = useFormPagesSnapshot();

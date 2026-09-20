@@ -21,7 +21,7 @@ export interface TagGroupListProps {
 
 export const TagGroupList: React.FC<TagGroupListProps> = function ({ group }) {
   return (
-    <>
+    <Box sx={{ mb: 2.5 }}>
       <Typography component="h4" sx={{ mb: 1 }}>
         {group.title} {group.keyPath ?? `(${group.keyPath})`}
       </Typography>
@@ -32,6 +32,6 @@ export const TagGroupList: React.FC<TagGroupListProps> = function ({ group }) {
           </Box>
         ))}
       </Box>
-    </>
+    </Box>
   );
 };
