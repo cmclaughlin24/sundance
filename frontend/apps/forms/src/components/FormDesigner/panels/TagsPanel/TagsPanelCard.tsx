@@ -13,9 +13,8 @@ export type TagsPanelCardProps = React.PropsWithChildren<{
   onClick?: MouseEventHandler<HTMLDivElement>;
   onKeyDown?: KeyboardEventHandler<HTMLDivElement>;
   slotProps?: Partial<{
-    title: {
-      sx: SxProps<Theme>;
-    };
+    title: { sx: SxProps<Theme> };
+    content: { sx: SxProps<Theme> };
   }>;
 }>;
 
@@ -64,7 +63,7 @@ export const TagsPanelCard: React.FC<TagsPanelCardProps> = function ({
         </Typography>
         <Typography sx={styles.description}>{description}</Typography>
       </Box>
-      {children}
+      <Box sx={mergeSx(styles.content, slotProps.content?.sx)}>{children}</Box>
     </Card>
   );
 };

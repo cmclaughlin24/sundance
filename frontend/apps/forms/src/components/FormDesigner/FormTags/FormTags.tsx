@@ -1,22 +1,19 @@
 import Box from "@mui/material/Box";
-import { TagsPanel } from "./panels/TagsPanel";
+import { TagsPanel } from "../panels/TagsPanel";
 import Typography from "@mui/material/Typography";
 import { formTagsStyles as styles } from "./FormTags.styles";
 import type { IElement } from "@/types/element";
-import type { ITag } from "@/types/tag";
-import {
-  useFormDesignerSelect,
-  useFormPagesSnapshot,
-} from "@/store/formDesigner";
+import { useFormPagesSnapshot } from "@/store/formDesigner";
 import { getFlattenedElements } from "@/utils/form";
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { useTagsService } from "@/hooks/useHttpService";
 import { TENANT_ID } from "@/constants/tenant";
-import { useCallback } from "react";
+import { ElementTagsPanelCard } from "./ElementTagsPanelCard";
+import { groupTags, type TagGroup } from "@/utils/tag";
+import { TagGroupList } from "./TagsList";
 
 export const FormTags: React.FC = function () {
   const pages = useFormPagesSnapshot();
-  const { selected, select } = useFormDesignerSelect();
   const tagsService = useTagsService();
 
   const {
@@ -27,43 +24,8 @@ export const FormTags: React.FC = function () {
     return await tagsService.getTags({ token, tenantId: TENANT_ID });
   }, []);
 
-  const handleElement = (element: IElement) => {
-    const isSelected = selected?.item.id === element.id;
-    select(!isSelected ? { type: "element", item: element } : null);
-  };
-
-  const elementToTagsPanelCard = useCallback(
-    (element: IElement) => {
-      const isSelected = selected?.item.id === element.id;
-      const isRequired = element.attributes.isRequired;
-
-      return (
-        <TagsPanel.Card
-          title={element.name}
-          description={element.key}
-          isSelected={isSelected}
-          onClick={() => handleElement(element)}
-          onKeyDown={() => handleElement(element)}
-          slotProps={{
-            title: {
-              sx: isRequired
-                ? {
-                    "::after": {
-                      content: '"*"',
-                      color: "#971E28",
-                      marginLeft: 0.25,
-                    },
-                  }
-                : {},
-            },
-          }}
-        ></TagsPanel.Card>
-      );
-    },
-    [selected],
-  );
-
   const elements = getFlattenedElements(pages);
+  const tagGroups = groupTags(tags || []);
 
   return (
     <Box sx={styles.workspace}>
@@ -82,7 +44,7 @@ export const FormTags: React.FC = function () {
           filterFn={filterElements}
           keyFn={(e) => e.id}
         >
-          {elementToTagsPanelCard}
+          {(e) => <ElementTagsPanelCard element={e} />}
         </TagsPanel.Content>
       </TagsPanel>
       <Box sx={styles.contract}>
@@ -97,15 +59,13 @@ export const FormTags: React.FC = function () {
             </Typography>
           }
         />
-        <TagsPanel.Content<ITag>
-          data={tags}
+        <TagsPanel.Content<TagGroup>
+          data={tagGroups}
           placeholder="Filter canonical tags..."
           filterFn={filterTags}
-          keyFn={(t) => t.id}
+          keyFn={(group) => group.id}
         >
-          {(t) => (
-            <TagsPanel.Card title={t.keyPath} description={t.displayName} />
-          )}
+          {(group) => <TagGroupList group={group} />}
         </TagsPanel.Content>
       </TagsPanel>
     </Box>
@@ -121,11 +81,12 @@ function filterElements(searchTerm: string, element: IElement): boolean {
   );
 }
 
-function filterTags(searchTerm: string, tag: ITag): boolean {
+function filterTags(searchTerm: string, group: TagGroup): boolean {
   const s = searchTerm.toLowerCase();
 
-  return (
-    tag.displayName.toLowerCase().includes(s) ||
-    tag.keyPath.toLowerCase().includes(s)
+  return group.items.some(
+    (i) =>
+      i.displayName.toLowerCase().includes(s) ||
+      i.keyPath.toLowerCase().includes(s),
   );
 }

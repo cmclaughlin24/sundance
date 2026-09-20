@@ -8,7 +8,9 @@ export const tagsPanelCardStyles = (
   card: (theme) => ({
     mb: 2.5,
     p: 1.5,
+    display: 'flex',
     borderRadius: 2.5,
+    gap: 1,
     borderColor: isSelected ? `${theme.palette.primary.main}` : Border.Primary,
     borderStyle: isSelected ? "solid" : "dashed",
     background: isSelected
@@ -28,5 +30,8 @@ export const tagsPanelCardStyles = (
   description: {
     fontSize: "0.75rem",
     color: "#4B4444",
+  },
+  content: {
+    flex: 1,
   },
 });

@@ -30,7 +30,7 @@ import {
   isDraftVersion,
   versionToRequest,
 } from "@/utils/form";
-import { FormTags } from "@/components/FormDesigner/FormTags";
+import { FormTags } from "@/components/FormDesigner/FormTags/FormTags";
 
 const token = "placeholder";
 
