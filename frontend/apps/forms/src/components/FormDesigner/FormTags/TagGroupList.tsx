@@ -1,8 +1,8 @@
 import type { TagGroup } from "@/utils/tag";
 import Box from "@mui/material/Box";
-import { TagsPanel } from "../panels/TagsPanel";
 import type { Styles } from "@/types/styles";
 import Typography from "@mui/material/Typography";
+import { TagGroupListItem } from "./TagGroupListItem";
 
 const styles: Styles = {
   list: {
@@ -28,7 +28,7 @@ export const TagGroupList: React.FC<TagGroupListProps> = function ({ group }) {
       <Box component="ul" sx={styles.list}>
         {group.items?.map((t) => (
           <Box component="li" sx={styles.item} key={t.id}>
-            <TagsPanel.Card title={t.keyPath} description={t.displayName} />
+            <TagGroupListItem tag={t} />
           </Box>
         ))}
       </Box>

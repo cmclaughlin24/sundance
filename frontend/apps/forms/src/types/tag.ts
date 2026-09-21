@@ -1,3 +1,5 @@
+import type { HasVersion } from "@/utils/version";
+
 export const TAG_COLLECTION_SEGMENT = "[*]";
 
 export type TagNodeType = "primitive" | "object";
@@ -15,10 +17,10 @@ export interface ITag {
 
 export type TagVersionStatus = "draft" | "active" | "deprecated" | "retired";
 
-export interface ITagVersion {
+export interface ITagVersion extends HasVersion {
   id: string;
   tagId: string;
-  version: number;
+  status: TagVersionStatus;
   createdAt: Date;
   deprecatedAt: Date;
   publishedAt: Date;

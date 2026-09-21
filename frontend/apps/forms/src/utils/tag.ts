@@ -1,4 +1,6 @@
-import type { ITag } from "@/types/tag";
+import type { ITag, ITagVersion, TagVersionStatus } from "@/types/tag";
+import * as ArrayUtils from "./array";
+import { sortVersions } from "./version";
 
 export interface TagGroup {
   id: string;
@@ -55,4 +57,15 @@ export function groupTags(tags: ITag[], depth: number = 2): TagGroup[] {
   }
 
   return Array.from(groups.values()).filter((g) => g.items.length > 0);
+}
+
+export function getLatestTagVersionByStatus(
+  versions: ITagVersion[] | null,
+  status: TagVersionStatus,
+): ITagVersion | undefined {
+  if (!ArrayUtils.hasLengthGreaterThan(versions, 0)) {
+    return undefined;
+  }
+
+  return sortVersions(versions!).find((v) => v.status === status);
 }

@@ -25,7 +25,7 @@ import type { IFormVersion } from "@/types/formVersion";
 import {
   copyVersion,
   defaultFormVersion,
-  getLatestVersionByStatus,
+  getLatestFormVersionByStatus,
   isActiveVersion,
   isDraftVersion,
   versionToRequest,
@@ -204,7 +204,7 @@ const PageComponent: React.FC<{
     }
   };
 
-  const latestActive = getLatestVersionByStatus(versions, "active");
+  const latestActive = getLatestFormVersionByStatus(versions, "active");
 
   return (
     <Page sx={formDesignerPageStyles.page}>

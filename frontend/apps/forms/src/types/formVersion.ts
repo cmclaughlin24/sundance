@@ -1,11 +1,11 @@
+import type { HasVersion } from "@/utils/version";
 import type { IPage } from "./page";
 
 export type FormVersionStatus = "draft" | "active" | "retired";
 
-export interface IFormVersion {
+export interface IFormVersion extends HasVersion {
   id: string;
   formId: string;
-  version: number;
   status: FormVersionStatus;
   publishedBy: string;
   publishedAt: Date;

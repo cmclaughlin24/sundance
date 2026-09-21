@@ -12,6 +12,7 @@ import type { IFlatRule, RuleParentType } from "@/types/rule";
 import { stripID, stripTemporaryID } from "./id";
 import type { ISection } from "@/types/section";
 import * as ArrayUtils from "./array";
+import { sortVersions } from "./version";
 
 /**
  * Returns a flat array of all elements across every page and section of the given form version.
@@ -213,21 +214,7 @@ export function defaultFormVersion(): FormVersionRequest {
   };
 }
 
-export function sortFormVersions(
-  versions: IFormVersion[],
-  order: "asc" | "dsc" = "dsc",
-): IFormVersion[] {
-  if (!ArrayUtils.hasLengthGreaterThan(versions, 0)) {
-    return [];
-  }
-
-  const cmp = (a: IFormVersion, b: IFormVersion) =>
-    order === "dsc" ? b.version - a.version : a.version - b.version;
-
-  return [...versions].sort(cmp);
-}
-
-export function getLatestVersionByStatus(
+export function getLatestFormVersionByStatus(
   versions: IFormVersion[] | null,
   status: FormVersionStatus,
 ): IFormVersion | undefined {
@@ -235,5 +222,5 @@ export function getLatestVersionByStatus(
     return undefined;
   }
 
-  return sortFormVersions(versions!).find((v) => v.status === status);
+  return sortVersions(versions!).find((v) => v.status === status);
 }
