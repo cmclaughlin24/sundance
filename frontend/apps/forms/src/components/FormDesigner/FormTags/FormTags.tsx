@@ -11,6 +11,12 @@ import { TENANT_ID } from "@/constants/tenant";
 import { ElementTagsPanelCard } from "./ElementTagsPanelCard";
 import { groupTags, type TagGroup } from "@/utils/tag";
 import { TagGroupList } from "./TagGroupList";
+import { ContextMenu, ContextMenuProvider } from "@/components/ContextMenu";
+import { FORMS_HUB_PORTAL_REF } from "@/constants/portalRef";
+import {
+  TagContextMenu,
+  type TagContextMenuData,
+} from "../menus/TagContextMenu";
 
 export const FormTags: React.FC = function () {
   const pages = useFormPagesSnapshot();
@@ -31,47 +37,55 @@ export const FormTags: React.FC = function () {
   const tagGroups = groupTags(tags || []);
 
   return (
-    <Box sx={styles.workspace}>
-      <TagsPanel sx={styles.fields}>
-        <TagsPanel.Header
-          title="Form Fields (User Input)"
-          slot={
-            <Typography component="span" sx={styles.badge}>
-              {elements?.length ?? 0} Field(s)
-            </Typography>
-          }
-        />
-        <TagsPanel.Content<IElement>
-          data={elements}
-          placeholder="Filter fields..."
-          filterFn={filterElements}
-          keyFn={(e) => e.id}
-        >
-          {(e) => <ElementTagsPanelCard element={e} />}
-        </TagsPanel.Content>
-      </TagsPanel>
-      <Box sx={styles.contract}>
-        <Typography sx={{ fontWeight: 600 }}>Contract Flow</Typography>
+    <ContextMenuProvider>
+      <Box sx={styles.workspace}>
+        <TagsPanel sx={styles.fields}>
+          <TagsPanel.Header
+            title="Form Fields (User Input)"
+            slot={
+              <Typography component="span" sx={styles.badge}>
+                {elements?.length ?? 0} Field(s)
+              </Typography>
+            }
+          />
+          <TagsPanel.Content<IElement>
+            data={elements}
+            placeholder="Filter fields..."
+            filterFn={filterElements}
+            keyFn={(e) => e.id}
+          >
+            {(e) => <ElementTagsPanelCard element={e} />}
+          </TagsPanel.Content>
+        </TagsPanel>
+        <Box sx={styles.contract}>
+          <Typography sx={{ fontWeight: 600 }}>Contract Flow</Typography>
+        </Box>
+        <TagsPanel sx={styles.tags}>
+          <TagsPanel.Header
+            title="Canonical IGA Schema (Target)"
+            slot={
+              <Typography component="span" sx={styles.badge}>
+                SCIM 2.0 / Saiyant EARS
+              </Typography>
+            }
+          />
+          <TagsPanel.Content<TagGroup>
+            data={tagGroups}
+            placeholder="Filter canonical tags..."
+            filterFn={filterTags}
+            keyFn={(group) => group.id}
+          >
+            {(group) => <TagGroupList group={group} />}
+          </TagsPanel.Content>
+        </TagsPanel>
       </Box>
-      <TagsPanel sx={styles.tags}>
-        <TagsPanel.Header
-          title="Canonical IGA Schema (Target)"
-          slot={
-            <Typography component="span" sx={styles.badge}>
-              SCIM 2.0 / Saiyant EARS
-            </Typography>
-          }
-        />
-        <TagsPanel.Content<TagGroup>
-          data={tagGroups}
-          placeholder="Filter canonical tags..."
-          filterFn={filterTags}
-          keyFn={(group) => group.id}
-        >
-          {(group) => <TagGroupList group={group} />}
-        </TagsPanel.Content>
-      </TagsPanel>
-    </Box>
+      <ContextMenu container={document.getElementById(FORMS_HUB_PORTAL_REF)!}>
+        {(data: unknown) => {
+          const target = data as TagContextMenuData;
+          return <TagContextMenu target={target} />;
+        }}
+      </ContextMenu>
+    </ContextMenuProvider>
   );
 };
 

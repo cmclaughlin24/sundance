@@ -1,12 +1,33 @@
-import type { ITag } from "@/types/tag";
+import type { ITag, TagVersionStatus } from "@/types/tag";
 import { TagsPanel } from "../panels/TagsPanel";
 import { useFormDesignerSelect } from "@/store/formDesigner";
 import * as ArrayUtils from "@/utils/array";
 import { getLatestTagVersionByStatus } from "@/utils/tag";
 import { TagVersionStatusTag } from "@/components/TagVersionStatusTag";
+import { useContextMenuDispatch } from "@/components/ContextMenu";
+import type { MouseEventHandler } from "react";
+import type { TagVersionContextData } from "../menus/TagContextMenu";
 
 export const TagGroupListItem: React.FC<{ tag: ITag }> = function ({ tag }) {
   const { selected } = useFormDesignerSelect();
+  const { open } = useContextMenuDispatch();
+
+  const handleContextMenu: MouseEventHandler<HTMLDivElement> = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!activeVersion) {
+      return;
+    }
+
+    open({
+      position: { x: event.clientX, y: event.clientY },
+      data: {
+        type: "version",
+        version: activeVersion,
+      } satisfies TagVersionContextData,
+    });
+  };
 
   const isTagSelected = (tag: ITag): boolean => {
     if (
@@ -19,7 +40,7 @@ export const TagGroupListItem: React.FC<{ tag: ITag }> = function ({ tag }) {
     }
 
     return tag.versions!.some((tv) =>
-      selected.item.tags.some((t) => (t.tagVersionId = tv.id)),
+      selected.item.tags.some((t) => (t.tagVersionId === tv.id)),
     );
   };
 
@@ -32,6 +53,7 @@ export const TagGroupListItem: React.FC<{ tag: ITag }> = function ({ tag }) {
     <TagsPanel.Card
       title={tag.keyPath}
       description={tag.displayName}
+      onContextMenu={handleContextMenu}
       isSelected={isTagSelected(tag)}
       slotProps={{
         content: {

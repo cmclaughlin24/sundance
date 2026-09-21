@@ -142,7 +142,9 @@ function isAddEvent(event: FormDesignerEvent): boolean {
   return (
     event.type === "AddPage" ||
     event.type === "AddSection" ||
-    event.type === "AddElement"
+    event.type === "AddElement" ||
+    event.type === "AddElementTag" ||
+    event.type === "RemoveElementTag"
   );
 }
 

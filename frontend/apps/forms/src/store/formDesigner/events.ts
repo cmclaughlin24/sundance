@@ -152,20 +152,20 @@ export type PasteElementEvent = {
 
 export type AddElementTagEvent = {
   type: "AddElementTag";
-  elementId: string;
+  id: string;
   mapping: IElementTagMapping;
 };
 
 export type UpdateElementTagEvent = {
   type: "UpdateElementTag";
-  elementId: string;
+  id: string;
   tagVersionId: string;
   mapping: Partial<IElementTagMapping>;
 };
 
 export type RemoveElementTagEvent = {
   type: "RemoveElementTag";
-  elementId: string;
+  id: string;
   tagVersionId: string;
 };
 

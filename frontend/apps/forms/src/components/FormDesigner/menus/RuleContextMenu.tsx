@@ -6,24 +6,14 @@ import {
 import { ContextMenu, useContextMenuDispatch } from "../../ContextMenu";
 import Typography from "@mui/material/Typography";
 import Divider from "@mui/material/Divider";
-import type { Styles } from "@/types/styles";
 import type { IFlatRule } from "@/types/rule";
 import { useFormsService } from "@/hooks/useHttpService";
 import { ClipboardEventType, type RuleClipboardData } from "@/types/clipboard";
 import { useEffect, useState } from "react";
 import { isDraftVersion, versionToRequest } from "@/utils/form";
 import { TENANT_ID } from "@/constants/tenant";
+import { contextMenuStyles as styles } from "./ContextMenu.style";
 
-const styles: Styles = {
-  btnWithShortcut: {
-    display: "flex",
-    justifyContent: "space-between",
-  },
-  shortcutText: {
-    fontSize: "0.75rem",
-    color: "#4B4444",
-  },
-};
 
 export const RuleContextMenu: React.FC<{ target: IFlatRule | undefined }> =
   function ({ target }) {

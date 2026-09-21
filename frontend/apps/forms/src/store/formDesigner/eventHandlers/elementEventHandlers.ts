@@ -322,14 +322,14 @@ export function onAddElementTag(
 ): IFormAggregate {
   const pages = aggregate.version.pages.map((page): IPage => {
     const sections = page.sections.map((section): ISection => {
-      const hasElement = section.elements.some((e) => e.id === event.elementId);
+      const hasElement = section.elements.some((e) => e.id === event.id);
 
       if (!hasElement) {
         return section;
       }
 
       const elements = section.elements.map((element) => {
-        if (element.id !== event.elementId) {
+        if (element.id !== event.id) {
           return element;
         }
 
@@ -364,14 +364,14 @@ export function onUpdateElementTag(
 ): IFormAggregate {
   const pages = aggregate.version.pages.map((page): IPage => {
     const sections = page.sections.map((section): ISection => {
-      const hasElement = section.elements.some((e) => e.id === event.elementId);
+      const hasElement = section.elements.some((e) => e.id === event.id);
 
       if (!hasElement) {
         return section;
       }
 
       const elements = section.elements.map((element) => {
-        if (element.id !== event.elementId) {
+        if (element.id !== event.id) {
           return element;
         }
 
@@ -404,14 +404,14 @@ export function onRemoveElementTag(
 ): IFormAggregate {
   const pages = aggregate.version.pages.map((page): IPage => {
     const sections = page.sections.map((section): ISection => {
-      const hasElement = section.elements.some((e) => e.id === event.elementId);
+      const hasElement = section.elements.some((e) => e.id === event.id);
 
       if (!hasElement) {
         return section;
       }
 
       const elements = section.elements.map((element) => {
-        if (element.id !== event.elementId) {
+        if (element.id !== event.id) {
           return element;
         }
 
