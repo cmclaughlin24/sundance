@@ -14,6 +14,7 @@ type settings struct {
 	LogLevel  string              `json:"logLevel"`
 	Transport mcp.ServerTransport `json:"transport"`
 	Targets   []mcp.TargetConfig  `json:"targets"`
+	Port      *int                `json:"port"`
 }
 
 func main() {
@@ -37,6 +38,7 @@ func main() {
 		mcp.ServerWithVersion("1.0.0"),
 		mcp.ServerWithTransport(settings.Transport),
 		mcp.ServerWithTargets(settings.Targets...),
+		mcp.ServerWithPort(settings.Port),
 	)
 
 	if err := server.Run(context.Background()); err != nil {

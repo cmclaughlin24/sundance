@@ -1,0 +1,13 @@
+FROM cosmtrek/air:latest
+
+WORKDIR /app
+
+COPY . .
+
+WORKDIR /app/services/mcp-gateway
+
+RUN go mod download
+
+EXPOSE 80
+
+CMD [ "air", "-c", ".air.toml" ]

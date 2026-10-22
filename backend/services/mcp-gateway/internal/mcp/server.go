@@ -28,6 +28,7 @@ type ServerOpts struct {
 	transport ServerTransport
 	targets   []TargetConfig
 	logger    *slog.Logger
+	port      *int
 }
 
 type ServerOptsFn func(*ServerOpts)
@@ -41,6 +42,12 @@ func ServerWithLogger(logger *slog.Logger) ServerOptsFn {
 func ServerWithName(name string) ServerOptsFn {
 	return func(so *ServerOpts) {
 		so.name = name
+	}
+}
+
+func ServerWithPort(port *int) ServerOptsFn {
+	return func(so *ServerOpts) {
+		so.port = port
 	}
 }
 
@@ -66,6 +73,7 @@ type Server struct {
 	server    *mcp.Server
 	transport ServerTransport
 	logger    *slog.Logger
+	port      *int
 }
 
 func NewServer(opts ...ServerOptsFn) *Server {
@@ -83,6 +91,7 @@ func NewServer(opts ...ServerOptsFn) *Server {
 	return &Server{
 		server:    server,
 		transport: o.transport,
+		port:      o.port,
 		logger:    o.logger,
 	}
 }
@@ -132,6 +141,10 @@ func (s *Server) stdio(ctx context.Context) error {
 }
 
 func (s *Server) sse(ctx context.Context) error {
+	if s.port == nil {
+		return errors.New("sse transport requires a port to listen on but got nil")
+	}
+
 	handler := mcp.NewSSEHandler(func(request *http.Request) *mcp.Server {
 		return s.server
 	}, nil)
@@ -140,12 +153,14 @@ func (s *Server) sse(ctx context.Context) error {
 	mux.Handle("/mcp/*", handler)
 
 	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", 80),
+		Addr:         fmt.Sprintf(":%d", *s.port),
 		Handler:      mux,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
+
+	s.logger.Info(fmt.Sprintf("application listening on :%d", *s.port))
 
 	return server.ListenAndServe()
 }

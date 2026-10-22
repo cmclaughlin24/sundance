@@ -1,6 +1,7 @@
 {
   "logLevel": "debug",
   "transport": "sse",
+  "port": 80,
   "targets": [
     {
       "name": "forms-api",
@@ -12,7 +13,7 @@
       "headers": null,
       "timeout": null,
       "policy": {
-        "allow": []
+        "allow": [],
         "deny": []
       }
     },

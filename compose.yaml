@@ -21,7 +21,7 @@ services:
   mongo-express:
     image: mongo-express:latest
     ports:
-      - "8082:8081"
+      - "8083:8081"
     environment:
       ME_CONFIG_BASICAUTH_USERNAME: user
       ME_CONFIG_BASICAUTH_PASSWORD: password
@@ -79,8 +79,8 @@ services:
           path: ./backend
           target: /app
           ignore:
-            - ./backend/services/submissions
             - ./backend/services/tenants
+            - ./backend/services/mcp-gateway
         - action: rebuild
           path: ./backend/services/forms/go.mod
     depends_on:
@@ -103,13 +103,33 @@ services:
           target: /app
           ignore:
             - ./backend/services/forms
-            - ./backend/services/submissions
+            - ./backend/services/mcp-gateway
         - action: rebuild
           path: ./backend/services/tenants/go.mod
     depends_on:
       - dozzle
       - mongo
       - redis
+  gateway:
+    build:
+      context: ./backend
+      dockerfile: ./docker/Dockerfile.gateway
+    ports:
+      - 8082:80
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+          ignore:
+            - ./backend/services/forms
+            - ./backend/services/tenants
+        - action: rebuild
+          path: ./backend/services/tenants/go.mod
+    depends_on:
+      - dozzle
+      - forms
+      - tenants
 volumes:
   mongodb:
   redis:
