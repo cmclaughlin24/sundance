@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/httplog/v3"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -145,19 +146,22 @@ func (s *Server) sse(ctx context.Context) error {
 		return errors.New("sse transport requires a port to listen on but got nil")
 	}
 
-	handler := mcp.NewSSEHandler(func(request *http.Request) *mcp.Server {
+	handler := mcp.NewStreamableHTTPHandler(func(_ *http.Request) *mcp.Server {
 		return s.server
 	}, nil)
 
 	mux := chi.NewRouter()
-	mux.Handle("/mcp/*", handler)
+
+	mux.Use(httplog.RequestLogger(s.logger, &httplog.Options{
+		Schema: httplog.SchemaOTEL,
+	}))
+	mux.Handle("/mcp", handler)
 
 	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", *s.port),
-		Handler:      mux,
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
+		Addr:        fmt.Sprintf(":%d", *s.port),
+		Handler:     mux,
+		IdleTimeout: time.Minute,
+		ReadTimeout: 10 * time.Second,
 	}
 
 	s.logger.Info(fmt.Sprintf("application listening on :%d", *s.port))

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "forms-hub-gateway": {
+      "type": "remote",
+      "url": "http://localhost:8082/mcp",
+      "enabled": true
+    }
+  }
+}
