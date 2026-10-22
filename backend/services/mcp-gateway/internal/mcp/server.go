@@ -1,0 +1,151 @@
+package mcp
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log/slog"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/modelcontextprotocol/go-sdk/mcp"
+)
+
+type ServerTransport string
+
+const (
+	ServerTransportSSE   ServerTransport = "sse"
+	ServerTransportStdio ServerTransport = "stdio"
+)
+
+type ServerOpts struct {
+	name      string
+	version   string
+	transport ServerTransport
+	targets   []TargetConfig
+	logger    *slog.Logger
+}
+
+type ServerOptsFn func(*ServerOpts)
+
+func ServerWithLogger(logger *slog.Logger) ServerOptsFn {
+	return func(so *ServerOpts) {
+		so.logger = logger
+	}
+}
+
+func ServerWithName(name string) ServerOptsFn {
+	return func(so *ServerOpts) {
+		so.name = name
+	}
+}
+
+func ServerWithTargets(targets ...TargetConfig) ServerOptsFn {
+	return func(so *ServerOpts) {
+		so.targets = targets
+	}
+}
+
+func ServerWithTransport(transport ServerTransport) ServerOptsFn {
+	return func(so *ServerOpts) {
+		so.transport = transport
+	}
+}
+
+func ServerWithVersion(version string) ServerOptsFn {
+	return func(so *ServerOpts) {
+		so.version = version
+	}
+}
+
+type Server struct {
+	server    *mcp.Server
+	transport ServerTransport
+	logger    *slog.Logger
+}
+
+func NewServer(opts ...ServerOptsFn) *Server {
+	var o ServerOpts
+
+	for _, opt := range opts {
+		opt(&o)
+	}
+
+	server := mcp.NewServer(&mcp.Implementation{
+		Name:    o.name,
+		Version: o.version,
+	}, nil)
+
+	return &Server{
+		server:    server,
+		transport: o.transport,
+		logger:    o.logger,
+	}
+}
+
+func (s *Server) Run(ctx context.Context) error {
+	signalCtx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	serverErrChan := make(chan error, 1)
+
+	go func() {
+		var run func(context.Context) error
+
+		switch s.transport {
+		case ServerTransportStdio:
+			run = s.stdio
+		case ServerTransportSSE:
+			run = s.sse
+		}
+
+		if err := run(signalCtx); err != nil {
+			serverErrChan <- err
+		}
+
+		close(serverErrChan)
+	}()
+
+	select {
+	case err := <-serverErrChan:
+		if err == nil || errors.Is(err, mcp.ErrConnectionClosed) {
+			return nil
+		}
+
+		return err
+	case <-signalCtx.Done():
+		s.logger.Info("application received shutdown signal, waiting for server cleanup...")
+
+		if err := <-serverErrChan; err != nil && !errors.Is(err, mcp.ErrConnectionClosed) {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *Server) stdio(ctx context.Context) error {
+	return s.server.Run(ctx, &mcp.StdioTransport{})
+}
+
+func (s *Server) sse(ctx context.Context) error {
+	handler := mcp.NewSSEHandler(func(request *http.Request) *mcp.Server {
+		return s.server
+	}, nil)
+
+	mux := chi.NewRouter()
+	mux.Handle("/mcp/*", handler)
+
+	server := &http.Server{
+		Addr:         fmt.Sprintf(":%d", 80),
+		Handler:      mux,
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+	}
+
+	return server.ListenAndServe()
+}

@@ -1,0 +1,34 @@
+{
+  "logLevel": "debug",
+  "transport": "sse",
+  "targets": [
+    {
+      "name": "forms-api",
+      "baseUrl": "http://forms:8080",
+      "spec": {
+        "version": "2.0",
+        "url": "http://forms:8080/swagger/doc.json"
+      },
+      "headers": null,
+      "timeout": null,
+      "policy": {
+        "allow": []
+        "deny": []
+      }
+    },
+    {
+      "name": "tenants-api",
+      "baseUrl": "http://tenants:8081",
+      "spec": {
+        "version": "2.0",
+        "url": "http://tenants:8081/swagger/doc.json"
+      },
+      "headers": null,
+      "timeout": null,
+      "policy": {
+        "allow": [],
+        "deny": []
+      }
+    }
+  ]
+}

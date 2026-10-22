@@ -1,6 +1,6 @@
 module sundance/backend/pkg/database
 
-go 1.26.2
+go 1.27.0
 
 require go.mongodb.org/mongo-driver/v2 v2.7.0
 

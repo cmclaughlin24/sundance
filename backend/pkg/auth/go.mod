@@ -1,6 +1,6 @@
 module sundance/backend/pkg/auth
 
-go 1.26.2
+go 1.27.0
 
 require (
 	github.com/MicahParks/keyfunc/v3 v3.8.0
