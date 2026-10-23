@@ -19,7 +19,7 @@ import (
 type ServerTransport string
 
 const (
-	ServerTransportSSE   ServerTransport = "sse"
+	ServerTransportHTTP  ServerTransport = "http"
 	ServerTransportStdio ServerTransport = "stdio"
 )
 
@@ -108,8 +108,8 @@ func (s *Server) Run(ctx context.Context) error {
 		switch s.transport {
 		case ServerTransportStdio:
 			run = s.stdio
-		case ServerTransportSSE:
-			run = s.sse
+		case ServerTransportHTTP:
+			run = s.http
 		}
 
 		if err := run(signalCtx); err != nil {
@@ -141,9 +141,9 @@ func (s *Server) stdio(ctx context.Context) error {
 	return s.server.Run(ctx, &mcp.StdioTransport{})
 }
 
-func (s *Server) sse(ctx context.Context) error {
+func (s *Server) http(ctx context.Context) error {
 	if s.port == nil {
-		return errors.New("sse transport requires a port to listen on but got nil")
+		return errors.New("http transport requires a port to listen on but got nil")
 	}
 
 	handler := mcp.NewStreamableHTTPHandler(func(_ *http.Request) *mcp.Server {
@@ -155,7 +155,7 @@ func (s *Server) sse(ctx context.Context) error {
 	mux.Use(httplog.RequestLogger(s.logger, &httplog.Options{
 		Schema: httplog.SchemaOTEL,
 	}))
-	mux.Handle("/mcp", handler)
+	mux.Mount("/mcp", handler)
 
 	server := &http.Server{
 		Addr:        fmt.Sprintf(":%d", *s.port),

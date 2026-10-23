@@ -1,6 +1,11 @@
 package mcp
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+var ErrInvalidTargetConfig = errors.New("invalid target configuration")
 
 type TargetConfig struct {
 	Name    string            `json:"name"`

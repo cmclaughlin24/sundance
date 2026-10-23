@@ -1,6 +1,6 @@
 {
   "logLevel": "debug",
-  "transport": "sse",
+  "transport": "http",
   "port": 80,
   "targets": [
     {

@@ -2,9 +2,14 @@ module sundance/backend/services/mcp-gateway
 
 go 1.27.0
 
-require github.com/modelcontextprotocol/go-sdk v1.8.0
+require (
+	github.com/go-chi/chi/v5 v5.5.0
+	github.com/go-chi/httplog/v3 v3.5.0
+	github.com/modelcontextprotocol/go-sdk v1.8.0
+)
 
 require (
+	github.com/getkin/kin-openapi v0.152.0 // indirect
 	github.com/google/jsonschema-go v0.4.3 // indirect
 	github.com/segmentio/asm v1.1.3 // indirect
 	github.com/segmentio/encoding v0.5.4 // indirect
