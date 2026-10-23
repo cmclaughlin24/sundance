@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log/slog"
 	"os"
 	"sundance/backend/pkg/common"
@@ -32,6 +33,8 @@ func main() {
 	})
 	l := slog.New(handler)
 
+	loadTargets(l, settings.Targets)
+
 	server := mcp.NewServer(
 		mcp.ServerWithLogger(l),
 		mcp.ServerWithName("forms-hub-server"),
@@ -46,4 +49,19 @@ func main() {
 	}
 
 	l.Info("application stopped")
+}
+
+func loadTargets(logger *slog.Logger, targets []mcp.TargetConfig) error {
+	loader := mcp.NewTargetLoader(logger)
+
+	for _, t := range targets {
+		doc, err := loader.Load(context.Background(), t)
+		if err != nil {
+			fmt.Errorf("failed to load target %q: %w", t.Name, err)
+		}
+
+		fmt.Println(doc)
+	}
+
+	return nil
 }

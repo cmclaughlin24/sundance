@@ -48,6 +48,8 @@ func NewRoutes(app *core.Application, options ServerOptions) http.Handler {
 	mux.Use(httputil.NewCorrelationIDMiddleware("X-Correlation-ID"))
 	mux.Use(httputil.NewRequestDateMiddleware("X-Request-Date"))
 
+	mux.Get("/health", h.Health)
+
 	mux.Route("/api/v1", func(routes chi.Router) {
 		routes.Use(httputil.NewTenantMiddleware("X-Tenant-ID"))
 		routes.Use(auth.NewMiddleware(bearerAuthenticator))

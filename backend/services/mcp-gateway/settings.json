@@ -5,10 +5,10 @@
   "targets": [
     {
       "name": "forms-api",
-      "baseUrl": "http://forms:8080",
+      "baseUrl": "http://forms",
       "spec": {
         "version": "2.0",
-        "url": "http://forms:8080/swagger/doc.json"
+        "url": "http://forms/swagger/doc.json"
       },
       "headers": null,
       "timeout": null,
@@ -19,10 +19,10 @@
     },
     {
       "name": "tenants-api",
-      "baseUrl": "http://tenants:8081",
+      "baseUrl": "http://tenants",
       "spec": {
         "version": "2.0",
-        "url": "http://tenants:8081/swagger/doc.json"
+        "url": "http://tenants/swagger/doc.json"
       },
       "headers": null,
       "timeout": null,

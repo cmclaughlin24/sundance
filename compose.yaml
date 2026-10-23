@@ -73,6 +73,12 @@ services:
         SERVICE: forms
     ports:
       - 8080:80
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
     develop:
       watch:
         - action: sync
@@ -96,6 +102,12 @@ services:
         SERVICE: tenants
     ports:
       - 8081:80
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
     develop:
       watch:
         - action: sync

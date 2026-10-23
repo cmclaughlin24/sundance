@@ -403,6 +403,20 @@ paths:
       summary: Get data source look-ups
       tags:
       - Data Sources
+  /health:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+      summary: Check the status of the application and it's dependencies.
+      tags:
+      - Health
   /tenants:
     get:
       consumes:

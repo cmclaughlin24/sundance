@@ -25,6 +25,17 @@ func NewHandlers(app *core.Application) *Handlers {
 	}
 }
 
+// @summary		Check the status of the application and it's dependencies.
+// @tags		Health
+// @accept		json
+// @produce		json
+// @success		200
+// @failure		500
+// @Router		/health [get]
+func (h *Handlers) Health(w http.ResponseWriter, _ *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
 func (h *Handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 	switch {
 	case isBadRequest(err):
@@ -33,7 +44,6 @@ func (h *Handlers) sendErrorResponse(w http.ResponseWriter, err error) {
 			Error:      err.Error(),
 			StatusCode: http.StatusBadRequest,
 		})
-
 	default:
 		httputil.SendErrorResponse(w, err)
 	}

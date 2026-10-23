@@ -78,12 +78,12 @@ func (p *TargetLoader) requestFile(ctx context.Context, target TargetConfig) ([]
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("request to target %q failed: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("target %q spec endpoint returned status %d", resp.StatusCode)
+		return nil, fmt.Errorf("target %q spec endpoint returned status %d", target.Name, resp.StatusCode)
 	}
 
 	return io.ReadAll(resp.Body)
