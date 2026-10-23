@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"sundance/backend/services/mcp-gateway/internal/tools"
 	"syscall"
 	"time"
 
@@ -27,9 +28,9 @@ type ServerOpts struct {
 	name      string
 	version   string
 	transport ServerTransport
-	targets   []TargetConfig
 	logger    *slog.Logger
 	port      *int
+	registry  tools.Registry
 }
 
 type ServerOptsFn func(*ServerOpts)
@@ -52,9 +53,9 @@ func ServerWithPort(port *int) ServerOptsFn {
 	}
 }
 
-func ServerWithTargets(targets ...TargetConfig) ServerOptsFn {
+func ServerWithToolRegistry(registry tools.Registry) ServerOptsFn {
 	return func(so *ServerOpts) {
-		so.targets = targets
+		so.registry = registry
 	}
 }
 

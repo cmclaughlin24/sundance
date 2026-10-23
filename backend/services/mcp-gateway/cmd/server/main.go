@@ -3,18 +3,18 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"log/slog"
 	"os"
 	"sundance/backend/pkg/common"
 	"sundance/backend/pkg/common/logger"
 	"sundance/backend/services/mcp-gateway/internal/mcp"
+	"sundance/backend/services/mcp-gateway/internal/spec"
 )
 
 type settings struct {
 	LogLevel  string              `json:"logLevel"`
 	Transport mcp.ServerTransport `json:"transport"`
-	Targets   []mcp.TargetConfig  `json:"targets"`
+	Targets   []spec.TargetConfig `json:"targets"`
 	Port      *int                `json:"port"`
 }
 
@@ -33,15 +33,18 @@ func main() {
 	})
 	l := slog.New(handler)
 
-	loadTargets(l, settings.Targets)
+	tools, err := load(l, settings.Targets)
+	if err != nil {
+		panic(err)
+	}
 
 	server := mcp.NewServer(
 		mcp.ServerWithLogger(l),
 		mcp.ServerWithName("forms-hub-server"),
 		mcp.ServerWithVersion("1.0.0"),
 		mcp.ServerWithTransport(settings.Transport),
-		mcp.ServerWithTargets(settings.Targets...),
 		mcp.ServerWithPort(settings.Port),
+		mcp.ServerWithToolRegistry(tools),
 	)
 
 	if err := server.Run(context.Background()); err != nil {
@@ -49,19 +52,4 @@ func main() {
 	}
 
 	l.Info("application stopped")
-}
-
-func loadTargets(logger *slog.Logger, targets []mcp.TargetConfig) error {
-	loader := mcp.NewTargetLoader(logger)
-
-	for _, t := range targets {
-		doc, err := loader.Load(context.Background(), t)
-		if err != nil {
-			fmt.Errorf("failed to load target %q: %w", t.Name, err)
-		}
-
-		fmt.Println(doc)
-	}
-
-	return nil
 }

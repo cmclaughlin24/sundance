@@ -1,4 +1,4 @@
-package mcp
+package spec
 
 import (
 	"context"
@@ -78,7 +78,7 @@ func (p *TargetLoader) requestFile(ctx context.Context, target TargetConfig) ([]
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("request to target %q failed: %w", err)
+		return nil, fmt.Errorf("request to target %q failed: %w", target.Name, err)
 	}
 	defer resp.Body.Close()
 
