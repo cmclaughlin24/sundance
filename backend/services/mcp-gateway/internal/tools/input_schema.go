@@ -5,6 +5,7 @@ const (
 	propertyKeyQuery = "query"
 	propertyKeyBody  = "body"
 	schemaTypeObject = "object"
+	schemaTypeString = "string"
 )
 
 type inputSchema struct {
@@ -12,6 +13,15 @@ type inputSchema struct {
 	Description string                 `json:"description,omitempty"`
 	Properties  map[string]inputSchema `json:"properties,omitempty"`
 	Required    []string               `json:"required,omitempty"`
+	Items       *inputSchema           `json:"items,omitempty"`
+	Format      string                 `json:"format,omitempty"`
+	Pattern     string                 `json:"pattern,omitempty"`
+	Enum        []any                  `json:"enum,omitempty"`
+	Default     any                    `json:"default,omitempty"`
+	Minimum     *float64               `json:"minimum,omitempty"`
+	Maximum     *float64               `json:"maximum,omitempty"`
+	MinLength   *uint64                `json:"minLength,omitempty"`
+	MaxLength   *uint64                `json:"maxLength,omitempty"`
 }
 
 type inputSchemaBuilder struct {

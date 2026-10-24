@@ -76,6 +76,7 @@ type Server struct {
 	transport ServerTransport
 	logger    *slog.Logger
 	port      *int
+	registry  tools.Registry
 }
 
 func NewServer(opts ...ServerOptsFn) *Server {
@@ -95,10 +96,15 @@ func NewServer(opts ...ServerOptsFn) *Server {
 		transport: o.transport,
 		port:      o.port,
 		logger:    o.logger,
+		registry:  o.registry,
 	}
 }
 
 func (s *Server) Run(ctx context.Context) error {
+	if err := s.mount(); err != nil {
+		return err
+	}
+
 	signalCtx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	serverErrChan := make(chan error, 1)
@@ -133,6 +139,21 @@ func (s *Server) Run(ctx context.Context) error {
 		if err := <-serverErrChan; err != nil && !errors.Is(err, mcp.ErrConnectionClosed) {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (s *Server) mount() error {
+	if s.registry == nil {
+		return errors.New("cannot mount tools; server tool registry is nil value")
+	}
+
+	for _, t := range s.registry.All() {
+		s.server.AddTool(&t.Tool, func(ctx context.Context, ctr *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+			// TODO: Implement tool handler and proxy dispatcher.
+			return &mcp.CallToolResult{}, nil
+		})
 	}
 
 	return nil

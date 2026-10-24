@@ -17,11 +17,7 @@ func load(logger *slog.Logger, targets []spec.TargetConfig) (tools.Registry, err
 			return nil, err
 		}
 
-		compiled, err := tools.ExtractTools(target, doc)
-		if err != nil {
-			return nil, err
-		}
-
+		compiled := tools.ExtractTools(target, doc)
 		registry.Register(compiled...)
 	}
 

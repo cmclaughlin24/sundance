@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"fmt"
 	"strings"
 	"sundance/backend/services/mcp-gateway/internal/spec"
 	"time"
@@ -35,7 +36,117 @@ func compileOperation(target spec.TargetConfig, path, method string, pathItem *o
 		if strings.EqualFold("header", param.In) || strings.EqualFold("cookie", param.In) {
 			continue
 		}
+
+		paramSchema := resolveSchema(param.Schema, param.Description)
+
+		switch strings.ToLower(param.In) {
+		case "path":
+			builder.addPath(param.Name, paramSchema, param.Required)
+		case "query":
+			builder.addQuery(param.Name, paramSchema, param.Required)
+		}
 	}
 
-	return CompiledTool{}
+	if op.RequestBody != nil && op.RequestBody.Value != nil {
+		if media := op.RequestBody.Value.Content.Get("application/json"); media != nil && media.Schema != nil {
+			bodySchema := resolveSchema(media.Schema, "")
+			builder.setBody(bodySchema, op.RequestBody.Value.Required)
+		}
+	}
+
+	return CompiledTool{
+		TargetName: target.Name,
+		BaseURL:    target.BaseURL,
+		Method:     strings.ToUpper(method),
+		Path:       path,
+		Headers:    target.Headers,
+		Timeout:    target.Timeout,
+		Tool: mcp.Tool{
+			Name:        formatToolName(target.Name, method, path),
+			Description: formToolDescription(op),
+			InputSchema: builder.build(),
+		},
+	}
+}
+
+func resolveSchema(schemaRef *openapi3.SchemaRef, fallbackDescription string) inputSchema {
+	if schemaRef == nil || schemaRef.Value == nil {
+		return inputSchema{Type: schemaTypeString, Description: fallbackDescription}
+	}
+
+	schema := schemaRef.Value
+	description := schema.Description
+	var typeStr string
+
+	if strings.Trim(description, " ") == "" {
+		description = fallbackDescription
+	}
+
+	if schema.Type != nil && len(schema.Type.Slice()) > 0 {
+		typeStr = schema.Type.Slice()[0]
+	}
+
+	return inputSchema{
+		Type:        typeStr,
+		Description: description,
+		Properties:  resolveProperties(schema),
+		Required:    schema.Required,
+		Items:       resolveItems(schema),
+		Format:      schema.Format,
+		Pattern:     schema.Pattern,
+		Enum:        schema.Enum,
+		Default:     schema.Default,
+		Minimum:     schema.Min,
+		Maximum:     schema.Max,
+		MinLength:   &schema.MinLength,
+		MaxLength:   schema.MaxLength,
+	}
+}
+
+func resolveProperties(schema *openapi3.Schema) map[string]inputSchema {
+	var props map[string]inputSchema
+
+	if len(schema.Properties) == 0 {
+		return props
+	}
+
+	props = make(map[string]inputSchema, len(schema.Properties))
+	for propName, propRef := range schema.Properties {
+		props[propName] = resolveSchema(propRef, "")
+	}
+
+	return props
+}
+
+func resolveItems(schema *openapi3.Schema) *inputSchema {
+	if schema.Items == nil {
+		return nil
+	}
+
+	resolved := resolveSchema(schema.Items, "")
+	return &resolved
+}
+
+func formatToolName(targetName, method, path string) string {
+	cleanPath := strings.Trim(path, "/")
+	cleanPath = strings.ReplaceAll(cleanPath, "/", "_")
+	cleanPath = strings.ReplaceAll(cleanPath, "-", "_")
+	cleanPath = strings.ReplaceAll(cleanPath, "{", "")
+	cleanPath = strings.ReplaceAll(cleanPath, "}", "")
+
+	return fmt.Sprintf("%s__%s_%s", targetName, strings.ToLower(method), cleanPath)
+}
+
+func formToolDescription(op *openapi3.Operation) string {
+	var description []string
+
+	if strings.Trim(op.Summary, " ") != "" {
+		description = append(description, op.Summary)
+	}
+
+	if strings.Trim(op.Description, " ") != "" {
+		description = append(description, op.Description)
+	}
+
+	return strings.Join(description, " - ")
 }
