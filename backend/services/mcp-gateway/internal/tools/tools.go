@@ -23,6 +23,10 @@ func ExtractTools(target spec.TargetConfig, doc *openapi3.T) []CompiledTool {
 				continue
 			}
 
+			if !target.Policy.IsAllowed(method, path) {
+				continue
+			}
+
 			compiled = append(compiled, compileOperation(target, path, method, pathItem, op))
 		}
 	}

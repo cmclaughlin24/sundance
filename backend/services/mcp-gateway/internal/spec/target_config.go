@@ -17,12 +17,7 @@ type TargetConfig struct {
 }
 
 type SpecSourceConfig struct {
-	Version string
-	Path    string
-	URL     string
-}
-
-type PolicyConfig struct {
-	Allow []string
-	Deny  []string
+	Version string `json:"version"`
+	Path    string `json:"path"`
+	URL     string `json:"url"`
 }
