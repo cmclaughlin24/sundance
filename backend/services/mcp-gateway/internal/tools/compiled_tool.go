@@ -2,6 +2,7 @@ package tools
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 	"sundance/backend/services/mcp-gateway/internal/spec"
 	"time"
@@ -18,6 +19,18 @@ type CompiledTool struct {
 	Headers    map[string]string
 	Timeout    time.Duration
 	Tool       mcp.Tool
+}
+
+func (ct *CompiledTool) setHeaders(req *http.Request) *http.Request {
+	if ct.Headers == nil || len(ct.Headers) == 0 {
+		return req
+	}
+
+	for k, v := range ct.Headers {
+		req.Header.Add(k, v)
+	}
+
+	return req
 }
 
 func compileOperation(target spec.TargetConfig, path, method string, pathItem *openapi3.PathItem, op *openapi3.Operation) CompiledTool {

@@ -8,8 +8,8 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
-func readRequestArgs(ctr *mcp.CallToolRequest) (*tools.Args, error) {
-	var args tools.Args
+func readRequestArgs(ctr *mcp.CallToolRequest) (*tools.ToolArgs, error) {
+	var args tools.ToolArgs
 
 	if len(ctr.Params.Arguments) == 0 {
 		return &args, nil

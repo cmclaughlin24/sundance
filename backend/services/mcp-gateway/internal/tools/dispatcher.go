@@ -1,38 +1,62 @@
 package tools
 
 import (
+	"bytes"
 	"context"
-	"errors"
-	"log/slog"
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
+	"strings"
 )
 
-type httpClient interface {
-	Do(*http.Request) (*http.Response, error)
+type Dispatcher interface {
+	Dispatch(context.Context, *CompiledTool, *ToolArgs) ([]byte, error)
 }
 
-type Args struct {
+type ToolArgs struct {
 	Path  map[string]any `json:"path"`
 	Query map[string]any `json:"query"`
 	Body  map[string]any `json:"body"`
 }
 
-type Dispatcher interface {
-	Dispatch(context.Context, *CompiledTool, *Args) ([]byte, error)
-}
-
-type HTTPDispatcher struct {
-	client httpClient
-	logger *slog.Logger
-}
-
-func NewHTTPDispatcher(client httpClient, logger *slog.Logger) *HTTPDispatcher {
-	return &HTTPDispatcher{
-		client: client,
-		logger: logger,
+func (ta *ToolArgs) replacePath(url string) string {
+	if ta.Path == nil || len(ta.Path) == 0 {
+		return url
 	}
+
+	for k, v := range ta.Path {
+		url = strings.ReplaceAll(url, "{"+k+"}", fmt.Sprint(v))
+	}
+
+	return url
 }
 
-func (d *HTTPDispatcher) Dispatch(ctx context.Context, tool *CompiledTool, args *Args) ([]byte, error) {
-	return nil, errors.New("method not implemented")
+func (ta *ToolArgs) appendQuery(req *http.Request) *http.Request {
+	if ta.Query == nil || len(ta.Query) == 0 {
+		return req
+	}
+
+	query := req.URL.Query()
+
+	for k, v := range ta.Query {
+		query.Add(k, fmt.Sprint(v))
+	}
+
+	req.URL.RawQuery = query.Encode()
+
+	return req
+}
+
+func (ta *ToolArgs) serializeBody() (io.Reader, error) {
+	if ta.Body == nil || len(ta.Body) == 0 {
+		return nil, nil
+	}
+
+	body, err := json.Marshal(ta.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	return bytes.NewReader(body), nil
 }
