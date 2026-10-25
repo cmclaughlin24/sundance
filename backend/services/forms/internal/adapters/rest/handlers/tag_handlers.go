@@ -23,7 +23,7 @@ import (
 // @success		200 {array} dto.TagResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tags [get]
+// @Router		/api/v1/tags [get]
 func (h *Handlers) GetTags(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	query := ports.NewTagsQuery(tenantID)
@@ -103,7 +103,7 @@ func (h *Handlers) GetTags(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tags/{tagId} [get]
+// @Router		/api/v1/tags/{tagId} [get]
 func (h *Handlers) GetTag(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
@@ -144,7 +144,7 @@ func (h *Handlers) GetTag(w http.ResponseWriter, r *http.Request) {
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tags [post]
+// @Router		/api/v1/tags [post]
 func (h *Handlers) CreateTag(w http.ResponseWriter, r *http.Request) {
 	var body dto.CreateTagRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -210,7 +210,7 @@ func (h *Handlers) CreateTag(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tags/{tagId} [put]
+// @Router		/api/v1/tags/{tagId} [put]
 func (h *Handlers) UpdateTag(w http.ResponseWriter, r *http.Request) {
 	var body dto.UpdateTagRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -263,7 +263,7 @@ func (h *Handlers) UpdateTag(w http.ResponseWriter, r *http.Request) {
 // @failure		409 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tags/{tagId} [delete]
+// @Router		/api/v1/tags/{tagId} [delete]
 func (h *Handlers) DeleteTag(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
@@ -303,7 +303,7 @@ func (h *Handlers) DeleteTag(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tags/{tagId}/versions [get]
+// @Router		/api/v1/tags/{tagId}/versions [get]
 func (h *Handlers) GetTagVersions(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
@@ -349,7 +349,7 @@ func (h *Handlers) GetTagVersions(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tags/{tagId}/versions/{versionId} [get]
+// @Router		/api/v1/tags/{tagId}/versions/{versionId} [get]
 func (h *Handlers) GetTagVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
@@ -393,7 +393,7 @@ func (h *Handlers) GetTagVersion(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tags/{tagId}/versions [post]
+// @Router		/api/v1/tags/{tagId}/versions [post]
 func (h *Handlers) CreateTagVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
@@ -447,7 +447,7 @@ func (h *Handlers) CreateTagVersion(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tags/{tagId}/versions/{versionId}/publish [post]
+// @Router		/api/v1/tags/{tagId}/versions/{versionId}/publish [post]
 func (h *Handlers) PublishTagVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
@@ -494,7 +494,7 @@ func (h *Handlers) PublishTagVersion(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tags/{tagId}/versions/{versionId}/deprecate [post]
+// @Router		/api/v1/tags/{tagId}/versions/{versionId}/deprecate [post]
 func (h *Handlers) DeprecateTagVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)
@@ -541,7 +541,7 @@ func (h *Handlers) DeprecateTagVersion(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tags/{tagId}/versions/{versionId}/retire [post]
+// @Router		/api/v1/tags/{tagId}/versions/{versionId}/retire [post]
 func (h *Handlers) RetireTagVersion(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	tagID := h.getTagIDPathValue(r)

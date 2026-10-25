@@ -4,7 +4,7 @@
         "contact": {}
     },
     "paths": {
-        "/forms": {
+        "/api/v1/forms": {
             "get": {
                 "security": [
                     {
@@ -142,7 +142,7 @@
                 }
             }
         },
-        "/forms/{formId}": {
+        "/api/v1/forms/{formId}": {
             "get": {
                 "security": [
                     {
@@ -379,7 +379,7 @@
                 }
             }
         },
-        "/forms/{formId}/versions": {
+        "/api/v1/forms/{formId}/versions": {
             "get": {
                 "security": [
                     {
@@ -532,7 +532,7 @@
                 }
             }
         },
-        "/forms/{formId}/versions/{versionId}": {
+        "/api/v1/forms/{formId}/versions/{versionId}": {
             "get": {
                 "security": [
                     {
@@ -708,7 +708,7 @@
                 }
             }
         },
-        "/forms/{formId}/versions/{versionId}/publish": {
+        "/api/v1/forms/{formId}/versions/{versionId}/publish": {
             "post": {
                 "security": [
                     {
@@ -796,7 +796,7 @@
                 }
             }
         },
-        "/forms/{formId}/versions/{versionId}/retire": {
+        "/api/v1/forms/{formId}/versions/{versionId}/retire": {
             "post": {
                 "security": [
                     {
@@ -884,29 +884,7 @@
                 }
             }
         },
-        "/health": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Health"
-                ],
-                "summary": "Check the status of the application and it's dependencies.",
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
-        "/submissions": {
+        "/api/v1/submissions": {
             "get": {
                 "security": [
                     {
@@ -1052,7 +1030,7 @@
                 }
             }
         },
-        "/submissions/by-reference/{referenceId}": {
+        "/api/v1/submissions/by-reference/{referenceId}": {
             "get": {
                 "security": [
                     {
@@ -1126,7 +1104,7 @@
                 }
             }
         },
-        "/submissions/by-reference/{referenceId}/facts": {
+        "/api/v1/submissions/by-reference/{referenceId}/facts": {
             "get": {
                 "security": [
                     {
@@ -1207,7 +1185,7 @@
                 }
             }
         },
-        "/submissions/by-reference/{referenceId}/status": {
+        "/api/v1/submissions/by-reference/{referenceId}/status": {
             "get": {
                 "security": [
                     {
@@ -1286,7 +1264,7 @@
                 }
             }
         },
-        "/submissions/normalize": {
+        "/api/v1/submissions/normalize": {
             "post": {
                 "security": [
                     {
@@ -1363,7 +1341,7 @@
                 }
             }
         },
-        "/submissions/{submissionId}/replay": {
+        "/api/v1/submissions/{submissionId}/replay": {
             "post": {
                 "security": [
                     {
@@ -1438,7 +1416,7 @@
                 }
             }
         },
-        "/tags": {
+        "/api/v1/tags": {
             "get": {
                 "security": [
                     {
@@ -1583,7 +1561,7 @@
                 }
             }
         },
-        "/tags/{tagId}": {
+        "/api/v1/tags/{tagId}": {
             "get": {
                 "security": [
                     {
@@ -1827,7 +1805,7 @@
                 }
             }
         },
-        "/tags/{tagId}/versions": {
+        "/api/v1/tags/{tagId}/versions": {
             "get": {
                 "security": [
                     {
@@ -1992,7 +1970,7 @@
                 }
             }
         },
-        "/tags/{tagId}/versions/{versionId}": {
+        "/api/v1/tags/{tagId}/versions/{versionId}": {
             "get": {
                 "security": [
                     {
@@ -2073,7 +2051,7 @@
                 }
             }
         },
-        "/tags/{tagId}/versions/{versionId}/deprecate": {
+        "/api/v1/tags/{tagId}/versions/{versionId}/deprecate": {
             "post": {
                 "security": [
                     {
@@ -2161,7 +2139,7 @@
                 }
             }
         },
-        "/tags/{tagId}/versions/{versionId}/publish": {
+        "/api/v1/tags/{tagId}/versions/{versionId}/publish": {
             "post": {
                 "security": [
                     {
@@ -2249,7 +2227,7 @@
                 }
             }
         },
-        "/tags/{tagId}/versions/{versionId}/retire": {
+        "/api/v1/tags/{tagId}/versions/{versionId}/retire": {
             "post": {
                 "security": [
                     {
@@ -2333,6 +2311,28 @@
                         "schema": {
                             "$ref": "#/definitions/APIErrorResponse"
                         }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Check the status of the application and it's dependencies.",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }

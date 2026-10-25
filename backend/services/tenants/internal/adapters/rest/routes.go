@@ -84,7 +84,7 @@ func NewRoutes(app *core.Application, options ServerOptions) http.Handler {
 	docs.SwaggerInfo.Title = "Forms Hub SaaS | Tenants Service"
 	docs.SwaggerInfo.Description = "The Tenants Service manages multi-tenant configurations and their associated data sources for the Form Builder SaaS platform. It provides CRUD operations for tenants and data sources, where data sources supply lookup key-value pairs (e.g., for populating dropdowns) via static data, scheduled external fetches, or on-demand webhook calls."
 	docs.SwaggerInfo.Version = "1.0.0"
-	docs.SwaggerInfo.BasePath = "/api/v1"
+	docs.SwaggerInfo.BasePath = ""
 
 	mux.Route("/swagger", func(r chi.Router) {
 		r.Get("/*", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("%s/swagger/doc.json", options.Host))))

@@ -30,7 +30,7 @@ var (
 // @success		200 {array} dto.SubmissionResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/submissions [get]
+// @Router		/api/v1/submissions [get]
 func (h *Handlers) GetSubmissions(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	query := ports.NewFindSubmissionsQuery(tenantID)
@@ -74,7 +74,7 @@ func (h *Handlers) GetSubmissions(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/submissions/by-reference/{referenceId} [get]
+// @Router		/api/v1/submissions/by-reference/{referenceId} [get]
 func (h *Handlers) GetSubmissionByReferenceID(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	referenceID := h.getReferenceIDPathValue(r)
@@ -116,7 +116,7 @@ func (h *Handlers) GetSubmissionByReferenceID(w http.ResponseWriter, r *http.Req
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/submissions [post]
+// @Router		/api/v1/submissions [post]
 func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 	var body dto.SubmissionRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -182,7 +182,7 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 // @failure		400 {object} httputil.APIErrorResponse "Validation failure or invalid form version status"
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/submissions/normalize [post]
+// @Router		/api/v1/submissions/normalize [post]
 func (h *Handlers) NormalizeSubmission(w http.ResponseWriter, r *http.Request) {
 	var body dto.SubmissionRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -248,7 +248,7 @@ func (h *Handlers) NormalizeSubmission(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/submissions/by-reference/{referenceId}/facts [get]
+// @Router		/api/v1/submissions/by-reference/{referenceId}/facts [get]
 func (h *Handlers) GetSubmissionFacts(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	referenceID := h.getReferenceIDPathValue(r)
@@ -303,7 +303,7 @@ func (h *Handlers) GetSubmissionFacts(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/submissions/by-reference/{referenceId}/status [get]
+// @Router		/api/v1/submissions/by-reference/{referenceId}/status [get]
 func (h *Handlers) GetSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	referenceID := h.getReferenceIDPathValue(r)
@@ -348,7 +348,7 @@ func (h *Handlers) GetSubmissionStatus(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/submissions/{submissionId}/replay [post]
+// @Router		/api/v1/submissions/{submissionId}/replay [post]
 func (h *Handlers) ReplaySubmission(w http.ResponseWriter, r *http.Request) {
 	tenantID := httputil.TenantFromContext(r.Context())
 	id := chi.URLParam(r, "submissionId")

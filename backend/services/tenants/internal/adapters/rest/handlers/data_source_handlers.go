@@ -23,7 +23,7 @@ import (
 // @success		200 {array} dto.DataSourceResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/data-sources [get]
+// @Router		/api/v1/data-sources [get]
 func (h *Handlers) GetDataSources(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
 	query := ports.NewListDataSourceQuery(tenantID)
@@ -67,7 +67,7 @@ func (h *Handlers) GetDataSources(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/data-sources/{id} [get]
+// @Router		/api/v1/data-sources/{id} [get]
 func (h *Handlers) GetDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
 	sourceID := chi.URLParam(r, "dataSourceId")
@@ -108,7 +108,7 @@ func (h *Handlers) GetDataSource(w http.ResponseWriter, r *http.Request) {
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/data-sources [post]
+// @Router		/api/v1/data-sources [post]
 func (h *Handlers) CreateDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
 
@@ -173,7 +173,7 @@ func (h *Handlers) CreateDataSource(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/data-sources/{id} [put]
+// @Router		/api/v1/data-sources/{id} [put]
 func (h *Handlers) UpdateDataSource(w http.ResponseWriter, r *http.Request) {
 	var body dto.DataSourceRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -236,7 +236,7 @@ func (h *Handlers) UpdateDataSource(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/data-sources/{id} [delete]
+// @Router		/api/v1/data-sources/{id} [delete]
 func (h *Handlers) DeleteDataSource(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
 	sourceID := chi.URLParam(r, "dataSourceId")
@@ -278,7 +278,7 @@ func (h *Handlers) DeleteDataSource(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/data-sources/{id}/look-ups [get]
+// @Router		/api/v1/data-sources/{id}/look-ups [get]
 func (h *Handlers) GetLookups(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantFromContext(r)
 	sourceID := chi.URLParam(r, "dataSourceId")

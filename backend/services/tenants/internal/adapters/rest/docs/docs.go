@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/data-sources": {
+        "/api/v1/data-sources": {
             "get": {
                 "security": [
                     {
@@ -154,7 +154,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data-sources/{id}": {
+        "/api/v1/data-sources/{id}": {
             "get": {
                 "security": [
                     {
@@ -385,7 +385,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data-sources/{id}/look-ups": {
+        "/api/v1/data-sources/{id}/look-ups": {
             "get": {
                 "security": [
                     {
@@ -469,29 +469,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/health": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Health"
-                ],
-                "summary": "Check the status of the application and it's dependencies.",
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
-        "/tenants": {
+        "/api/v1/tenants": {
             "get": {
                 "security": [
                     {
@@ -615,7 +593,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tenants/{id}": {
+        "/api/v1/tenants/{id}": {
             "get": {
                 "security": [
                     {
@@ -821,6 +799,28 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/APIErrorResponse"
                         }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Check the status of the application and it's dependencies.",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }

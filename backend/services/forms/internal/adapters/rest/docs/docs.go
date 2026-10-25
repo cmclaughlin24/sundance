@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/forms": {
+        "/api/v1/forms": {
             "get": {
                 "security": [
                     {
@@ -153,7 +153,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/forms/{formId}": {
+        "/api/v1/forms/{formId}": {
             "get": {
                 "security": [
                     {
@@ -390,7 +390,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/forms/{formId}/versions": {
+        "/api/v1/forms/{formId}/versions": {
             "get": {
                 "security": [
                     {
@@ -543,7 +543,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/forms/{formId}/versions/{versionId}": {
+        "/api/v1/forms/{formId}/versions/{versionId}": {
             "get": {
                 "security": [
                     {
@@ -719,7 +719,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/forms/{formId}/versions/{versionId}/publish": {
+        "/api/v1/forms/{formId}/versions/{versionId}/publish": {
             "post": {
                 "security": [
                     {
@@ -807,7 +807,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/forms/{formId}/versions/{versionId}/retire": {
+        "/api/v1/forms/{formId}/versions/{versionId}/retire": {
             "post": {
                 "security": [
                     {
@@ -895,29 +895,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/health": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Health"
-                ],
-                "summary": "Check the status of the application and it's dependencies.",
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "500": {
-                        "description": "Internal Server Error"
-                    }
-                }
-            }
-        },
-        "/submissions": {
+        "/api/v1/submissions": {
             "get": {
                 "security": [
                     {
@@ -1063,7 +1041,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/submissions/by-reference/{referenceId}": {
+        "/api/v1/submissions/by-reference/{referenceId}": {
             "get": {
                 "security": [
                     {
@@ -1137,7 +1115,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/submissions/by-reference/{referenceId}/facts": {
+        "/api/v1/submissions/by-reference/{referenceId}/facts": {
             "get": {
                 "security": [
                     {
@@ -1218,7 +1196,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/submissions/by-reference/{referenceId}/status": {
+        "/api/v1/submissions/by-reference/{referenceId}/status": {
             "get": {
                 "security": [
                     {
@@ -1297,7 +1275,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/submissions/normalize": {
+        "/api/v1/submissions/normalize": {
             "post": {
                 "security": [
                     {
@@ -1374,7 +1352,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/submissions/{submissionId}/replay": {
+        "/api/v1/submissions/{submissionId}/replay": {
             "post": {
                 "security": [
                     {
@@ -1449,7 +1427,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tags": {
+        "/api/v1/tags": {
             "get": {
                 "security": [
                     {
@@ -1594,7 +1572,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tags/{tagId}": {
+        "/api/v1/tags/{tagId}": {
             "get": {
                 "security": [
                     {
@@ -1838,7 +1816,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tags/{tagId}/versions": {
+        "/api/v1/tags/{tagId}/versions": {
             "get": {
                 "security": [
                     {
@@ -2003,7 +1981,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tags/{tagId}/versions/{versionId}": {
+        "/api/v1/tags/{tagId}/versions/{versionId}": {
             "get": {
                 "security": [
                     {
@@ -2084,7 +2062,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tags/{tagId}/versions/{versionId}/deprecate": {
+        "/api/v1/tags/{tagId}/versions/{versionId}/deprecate": {
             "post": {
                 "security": [
                     {
@@ -2172,7 +2150,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tags/{tagId}/versions/{versionId}/publish": {
+        "/api/v1/tags/{tagId}/versions/{versionId}/publish": {
             "post": {
                 "security": [
                     {
@@ -2260,7 +2238,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tags/{tagId}/versions/{versionId}/retire": {
+        "/api/v1/tags/{tagId}/versions/{versionId}/retire": {
             "post": {
                 "security": [
                     {
@@ -2344,6 +2322,28 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/APIErrorResponse"
                         }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Health"
+                ],
+                "summary": "Check the status of the application and it's dependencies.",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
                     }
                 }
             }

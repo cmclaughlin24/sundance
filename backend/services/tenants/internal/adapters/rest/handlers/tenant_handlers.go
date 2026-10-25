@@ -20,7 +20,7 @@ import (
 // @success		200 {array} dto.TenantResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tenants [get]
+// @Router		/api/v1/tenants [get]
 func (h *Handlers) GetTenants(w http.ResponseWriter, r *http.Request) {
 	resultChan := make(chan result[[]*domain.Tenant], 1)
 
@@ -61,7 +61,7 @@ func (h *Handlers) GetTenants(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tenants/{id} [get]
+// @Router		/api/v1/tenants/{id} [get]
 func (h *Handlers) GetTenant(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantIDPathValue(r)
 	resultChan := make(chan result[*domain.Tenant], 1)
@@ -98,7 +98,7 @@ func (h *Handlers) GetTenant(w http.ResponseWriter, r *http.Request) {
 // @failure		400 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tenants [post]
+// @Router		/api/v1/tenants [post]
 func (h *Handlers) CreateTenant(w http.ResponseWriter, r *http.Request) {
 	var body dto.TenantRequest
 	if err := httputil.ReadValidateJSONPayload(r, &body); err != nil {
@@ -147,7 +147,7 @@ func (h *Handlers) CreateTenant(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tenants/{id} [put]
+// @Router		/api/v1/tenants/{id} [put]
 func (h *Handlers) UpdateTenant(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantIDPathValue(r)
 
@@ -197,7 +197,7 @@ func (h *Handlers) UpdateTenant(w http.ResponseWriter, r *http.Request) {
 // @failure		404 {object} httputil.APIErrorResponse
 // @failure		500 {object} httputil.APIErrorResponse
 // @security 	BearerAuth
-// @Router		/tenants/{id} [delete]
+// @Router		/api/v1/tenants/{id} [delete]
 func (h *Handlers) DeleteTenant(w http.ResponseWriter, r *http.Request) {
 	tenantID := h.getTenantIDPathValue(r)
 	resultChan := make(chan result[any], 1)

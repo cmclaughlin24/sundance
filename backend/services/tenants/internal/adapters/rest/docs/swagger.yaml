@@ -103,7 +103,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /data-sources:
+  /api/v1/data-sources:
     get:
       consumes:
       - application/json
@@ -194,7 +194,7 @@ paths:
       summary: Create a data source
       tags:
       - Data Sources
-  /data-sources/{id}:
+  /api/v1/data-sources/{id}:
     delete:
       consumes:
       - application/json
@@ -346,7 +346,7 @@ paths:
       summary: Update a data source
       tags:
       - Data Sources
-  /data-sources/{id}/look-ups:
+  /api/v1/data-sources/{id}/look-ups:
     get:
       consumes:
       - application/json
@@ -403,21 +403,7 @@ paths:
       summary: Get data source look-ups
       tags:
       - Data Sources
-  /health:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "500":
-          description: Internal Server Error
-      summary: Check the status of the application and it's dependencies.
-      tags:
-      - Health
-  /tenants:
+  /api/v1/tenants:
     get:
       consumes:
       - application/json
@@ -496,7 +482,7 @@ paths:
       summary: Create a tenant
       tags:
       - Tenants
-  /tenants/{id}:
+  /api/v1/tenants/{id}:
     delete:
       consumes:
       - application/json
@@ -632,6 +618,20 @@ paths:
       summary: Update a tenant
       tags:
       - Tenants
+  /health:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+      summary: Check the status of the application and it's dependencies.
+      tags:
+      - Health
 securityDefinitions:
   BearerAuth:
     description: 'Bearer JWT. Format: "Bearer <token>"'

@@ -122,7 +122,7 @@ func NewRoutes(app *core.Application, options ServerOptions) http.Handler {
 	docs.SwaggerInfo.Title = "Forms Hub SaaS | Forms Service"
 	docs.SwaggerInfo.Description = "The Forms Service is the system of record for form definitions, submissions, and tags in the Form Builder SaaS platform. **Forms** are composed of versioned schemas (pages, sections, fields, and validation rules) that follow a draft → published → retired lifecycle. **Submissions** are accepted asynchronously against a published form version, deduplicated via an idempotency key, and queryable by reference ID. **Tags** are tenant-scoped, stable identifiers used to attach semantic meaning to form fields and preserve historical associations across schema changes."
 	docs.SwaggerInfo.Version = "1.0.0"
-	docs.SwaggerInfo.BasePath = "/api/v1"
+	docs.SwaggerInfo.BasePath = ""
 
 	mux.Route("/swagger", func(r chi.Router) {
 		r.Get("/*", httpSwagger.Handler(httpSwagger.URL(fmt.Sprintf("%s/swagger/doc.json", options.Host))))

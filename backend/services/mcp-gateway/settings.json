@@ -10,7 +10,10 @@
         "version": "2.0",
         "url": "http://forms/swagger/doc.json"
       },
-      "headers": null,
+      "headers": {
+        "Authorization": "Bearer mcp-gateway-token",
+        "X-Tenant-ID": "01a1731b-9014-767e-b4dd-b1445339e4c4"
+      },
       "timeout": null,
       "policy": {
         "allow": [],
@@ -24,7 +27,10 @@
         "version": "2.0",
         "url": "http://tenants/swagger/doc.json"
       },
-      "headers": null,
+      "headers": {
+        "Authorization": "Bearer mcp-gateway-token",
+        "X-Tenant-ID": "01a1731b-9014-767e-b4dd-b1445339e4c4"
+      },
       "timeout": null,
       "policy": {
         "allow": [],

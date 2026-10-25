@@ -525,7 +525,7 @@ definitions:
 info:
   contact: {}
 paths:
-  /forms:
+  /api/v1/forms:
     get:
       consumes:
       - application/json
@@ -614,7 +614,7 @@ paths:
       summary: Create a form
       tags:
       - Forms
-  /forms/{formId}:
+  /api/v1/forms/{formId}:
     delete:
       consumes:
       - application/json
@@ -769,7 +769,7 @@ paths:
       summary: Update a form
       tags:
       - Forms
-  /forms/{formId}/versions:
+  /api/v1/forms/{formId}/versions:
     get:
       consumes:
       - application/json
@@ -870,7 +870,7 @@ paths:
       summary: Create a version
       tags:
       - Forms
-  /forms/{formId}/versions/{versionId}:
+  /api/v1/forms/{formId}/versions/{versionId}:
     get:
       consumes:
       - application/json
@@ -987,7 +987,7 @@ paths:
       summary: Update a version
       tags:
       - Forms
-  /forms/{formId}/versions/{versionId}/publish:
+  /api/v1/forms/{formId}/versions/{versionId}/publish:
     post:
       consumes:
       - application/json
@@ -1046,7 +1046,7 @@ paths:
       summary: Publish a version
       tags:
       - Forms
-  /forms/{formId}/versions/{versionId}/retire:
+  /api/v1/forms/{formId}/versions/{versionId}/retire:
     post:
       consumes:
       - application/json
@@ -1105,21 +1105,7 @@ paths:
       summary: Retire a version
       tags:
       - Forms
-  /health:
-    get:
-      consumes:
-      - application/json
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "500":
-          description: Internal Server Error
-      summary: Check the status of the application and it's dependencies.
-      tags:
-      - Health
-  /submissions:
+  /api/v1/submissions:
     get:
       consumes:
       - application/json
@@ -1215,7 +1201,7 @@ paths:
       summary: Create a submission
       tags:
       - Submissions
-  /submissions/{submissionId}/replay:
+  /api/v1/submissions/{submissionId}/replay:
     post:
       consumes:
       - application/json
@@ -1265,7 +1251,7 @@ paths:
       summary: Replay a submission
       tags:
       - Submissions
-  /submissions/by-reference/{referenceId}:
+  /api/v1/submissions/by-reference/{referenceId}:
     get:
       consumes:
       - application/json
@@ -1313,7 +1299,7 @@ paths:
       summary: Get a submission by reference ID
       tags:
       - Submissions
-  /submissions/by-reference/{referenceId}/facts:
+  /api/v1/submissions/by-reference/{referenceId}/facts:
     get:
       consumes:
       - application/json
@@ -1368,7 +1354,7 @@ paths:
       summary: Get submission facts
       tags:
       - Submissions
-  /submissions/by-reference/{referenceId}/status:
+  /api/v1/submissions/by-reference/{referenceId}/status:
     get:
       consumes:
       - application/json
@@ -1419,7 +1405,7 @@ paths:
       summary: Get a submission status
       tags:
       - Submissions
-  /submissions/normalize:
+  /api/v1/submissions/normalize:
     post:
       consumes:
       - application/json
@@ -1470,7 +1456,7 @@ paths:
       summary: Normalize a submission
       tags:
       - Submissions
-  /tags:
+  /api/v1/tags:
     get:
       consumes:
       - application/json
@@ -1565,7 +1551,7 @@ paths:
       summary: Create a tag
       tags:
       - Tags
-  /tags/{tagId}:
+  /api/v1/tags/{tagId}:
     delete:
       consumes:
       - application/json
@@ -1728,7 +1714,7 @@ paths:
       summary: Update a tag
       tags:
       - Tags
-  /tags/{tagId}/versions:
+  /api/v1/tags/{tagId}/versions:
     get:
       consumes:
       - application/json
@@ -1838,7 +1824,7 @@ paths:
       summary: Create a tag version
       tags:
       - Tags
-  /tags/{tagId}/versions/{versionId}:
+  /api/v1/tags/{tagId}/versions/{versionId}:
     get:
       consumes:
       - application/json
@@ -1891,7 +1877,7 @@ paths:
       summary: Get a tag version by ID
       tags:
       - Tags
-  /tags/{tagId}/versions/{versionId}/deprecate:
+  /api/v1/tags/{tagId}/versions/{versionId}/deprecate:
     post:
       consumes:
       - application/json
@@ -1950,7 +1936,7 @@ paths:
       summary: Deprecate a tag version
       tags:
       - Tags
-  /tags/{tagId}/versions/{versionId}/publish:
+  /api/v1/tags/{tagId}/versions/{versionId}/publish:
     post:
       consumes:
       - application/json
@@ -2011,7 +1997,7 @@ paths:
       summary: Publish a tag version
       tags:
       - Tags
-  /tags/{tagId}/versions/{versionId}/retire:
+  /api/v1/tags/{tagId}/versions/{versionId}/retire:
     post:
       consumes:
       - application/json
@@ -2070,6 +2056,20 @@ paths:
       summary: Retire a tag version
       tags:
       - Tags
+  /health:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+      summary: Check the status of the application and it's dependencies.
+      tags:
+      - Health
 securityDefinitions:
   BearerAuth:
     description: 'Bearer JWT. Format: "Bearer <token>"'
