@@ -25,15 +25,22 @@ const (
 )
 
 type ServerOpts struct {
-	name      string
-	version   string
-	transport ServerTransport
-	logger    *slog.Logger
-	port      *int
-	registry  tools.Registry
+	name       string
+	version    string
+	transport  ServerTransport
+	logger     *slog.Logger
+	port       *int
+	registry   tools.Registry
+	dispatcher tools.Dispatcher
 }
 
 type ServerOptsFn func(*ServerOpts)
+
+func ServerWithDispatcher(dispatcher tools.Dispatcher) ServerOptsFn {
+	return func(so *ServerOpts) {
+		so.dispatcher = dispatcher
+	}
+}
 
 func ServerWithLogger(logger *slog.Logger) ServerOptsFn {
 	return func(so *ServerOpts) {
@@ -72,11 +79,12 @@ func ServerWithVersion(version string) ServerOptsFn {
 }
 
 type Server struct {
-	server    *mcp.Server
-	transport ServerTransport
-	logger    *slog.Logger
-	port      *int
-	registry  tools.Registry
+	server     *mcp.Server
+	transport  ServerTransport
+	logger     *slog.Logger
+	port       *int
+	registry   tools.Registry
+	dispatcher tools.Dispatcher
 }
 
 func NewServer(opts ...ServerOptsFn) *Server {
@@ -92,16 +100,17 @@ func NewServer(opts ...ServerOptsFn) *Server {
 	}, nil)
 
 	return &Server{
-		server:    server,
-		transport: o.transport,
-		port:      o.port,
-		logger:    o.logger,
-		registry:  o.registry,
+		server:     server,
+		transport:  o.transport,
+		port:       o.port,
+		logger:     o.logger,
+		registry:   o.registry,
+		dispatcher: o.dispatcher,
 	}
 }
 
 func (s *Server) Run(ctx context.Context) error {
-	if err := s.mount(); err != nil {
+	if err := s.addTools(); err != nil {
 		return err
 	}
 
@@ -144,16 +153,13 @@ func (s *Server) Run(ctx context.Context) error {
 	return nil
 }
 
-func (s *Server) mount() error {
+func (s *Server) addTools() error {
 	if s.registry == nil {
 		return errors.New("cannot mount tools; server tool registry is nil value")
 	}
 
 	for _, t := range s.registry.All() {
-		s.server.AddTool(&t.Tool, func(ctx context.Context, ctr *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-			// TODO: Implement tool handler and proxy dispatcher.
-			return &mcp.CallToolResult{}, nil
-		})
+		s.server.AddTool(&t.Tool, s.newToolHandler(t))
 	}
 
 	return nil
@@ -189,4 +195,44 @@ func (s *Server) http(ctx context.Context) error {
 	s.logger.Info(fmt.Sprintf("application listening on :%d", *s.port))
 
 	return server.ListenAndServe()
+}
+
+func (s *Server) newToolHandler(t tools.CompiledTool) mcp.ToolHandler {
+	return func(ctx context.Context, ctr *mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		s.logger.InfoContext(ctx, "executing mcp tool", "tool", t.Tool.Name)
+
+		args, err := readRequestArgs(ctr)
+		if err != nil {
+			return &mcp.CallToolResult{
+				IsError: true,
+				Content: []mcp.Content{
+					&mcp.TextContent{
+						Text: fmt.Sprintf("invalid arguments structure: %v", err),
+					},
+				},
+			}, nil
+		}
+
+		result, err := s.dispatcher.Dispatch(ctx, &t, args)
+		if err != nil {
+			s.logger.ErrorContext(ctx, "tool execution failed", "tool", t.Tool.Name, "error", err)
+
+			return &mcp.CallToolResult{
+				IsError: true,
+				Content: []mcp.Content{
+					&mcp.TextContent{
+						Text: fmt.Sprintf("error executing %s: %v", t.Tool.Name, err),
+					},
+				},
+			}, nil
+		}
+
+		return &mcp.CallToolResult{
+			Content: []mcp.Content{
+				&mcp.TextContent{
+					Text: string(result),
+				},
+			},
+		}, nil
+	}
 }

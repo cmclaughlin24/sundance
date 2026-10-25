@@ -4,11 +4,13 @@ import (
 	"context"
 	"flag"
 	"log/slog"
+	"net/http"
 	"os"
 	"sundance/backend/pkg/common"
 	"sundance/backend/pkg/common/logger"
 	"sundance/backend/services/mcp-gateway/internal/mcp"
 	"sundance/backend/services/mcp-gateway/internal/spec"
+	"sundance/backend/services/mcp-gateway/internal/tools"
 )
 
 type settings struct {
@@ -33,10 +35,12 @@ func main() {
 	})
 	l := slog.New(handler)
 
-	tools, err := load(l, settings.Targets)
+	r, err := load(l, settings.Targets)
 	if err != nil {
 		panic(err)
 	}
+
+	httpDispatcher := tools.NewHTTPDispatcher(&http.Client{}, l)
 
 	server := mcp.NewServer(
 		mcp.ServerWithLogger(l),
@@ -44,7 +48,8 @@ func main() {
 		mcp.ServerWithVersion("1.0.0"),
 		mcp.ServerWithTransport(settings.Transport),
 		mcp.ServerWithPort(settings.Port),
-		mcp.ServerWithToolRegistry(tools),
+		mcp.ServerWithToolRegistry(r),
+		mcp.ServerWithDispatcher(httpDispatcher),
 	)
 
 	if err := server.Run(context.Background()); err != nil {
