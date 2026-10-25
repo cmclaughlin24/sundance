@@ -359,6 +359,9 @@ The MCP Gateway bridges AI agents and LLM clients to Forms Hub REST APIs. It is 
 C4Component
   title Building Block View — Level 2: MCP Gateway
 
+  Container_Ext(formsService, "Forms Service", "Go", "Domain service for form definitions, submissions, and canonical tags.")
+  Container_Ext(tenantsService, "Tenants Service", "Go", "Domain service for tenant and lookup data source configuration.")
+
   Container_Boundary(mcpGateway, "MCP Gateway") {
     Component(mcpServer, "MCP Server", "modelcontextprotocol/go-sdk", "Manages MCP protocol lifecycle, Streamable HTTP (via chi) and stdio transports, and tool execution handlers.")
     Component(targetLoader, "Target Loader", "Go", "Loads target configurations and fetches OpenAPI specifications from URLs or local paths.")
