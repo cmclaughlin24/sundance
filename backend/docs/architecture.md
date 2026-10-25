@@ -8,7 +8,7 @@
 
 ## 1. Introduction and Goals
 
-This document describes Forms Hub, a multi-tenant Software as a Service (SaaS) system designed to standardize how forms are built, rendered, validated, and consumed across enterprise workflows. The system uses a metadata-driven approach to form definition, enabling forms to be created and modified independently of application code.
+This document describes Forms Hub, a multi-tenant Software as a Service (SaaS) system designed to standardize how forms are built, rendered, validated, and consumed across enterprise workflows. The system uses a metadata-driven approach to form definition, enabling forms to be created and modified independently of application code. In addition to conventional REST APIs and web interfaces, Forms Hub integrates an AI-native gateway exposing platform capabilities to AI agents and development assistants via the Model Context Protocol (MCP).
 
 ### 1.1 Requirements Overview
 
@@ -33,16 +33,19 @@ At Wells Fargo, current solutions include:
 | Configurable Validation       | Support configurable validation rules to ensure data quality and consistency; allow users to define validation rules that can be applied to form fields and submissions. |
 | Canonical Data Transformation | Normalize submission data into canonical structures independent of form layout or field naming, enabling downstream systems to consume data in a consistent format.      |
 | Decoupled Form Design         | Decouple form design from downstream integration contracts, allowing forms to evolve independently of the underlying workflow or integration requirements.               |
+| Agentic & AI Integration      | Expose Forms Hub capabilities to AI agents and development assistants via Model Context Protocol (MCP) with dynamic OpenAPI tool synthesis and least-privilege policy guardrails. |
 
 #### 1.1.3 Key Use Cases
 
-| Use Case               | Actor(s)               | Description                                                                                                                                                                                          |
-| ---------------------- | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Design a Form          | Form Designer          | A form designer creates a new form version with pages, sections, and fields. She configures validation rules for form elements, and publishes the form before rendering.                             |
-| Render a Form          | End User               | An end user loads an active form version; the system evaluates visibility, required, and read-only rules dynamically and renders the form accordingly.                                               |
-| Submit a Form          | End User               | An end user submits a form; the system validates the submission, persists it idempotently, and returns a reference identifier for tracking.                                                          |
-| Consume Canonical Data | Downstream System      | A downstream system consumes canonical submission data via a message broker or REST API; the system transforms the submission data into a canonical format and delivers it to the downstream system. |
-| Manage Lookup Data     | Form Designer / System | A form designer configures a data source to provide dynamic lookup data for form fields across one or more forms.                                                                                    |
+| Use Case                                | Actor(s)                    | Description                                                                                                                                                                                          |
+| --------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Design a Form                           | Form Designer               | A form designer creates a new form version with pages, sections, and fields. She configures validation rules for form elements, and publishes the form before rendering.                             |
+| Render a Form                           | End User                    | An end user loads an active form version; the system evaluates visibility, required, and read-only rules dynamically and renders the form accordingly.                                               |
+| Submit a Form                           | End User                    | An end user submits a form; the system validates the submission, persists it idempotently, and returns a reference identifier for tracking.                                                          |
+| Consume Canonical Data                  | Downstream System           | A downstream system consumes canonical submission data via a message broker or REST API; the system transforms the submission data into a canonical format and delivers it to the downstream system. |
+| Manage Lookup Data                      | Form Designer / System      | A form designer configures a data source to provide dynamic lookup data for form fields across one or more forms.                                                                                    |
+| Inspect & Design Forms via AI           | AI Assistant / MCP Client   | An AI assistant discovers active form schemas, inspects tag versions, and queries dynamic lookup data through MCP tools to assist engineers and designers with form design and troubleshooting.       |
+| Test & Normalize Submissions via AI     | AI Assistant / MCP Client   | An AI assistant submits dry-run form payloads through the MCP normalize tool under least-privilege security policies to test validation rules and inspect canonical fact generation.                 |
 
 #### 1.1.4 Functional Requirements
 
@@ -57,10 +60,29 @@ At Wells Fargo, current solutions include:
 | Canonical Data Transformation | The system shall map submitted field values to canonical tag versions, normalizing data into consistent structures independent of form layout or field naming.                      |
 | Data Source Management        | The system shall support configurable lookup data sources (static, scheduled HTTP, webhook, and data lake) to populate dynamic select fields across forms.                          |
 | Tag Management                | The system shall support definition and versioning of canonical semantic tags (`draft → active → deprecated → retired`) that field values are mapped to for downstream consumption. |
+| MCP Tool Synthesis            | The system shall dynamically ingest OpenAPI specifications from backend services and synthesize typed Model Context Protocol (MCP) tools with JSON input schemas for AI agents.    |
+| AI Policy Guardrails          | The system shall enforce configurable allow/deny policies over MCP operations, executing a least-privilege algorithm to protect against unintended or destructive operations.       |
+| MCP Multi-Transport Support   | The system shall serve MCP clients over both Streamable HTTP (via HTTP streaming) and standard I/O (`stdio`) transports.                                                            |
 
 ### 1.2 Quality Goals
 
+| Priority | Quality Goal                           | Motivation & Concrete Scenarios                                                                                                                                                                                                       |
+| -------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1        | **Multi-Tenant Security & Isolation**  | Tenant boundaries must never be breached. All forms, submissions, tags, and data sources are strictly isolated by `X-Tenant-ID`. AI agent operations via MCP are constrained by least-privilege policy evaluation.               |
+| 2        | **Decoupling & Interoperability**      | Form presentation schemas are decoupled from downstream business integrations via canonical semantic tags. AI tools are generated dynamically from OpenAPI specs rather than tightly coupled custom code.                          |
+| 3        | **Reliability & Eventual Consistency** | Submission intake is 100% idempotent. Processing is resilient to downstream latency via async workers, retries, and transactional outbox relay with distributed claim leases.                                                       |
+| 4        | **Performance & Responsiveness**       | High-throughput synchronous intake (`202 Accepted` on submission post). Low-latency lookup resolution via cached HTTP sources. Fast MCP tool dispatch with minimal proxy overhead.                                                  |
+| 5        | **Extensibility & Maintainability**    | Hexagonal architecture (Ports & Adapters) isolates domain logic from infrastructure. New element validators, lookup types, and MCP upstream targets are added via open-for-extension strategy registries and target configurations.   |
+
 ### 1.3 Stakeholders
+
+| Role / Stakeholder               | Description                                                                    | Expectations & Concerns                                                                                                             |
+| -------------------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **Form Designers**               | Business analysts and engineers designing forms.                               | Intuitive form schema authoring, dynamic rule configuration, reusability of lookup data sources, and reliable form versioning.       |
+| **End Users**                    | Employees and customers completing forms in enterprise portals.                | Rapid form rendering, real-time field validation, dynamic visibility evaluation, and deterministic submission receipt tracking.    |
+| **Downstream Systems**           | Integration consumers (e.g. Service Catalog, SRI Service, workflow engines).   | Predictable canonical fact structures independent of UI layout changes; guaranteed at-least-once event delivery via message broker.|
+| **AI Assistants & Agents**       | LLM clients (Cursor, Claude Desktop, OpenCode) interacting via MCP.            | Self-describing tool definitions with accurate JSON schemas, predictable execution, and safety guardrails preventing accidental data destruction. |
+| **Platform & DevOps Engineers**  | Teams operating Forms Hub in Wells Fargo's OCP and CI/CD infrastructure.       | Standardized container packaging, stateless edge proxying, robust leader election, distributed tracing, and clear failure domains.  |
 
 ## 2. Constraints
 
@@ -68,7 +90,7 @@ At Wells Fargo, current solutions include:
 
 ### 3.1 System Context
 
-Forms Hub is a multi-tenant SaaS platform that sits at the center of form design, rendering, submission intake, and canonical data delivery. The diagram below shows the system boundary and all external actors and systems that interact with it.
+Forms Hub is a multi-tenant SaaS platform that sits at the center of form design, rendering, submission intake, canonical data delivery, and agentic AI tooling. The diagram below shows the system boundary and all external actors and systems that interact with it.
 
 ```mermaid
 C4Context
@@ -76,10 +98,11 @@ C4Context
 
   Person(formDesigner, "Form Designer", "Creates and manages tenants, data sources, forms, tags, and validation rules.")
   Person(endUser, "End User", "Renders active forms and submits responses.")
+  Person_Ext(aiAgent, "AI Agent / LLM Client", "Interacts with Forms Hub via Model Context Protocol (MCP) to inspect schemas, query lookups, and test submissions.")
   Person_Ext(downstreamSystem, "Downstream System", "Subscribes to and consumes domain events (canonical submission outcomes and form lifecycle events).")
 
   System_Ext(frontend, "Frontend Application", "Web UI through which Form Designers and End Users interact with Forms Hub.")
-  System(formsHub, "Forms Hub", "Multi-tenant SaaS platform for building, rendering, processing, and delivering forms and submission data.")
+  System(formsHub, "Forms Hub", "Multi-tenant SaaS platform for building, rendering, processing, and delivering forms and submission data, with an MCP gateway for AI agent access.")
 
   System_Ext(messageBroker, "Message Broker", "Receives domain events published by Forms Hub via the transactional outbox for downstream consumption (e.g. Kafka topics for 'submission' and 'form').")
   System_Ext(mongodb, "MongoDB", "Primary datastore for all domain data and the transactional outbox.")
@@ -91,6 +114,7 @@ C4Context
   Rel(formDesigner, frontend, "Uses")
   Rel(endUser, frontend, "Uses")
   Rel(frontend, formsHub, "Manages tenants, data sources, forms, tags; renders and submits forms", "REST/JSON HTTPS")
+  Rel(aiAgent, formsHub, "Discovers and executes tools via MCP", "Streamable HTTP / stdio")
   Rel(formsHub, messageBroker, "Publishes domain events (submissions and form lifecycle)", "async")
   Rel(downstreamSystem, messageBroker, "Subscribes to domain events", "async")
   Rel(formsHub, mongodb, "Reads/writes domain and outbox data", "MongoDB wire protocol")
@@ -103,39 +127,44 @@ C4Context
 
 ### 3.2 External Interfaces
 
-| External System          | Direction | Protocol                     | Initiator       | Purpose                                                                                                                                                                                                                   | Status              |
-| ------------------------ | --------- | ---------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
-| **Frontend Application** | Inbound   | REST/JSON over HTTPS         | Frontend        | Form Designers and End Users interact with both services through a generic web UI.                                                                                                                                        | Active              |
-| **MongoDB**              | Outbound  | MongoDB wire protocol        | Both services   | Primary datastore. Tenants Service stores tenant and data source records; Forms Service stores forms, form versions, submissions, tags, tag versions, and transactional outbox events.                                  | Active              |
-| **Redis**                | Outbound  | Redis protocol               | Both services   | The Tenants Service and the Forms Service submissions worker use Redis-backed distributed locking (`SetNX` + Lua scripts) for leader election. The Forms Service outbox relay worker does not use leader election — correctness is enforced at the database layer via an atomic claim lease. | Active              |
-| **PingFederate**         | Outbound  | JWKS over HTTPS              | Both services   | Both services validate inbound JWT bearer tokens by fetching signing keys from PingFederate's JWKS URI. Audience, issuer, expiry, and issued-at claims are verified.                                                      | Active              |
-| **External HTTP APIs**   | Outbound  | HTTP/HTTPS                   | Tenants Service | The Tenants Service calls arbitrary third-party HTTP endpoints to fetch lookup key-value pairs for `scheduled` and `webhook` data sources. Supports `GET`, `POST`, `PUT`, and `PATCH` with configurable headers and body. | Active              |
-| **Google BigQuery**      | Outbound  | BigQuery API                 | Tenants Service | The Tenants Service queries a configured data lake to resolve lookup data for `data-lake` data sources, using configurable catalog, schema, query, and field mappings.                                                    | Planned (stub only) |
-| **Message Broker**       | Outbound  | Async messaging (e.g. Kafka) | Forms Service   | Forms Service publishes domain events via the transactional outbox relay: submission outcomes (`accepted`, `rejected`) to the `submission` topic, and form lifecycle transitions (`published`, `retired`) to the `form` topic. Events are keyed by aggregate ID with actions specified via an `eventType` header. | Active              |
+| External System                | Direction | Protocol                                  | Initiator       | Purpose                                                                                                                                                                                                                   | Status              |
+| ------------------------------ | --------- | ----------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| **Frontend Application**       | Inbound   | REST/JSON over HTTPS                      | Frontend        | Form Designers and End Users interact with both services through a generic web UI.                                                                                                                                        | Active              |
+| **AI Agent / MCP Client**      | Inbound   | MCP over Streamable HTTP (`/mcp`) or stdio | AI Client       | AI assistants (Cursor, Claude Desktop, OpenCode) discover available tools (`tools/list`) and invoke them (`tools/call`) to inspect form schemas, validate submissions, and retrieve lookups under policy guardrails.     | Active              |
+| **MongoDB**                    | Outbound  | MongoDB wire protocol                     | Forms & Tenants | Primary datastore. Tenants Service stores tenant and data source records; Forms Service stores forms, form versions, submissions, tags, tag versions, and transactional outbox events.                                  | Active              |
+| **Redis**                      | Outbound  | Redis protocol                            | Forms & Tenants | The Tenants Service and the Forms Service submissions worker use Redis-backed distributed locking (`SetNX` + Lua scripts) for leader election. The Forms Service outbox relay worker does not use leader election — correctness is enforced at the database layer via an atomic claim lease. | Active              |
+| **PingFederate**               | Outbound  | JWKS over HTTPS                           | Forms & Tenants | Both services validate inbound JWT bearer tokens by fetching signing keys from PingFederate's JWKS URI. Audience, issuer, expiry, and issued-at claims are verified.                                                      | Active              |
+| **External HTTP APIs**         | Outbound  | HTTP/HTTPS                                | Tenants Service | The Tenants Service calls arbitrary third-party HTTP endpoints to fetch lookup key-value pairs for `scheduled` and `webhook` data sources. Supports `GET`, `POST`, `PUT`, and `PATCH` with configurable headers and body. | Active              |
+| **Google BigQuery**            | Outbound  | BigQuery API                              | Tenants Service | The Tenants Service queries a configured data lake to resolve lookup data for `data-lake` data sources, using configurable catalog, schema, query, and field mappings.                                                    | Planned (stub only) |
+| **Message Broker**             | Outbound  | Async messaging (e.g. Kafka)              | Forms Service   | Forms Service publishes domain events via the transactional outbox relay: submission outcomes (`accepted`, `rejected`) to the `submission` topic, and form lifecycle transitions (`published`, `retired`) to the `form` topic. Events are keyed by aggregate ID with actions specified via an `eventType` header. | Active              |
 
 ## 4. Solution Strategy
 
 ### 4.1 Architecture Style
 
-Forms Hub is built as a microservice-based system with two independently deployable services - the **Tenants Service** and the **Forms Service** - each owning its own distinct domain model and data storage. The services share a deliberate, minimal integration surface: the Forms Service depends on the Tenants Service to resolve data sources configured by tenants to provide dynamic lookup data for form fields.
+Forms Hub is built as a microservice-based system comprising two independently deployable domain services — the **Tenants Service** and the **Forms Service** — alongside an edge protocol adapter, the **MCP Gateway Service**. Each domain service owns its own distinct domain model and data storage, sharing a deliberate, minimal integration surface: the Forms Service depends on the Tenants Service to resolve data sources configured by tenants to provide dynamic lookup data for form fields.
 
-Within each service, a **Ports and Adapters (Hexagonal)** architecture style is applied. The domain and application logic is fully isolated from infrastructure concerns. Ports interfaces in `core/ports/` define the contracts; adapter implementations in `adapters/` fulfill them. This boundary means HTTP, MongoDB, Redis, and inter-service communication concerns can be swapped out or tested independently of domain logic. In-memory adapters for every infrastructure concern support local development and testing without external dependencies. Both services also share a common `pkg/` library providing the generic background worker, auth middleware, validation utilities, and the strategy registry — keeping shared infrastructure consistent without coupling service domain models.
+The **MCP Gateway** acts as an edge adapter that bridges LLM agents and AI assistants to Forms Hub via the Model Context Protocol (MCP). It is a stateless service that owns no persistent datastore; instead, it dynamically ingests OpenAPI specifications from the domain services at startup, synthesizes strongly typed MCP tools, enforces least-privilege execution policies, and proxies tool invocations over HTTP.
+
+Within each domain service, a **Ports and Adapters (Hexagonal)** architecture style is applied. The domain and application logic is fully isolated from infrastructure concerns. Ports interfaces in `core/ports/` define the contracts; adapter implementations in `adapters/` fulfill them. This boundary means HTTP, MongoDB, Redis, and inter-service communication concerns can be swapped out or tested independently of domain logic. In-memory adapters for every infrastructure concern support local development and testing without external dependencies. Both domain services also share a common `pkg/` library providing the generic background worker, auth middleware, validation utilities, and the strategy registry — keeping shared infrastructure consistent without coupling service domain models.
 
 ![Ports & Adapters Architecture](imgs/Ports%20%26%20Adapters%20Architecture.png)
 _Figure 4.1 — Ports & Adapters (Hexagonal) Architecture pattern. Each Forms Hub service follows this structure: driving adapters (REST handlers) on the left, domain and application services at the centre, and driven adapters (MongoDB, Redis, Tenants Service client) on the right._
 
 ### 4.2 Technology Decisions
 
-| Technology       | Decision                | Rationale                                                                                                                                                                                |
-| ---------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Go               | Implementation language | Statically typed, high concurrency, fast startup, and a small runtime footprint suited for independently deployable services. See [ADR-010](adr/010-go-over-java.md).                    |
-| MongoDB          | Database                | The deeply nested, polymorphic form definition hierarchy — pages, sections, fields, and per-type attributes — maps naturally to documents without requiring a complex relational schema. |
-| Message Broker (e.g. Kafka) | Domain event delivery | Decouples submission outcomes and form lifecycle events from downstream consumption; the outbox relay publishes domain events for asynchronous consumption. The concrete adapter uses `segmentio/kafka-go`, with an in-memory publisher for local development and testing. Events are routed to topics by `AggregateType` (`submission`, `form`) with action discrimination in an `eventType` header, keyed by `AggregateID`. |
-| Redis            | Distributed lock        | Provides distributed leader election for background workers in both services without an additional coordination service.                                                                 |
-| chi              | HTTP router             | Lightweight and idiomatic Go; composable middleware chain supports cross-cutting concerns (auth, tenant extraction, idempotency, correlation ID) without framework lock-in.              |
-| `expr-lang/expr` | Rule evaluation         | Provides safe, sandboxed evaluation of runtime rule expressions (visibility, required, read-only) without the risks of `eval`-style execution. Supports multi-source evaluation contexts (`field`, `user_claim`) using bracket notation (`source["key"]`) to handle arbitrary identifiers safely. |
-| UUID v7          | Entity identifiers      | Time-ordered UUIDs provide natural chronological sort order in MongoDB without a separate sequence or auto-increment mechanism.                                                          |
-| PingFederate     | Identity provider       | Enterprise OAuth2/JWKS integration; JWT validation is implemented and ready to activate when authentication is enforced.                                                                 |
+| Technology                               | Decision                  | Rationale                                                                                                                                                                                |
+| ---------------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Go                                       | Implementation language   | Statically typed, high concurrency, fast startup, and a small runtime footprint suited for independently deployable services. See [ADR-010](adr/010-go-over-java.md).                    |
+| MongoDB                                  | Database                  | The deeply nested, polymorphic form definition hierarchy — pages, sections, fields, and per-type attributes — maps naturally to documents without requiring a complex relational schema. |
+| Message Broker (e.g. Kafka)              | Domain event delivery     | Decouples submission outcomes and form lifecycle events from downstream consumption; the outbox relay publishes domain events for asynchronous consumption. The concrete adapter uses `segmentio/kafka-go`, with an in-memory publisher for local development and testing. Events are routed to topics by `AggregateType` (`submission`, `form`) with action discrimination in an `eventType` header, keyed by `AggregateID`. |
+| Redis                                    | Distributed lock          | Provides distributed leader election for background workers in both services without an additional coordination service.                                                                 |
+| chi                                      | HTTP router               | Lightweight and idiomatic Go; composable middleware chain supports cross-cutting concerns (auth, tenant extraction, idempotency, correlation ID) without framework lock-in.              |
+| `expr-lang/expr`                         | Rule evaluation           | Provides safe, sandboxed evaluation of runtime rule expressions (visibility, required, read-only) without the risks of `eval`-style execution. Supports multi-source evaluation contexts (`field`, `user_claim`) using bracket notation (`source["key"]`) to handle arbitrary identifiers safely. |
+| UUID v7                                  | Entity identifiers        | Time-ordered UUIDs provide natural chronological sort order in MongoDB without a separate sequence or auto-increment mechanism.                                                          |
+| PingFederate                             | Identity provider         | Enterprise OAuth2/JWKS integration; JWT validation is implemented and ready to activate when authentication is enforced.                                                                 |
+| `github.com/modelcontextprotocol/go-sdk` | MCP server implementation | Official Go SDK implementing the Model Context Protocol specification; provides server abstraction, Streamable HTTP (`NewStreamableHTTPHandler`), stdio transports, and tool dispatching.     |
+| `github.com/getkin/kin-openapi`          | OpenAPI spec ingestion    | Parses OpenAPI 2.0 (Swagger) and 3.0 specifications, converts v2 specs to v3 (`openapi2conv`), and extracts JSON schemas to dynamically synthesize MCP tools from backend endpoints.   |
 
 ### 4.3 Key Design Decisions
 
@@ -151,12 +180,15 @@ _Figure 4.1 — Ports & Adapters (Hexagonal) Architecture pattern. Each Forms Hu
 - **Multi-value element resolution** — `Submission.GetValues(id ElementID)` allows elements to carry multiple submitted values (e.g. repeated collection rows). The resolver unpacks all values so each is independently validated against element constraints prior to normalization.
 - **Claim-based outbox relay** — When an aggregate state transition occurs — such as a submission reaching `accepted` or `rejected`, or a form version transitioning `published` or `retired` — a domain event is written to a dedicated `outbox` collection transactionally with the aggregate update. On each tick, the Outbox Relay Worker calls `OutboxRepository.Claim` to atomically transition a batch of eligible events — those with status `pending`, `error`, or `processing` with an expired lease — to `processing` and stamp a `locked_until` timestamp. All replicas run the worker concurrently; correctness is enforced entirely by the atomic claim at the database layer rather than by leader election. Stale leases (e.g. from a crashed replica) expire automatically and are reclaimed on the next tick. The worker uses `PeriodicWorker[J Job]` — a tick-driven worker with no leader election — rather than `DistributedWorker[J Job]`. See ADR-009.
 - **Processor layer extracted from application services** — The submission processing pipeline (rule resolution, field validation, canonical tag normalization) is extracted from `SubmissionJobsAPI` into a dedicated `core/processors/` package that implements the `SubmissionProcessor` port. This makes the pipeline independently composable: the Submissions Worker invokes it asynchronously with persistence, while `POST /submissions/normalize` invokes it synchronously without persisting anything. New pipeline concerns can be added or tested in isolation without touching the application service or worker layers.
+- **Dynamic OpenAPI-to-MCP tool synthesis** — Rather than manually declaring static tool definitions that drift from API implementations, the MCP Gateway dynamically loads OpenAPI 2.0/3.0 specs from target domain services at startup. The spec loader converts v2 schemas to v3, extracts operations, and translates path parameters, query parameters, and request body schemas into typed JSON Schema input objects (`path`, `query`, `body`).
+- **Least-privilege policy engine for agent operations** — The MCP Gateway evaluates tool access against a configurable policy per target using a least-privilege algorithm: (1) Explicit deny rules take precedence, (2) If allow rules are empty, default-allow applies to non-denied endpoints, (3) If allow rules are populated, default-deny applies. Rules support HTTP methods and path globs (e.g. `DELETE /**`, `POST /**/retire`), protecting backend services from destructive or unauthorized actions by AI agents.
+- **Pre-configured authentication & tenant encapsulation for AI tools** — The MCP Gateway encapsulates upstream credentials (bearer tokens) and tenant context (`X-Tenant-ID`) directly within target configurations. When executing tools, `HTTPDispatcher` injects these headers transparently into proxied requests, preventing AI agents from needing direct access to sensitive credentials or tenant management headers.
 
 ## 5. Building Block View
 
 ### 5.1 Whitebox System View
 
-Forms Hub is decomposed into two independently deployable services — **Tenants Service** and **Forms Service** — each owning a distinct domain and datastore, plus a shared **`pkg/` library** providing common infrastructure. This functional decomposition reflects that tenant/data-source configuration and form/submission processing are separate, independently evolvable concerns with no shared domain state.
+Forms Hub is decomposed into two independently deployable domain services — **Tenants Service** and **Forms Service** — alongside an edge protocol adapter, the **MCP Gateway Service**, plus a shared **`pkg/` library** providing common infrastructure. This functional decomposition reflects that tenant/data-source configuration, form/submission processing, and agentic tool exposition are separate, independently evolvable concerns with no shared domain state.
 
 ```mermaid
 C4Container
@@ -164,10 +196,12 @@ C4Container
 
   Person(formDesigner, "Form Designer", "Creates and manages tenants, data sources, forms, tags, and validation rules.")
   Person(endUser, "End User", "Renders active forms and submits responses.")
+  Person_Ext(aiAgent, "AI Agent / LLM Client", "Interacts with Forms Hub via Model Context Protocol (MCP).")
 
   System_Boundary(formsHub, "Forms Hub") {
     Container(tenantsService, "Tenants Service", "Go", "System of record for tenant configuration and data source management. Resolves dynamic lookup data for form fields.")
     Container(formsService, "Forms Service", "Go", "System of record for form definitions, submissions, and canonical tags. Validates and normalizes submission data.")
+    Container(mcpGateway, "MCP Gateway", "Go", "Edge protocol bridge. Dynamically ingests OpenAPI specifications from target services, compiles MCP tools, enforces execution policies, and proxies tool calls.")
     Container(sharedLib, "pkg/ Shared Library", "Go", "Cross-cutting infrastructure: auth middleware, cache manager, database abstraction, generic background worker, and common utilities.")
   }
 
@@ -177,6 +211,9 @@ C4Container
   Rel(formDesigner, formsService, "Manages forms, tags, and versions", "REST/JSON HTTPS")
   Rel(endUser, formsService, "Renders forms and submits responses", "REST/JSON HTTPS")
   Rel(endUser, tenantsService, "Fetches lookup options at render time", "REST/JSON HTTPS")
+  Rel(aiAgent, mcpGateway, "Discovers and calls tools", "MCP / Streamable HTTP or stdio")
+  Rel(mcpGateway, formsService, "Fetches OpenAPI spec & proxies tool calls", "HTTP / REST")
+  Rel(mcpGateway, tenantsService, "Fetches OpenAPI spec & proxies tool calls", "HTTP / REST")
   Rel(formsService, tenantsService, "Validates lookup values at submission time", "REST/JSON HTTPS")
   Rel(formsService, messageBroker, "Publishes domain events (submissions and form lifecycle)", "async")
 ```
@@ -185,6 +222,7 @@ C4Container
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------- |
 | **Tenants Service**       | System of record for tenant configuration and data source management. Provides CRUD for tenants and data sources, and resolves dynamic lookup key-value pairs via four configurable strategies (`static`, `scheduled`, `webhook`, `data-lake`).  | `backend/services/tenants/` |
 | **Forms Service**         | System of record for form definitions, versioned schemas, submissions, and canonical tags. Manages the full form design and submission processing pipeline, including async validation and canonical data normalization.                         | `backend/services/forms/`   |
+| **MCP Gateway**           | Edge protocol bridge exposing Forms Hub APIs to LLM agents and AI assistants via Model Context Protocol (MCP). Ingests OpenAPI 2.0/3.0 specs dynamically, compiles tools with typed JSON schemas, evaluates allow/deny execution policies, and proxies tool invocations over HTTP with injected credentials and tenant context. | `backend/services/mcp-gateway/` |
 | **`pkg/` Shared Library** | Cross-cutting infrastructure shared by both services: JWT auth middleware, cache abstraction, MongoDB database abstraction, generic background worker with leader election, HTTP utilities, and the strategy registry. Contains no domain logic. | `backend/pkg/`              |
 
 #### 5.1.1 Blackbox: Tenants Service
@@ -219,6 +257,16 @@ The Forms Service owns all form definitions, versioned schemas, submissions, and
 | MongoDB                                                     | Outbound  | Persists forms, versions, submissions, tags, tag versions, and transactional outbox events                                       |
 | Redis                                                       | Outbound  | Leader election for the submission processing worker only; the outbox relay worker requires no leader election                                                                                                                                                                                   |
 | Message Broker                                              | Outbound  | The Outbox Relay Worker claims batches of eligible events from the `outbox` collection via an atomic lease and publishes each as a domain event (submission outcomes to topic `submission`, form lifecycle transitions to topic `form`) |
+
+#### 5.1.3 Blackbox: MCP Gateway
+
+The MCP Gateway provides an AI-native interface to Forms Hub. It exposes a Streamable HTTP handler (`/mcp`) and stdio transport, ingests OpenAPI specifications from backend services at startup, compiles allowed endpoints into typed MCP tools, and dispatches tool execution requests to backend targets with configured tenant and authentication headers.
+
+| Interface                                  | Direction | Description                                                                                                                     |
+| ------------------------------------------ | --------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /mcp` (Streamable HTTP) or `stdio`   | Inbound   | Model Context Protocol (MCP) interface for tool discovery (`tools/list`) and invocation (`tools/call`) by AI agents.           |
+| Forms Service (`http://forms`)             | Outbound  | Fetches OpenAPI specification (`/swagger/doc.json`) at startup and proxies tool HTTP requests at runtime.                       |
+| Tenants Service (`http://tenants`)         | Outbound  | Fetches OpenAPI specification (`/swagger/doc.json`) at startup and proxies tool HTTP requests at runtime.                       |
 
 ### 5.2 Level 2
 
@@ -303,7 +351,44 @@ C4Component
 | **Submissions Worker**         | Leader-elected background worker. On each tick, fetches pending submissions and delegates each to `SubmissionProcessor`. Transitions the submission to `accepted` or `rejected` based on the result, emitting domain events to the outbox for both terminal outcomes, and persists the outcome. Retries with exponential backoff; non-retryable errors (validation failures, missing strategy) reject immediately. | `adapters/workers/`     |
 | **Outbox Relay Worker**        | `PeriodicWorker[J Job]` running on all replicas concurrently with no leader election. On each tick, calls `OutboxRepository.Claim` to atomically acquire a batch (default: 10) of eligible outbox events under a 5-minute distributed lease, then publishes each as a domain event to the message broker. Mutual exclusion is enforced at the document level by the claim lease. On publish failure, marks the event as `error` and clears the lease; the event is reclaimed on the next tick subject to `retryLimit`. | `adapters/workers/`     |
 
-#### 5.2.3 Whitebox: `pkg/` Shared Library
+#### 5.2.3 Whitebox: MCP Gateway
+
+The MCP Gateway bridges AI agents and LLM clients to Forms Hub REST APIs. It is structured around an MCP server core driving an in-memory tool registry populated at startup by an OpenAPI compiler and policy engine, and driven at runtime by an HTTP dispatcher that proxies tool invocations to target services.
+
+```mermaid
+C4Component
+  title Building Block View — Level 2: MCP Gateway
+
+  Container_Boundary(mcpGateway, "MCP Gateway") {
+    Component(mcpServer, "MCP Server", "modelcontextprotocol/go-sdk", "Manages MCP protocol lifecycle, Streamable HTTP (via chi) and stdio transports, and tool execution handlers.")
+    Component(targetLoader, "Target Loader", "Go", "Loads target configurations and fetches OpenAPI specifications from URLs or local paths.")
+    Component(specParsers, "Spec Parsers", "kin-openapi", "Parses OpenAPI 2.0 (Swagger) and 3.0 specs. Converts v2 documents to v3 using openapi2conv.")
+    Component(policyEngine, "Policy Engine", "Go", "Applies least-privilege allow/deny rules with method and path glob matching to filter operations.")
+    Component(toolCompiler, "Tool Compiler", "Go", "Extracts allowed operations and synthesizes strongly typed MCP tools with JSON Schema input structures.")
+    Component(toolRegistry, "Tool Registry", "Go", "In-memory map storing compiled tools for fast runtime dispatch.")
+    Component(httpDispatcher, "HTTP Dispatcher", "Go / http.Client", "Substitutes path parameters, encodes query strings, serializes JSON bodies, injects configured target headers, and executes upstream HTTP calls.")
+  }
+
+  Rel(mcpServer, toolRegistry, "Queries compiled tools", "Go map")
+  Rel(mcpServer, httpDispatcher, "Dispatches tool call execution", "Dispatcher interface")
+  Rel(targetLoader, specParsers, "Dispatches spec parsing by version", "StrategyRegistry")
+  Rel(toolCompiler, policyEngine, "Filters operations via policy", "IsAllowed(method, path)")
+  Rel(toolCompiler, toolRegistry, "Registers compiled tools", "Register()")
+  Rel(httpDispatcher, formsService, "Proxies requests", "HTTP / REST")
+  Rel(httpDispatcher, tenantsService, "Proxies requests", "HTTP / REST")
+```
+
+| Building Block       | Responsibility                                                                                                                                                                                                                                                                                         | Source                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
+| **MCP Server**       | Encapsulates the `mcp.Server` instance. Supports Streamable HTTP (`/mcp` endpoint mounted on `chi` router) and `stdio` transports. Handles incoming `CallToolRequest`, unmarshals `ToolArgs`, and delegates to `Dispatcher`.                                                                           | `internal/mcp/server.go`                                  |
+| **Target Loader**    | Reads target configurations from `settings.json`. Fetches OpenAPI specs from local files or remote HTTP URLs with configurable timeouts and custom headers. Dispatches to version-specific parsers via `StrategyRegistry`.                                                                          | `internal/spec/loaders.go`, `internal/spec/target_config.go` |
+| **Spec Parsers**     | Parses OpenAPI 2.0 (Swagger) specs using `kin-openapi/openapi2` and converts them to OpenAPI 3.0 using `openapi2conv`. Parses OpenAPI 3.0 specs natively using `kin-openapi/openapi3` and validates them.                                                                                            | `internal/spec/parsers.go`                                |
+| **Policy Engine**    | Evaluates candidate operations against configured `allow` and `deny` rules using the Least Privileged Algorithm. Supports HTTP methods and glob path matching (`/*`, `/**`). Catch-all and specific deny rules prevent destructive actions (e.g. `DELETE /**`, `POST /**/retire`).                      | `internal/spec/policy.go`                                 |
+| **Tool Compiler**    | Iterates spec paths and operations, evaluates policy, resolves schema properties, and compiles operations into `CompiledTool` objects with structured `path`, `query`, and `body` input schemas. Formats unique tool names (`{target}__{method}_{path}`).                                            | `internal/tools/tools.go`, `compiled_tool.go`, `input_schema.go` |
+| **Tool Registry**    | In-memory `Registry` (map) providing registration and O(1) retrieval of `CompiledTool` definitions by tool name.                                                                                                                                                                                       | `internal/tools/registry.go`                              |
+| **HTTP Dispatcher**  | Implements the `Dispatcher` interface. Interpolates `{path}` variables, appends query parameters, marshals JSON body payloads, injects target headers (`Authorization: Bearer ...`, `X-Tenant-ID`), and executes upstream requests. Maps HTTP error codes to tool execution failures.                 | `internal/tools/http_dispatcher.go`, `dispatcher.go`      |
+
+#### 5.2.4 Whitebox: `pkg/` Shared Library
 
 The shared library is a flat set of independent Go modules. Each package addresses a single cross-cutting concern and has no dependencies on other `pkg/` packages or on either service's domain.
 
@@ -476,6 +561,52 @@ flowchart TD
 | **`Publisher`**             | Secondary port. `Publish` sends domain events to the message broker on the topic matching `event.AggregateType` with an `eventType` header. Called directly by the Outbox Relay Worker per event.                                                                                                                                                                                                                                                                                                                           | `core/ports/secondary.go`                 |
 | **`OutboxRelayWorker`**     | `PeriodicWorker[J Job]` running on all replicas concurrently with no leader election; mutual exclusion is delegated entirely to the `Claim` lease. On each tick calls `OutboxRepository.Claim` to atomically acquire a batch (default: 10) of eligible events under a 5-minute lease, calls `Publisher.Publish` for each (publishing submission outcomes to topic `submission` and form lifecycle transitions to topic `form`), and calls `OutboxRepository.Upsert` to record the outcome and clear the lease. On publish failure, marks the event as `error` and clears the lease; the event becomes eligible for reclaim on the next tick subject to `retryLimit`. Bypasses the primary port layer — operates entirely on secondary ports via the `core.Application` struct. | `adapters/workers/outbox_relay_worker.go` |
 
+#### 5.3.5 Whitebox: Dynamic Tool Compilation and Execution Pipeline (MCP Gateway)
+
+The MCP Gateway pipeline operates in two distinct phases: startup compilation (which dynamically converts upstream OpenAPI specifications into typed MCP tools constrained by security policies) and runtime dispatch (which translates MCP tool execution requests into upstream HTTP calls with injected tenant and authorization headers).
+
+```mermaid
+flowchart TD
+    subgraph Startup [Startup: Tool Compilation]
+        A[Load settings.json Targets] --> B[TargetLoader.Load TargetConfig]
+        B --> C{Spec Version}
+        C -->|2.0| D[parseV2: Unmarshal openapi2 & convert via openapi2conv.ToV3]
+        C -->|3.0| E[parseV3: Parse & validate openapi3]
+        D --> F[openapi3.T Document]
+        E --> F
+        F --> G[ExtractTools]
+        G --> H[Iterate Paths & Operations]
+        H --> I{Policy.IsAllowed\nmethod, path}
+        I -->|Denied| J[Skip operation]
+        I -->|Allowed| K[compileOperation\nBuild inputSchema for path, query, body]
+        K --> L["Format Tool Name:\ntarget__method_path"]
+        L --> M[Registry.Register CompiledTool]
+    end
+
+    subgraph Runtime [Runtime: Tool Execution]
+        N[Incoming CallToolRequest from MCP Client] --> O[readRequestArgs\nUnmarshal into ToolArgs]
+        O --> P[Registry.Get tool.Name]
+        P --> Q[HTTPDispatcher.Dispatch]
+        Q --> R[Interpolate URL path parameters]
+        R --> S[Append query parameters]
+        S --> T[Marshal JSON body payload]
+        T --> U["Inject configured Target Headers\nAuthorization, X-Tenant-ID"]
+        U --> V[client.Do HTTP Request]
+        V --> W{Status >= 400?}
+        W -->|Yes| X[Return CallToolResult IsError=true]
+        W -->|No| Y[Return CallToolResult Content=TextContent]
+    end
+```
+
+| Building Block                | Responsibility                                                                                                                                                                                                                                           | Source                                    |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
+| **`TargetLoader.Load`**       | Retrieves specification bytes via local file read (`spec.Path`) or HTTP GET (`spec.URL`) with configured timeouts and headers. Delegates to version parser via `StrategyRegistry`.                                                                      | `internal/spec/loaders.go`                |
+| **`parseV2` / `parseV3`**     | Parser strategy functions registered in `StrategyRegistry[string, parserFn]`. `parseV2` handles Swagger 2.0 schemas and upgrades them to OpenAPI 3.0 via `openapi2conv`. `parseV3` loads and validates OpenAPI 3.0 schemas.                             | `internal/spec/parsers.go`                |
+| **`PolicyConfig.IsAllowed`**  | Enforces the Least Privileged Algorithm against candidate endpoints. Evaluates `deny` patterns first (immediate rejection on match), permits all non-denied endpoints if `allow` is empty, or enforces default-deny if `allow` is populated. Supports wildcards (`*`, `/*`, `/**`). | `internal/spec/policy.go`                 |
+| **`compileOperation`**        | Translates OpenAPI `Parameters` (in path or query) and `RequestBody` (`application/json`) into structured `inputSchema` objects using `inputSchemaBuilder`. Formats names as `<targetName>__<method>_<path>`.                                            | `internal/tools/compiled_tool.go`, `input_schema.go` |
+| **`Registry`**                | In-memory map type `map[string]CompiledTool` with `Register`, `Get`, and `All` methods for thread-safe access to compiled tool definitions.                                                                                                              | `internal/tools/registry.go`              |
+| **`HTTPDispatcher.Dispatch`** | Executes the compiled tool's HTTP contract: substitutes `{param}` placeholders in the target URL, appends query string arguments, serializes JSON bodies, injects target headers (`Authorization`, `X-Tenant-ID`), and handles upstream response statuses. | `internal/tools/http_dispatcher.go`       |
+
 ## 6. Runtime View
 
 ### 6.1 Form Submission Flow
@@ -559,23 +690,87 @@ stateDiagram-v2
 | Deprecate    | `POST /tags/{tagId}/versions/{versionId}/deprecate` | Transitions `active → deprecated`; only allowed from `active`                                                                        |
 | Retire       | `POST /tags/{tagId}/versions/{versionId}/retire`    | Transitions `deprecated → retired`; only allowed from `deprecated`                                                                   |
 
+### 6.5 MCP Tool Discovery and Execution Flow
+
+The Model Context Protocol (MCP) Gateway enables AI agents (e.g. Cursor, Claude Desktop, OpenCode) to interact with Forms Hub domain services safely. Tool discovery and tool invocation proceed in two runtime phases following initial startup ingestion.
+
+#### 6.5.1 Sequence: Discovery and Invocation
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Agent as AI Agent / MCP Client
+    participant GW as MCP Gateway
+    participant Reg as Tool Registry
+    participant Disp as HTTP Dispatcher
+    participant Forms as Forms Service
+    participant Tenants as Tenants Service
+
+    Note over GW,Tenants: Startup Phase: Spec Ingestion & Tool Compilation
+    GW->>Forms: GET /swagger/doc.json
+    Forms-->>GW: OpenAPI 2.0 / 3.0 Document
+    GW->>Tenants: GET /swagger/doc.json
+    Tenants-->>GW: OpenAPI 2.0 / 3.0 Document
+    GW->>GW: Convert v2 to v3 & evaluate Policy (Allow/Deny)
+    GW->>Reg: Register Compiled Tools with JSON input schemas
+
+    Note over Agent,GW: Runtime Phase 1: Tool Discovery
+    Agent->>GW: MCP tools/list Request
+    GW->>Reg: Retrieve all registered tools
+    Reg-->>GW: []CompiledTool
+    GW-->>Agent: tools/list Response (tools with path, query, body schemas)
+
+    Note over Agent,Tenants: Runtime Phase 2: Tool Invocation
+    Agent->>GW: MCP tools/call Request (name, arguments: path, query, body)
+    GW->>Reg: Get compiled tool by name
+    Reg-->>GW: CompiledTool
+    GW->>Disp: Dispatch(ctx, tool, args)
+    Disp->>Disp: Interpolate path params & encode query string
+    Disp->>Disp: Marshal JSON body & inject Target Headers (Auth, Tenant-ID)
+    alt Target is Forms Service
+        Disp->>Forms: HTTP Request (Method, URL, Headers, Body)
+        Forms-->>Disp: HTTP Response (Status, JSON body)
+    else Target is Tenants Service
+        Disp->>Tenants: HTTP Request (Method, URL, Headers, Body)
+        Tenants-->>Disp: HTTP Response (Status, JSON body)
+    end
+    alt HTTP Status < 400
+        Disp-->>GW: Success response bytes
+        GW-->>Agent: CallToolResult (Content: [TextContent with response payload])
+    else HTTP Status >= 400
+        Disp-->>GW: Error with status and response payload
+        GW-->>Agent: CallToolResult (IsError: true, Content: [TextContent error message])
+    end
+```
+
+#### 6.5.2 Execution Details
+
+1. **Startup Spec Ingestion & Tool Compilation:** On initialization, the Gateway queries target services (`forms` and `tenants`) for their OpenAPI specifications (`/swagger/doc.json`). Specifications defined in Swagger 2.0 are converted to OpenAPI 3.0 schemas in-memory via `kin-openapi/openapi2conv`.
+2. **Policy Filtering:** Each operation is evaluated against the target's configured `PolicyConfig`. Deny rules take precedence (e.g., `DELETE /**`, `POST /**/retire`), followed by allow rules. Operations violating policy are excluded from tool compilation.
+3. **Tool Schema Generation:** Allowed operations are compiled into `CompiledTool` records. Path parameters, query parameters, and JSON request bodies are mapped into an `inputSchema` structure with dedicated `path`, `query`, and `body` object properties. Tool names follow the deterministic format `<targetName>__<method>_<path>` (e.g. `forms_api__get_api_v1_forms` or `tenants_api__get_api_v1_data_sources_id_look_ups`).
+4. **Tool Discovery:** MCP clients connecting via Streamable HTTP (`POST /mcp`) or `stdio` issue `tools/list` to inspect available actions and their parameter schemas.
+5. **Tool Invocation & Header Injection:** When an agent invokes a tool via `tools/call`, the `HTTPDispatcher` unpacks `ToolArgs`, replaces URL path variables (`{param}`), attaches query parameters, serializes request bodies, and injects configured target headers (`Authorization: Bearer <token>`, `X-Tenant-ID: <tenantId>`).
+6. **Error Wrapping:** If the upstream target returns a status code `>= 400`, the dispatcher captures the HTTP response and returns a structured `CallToolResult` with `IsError: true`, preventing agent protocol crashes while providing clear upstream diagnostic messages to the LLM.
+
 ## 7. Deployment View
 
-Forms Hub is deployed to Wells Fargo's internal OpenShift Container Platform (OCP) via Harness pipelines using Helm charts. The two services are independently deployable and co-located in the same Kubernetes cluster and namespace. CI is managed through GitHub Actions; CD is managed through Harness.
+Forms Hub is deployed to Wells Fargo's internal OpenShift Container Platform (OCP) via Harness pipelines using Helm charts. The domain services and the MCP Gateway are independently deployable and co-located in the same Kubernetes cluster and namespace. CI is managed through GitHub Actions; CD is managed through Harness.
 
 ### 7.1 Environments
 
-| Environment    | Description                                                                                                                                     |
-| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Local**      | Docker Compose. All external dependencies (MongoDB, Redis) run as containers. In-memory adapters available as an alternative via configuration. |
-| **Dev**        | Deployed to OCP. First integration environment; used for active development verification.                                                       |
-| **Test**       | Deployed to OCP. Used for automated integration and end-to-end testing.                                                                         |
-| **QA**         | Deployed to OCP. Used for business and acceptance testing prior to production promotion.                                                        |
-| **Production** | Deployed to OCP across multiple Wells Fargo internal data centers.                                                                              |
+| Environment    | Description                                                                                                                                                                                                            |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Local**      | Docker Compose. Runs MongoDB, Redis, Kafka, Tenants Service (port 8081), Forms Service (port 8080), and MCP Gateway (port 8082). In-memory adapters available as an alternative via configuration.                  |
+| **Dev**        | Deployed to OCP. First integration environment; used for active development verification.                                                                                                                              |
+| **Test**       | Deployed to OCP. Used for automated integration and end-to-end testing.                                                                                                                                                |
+| **QA**         | Deployed to OCP. Used for business and acceptance testing prior to production promotion.                                                                                                                               |
+| **Production** | Deployed to OCP across multiple Wells Fargo internal data centers.                                                                                                                                                     |
 
 ### 7.2 Deployment Architecture
 
-Each service is packaged as a Docker image and deployed as a Kubernetes `Deployment`. Multiple replicas may run simultaneously; Redis leader election ensures only one replica runs the Tenants Service background worker and the Forms Service submissions worker at any given time. In contrast, the Forms Service outbox relay worker runs concurrently across all replicas without leader election, relying on document-level atomic claim leases in MongoDB.
+Each service is packaged as a Docker image and deployed as a Kubernetes `Deployment`. Multiple replicas of the domain services may run simultaneously; Redis leader election ensures only one replica runs the Tenants Service background worker and the Forms Service submissions worker at any given time, while the Forms Service outbox relay worker runs concurrently across all replicas using document-level atomic claim leases in MongoDB.
+
+The **MCP Gateway** is deployed as an independent, stateless `Deployment`. It serves Streamable HTTP on `/mcp` (port 80) and proxies tool invocations to upstream services via internal Kubernetes DNS (`http://forms`, `http://tenants`). The gateway requires no datastore, cache, or message broker connectivity.
 
 ```mermaid
 C4Deployment
@@ -583,6 +778,9 @@ C4Deployment
 
   Deployment_Node(ocp, "OpenShift Container Platform", "Kubernetes") {
     Deployment_Node(ns, "Shared Namespace") {
+      Deployment_Node(mcpNs, "MCP Gateway") {
+        Container(mcpReplica, "MCP Gateway", "Docker / Go", "Stateless MCP protocol adapter")
+      }
       Deployment_Node(tenantsNs, "Tenants Service") {
         Container(tenantsReplica1, "Tenants Service", "Docker / Go", "Replica")
         Container(tenantsReplica2, "Tenants Service", "Docker / Go", "Replica")
@@ -600,6 +798,8 @@ C4Deployment
     ContainerDb(kafka, "Kafka", "Cluster", "Enterprise event broker — hosted by Wells Fargo platform team")
   }
 
+  Rel(mcpReplica, formsReplica1, "Proxies tool requests & fetches OpenAPI spec", "HTTP/REST")
+  Rel(mcpReplica, tenantsReplica1, "Proxies tool requests & fetches OpenAPI spec", "HTTP/REST")
   Rel(tenantsReplica1, mongo, "Reads/writes", "MongoDB wire protocol")
   Rel(tenantsReplica1, redis, "Leader election", "Redis protocol")
   Rel(formsReplica1, mongo, "Reads/writes", "MongoDB wire protocol")
@@ -620,6 +820,8 @@ All runtime configuration is provided via environment variables injected into th
 | Database driver selection               | `APP_DATABASE_DRIVER` (`mongodb` or `inmemory`)                                                  |
 | Cache type selection                    | `APP_CACHE_TYPE` (`redis` or `inmemory`)                                                         |
 | Publisher selection                     | `APP_PUBLISHER_TYPE` (`kafka` or `in-memory`); Kafka brokers via `APP_PUBLISHER_KAFKA_ADDR`      |
+| MCP Gateway configuration               | `settings.json` (or `--settings` path); defines `logLevel`, `transport` (`http`/`stdio`), `port`, and `targets` |
+| MCP Target definitions & security rules | Configured in `settings.json`: target `baseUrl`, `spec` (`url`/`path`), headers (`Authorization`, `X-Tenant-ID`), timeout, and policy `allow`/`deny` lists |
 
 ### 7.4 CI/CD Pipeline
 
@@ -672,7 +874,7 @@ Forms Hub maintains two independent domain models — one per service — with n
 
 ### 8.2 Persistency
 
-Forms Hub uses two storage technologies — MongoDB for all domain data and Redis for distributed lock state. Neither is accessed directly; both are abstracted behind port interfaces with in-memory substitutes selectable at startup via configuration.
+Forms Hub uses two storage technologies — MongoDB for all domain data and Redis for distributed lock state. Neither is accessed directly; both are abstracted behind port interfaces with in-memory substitutes selectable at startup via configuration. The **MCP Gateway** is completely stateless and maintains no persistent storage or distributed cache connections, holding only compiled tool definitions in an in-memory registry.
 
 **MongoDB**
 
@@ -682,6 +884,7 @@ All domain aggregates are persisted in MongoDB. Access never goes directly to th
 | --------------- | ------------------------------------------------------------------------- |
 | Tenants Service | `tenants`, `data_sources`                                                 |
 | Forms Service   | `forms`, `form_versions`, `submissions`, `tags`, `tag_versions`, `outbox` |
+| MCP Gateway     | *None (Stateless)*                                                        |
 
 **Redis**
 
@@ -724,6 +927,10 @@ In addition to authenticating requests, inbound JWT claims stored in context via
 
 Authorization is currently enforced at the tenant level only. Every mutating operation in both services validates that the resource being accessed belongs to the tenant identified by the `X-Tenant-ID` header. No role-based access control is implemented at this time.
 
+**MCP Gateway Credential Proxying**
+
+For AI agents accessing Forms Hub via the MCP Gateway, authentication credentials and tenant headers are not passed from the LLM client. Instead, the MCP Gateway encapsulates the upstream authentication credentials (`Authorization: Bearer <token>`) and tenant ID (`X-Tenant-ID`) directly within target configurations in `settings.json`. During tool execution, `HTTPDispatcher` injects these headers transparently into upstream HTTP requests on behalf of the agent, ensuring requests conform to the tenant security boundary without exposing sensitive tokens to LLMs.
+
 ### 8.4 Tenant Scoping
 
 All resources in Forms Hub are scoped to a tenant. The `X-Tenant-ID` header is the mechanism by which the caller declares the tenant context for a request. It is enforced by `NewTenantMiddleware` — a chi middleware in `pkg/common/httputil` — which reads the header, rejects the request with `400 Bad Request` if it is absent, and stores the value in the request context via `SetTenantContext`. Handlers retrieve it downstream via `TenantFromContext`, which panics if called outside the middleware — making misconfigured routes a hard failure at development time rather than a silent data leak.
@@ -734,6 +941,7 @@ The middleware is applied differently per service, reflecting their different ac
 | --------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Tenants Service | `/api/v1/data-sources` only | `X-Tenant-ID` is required for all data source operations. The `/api/v1/tenants` routes do not require it — tenant management is a privileged operation not scoped to a single tenant. |
 | Forms Service   | `/api/v1` (all routes)      | `X-Tenant-ID` is required on every request. All forms, versions, submissions, and tags are tenant-owned.                                                                              |
+| MCP Gateway     | Proxy targets               | Injects configured target `X-Tenant-ID` header on all proxied HTTP requests sent to upstream services.                                                                                |
 
 Within the application services, tenant ownership is enforced on every operation — reads verify the requested resource belongs to the tenant in context; writes associate new resources with the tenant in context.
 
@@ -804,6 +1012,26 @@ Log level is configured via `APP_LOG_LEVEL` and defaults to `info`. Valid values
 - Log calls always use the context-aware variants (`DebugContext`, `InfoContext`, `WarnContext`, `ErrorContext`) to ensure handler enrichment fires
 - Background worker lifecycle events (leadership acquired/lost, jobs dispatched, shutdown) are logged at `Info`; job processing errors at `Error`; job completion at `Info` with `duration_ms`
 
+### 8.8 Policy-Based Agent Guardrails
+
+To protect Forms Hub domain services from unintended, destructive, or unauthorized operations invoked by AI agents (e.g. deleting forms, deprecating active tags, or retiring form versions), the MCP Gateway enforces a Least-Privilege Policy Engine (`internal/spec/policy.go`).
+
+**Algorithm:**
+
+1. **Explicit Deny Rules**: If an operation matches any rule pattern in `deny`, it is immediately rejected and excluded from tool synthesis, regardless of any `allow` rules.
+2. **Default-Allow (Blacklist Mode)**: When the target's `allow` list is empty, all operations are permitted except those matching a `deny` rule.
+3. **Default-Deny (Whitelist Mode)**: When the target's `allow` list contains rules, only operations explicitly matching an `allow` rule (and not matching any `deny` rule) are synthesized into tools.
+
+**Pattern Syntax:**
+
+Rule patterns follow the format `[METHOD] [PATH]` or `[PATH]`:
+- `[METHOD]` is an HTTP verb (`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, etc.) or the wildcard `*`. If omitted, wildcard `*` is assumed.
+- `[PATH]` supports segment wildcards:
+  - `/*` matches a single path component (e.g. `/api/v1/forms/*`).
+  - `/**` matches zero or more recursive path components (e.g. `DELETE /**` blocks all HTTP DELETE endpoints across all paths; `POST /**/retire` blocks retirement endpoints).
+
+Policies are validated during startup in `load()`, failing fast if any rule pattern is malformed.
+
 ## 9. Architecture Decisions
 
 Architecture decisions are recorded as individual ADRs in `backend/docs/adr/`. Each ADR captures the context, decision, and consequences for a significant architectural choice.
@@ -840,13 +1068,17 @@ Architecture decisions are recorded as individual ADRs in `backend/docs/adr/`. E
 - **Tenants Service availability** — The Forms Service submission processing pipeline has a synchronous runtime dependency on the Tenants Service for lookup validation. If the Tenants Service is unavailable, all submissions referencing data source-backed fields will fail and retry until the limit is exhausted.
 - **Redis as a single point of failure** — Both services depend on Redis for leader election. Loss of Redis stops background job processing for scheduled data source refreshes and submission intakes. However, the Outbox Relay Worker is decoupled from Redis and relies on MongoDB atomic claim leases, so event publication continues uninterrupted unless MongoDB is affected.
 - **Outbox relay delivery latency** — The polling-based outbox relay introduces a tick-interval gap between an aggregate state change (accepted/rejected submissions, published/retired form versions) and its domain event being delivered to the message broker. Under high event volume the relay worker may fall behind, increasing delivery lag. If near-real-time delivery becomes a requirement, a MongoDB change stream relay should be evaluated as a replacement (see ADR-009).
+- **MCP Gateway startup dependency on upstream OpenAPI specs** — At boot time, the MCP Gateway fetches `/swagger/doc.json` from target services (`http://forms`, `http://tenants`). If either service is unavailable during gateway initialization, tool loading fails and the gateway exits. Container restart policies and Kubernetes dependency sequencing mitigate this, but transient network outages at startup block tool registration.
+- **Static tool schema caching at startup** — Tools are compiled once during gateway initialization. Dynamic updates to form or tenant endpoints upstream are not reflected in the MCP server until the gateway container is restarted.
 
 ### 11.2 Security Risks
 
 - **Tenant scoping enforced in application code only** — Tenant isolation is enforced at the application service layer, not at the database layer. A bug in ownership checks could expose cross-tenant data.
+- **Static service identity and credential binding in MCP Gateway** — Target configurations in `settings.json` bind a static JWT bearer token and a single `X-Tenant-ID`. All AI agent tool calls execute under this pre-configured service context rather than authenticating the end user on behalf of whom the agent acts. Multi-tenant agent delegation or user credential passthrough is not yet supported.
 
 ### 11.3 Data Risks
 
 - **`ReferenceID` is a UUID** — The `Submission.ReferenceID` is currently a UUID v7. There is an open TODO to investigate a more order-number style implementation. A UUID is not human-friendly for support and tracking workflows.
+- **OpenAPI 2.0 to 3.0 schema conversion fidelity** — Ingestion of legacy OpenAPI 2.0 specs relies on `kin-openapi/openapi2conv`. Differences in polymorphic schema handling or parameter definition styles can result in simplified JSON input schemas for LLMs, requiring careful target verification.
 
 ## 12. Glossary

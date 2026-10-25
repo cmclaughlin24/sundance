@@ -17,7 +17,11 @@
       "timeout": null,
       "policy": {
         "allow": [],
-        "deny": []
+        "deny": [
+          "DELETE /**",
+          "POST /**/retire",
+          "POST /**/deprecate"
+        ]
       }
     },
     {
@@ -33,7 +37,9 @@
       },
       "timeout": null,
       "policy": {
-        "allow": [],
+        "allow": [
+          "GET /**"
+        ],
         "deny": []
       }
     }

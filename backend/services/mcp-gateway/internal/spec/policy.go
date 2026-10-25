@@ -50,7 +50,7 @@ func (p *PolicyConfig) Validate() error {
 
 	for _, r := range p.Allow {
 		if _, _, err := parseRule(r); err != nil {
-			return fmt.Errorf("invalid deny rule: %w", err)
+			return fmt.Errorf("invalid allow rule: %w", err)
 		}
 	}
 
