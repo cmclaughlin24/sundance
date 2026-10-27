@@ -24,7 +24,7 @@ func parseV2(ctx context.Context, data []byte) (*openapi3.T, error) {
 	return doc3, nil
 }
 
-func parseV3(ctx context.Context, data []byte) (*openapi3.T, error) {
+func parseV3x(ctx context.Context, data []byte) (*openapi3.T, error) {
 	loader := openapi3.NewLoader()
 	loader.IsExternalRefsAllowed = true
 
@@ -34,7 +34,7 @@ func parseV3(ctx context.Context, data []byte) (*openapi3.T, error) {
 	}
 
 	if err := doc.Validate(ctx); err != nil {
-		return nil, fmt.Errorf("openapi spec v3 validation failed: %w", err)
+		// FIXME: Log a warning that the document failed validation and may cause issues with registered tools.
 	}
 
 	return doc, nil

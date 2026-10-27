@@ -24,7 +24,7 @@ type TargetLoader struct {
 func NewTargetLoader(logger *slog.Logger) *TargetLoader {
 	parsers := stratreg.New[string, parserFn]().
 		Set("2.0", parseV2).
-		Set("3.0", parseV3)
+		Set("3.0", parseV3x)
 
 	return &TargetLoader{
 		logger:  logger,

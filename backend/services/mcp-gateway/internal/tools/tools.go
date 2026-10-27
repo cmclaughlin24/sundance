@@ -13,6 +13,11 @@ func ExtractTools(target spec.TargetConfig, doc *openapi3.T) []CompiledTool {
 		return compiled
 	}
 
+	basePath, _ := doc.Servers.BasePath()
+	if basePath == "/" {
+		basePath = ""
+	}
+
 	for path, pathItem := range doc.Paths.Map() {
 		if pathItem == nil {
 			continue
@@ -27,7 +32,7 @@ func ExtractTools(target spec.TargetConfig, doc *openapi3.T) []CompiledTool {
 				continue
 			}
 
-			compiled = append(compiled, compileOperation(target, path, method, pathItem, op))
+			compiled = append(compiled, compileOperation(target, basePath+path, method, pathItem, op))
 		}
 	}
 

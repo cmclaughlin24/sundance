@@ -146,8 +146,9 @@ func formatToolName(targetName, method, path string) string {
 	cleanPath = strings.ReplaceAll(cleanPath, "-", "_")
 	cleanPath = strings.ReplaceAll(cleanPath, "{", "")
 	cleanPath = strings.ReplaceAll(cleanPath, "}", "")
+	snakeName := fmt.Sprintf("%s__%s_%s", targetName, strings.ToLower(method), cleanPath)
 
-	return fmt.Sprintf("%s__%s_%s", targetName, strings.ToLower(method), cleanPath)
+	return snakeToCamel(snakeName)
 }
 
 func formToolDescription(op *openapi3.Operation) string {
@@ -162,4 +163,19 @@ func formToolDescription(op *openapi3.Operation) string {
 	}
 
 	return strings.Join(description, " - ")
+}
+
+func snakeToCamel(value string) string {
+	parts := strings.Split(value, "_")
+	for i := range parts {
+		if i == 0 {
+			parts[i] = strings.ToLower(parts[i])
+		}
+
+		if len(parts[i]) > 0 {
+			parts[i] = strings.ToUpper(parts[i][:1]) + strings.ToLower(parts[i][1:])
+		}
+	}
+
+	return strings.Join(parts, "")
 }
