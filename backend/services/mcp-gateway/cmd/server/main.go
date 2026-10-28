@@ -14,6 +14,8 @@ import (
 )
 
 type settings struct {
+	Name      string              `json:"name"`
+	Version   string              `json:"version"`
 	LogLevel  string              `json:"logLevel"`
 	Transport mcp.ServerTransport `json:"transport"`
 	Targets   []spec.TargetConfig `json:"targets"`
@@ -44,8 +46,8 @@ func main() {
 
 	server := mcp.NewServer(
 		mcp.ServerWithLogger(l),
-		mcp.ServerWithName("forms-hub-server"),
-		mcp.ServerWithVersion("1.0.0"),
+		mcp.ServerWithName(settings.Name),
+		mcp.ServerWithVersion(settings.Version),
 		mcp.ServerWithTransport(settings.Transport),
 		mcp.ServerWithPort(settings.Port),
 		mcp.ServerWithToolRegistry(r),

@@ -1,4 +1,6 @@
 {
+  "name": "forms-hub-gateway",
+  "version": "1.0.0",
   "logLevel": "debug",
   "transport": "http",
   "port": 80,
@@ -17,11 +19,7 @@
       "timeout": null,
       "policy": {
         "allow": [],
-        "deny": [
-          "DELETE /**",
-          "POST /**/retire",
-          "POST /**/deprecate"
-        ]
+        "deny": ["DELETE /**", "POST /**/retire", "POST /**/deprecate"]
       }
     },
     {
@@ -37,9 +35,7 @@
       },
       "timeout": null,
       "policy": {
-        "allow": [
-          "GET /**"
-        ],
+        "allow": ["GET /**"],
         "deny": []
       }
     }

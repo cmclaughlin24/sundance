@@ -15,9 +15,10 @@ type Dispatcher interface {
 }
 
 type ToolArgs struct {
-	Path  map[string]any `json:"path"`
-	Query map[string]any `json:"query"`
-	Body  map[string]any `json:"body"`
+	Header map[string]any `json:"header"`
+	Path   map[string]any `json:"path"`
+	Query  map[string]any `json:"query"`
+	Body   map[string]any `json:"body"`
 }
 
 func (ta *ToolArgs) replacePath(url string) string {
@@ -44,6 +45,18 @@ func (ta *ToolArgs) appendQuery(req *http.Request) *http.Request {
 	}
 
 	req.URL.RawQuery = query.Encode()
+
+	return req
+}
+
+func (ta *ToolArgs) setHeaders(req *http.Request) *http.Request {
+	if len(ta.Header) == 0 {
+		return req
+	}
+
+	for k, v := range ta.Header {
+		req.Header.Set(k, fmt.Sprint(v))
+	}
 
 	return req
 }

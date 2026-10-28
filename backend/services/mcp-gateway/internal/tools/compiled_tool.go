@@ -27,7 +27,7 @@ func (ct *CompiledTool) setHeaders(req *http.Request) *http.Request {
 	}
 
 	for k, v := range ct.Headers {
-		req.Header.Add(k, v)
+		req.Header.Set(k, v)
 	}
 
 	return req
@@ -46,13 +46,15 @@ func compileOperation(target spec.TargetConfig, path, method string, pathItem *o
 
 		param := paramRef.Value
 
-		if strings.EqualFold("header", param.In) || strings.EqualFold("cookie", param.In) {
+		if strings.EqualFold("cookie", param.In) {
 			continue
 		}
 
 		paramSchema := resolveSchema(param.Schema, param.Description)
 
 		switch strings.ToLower(param.In) {
+		case "header":
+			builder.addHeader(param.Name, paramSchema, param.Required)
 		case "path":
 			builder.addPath(param.Name, paramSchema, param.Required)
 		case "query":
@@ -146,7 +148,7 @@ func formatToolName(targetName, method, path string) string {
 	cleanPath = strings.ReplaceAll(cleanPath, "-", "_")
 	cleanPath = strings.ReplaceAll(cleanPath, "{", "")
 	cleanPath = strings.ReplaceAll(cleanPath, "}", "")
-	snakeName := fmt.Sprintf("%s__%s_%s", targetName, strings.ToLower(method), cleanPath)
+	snakeName := fmt.Sprintf("%s-%s_%s", targetName, strings.ToLower(method), cleanPath)
 
 	return snakeToCamel(snakeName)
 }

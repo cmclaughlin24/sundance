@@ -1,11 +1,12 @@
 package tools
 
 const (
-	propertyKeyPath  = "path"
-	propertyKeyQuery = "query"
-	propertyKeyBody  = "body"
-	schemaTypeObject = "object"
-	schemaTypeString = "string"
+	propertyKeyHeader = "header"
+	propertyKeyPath   = "path"
+	propertyKeyQuery  = "query"
+	propertyKeyBody   = "body"
+	schemaTypeObject  = "object"
+	schemaTypeString  = "string"
 )
 
 type inputSchema struct {
@@ -25,12 +26,26 @@ type inputSchema struct {
 }
 
 type inputSchemaBuilder struct {
-	path          map[string]inputSchema
-	pathRequired  []string
-	query         map[string]inputSchema
-	queryRequired []string
-	body          inputSchema
-	bodyRequired  bool
+	headers         map[string]inputSchema
+	headersRequired []string
+	path            map[string]inputSchema
+	pathRequired    []string
+	query           map[string]inputSchema
+	queryRequired   []string
+	body            inputSchema
+	bodyRequired    bool
+}
+
+func (b *inputSchemaBuilder) addHeader(name string, s inputSchema, required bool) {
+	if b.headers == nil {
+		b.headers = make(map[string]inputSchema)
+	}
+
+	b.headers[name] = s
+
+	if required {
+		b.headersRequired = append(b.headersRequired, name)
+	}
 }
 
 func (b *inputSchemaBuilder) addPath(name string, s inputSchema, required bool) {
@@ -65,6 +80,18 @@ func (b *inputSchemaBuilder) setBody(body inputSchema, required bool) {
 func (b *inputSchemaBuilder) build() inputSchema {
 	properties := make(map[string]inputSchema)
 	var required []string
+
+	if len(b.headers) > 0 {
+		properties[propertyKeyHeader] = inputSchema{
+			Type:       schemaTypeObject,
+			Properties: b.headers,
+			Required:   b.headersRequired,
+		}
+
+		if len(b.headersRequired) > 0 {
+			required = append(required, propertyKeyPath)
+		}
+	}
 
 	if len(b.path) > 0 {
 		properties[propertyKeyPath] = inputSchema{

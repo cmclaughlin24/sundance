@@ -38,12 +38,12 @@ func (d *HTTPDispatcher) Dispatch(ctx context.Context, tool *CompiledTool, args 
 	}
 
 	req = args.appendQuery(req)
+	req = tool.setHeaders(req)
+	req = args.setHeaders(req)
 
 	if body != nil {
 		req.Header.Add("Content-Type", "application/json")
 	}
-
-	req = tool.setHeaders(req)
 
 	resp, err := d.client.Do(req)
 	if err != nil {
