@@ -38,8 +38,7 @@ func (d *HTTPDispatcher) Dispatch(ctx context.Context, tool *CompiledTool, args 
 	}
 
 	req = args.appendQuery(req)
-	req = tool.setHeaders(req)
-	req = args.setHeaders(req)
+	req = setRequestHeaders(req, tool, args)
 
 	if body != nil {
 		req.Header.Add("Content-Type", "application/json")
@@ -61,4 +60,22 @@ func (d *HTTPDispatcher) Dispatch(ctx context.Context, tool *CompiledTool, args 
 	}
 
 	return respBody, nil
+}
+
+func setRequestHeaders(req *http.Request, tool *CompiledTool, args *ToolArgs) *http.Request {
+	req = tool.setHeaders(req)
+
+	if len(args.Header) == 0 {
+		return req
+	}
+
+	for k, v := range args.Header {
+		if !tool.Headers.AllowHeader(k) {
+			continue
+		}
+
+		req.Header.Set(k, fmt.Sprint(v))
+	}
+
+	return req
 }

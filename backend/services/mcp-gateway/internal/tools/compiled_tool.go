@@ -16,18 +16,18 @@ type CompiledTool struct {
 	BaseURL    string
 	Method     string
 	Path       string
-	Headers    map[string]string
+	Headers    spec.HeadersConfig
 	Timeout    time.Duration
 	Tool       mcp.Tool
 }
 
 func (ct *CompiledTool) setHeaders(req *http.Request) *http.Request {
-	if ct.Headers == nil || len(ct.Headers) == 0 {
+	if len(ct.Headers) == 0 {
 		return req
 	}
 
 	for k, v := range ct.Headers {
-		req.Header.Set(k, v)
+		req.Header.Set(k, fmt.Sprint(v.Value))
 	}
 
 	return req
@@ -54,7 +54,9 @@ func compileOperation(target spec.TargetConfig, path, method string, pathItem *o
 
 		switch strings.ToLower(param.In) {
 		case "header":
-			builder.addHeader(param.Name, paramSchema, param.Required)
+			if target.Headers.AllowHeader(param.Name) {
+				builder.addHeader(param.Name, paramSchema, param.Required)
+			}
 		case "path":
 			builder.addPath(param.Name, paramSchema, param.Required)
 		case "query":

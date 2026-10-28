@@ -74,7 +74,7 @@ func (p *TargetLoader) requestFile(ctx context.Context, target TargetConfig) ([]
 	}
 
 	for k, v := range target.Headers {
-		req.Header.Set(k, v)
+		req.Header.Set(k, fmt.Sprint(v.Value))
 	}
 
 	resp, err := client.Do(req)

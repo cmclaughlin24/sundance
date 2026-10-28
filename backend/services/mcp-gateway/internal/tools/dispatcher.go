@@ -22,7 +22,7 @@ type ToolArgs struct {
 }
 
 func (ta *ToolArgs) replacePath(url string) string {
-	if ta.Path == nil || len(ta.Path) == 0 {
+	if len(ta.Path) == 0 {
 		return url
 	}
 
@@ -34,7 +34,7 @@ func (ta *ToolArgs) replacePath(url string) string {
 }
 
 func (ta *ToolArgs) appendQuery(req *http.Request) *http.Request {
-	if ta.Query == nil || len(ta.Query) == 0 {
+	if len(ta.Query) == 0 {
 		return req
 	}
 
@@ -49,20 +49,9 @@ func (ta *ToolArgs) appendQuery(req *http.Request) *http.Request {
 	return req
 }
 
-func (ta *ToolArgs) setHeaders(req *http.Request) *http.Request {
-	if len(ta.Header) == 0 {
-		return req
-	}
-
-	for k, v := range ta.Header {
-		req.Header.Set(k, fmt.Sprint(v))
-	}
-
-	return req
-}
 
 func (ta *ToolArgs) serializeBody() (io.Reader, error) {
-	if ta.Body == nil || len(ta.Body) == 0 {
+	if len(ta.Body) == 0 {
 		return nil, nil
 	}
 
