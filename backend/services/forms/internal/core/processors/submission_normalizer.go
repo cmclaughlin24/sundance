@@ -56,13 +56,24 @@ func (n *submissionNormalizer) normalize(ctx context.Context, resolved []resolve
 	}
 
 	indexer := newCollectionIndexer()
-	facts := make([]*domain.CanonicalFact, 0)
+	resolvedVersions := make(map[domain.TagID]*domain.TagVersion, len(tags))
 
 	for _, ta := range tags {
 		version, err := domain.ResolveTagVersion(ta.versions)
 		if err != nil {
 			return nil, err
 		}
+		resolvedVersions[ta.tag.ID] = version
+
+		if ta.tag.HasCollectionAncestor() {
+			indexer.trackIndices(ta.tag.KeyPath, candidatesByVersion[version.ID])
+		}
+	}
+
+	facts := make([]*domain.CanonicalFact, 0)
+
+	for _, ta := range tags {
+		version := resolvedVersions[ta.tag.ID]
 
 		if ta.tag.HasCollectionAncestor() {
 			f, err := n.evaluateCollectionCandidates(ta.tag, *version, candidatesByVersion[version.ID], indexer)
@@ -119,15 +130,21 @@ func (n *submissionNormalizer) evaluateCollectionCandidates(
 
 	byCollectionIdx := make(map[int][]candidate)
 	for _, c := range candidates {
-		index, err := indexer.resolveIndex(c, tag.KeyPath)
+		indices, err := indexer.resolveIndices(c, tag.KeyPath)
 		if err != nil {
 			return nil, err
 		}
 
-		byCollectionIdx[*index] = append(byCollectionIdx[*index], c)
+		for _, idx := range indices {
+			byCollectionIdx[idx] = append(byCollectionIdx[idx], c)
+		}
 	}
 
-	for idx, group := range byCollectionIdx {
+	sortedIndices := slices.Collect(maps.Keys(byCollectionIdx))
+	slices.Sort(sortedIndices)
+
+	for _, factIdx := range sortedIndices {
+		group := byCollectionIdx[factIdx]
 		winner := rankCandidates(group)
 
 		facts = append(facts, domain.NewCanonicalFact(
@@ -135,7 +152,7 @@ func (n *submissionNormalizer) evaluateCollectionCandidates(
 			version.ID,
 			tag.KeyPath,
 			pickValue(winner),
-			&idx,
+			&factIdx,
 		))
 	}
 
