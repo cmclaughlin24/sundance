@@ -78,7 +78,7 @@ func main() {
 	ev := evaluators.NewExprRuleEvaluator(l)
 	st := strategies.Bootstrap(strategies.WithLogger(l))
 	prs := processors.Bootstrap(processors.WithLogger(l), processors.WithRepository(r), processors.WithStrategies(st), processors.WithRuleEvaluator(ev))
-	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithProcessors(prs))
+	s := services.Bootstrap(services.WithLogger(l), services.WithRepository(r), services.WithStrategies(st), services.WithProcessors(prs))
 
 	app := core.NewApplication(
 		core.WithLogger(l),

@@ -717,3 +717,80 @@ func Test_handlers_RetireFormVersion(t *testing.T) {
 		})
 	}
 }
+
+func Test_handlers_GetFormElementTypes(t *testing.T) {
+	tests := []struct {
+		name       string
+		fn         func(context.Context) ([]ports.ElementTypeDescriptor, error)
+		statusCode int
+		count      int
+	}{
+		{
+			"should yield OK if the request is successful with results",
+			func(ctx context.Context) ([]ports.ElementTypeDescriptor, error) {
+				return []ports.ElementTypeDescriptor{
+					{
+						Type:        domain.ElementTypeText,
+						Description: "Text input",
+						Attributes: []ports.AttributeDescriptor{
+							{Name: "minLength", Type: "integer", Description: "Min length", Required: false},
+						},
+					},
+				}, nil
+			},
+			http.StatusOK,
+			1,
+		},
+		{
+			"should yield OK if the request is successful with empty results",
+			func(ctx context.Context) ([]ports.ElementTypeDescriptor, error) {
+				return []ports.ElementTypeDescriptor{}, nil
+			},
+			http.StatusOK,
+			0,
+		},
+		{
+			"should yield INTERNAL SERVER ERROR if the request fails",
+			func(ctx context.Context) ([]ports.ElementTypeDescriptor, error) {
+				return nil, errors.New("internal error")
+			},
+			http.StatusInternalServerError,
+			0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange.
+			s := &ports.API{Forms: &mockFormsService{findElementTypesFn: tt.fn}}
+			h := newTestHandlers(s)
+			req, _ := http.NewRequest(http.MethodGet, "/api/v1/forms/element-types", nil)
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
+			ctx = auth.SetClaimsContext(ctx, &mockClaims{subject: "user-1"})
+			req = req.WithContext(ctx)
+			rr := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.GetFormElementTypes)
+
+			// Act.
+			handler.ServeHTTP(rr, req)
+
+			// Assert.
+			resp := rr.Result()
+
+			if resp.StatusCode != tt.statusCode {
+				t.Errorf("expected status code %d but got %d", tt.statusCode, resp.StatusCode)
+			}
+
+			if tt.statusCode == http.StatusOK {
+				var got []dto.ElementTypeDescriptorResponse
+				if err := json.NewDecoder(resp.Body).Decode(&got); err != nil {
+					t.Fatalf("failed to decode response body: %v", err)
+				}
+
+				if len(got) != tt.count {
+					t.Errorf("expected %d elements, got %d", tt.count, len(got))
+				}
+			}
+		})
+	}
+}

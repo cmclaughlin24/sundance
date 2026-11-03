@@ -50,6 +50,17 @@ definitions:
       message:
         type: string
     type: object
+  AttributeDescriptorResponse:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      required:
+        type: boolean
+      type:
+        type: string
+    type: object
   CreateTagRequest:
     properties:
       displayName:
@@ -135,6 +146,31 @@ definitions:
         type: string
       updatedAt:
         type: string
+    type: object
+  ElementType:
+    enum:
+    - text
+    - number
+    - select
+    - checkbox
+    - date
+    type: string
+    x-enum-varnames:
+    - ElementTypeText
+    - ElementTypeNumber
+    - ElementTypeSelect
+    - ElementTypeCheckbox
+    - ElementTypeDate
+  ElementTypeDescriptorResponse:
+    properties:
+      attributes:
+        items:
+          $ref: '#/definitions/AttributeDescriptorResponse'
+        type: array
+      description:
+        type: string
+      type:
+        $ref: '#/definitions/ElementType'
     type: object
   FactMap:
     additionalProperties: {}
@@ -1103,6 +1139,49 @@ paths:
       security:
       - BearerAuth: []
       summary: Retire a version
+      tags:
+      - Forms
+  /api/v1/forms/element-types:
+    get:
+      consumes:
+      - application/json
+      description: Returns the catalog of supported form element types and their attribute
+        descriptors.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ElementTypeDescriptorResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get supported form element types
       tags:
       - Forms
   /api/v1/submissions:

@@ -9,17 +9,25 @@ import (
 	"sundance/backend/services/forms/internal/core/ports"
 )
 
-type NumberElementValidatorStrategy struct {
+type NumberElementDefinitionStrategy struct {
 	logger *slog.Logger
 }
 
-func NewNumberElementValidatorStrategy(logger *slog.Logger) ports.ElementValidatorStrategy {
-	return &NumberElementValidatorStrategy{
+func NewNumberElementDefinitionStrategy(logger *slog.Logger) ports.ElementDefinitionStrategy {
+	return &NumberElementDefinitionStrategy{
 		logger: logger,
 	}
 }
 
-func (s *NumberElementValidatorStrategy) Validate(ctx context.Context, element domain.Element, sv domain.SubmissionValue) error {
+func (s *NumberElementDefinitionStrategy) Description() string {
+	return "Numeric input field supporting minimum, maximum, and step constraints."
+}
+
+func (s *NumberElementDefinitionStrategy) Attributes() []ports.AttributeDescriptor {
+	return reflectAttributes[*domain.NumberElementAttributes]()
+}
+
+func (s *NumberElementDefinitionStrategy) Validate(ctx context.Context, element domain.Element, sv domain.SubmissionValue) error {
 	attr, err := domain.GetElementAttributes[*domain.NumberElementAttributes](element.Attributes)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "element_id", element.ID, "element_type", element.Type, "error", err)

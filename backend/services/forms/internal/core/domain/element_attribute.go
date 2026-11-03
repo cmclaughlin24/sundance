@@ -16,8 +16,8 @@ type ElementAttributes interface {
 }
 
 type BaseElementAttributes struct {
-	IsReadOnly bool
-	IsRequired bool
+	IsReadOnly bool `desc:"Whether the field is disabled for user editing"`
+	IsRequired bool `desc:"Whether the field must be populated before submitting"`
 }
 
 func (a BaseElementAttributes) GetIsRequired() bool {
@@ -38,26 +38,26 @@ func (a *BaseElementAttributes) SetIsRequired(required bool) {
 
 type TextElementAttributes struct {
 	BaseElementAttributes
-	MinLength   *int
-	MaxLength   *int
-	Pattern     string
-	Placeholder string
+	MinLength   *int   `desc:"Minimum allowed character count"`
+	MaxLength   *int   `desc:"Maximum allowed character count"`
+	Pattern     string `desc:"Regex pattern the text value must match"`
+	Placeholder string `desc:"Placeholder text displayed in the input"`
 }
 
 type NumberElementAttributes struct {
 	BaseElementAttributes
-	Min  *float64
-	Max  *float64
-	Step *float64
+	Min  *float64 `desc:"Minimum numeric value permitted"`
+	Max  *float64 `desc:"Maximum numeric value permitted"`
+	Step *float64 `desc:"Permitted step interval between numeric values"`
 }
 
 type SelectElementAttributes struct {
 	BaseElementAttributes
-	Data          []any
-	DataSourceRef *DataSourceRef
-	Multiple      bool
-	MinSelected   *int
-	MaxSelected   *int
+	Data          []any          `desc:"Static list of key-value lookup items"`
+	DataSourceRef *DataSourceRef `desc:"Reference to an external data source in the Tenants service"`
+	Multiple      bool           `desc:"Whether multiple selections are permitted"`
+	MinSelected   *int           `desc:"Minimum selection count when multiple is true"`
+	MaxSelected   *int           `desc:"Maximum selection count when multiple is true"`
 }
 
 func (a *SelectElementAttributes) GetReferencedKeys() []string {
@@ -66,15 +66,15 @@ func (a *SelectElementAttributes) GetReferencedKeys() []string {
 
 type CheckboxElementAttributes struct {
 	BaseElementAttributes
-	IsCheckedByDefault bool
-	Data               []any
-	DataSourceRef      *DataSourceRef
+	IsCheckedByDefault bool           `desc:"Initial checked state"`
+	Data               []any          `desc:"Static list of key-value lookup items"`
+	DataSourceRef      *DataSourceRef `desc:"Reference to an external data source in the Tenants service"`
 }
 
 type DateElementAttributes struct {
 	BaseElementAttributes
-	MinDate *string
-	MaxDate *string
+	MinDate *string `desc:"Earliest selectable date in ISO 8601 format"`
+	MaxDate *string `desc:"Latest selectable date in ISO 8601 format"`
 }
 
 func GetElementAttributes[T ElementAttributes](attr ElementAttributes) (T, error) {

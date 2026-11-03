@@ -9,6 +9,7 @@ import (
 type serviceOptions struct {
 	logger     *slog.Logger
 	repository *ports.Repository
+	strategies *ports.Strategies
 	processors *ports.Processors
 }
 
@@ -20,7 +21,7 @@ func Bootstrap(opts ...func(*serviceOptions)) *ports.API {
 
 	return &ports.API{
 		Tags:           NewTagsService(so.logger, so.repository),
-		Forms:          NewFormsService(so.logger, so.repository),
+		Forms:          NewFormsService(so.logger, so.strategies, so.repository),
 		Submissions:    NewSubmissionsService(so.logger, so.processors, so.repository),
 		SubmissionJobs: NewSubmissionJobsService(so.logger, so.processors, so.repository),
 	}
@@ -41,5 +42,11 @@ func WithProcessors(processors *ports.Processors) func(*serviceOptions) {
 func WithRepository(repository *ports.Repository) func(*serviceOptions) {
 	return func(so *serviceOptions) {
 		so.repository = repository
+	}
+}
+
+func WithStrategies(strategies *ports.Strategies) func(*serviceOptions) {
+	return func(so *serviceOptions) {
+		so.strategies = strategies
 	}
 }

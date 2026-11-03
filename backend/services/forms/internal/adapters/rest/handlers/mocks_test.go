@@ -13,8 +13,9 @@ type mockFormsService struct {
 	findByIDFn       func(context.Context, ports.FindByIDQuery[domain.FormID]) (*domain.Form, error)
 	createFn         func(context.Context, commands.CreateFormCommand) (*domain.Form, error)
 	updateFn         func(context.Context, commands.UpdateFormCommand) (*domain.Form, error)
-	deleteFn         func(context.Context, commands.DeleteCommand[domain.FormID]) error
-	findVersionsFn   func(context.Context, ports.FindFormVersionsQuery) ([]*domain.FormVersion, error)
+	deleteFn           func(context.Context, commands.DeleteCommand[domain.FormID]) error
+	findElementTypesFn func(context.Context) ([]ports.ElementTypeDescriptor, error)
+	findVersionsFn     func(context.Context, ports.FindFormVersionsQuery) ([]*domain.FormVersion, error)
 	findVersionFn    func(context.Context, ports.FindFormVersionByIDQuery) (*domain.FormVersion, error)
 	createVersionFn  func(context.Context, *commands.CreateFormVersionCommand) (*domain.FormVersion, error)
 	updateVersionFn  func(context.Context, *commands.UpdateFormVersionCommand) (*domain.FormVersion, error)
@@ -40,6 +41,14 @@ func (s *mockFormsService) Update(ctx context.Context, command commands.UpdateFo
 
 func (s *mockFormsService) Delete(ctx context.Context, command commands.DeleteCommand[domain.FormID]) error {
 	return s.deleteFn(ctx, command)
+}
+
+func (s *mockFormsService) FindElementTypes(ctx context.Context) ([]ports.ElementTypeDescriptor, error) {
+	if s.findElementTypesFn != nil {
+		return s.findElementTypesFn(ctx)
+	}
+
+	return nil, nil
 }
 
 func (s *mockFormsService) FindVersions(ctx context.Context, query ports.FindFormVersionsQuery) ([]*domain.FormVersion, error) {

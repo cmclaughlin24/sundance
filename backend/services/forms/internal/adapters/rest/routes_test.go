@@ -19,6 +19,7 @@ func TestNewRoutes(t *testing.T) {
 	}{
 		{"/api/v1/forms/", http.MethodGet},
 		{"/api/v1/forms/", http.MethodPost},
+		{"/api/v1/forms/element-types", http.MethodGet},
 		{"/api/v1/forms/{formId}/", http.MethodGet},
 		{"/api/v1/forms/{formId}/", http.MethodPut},
 		{"/api/v1/forms/{formId}/", http.MethodDelete},

@@ -142,6 +142,71 @@
                 }
             }
         },
+        "/api/v1/forms/element-types": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the catalog of supported form element types and their attribute descriptors.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Forms"
+                ],
+                "summary": "Get supported form element types",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Tenant ID",
+                        "name": "X-Tenant-ID",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied request trace ID (generated if absent)",
+                        "name": "X-Request-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Client-supplied correlation ID for tracing",
+                        "name": "X-Correlation-ID",
+                        "in": "header"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Client-supplied request date in ISO 8601 format",
+                        "name": "X-Request-Date",
+                        "in": "header"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/ElementTypeDescriptorResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/APIErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/forms/{formId}": {
             "get": {
                 "security": [
@@ -2419,6 +2484,23 @@
                 }
             }
         },
+        "AttributeDescriptorResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "required": {
+                    "type": "boolean"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "CreateTagRequest": {
             "type": "object",
             "properties": {
@@ -2543,6 +2625,40 @@
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "ElementType": {
+            "type": "string",
+            "enum": [
+                "text",
+                "number",
+                "select",
+                "checkbox",
+                "date"
+            ],
+            "x-enum-varnames": [
+                "ElementTypeText",
+                "ElementTypeNumber",
+                "ElementTypeSelect",
+                "ElementTypeCheckbox",
+                "ElementTypeDate"
+            ]
+        },
+        "ElementTypeDescriptorResponse": {
+            "type": "object",
+            "properties": {
+                "attributes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/AttributeDescriptorResponse"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/ElementType"
                 }
             }
         },

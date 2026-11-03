@@ -8,17 +8,25 @@ import (
 	"sundance/backend/services/forms/internal/core/ports"
 )
 
-type DateElementValidatorStrategy struct {
+type DateElementDefinitionStrategy struct {
 	logger *slog.Logger
 }
 
-func NewDateElementValidatorStrategy(logger *slog.Logger) ports.ElementValidatorStrategy {
-	return &DateElementValidatorStrategy{
+func NewDateElementDefinitionStrategy(logger *slog.Logger) ports.ElementDefinitionStrategy {
+	return &DateElementDefinitionStrategy{
 		logger: logger,
 	}
 }
 
-func (s *DateElementValidatorStrategy) Validate(ctx context.Context, element domain.Element, sv domain.SubmissionValue) error {
+func (s *DateElementDefinitionStrategy) Description() string {
+	return "Date selection input supporting minimum and maximum date boundaries."
+}
+
+func (s *DateElementDefinitionStrategy) Attributes() []ports.AttributeDescriptor {
+	return reflectAttributes[*domain.DateElementAttributes]()
+}
+
+func (s *DateElementDefinitionStrategy) Validate(ctx context.Context, element domain.Element, sv domain.SubmissionValue) error {
 	attr, err := domain.GetElementAttributes[*domain.DateElementAttributes](element.Attributes)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "element_id", element.ID, "element_type", element.Type, "error", err)

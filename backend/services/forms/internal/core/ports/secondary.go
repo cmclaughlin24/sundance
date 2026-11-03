@@ -75,14 +75,16 @@ type SubmissionProcessor interface {
 }
 
 type Strategies struct {
-	ElementValidator ElementValidatorRegistry
+	ElementDefinition ElementDefinitionRegistry
 }
 
-type ElementValidatorStrategy interface {
+type ElementDefinitionStrategy interface {
+	Description() string
+	Attributes() []AttributeDescriptor
 	Validate(context.Context, domain.Element, domain.SubmissionValue) error
 }
 
-type ElementValidatorRegistry = stratreg.StrategyRegistry[domain.ElementType, ElementValidatorStrategy]
+type ElementDefinitionRegistry = stratreg.StrategyRegistry[domain.ElementType, ElementDefinitionStrategy]
 
 type RuleEvaluationContext = domain.EvaluationContext
 

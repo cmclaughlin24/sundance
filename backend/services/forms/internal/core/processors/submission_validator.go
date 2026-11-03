@@ -11,12 +11,12 @@ import (
 )
 
 type submissionValidator struct {
-	elementValidatorStrategies ports.ElementValidatorRegistry
+	elementDefinitionStrategies ports.ElementDefinitionRegistry
 }
 
 func newSubmissionValidator(strats *ports.Strategies) *submissionValidator {
 	return &submissionValidator{
-		elementValidatorStrategies: strats.ElementValidator,
+		elementDefinitionStrategies: strats.ElementDefinition,
 	}
 }
 
@@ -28,9 +28,9 @@ func (v *submissionValidator) validate(ctx context.Context, logger *slog.Logger,
 			element := re.element
 			value := re.value
 
-			elementValidator, err := v.elementValidatorStrategies.Get(element.Type)
+			elementDefinition, err := v.elementDefinitionStrategies.Get(element.Type)
 			if err != nil {
-				logger.ErrorContext(ctx, "failed to validate elements; missing element validation strategy", "element_id", element.ID, "element_type", element.Type)
+				logger.ErrorContext(ctx, "failed to validate elements; missing element definition strategy", "element_id", element.ID, "element_type", element.Type)
 				return err
 			}
 
@@ -43,7 +43,7 @@ func (v *submissionValidator) validate(ctx context.Context, logger *slog.Logger,
 				return nil
 			}
 
-			return elementValidator.Validate(gCtx, *element, *value)
+			return elementDefinition.Validate(gCtx, *element, *value)
 		})
 	}
 

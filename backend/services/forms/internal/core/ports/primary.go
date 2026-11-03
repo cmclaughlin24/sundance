@@ -20,6 +20,7 @@ type FormsAPI interface {
 	Create(context.Context, commands.CreateFormCommand) (*domain.Form, error)
 	Update(context.Context, commands.UpdateFormCommand) (*domain.Form, error)
 	Delete(context.Context, commands.DeleteCommand[domain.FormID]) error
+	FindElementTypes(context.Context) ([]ElementTypeDescriptor, error)
 	FindVersions(context.Context, FindFormVersionsQuery) ([]*domain.FormVersion, error)
 	FindVersion(context.Context, FindFormVersionByIDQuery) (*domain.FormVersion, error)
 	CreateVersion(context.Context, *commands.CreateFormVersionCommand) (*domain.FormVersion, error)

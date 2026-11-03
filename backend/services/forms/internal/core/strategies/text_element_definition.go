@@ -10,17 +10,25 @@ import (
 	"sundance/backend/services/forms/internal/core/ports"
 )
 
-type TextElementValidatorStrategy struct {
+type TextElementDefinitionStrategy struct {
 	logger *slog.Logger
 }
 
-func NewTextElementValidatorStrategy(logger *slog.Logger) ports.ElementValidatorStrategy {
-	return &TextElementValidatorStrategy{
+func NewTextElementDefinitionStrategy(logger *slog.Logger) ports.ElementDefinitionStrategy {
+	return &TextElementDefinitionStrategy{
 		logger: logger,
 	}
 }
 
-func (s *TextElementValidatorStrategy) Validate(ctx context.Context, element domain.Element, sv domain.SubmissionValue) error {
+func (s *TextElementDefinitionStrategy) Description() string {
+	return "Single-line or multi-line text input field supporting length limits and pattern matching."
+}
+
+func (s *TextElementDefinitionStrategy) Attributes() []ports.AttributeDescriptor {
+	return reflectAttributes[*domain.TextElementAttributes]()
+}
+
+func (s *TextElementDefinitionStrategy) Validate(ctx context.Context, element domain.Element, sv domain.SubmissionValue) error {
 	attr, err := domain.GetElementAttributes[*domain.TextElementAttributes](element.Attributes)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "element_id", element.ID, "element_type", element.Type, "error", err)

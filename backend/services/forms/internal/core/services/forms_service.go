@@ -1,10 +1,12 @@
 package services
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"slices"
 
 	"sundance/backend/pkg/common"
 	"sundance/backend/pkg/database"
@@ -14,18 +16,20 @@ import (
 )
 
 type formsService struct {
-	logger             *slog.Logger
-	database           database.Database
-	formsRepository    ports.FormsRepository
-	versionsRepository ports.FormVersionRepository
+	logger                      *slog.Logger
+	database                    database.Database
+	formsRepository             ports.FormsRepository
+	versionsRepository          ports.FormVersionRepository
+	elementDefinitionStrategies ports.ElementDefinitionRegistry
 }
 
-func NewFormsService(logger *slog.Logger, repository *ports.Repository) ports.FormsAPI {
+func NewFormsService(logger *slog.Logger, strategies *ports.Strategies, repository *ports.Repository) ports.FormsAPI {
 	return &formsService{
-		logger:             logger,
-		database:           repository.Database,
-		formsRepository:    repository.Forms,
-		versionsRepository: repository.FormVersions,
+		logger:                      logger,
+		database:                    repository.Database,
+		formsRepository:             repository.Forms,
+		versionsRepository:          repository.FormVersions,
+		elementDefinitionStrategies: strategies.ElementDefinition,
 	}
 }
 
@@ -159,6 +163,26 @@ func (s *formsService) Delete(ctx context.Context, cmd commands.DeleteCommand[do
 	s.logger.InfoContext(ctx, "form deleted", "tenant_id", form.TenantID, "form_id", form.ID)
 
 	return nil
+}
+
+func (s *formsService) FindElementTypes(ctx context.Context) ([]ports.ElementTypeDescriptor, error) {
+	s.logger.DebugContext(ctx, "listing supported element types")
+
+	var descriptors []ports.ElementTypeDescriptor
+	for t, strategy := range s.elementDefinitionStrategies {
+		descriptors = append(descriptors, ports.ElementTypeDescriptor{
+			Type:        t,
+			Description: strategy.Description(),
+			Attributes:  strategy.Attributes(),
+		})
+	}
+
+	// NOTE: Sort element types alphabetically so that the order is deterministic.
+	slices.SortFunc(descriptors, func(a, b ports.ElementTypeDescriptor) int {
+		return cmp.Compare(a.Type, b.Type)
+	})
+
+	return descriptors, nil
 }
 
 func (s *formsService) FindVersions(ctx context.Context, query ports.FindFormVersionsQuery) ([]*domain.FormVersion, error) {

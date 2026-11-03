@@ -18,15 +18,15 @@ func Bootstrap(opts ...func(*strategyOptions)) *ports.Strategies {
 		opt(&so)
 	}
 
-	elementValidatorStrategies := stratreg.New[domain.ElementType, ports.ElementValidatorStrategy]().
-		Set(domain.ElementTypeText, NewTextElementValidatorStrategy(so.logger)).
-		Set(domain.ElementTypeNumber, NewNumberElementValidatorStrategy(so.logger)).
-		Set(domain.ElementTypeSelect, NewSelectElementValidatorStrategy(so.logger)).
-		Set(domain.ElementTypeCheckbox, NewCheckboxElementValidatorStrategy(so.logger)).
-		Set(domain.ElementTypeDate, NewDateElementValidatorStrategy(so.logger))
+	elementDefinitionStrategies := stratreg.New[domain.ElementType, ports.ElementDefinitionStrategy]().
+		Set(domain.ElementTypeText, NewTextElementDefinitionStrategy(so.logger)).
+		Set(domain.ElementTypeNumber, NewNumberElementDefinitionStrategy(so.logger)).
+		Set(domain.ElementTypeSelect, NewSelectElementDefinitionStrategy(so.logger)).
+		Set(domain.ElementTypeCheckbox, NewCheckboxElementDefinitionStrategy(so.logger)).
+		Set(domain.ElementTypeDate, NewDateElementDefinitionStrategy(so.logger))
 
 	return &ports.Strategies{
-		ElementValidator: elementValidatorStrategies,
+		ElementDefinition: elementDefinitionStrategies,
 	}
 }
 

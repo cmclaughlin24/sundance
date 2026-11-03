@@ -237,6 +237,42 @@ func (h *Handlers) DeleteForm(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Get supported form element types
+// @description	Returns the catalog of supported form element types and their attribute descriptors.
+// @tags		Forms
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @success		200 {array} dto.ElementTypeDescriptorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
+// @Router		/api/v1/forms/element-types [get]
+func (h *Handlers) GetFormElementTypes(w http.ResponseWriter, r *http.Request) {
+	resultChan := make(chan result[[]ports.ElementTypeDescriptor], 1)
+
+	go func() {
+		defer close(resultChan)
+		elementTypes, err := h.app.API.Forms.FindElementTypes(r.Context())
+		resultChan <- result[[]ports.ElementTypeDescriptor]{elementTypes, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusOK, dto.ElementTypeDescriptorsToResponse(res.data))
+	}
+}
+
 // @summary		Get all versions
 // @tags		Forms
 // @accept		json

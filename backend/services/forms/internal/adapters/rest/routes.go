@@ -57,6 +57,7 @@ func NewRoutes(app *core.Application, options ServerOptions) http.Handler {
 		routes.Route("/forms", func(formsRoutes chi.Router) {
 			formsRoutes.Get("/", h.GetForms)
 			formsRoutes.Post("/", h.CreateForm)
+			formsRoutes.Get("/element-types", h.GetFormElementTypes)
 
 			formsRoutes.Route("/{formId}", func(formRoutes chi.Router) {
 				formRoutes.Get("/", h.GetForm)
