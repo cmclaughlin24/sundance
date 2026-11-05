@@ -22,15 +22,11 @@ type CompiledTool struct {
 }
 
 func (ct *CompiledTool) setHeaders(req *http.Request) *http.Request {
-	if len(ct.Headers) == 0 {
+	if ct.Headers == nil {
 		return req
 	}
 
-	for k, v := range ct.Headers {
-		req.Header.Set(k, fmt.Sprint(v.Value))
-	}
-
-	return req
+	return ct.Headers.SetHeaders(req)
 }
 
 func compileOperation(target spec.TargetConfig, path, method string, pathItem *openapi3.PathItem, op *openapi3.Operation) CompiledTool {

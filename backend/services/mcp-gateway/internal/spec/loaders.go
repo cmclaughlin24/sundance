@@ -73,8 +73,8 @@ func (p *TargetLoader) requestFile(ctx context.Context, target TargetConfig) ([]
 		return nil, ErrInvalidTargetConfig
 	}
 
-	for k, v := range target.Headers {
-		req.Header.Set(k, fmt.Sprint(v.Value))
+	if target.Headers != nil {
+		req = target.Headers.SetHeaders(req)
 	}
 
 	resp, err := client.Do(req)

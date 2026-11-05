@@ -2,6 +2,8 @@ package spec
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -31,7 +33,7 @@ type SpecSourceConfig struct {
 }
 
 type Header struct {
-	Value          any                  `json:"value"`
+	Value          *string              `json:"value,omitempty"`
 	OverridePolicy HeaderOverridePolicy `json:"overridePolicy"`
 }
 
@@ -57,4 +59,20 @@ func (hc HeadersConfig) AllowHeader(key string) bool {
 	}
 
 	return true
+}
+
+func (hc HeadersConfig) SetHeaders(req *http.Request) *http.Request {
+	if len(hc) == 0 {
+		return req
+	}
+
+	for k, v := range hc {
+		if v.Value == nil {
+			continue
+		}
+
+		req.Header.Set(k, fmt.Sprint(v.Value))
+	}
+
+	return req
 }
