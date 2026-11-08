@@ -1,4 +1,4 @@
-import type { ITag, TagVersionStatus } from "@/types/tag";
+import type { ITag } from "@/types/tag";
 import { TagsPanel } from "../panels/TagsPanel";
 import { useFormDesignerSelect } from "@/store/formDesigner";
 import * as ArrayUtils from "@/utils/array";
@@ -40,7 +40,7 @@ export const TagGroupListItem: React.FC<{ tag: ITag }> = function ({ tag }) {
     }
 
     return tag.versions!.some((tv) =>
-      selected.item.tags.some((t) => (t.tagVersionId === tv.id)),
+      selected.item.tags.some((t) => t.tagVersionId === tv.id),
     );
   };
 

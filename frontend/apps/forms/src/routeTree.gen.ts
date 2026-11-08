@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DataSourcesIndexRouteImport } from './routes/data-sources/index'
+import { Route as DataSourcesDataSourceIdIndexRouteImport } from './routes/data-sources/$dataSourceId/index'
 import { Route as DesignerFormsIndexRouteImport } from './routes/designer/forms/index'
 import { Route as DesignerFormsFormIdIndexRouteImport } from './routes/designer/forms/$formId/index'
 import { Route as FormsFormIdVersionsVersionIdIndexRouteImport } from './routes/forms/$formId/versions/$versionId/index'
@@ -20,6 +22,17 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DataSourcesIndexRoute = DataSourcesIndexRouteImport.update({
+  id: '/data-sources/',
+  path: '/data-sources/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DataSourcesDataSourceIdIndexRoute =
+  DataSourcesDataSourceIdIndexRouteImport.update({
+    id: '/data-sources/$dataSourceId/',
+    path: '/data-sources/$dataSourceId/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const DesignerFormsIndexRoute = DesignerFormsIndexRouteImport.update({
   id: '/designer/forms/',
   path: '/designer/forms/',
@@ -46,6 +59,8 @@ const DesignerFormsFormIdVersionsVersionIdChar123TabChar125IndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/data-sources/': typeof DataSourcesIndexRoute
+  '/data-sources/$dataSourceId/': typeof DataSourcesDataSourceIdIndexRoute
   '/designer/forms/': typeof DesignerFormsIndexRoute
   '/designer/forms/$formId/': typeof DesignerFormsFormIdIndexRoute
   '/forms/$formId/versions/$versionId/': typeof FormsFormIdVersionsVersionIdIndexRoute
@@ -53,6 +68,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/data-sources': typeof DataSourcesIndexRoute
+  '/data-sources/$dataSourceId': typeof DataSourcesDataSourceIdIndexRoute
   '/designer/forms': typeof DesignerFormsIndexRoute
   '/designer/forms/$formId': typeof DesignerFormsFormIdIndexRoute
   '/forms/$formId/versions/$versionId': typeof FormsFormIdVersionsVersionIdIndexRoute
@@ -61,6 +78,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/data-sources/': typeof DataSourcesIndexRoute
+  '/data-sources/$dataSourceId/': typeof DataSourcesDataSourceIdIndexRoute
   '/designer/forms/': typeof DesignerFormsIndexRoute
   '/designer/forms/$formId/': typeof DesignerFormsFormIdIndexRoute
   '/forms/$formId/versions/$versionId/': typeof FormsFormIdVersionsVersionIdIndexRoute
@@ -70,6 +89,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/data-sources/'
+    | '/data-sources/$dataSourceId/'
     | '/designer/forms/'
     | '/designer/forms/$formId/'
     | '/forms/$formId/versions/$versionId/'
@@ -77,6 +98,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/data-sources'
+    | '/data-sources/$dataSourceId'
     | '/designer/forms'
     | '/designer/forms/$formId'
     | '/forms/$formId/versions/$versionId'
@@ -84,6 +107,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/data-sources/'
+    | '/data-sources/$dataSourceId/'
     | '/designer/forms/'
     | '/designer/forms/$formId/'
     | '/forms/$formId/versions/$versionId/'
@@ -92,6 +117,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DataSourcesIndexRoute: typeof DataSourcesIndexRoute
+  DataSourcesDataSourceIdIndexRoute: typeof DataSourcesDataSourceIdIndexRoute
   DesignerFormsIndexRoute: typeof DesignerFormsIndexRoute
   DesignerFormsFormIdIndexRoute: typeof DesignerFormsFormIdIndexRoute
   FormsFormIdVersionsVersionIdIndexRoute: typeof FormsFormIdVersionsVersionIdIndexRoute
@@ -105,6 +132,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data-sources/': {
+      id: '/data-sources/'
+      path: '/data-sources'
+      fullPath: '/data-sources/'
+      preLoaderRoute: typeof DataSourcesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/data-sources/$dataSourceId/': {
+      id: '/data-sources/$dataSourceId/'
+      path: '/data-sources/$dataSourceId'
+      fullPath: '/data-sources/$dataSourceId/'
+      preLoaderRoute: typeof DataSourcesDataSourceIdIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/designer/forms/': {
@@ -140,6 +181,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DataSourcesIndexRoute: DataSourcesIndexRoute,
+  DataSourcesDataSourceIdIndexRoute: DataSourcesDataSourceIdIndexRoute,
   DesignerFormsIndexRoute: DesignerFormsIndexRoute,
   DesignerFormsFormIdIndexRoute: DesignerFormsFormIdIndexRoute,
   FormsFormIdVersionsVersionIdIndexRoute:

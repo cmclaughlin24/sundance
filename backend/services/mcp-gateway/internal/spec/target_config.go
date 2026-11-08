@@ -71,7 +71,7 @@ func (hc HeadersConfig) SetHeaders(req *http.Request) *http.Request {
 			continue
 		}
 
-		req.Header.Set(k, fmt.Sprint(v.Value))
+		req.Header.Set(k, fmt.Sprint(*v.Value))
 	}
 
 	return req

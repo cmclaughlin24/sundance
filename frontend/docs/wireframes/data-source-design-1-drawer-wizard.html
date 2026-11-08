@@ -1,0 +1,1879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Source Config - Design 1: Drawer Wizard & Attribute Inspector | Sundance Forms</title>
+  <style>
+    :root {
+      --bg-primary: #242424;
+      --bg-panel: #1b1b1b;
+      --bg-card: #252525;
+      --bg-card-hover: #2e2e2e;
+      --border-primary: #2b2b2b;
+      --border-subtle: #3a3a3a;
+      --border-highlight: #3b82f6;
+      --sundance-navy: #0C1F40;
+      --sundance-red: #E51837;
+      --sundance-gold: #FFC425;
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #c084fc;
+      --accent-green: #34d399;
+      --accent-amber: #fbbf24;
+      --text-primary: rgba(255, 255, 255, 0.92);
+      --text-secondary: rgba(255, 255, 255, 0.65);
+      --text-muted: rgba(255, 255, 255, 0.45);
+      --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Top Prototype Switcher Bar */
+    .prototype-nav {
+      background: #151515;
+      border-bottom: 1px solid #333;
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .prototype-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .prototype-badge {
+      background: var(--sundance-red);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .prototype-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .prototype-links {
+      display: flex;
+      gap: 8px;
+    }
+    .proto-link {
+      font-size: 0.8rem;
+      padding: 6px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      background: #222;
+      border: 1px solid #333;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    .proto-link:hover {
+      background: #2a2a2a;
+      color: white;
+    }
+    .proto-link.active {
+      background: var(--sundance-navy);
+      border-color: #3b82f6;
+      color: #93c5fd;
+    }
+
+    /* Design Concept Banner */
+    .concept-banner {
+      background: linear-gradient(90deg, rgba(12, 31, 64, 0.9) 0%, rgba(30, 58, 138, 0.6) 50%, rgba(20, 20, 20, 0.95) 100%);
+      border-bottom: 1px solid #1e40af;
+      padding: 12px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+    .concept-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .concept-tag {
+      background: rgba(59, 130, 246, 0.25);
+      color: #bfdbfe;
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+    .concept-text strong {
+      color: white;
+    }
+
+    /* Page Layout */
+    .page-wrapper {
+      max-width: 1840px;
+      margin: 0 auto;
+      padding: 24px 32px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+    }
+
+    /* Header */
+    .form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+    }
+    .header-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .header-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .form-title {
+      font-size: 2.2rem;
+      font-weight: 300;
+      line-height: 1.25;
+      letter-spacing: -0.5px;
+      color: white;
+    }
+    .form-description {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 3px 12px;
+      border-radius: 9999px;
+      line-height: 1.2;
+    }
+    .status-tag.draft {
+      color: #60a5fa;
+      background: rgba(96, 165, 250, 0.18);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+    }
+    .status-tag.published {
+      color: var(--accent-green);
+      background: rgba(52, 211, 153, 0.15);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+    .header-pill {
+      font-size: 0.75rem;
+      background: #172554;
+      color: #93c5fd;
+      border: 1px solid #1e40af;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn {
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-text {
+      background: transparent;
+      color: var(--text-primary);
+    }
+    .btn-text:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .btn-outlined {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+    }
+    .btn-outlined:hover {
+      border-color: #555;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .btn-primary {
+      background: var(--sundance-navy);
+      border: 1px solid #1e3a6d;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #142a54;
+      border-color: var(--accent-blue);
+    }
+
+    /* Tabs Bar */
+    .tabs-bar {
+      display: flex;
+      border-bottom: 1px solid var(--border-primary);
+      width: 100%;
+    }
+    .tab-button {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+      font-family: inherit;
+      transition: color 0.2s;
+    }
+    .tab-button:hover {
+      color: white;
+    }
+    .tab-button.active {
+      color: #93c5fd;
+      font-weight: 600;
+    }
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-blue);
+    }
+    .tab-pill {
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 10px;
+      background: rgba(59, 130, 246, 0.25);
+      color: #93c5fd;
+      margin-left: 6px;
+    }
+
+    /* Form Designer Canvas Mockup (Background of the page) */
+    .designer-canvas-grid {
+      display: grid;
+      grid-template-columns: 240px 1fr 340px;
+      border: 1px solid var(--border-primary);
+      background: var(--bg-panel);
+      border-radius: 8px;
+      min-height: 750px;
+      overflow: hidden;
+    }
+
+    /* Left Palette */
+    .palette-panel {
+      background: #191919;
+      border-right: 1px solid var(--border-primary);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .palette-heading {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+    .palette-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      cursor: grab;
+      transition: all 0.15s;
+    }
+    .palette-item:hover {
+      background: var(--bg-card-hover);
+      color: white;
+      border-color: #444;
+    }
+    .palette-icon {
+      color: var(--accent-blue);
+      font-weight: bold;
+    }
+
+    /* Center Form Canvas */
+    .canvas-panel {
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background: #141414;
+      overflow-y: auto;
+    }
+    .canvas-section {
+      background: #1c1c1c;
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #282828;
+      padding-bottom: 10px;
+    }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    /* Form Element Cards on Canvas */
+    .field-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 6px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.2s;
+      cursor: pointer;
+      position: relative;
+    }
+    .field-card:hover {
+      border-color: #555;
+    }
+    .field-card.selected {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+      background: #232a38;
+    }
+    .field-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .field-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: white;
+    }
+    .field-label .required-star {
+      color: var(--sundance-red);
+      margin-left: 2px;
+    }
+    .field-key {
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+    .field-pill-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .type-pill {
+      font-size: 0.7rem;
+      padding: 1px 7px;
+      border-radius: 4px;
+      background: #181818;
+      border: 1px solid #333;
+      color: #aaa;
+    }
+    .ds-badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .ds-badge.scheduled {
+      background: rgba(192, 132, 252, 0.18);
+      color: #d8b4fe;
+      border: 1px solid rgba(192, 132, 252, 0.4);
+    }
+    .ds-badge.webhook {
+      background: rgba(6, 182, 212, 0.18);
+      color: #67e8f9;
+      border: 1px solid rgba(6, 182, 212, 0.4);
+    }
+    .ds-badge.static {
+      background: rgba(52, 211, 153, 0.18);
+      color: #6ee7b7;
+      border: 1px solid rgba(52, 211, 153, 0.4);
+    }
+    .ds-badge.data-lake {
+      background: rgba(251, 191, 36, 0.18);
+      color: #fde68a;
+      border: 1px solid rgba(251, 191, 36, 0.4);
+    }
+    .ds-badge.unbound {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px dashed rgba(239, 68, 68, 0.4);
+    }
+
+    /* Right Object Settings Panel */
+    .settings-panel {
+      background: #181818;
+      border-left: 1px solid var(--border-primary);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      overflow-y: auto;
+    }
+    .settings-panel-header {
+      border-bottom: 1px solid var(--border-primary);
+      padding-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .settings-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+    }
+    .settings-section-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 0.6px;
+      margin-top: 6px;
+    }
+
+    /* Form Inputs in Settings */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-input, .form-select, .form-textarea {
+      background: #121212;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      color: white;
+      outline: none;
+      font-family: inherit;
+      width: 100%;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 0 1px var(--accent-blue);
+    }
+    .form-textarea {
+      resize: vertical;
+      min-height: 80px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+
+    /* Data Source Connected Card inside Object Settings */
+    .ds-summary-card {
+      background: #202020;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .ds-summary-title {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ds-summary-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* ========================================================= */
+    /* SLIDE-OVER DATA SOURCE CONFIGURATION DRAWER WIZARD        */
+    /* ========================================================= */
+    .drawer-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 1500;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .drawer-backdrop.open {
+      display: block;
+      opacity: 1;
+    }
+
+    .ds-drawer {
+      position: fixed;
+      top: 0;
+      right: -850px;
+      width: 850px;
+      height: 100vh;
+      background: #1a1a1a;
+      border-left: 1px solid #333;
+      box-shadow: -15px 0 45px rgba(0,0,0,0.85);
+      z-index: 1600;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .ds-drawer.open {
+      right: 0;
+    }
+
+    .drawer-header {
+      padding: 20px 28px;
+      background: #202020;
+      border-bottom: 1px solid #2f2f2f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .drawer-title-box {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .drawer-main-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .drawer-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+    .drawer-close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+    .drawer-close-btn:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .drawer-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Stepper / Mode Selector */
+    .drawer-section-heading {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    /* 4 Data Source Type Selection Cards */
+    .type-card-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .type-card {
+      background: #222;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 14px 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .type-card:hover {
+      background: #292929;
+      border-color: #555;
+    }
+    .type-card.active {
+      border-color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.12);
+      box-shadow: 0 0 0 1px var(--accent-blue);
+    }
+    .type-card-icon {
+      font-size: 1.35rem;
+    }
+    .type-card-name {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: white;
+    }
+    .type-card-desc {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+    .type-card-tag {
+      margin-top: auto;
+      font-size: 0.68rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: #141414;
+      border: 1px solid #333;
+      color: var(--text-secondary);
+      align-self: flex-start;
+    }
+    .type-card.active .type-card-tag {
+      background: rgba(59, 130, 246, 0.2);
+      color: #bfdbfe;
+      border-color: rgba(59, 130, 246, 0.4);
+    }
+
+    /* Configuration Panel Container */
+    .config-card-box {
+      background: #212121;
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Static Type: Table Option Editor */
+    .static-table-wrapper {
+      border: 1px solid #333;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #181818;
+    }
+    .static-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .static-table th {
+      background: #242424;
+      text-align: left;
+      padding: 10px 14px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      border-bottom: 1px solid #333;
+    }
+    .static-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #282828;
+    }
+    .static-table input {
+      background: #121212;
+      border: 1px solid #383838;
+      border-radius: 4px;
+      padding: 6px 10px;
+      color: white;
+      font-size: 0.82rem;
+      width: 100%;
+      outline: none;
+    }
+    .static-table input:focus {
+      border-color: var(--accent-blue);
+    }
+    .btn-remove-row {
+      background: transparent;
+      border: none;
+      color: #9ca3af;
+      cursor: pointer;
+      padding: 4px;
+      font-size: 1rem;
+    }
+    .btn-remove-row:hover {
+      color: #f87171;
+    }
+
+    /* HTTP Headers Key-Value Builder */
+    .headers-builder {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .header-row {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr 32px;
+      gap: 8px;
+      align-items: center;
+    }
+
+    /* Tag Input / Chip Box for RequiredKeys */
+    .chip-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      background: #121212;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 8px 10px;
+      min-height: 42px;
+      align-items: center;
+    }
+    .key-chip {
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #0284c7;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .key-chip .chip-del {
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    .key-chip .chip-del:hover {
+      color: #f87171;
+    }
+    .chip-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: white;
+      font-size: 0.82rem;
+      font-family: var(--font-mono);
+      flex: 1;
+      min-width: 120px;
+    }
+
+    /* SQL Code Editor Box */
+    .sql-editor-container {
+      border: 1px solid #333;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #0d0d0d;
+    }
+    .sql-editor-toolbar {
+      background: #1c1c1c;
+      padding: 6px 12px;
+      border-bottom: 1px solid #2c2c2c;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .sql-textarea {
+      width: 100%;
+      height: 120px;
+      background: #0d0d0d;
+      color: #7dd3fc;
+      border: none;
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+    }
+
+    /* Extraction Fields Mapping Box */
+    .extraction-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      background: #171717;
+      border: 1px solid #2e2e2e;
+      border-radius: 6px;
+      padding: 14px;
+    }
+
+    /* Test Bench / Dry Run Area */
+    .test-bench-card {
+      background: #181818;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .test-bench-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .test-status-pill {
+      font-size: 0.74rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .test-status-pill.success {
+      background: rgba(52, 211, 153, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(52, 211, 153, 0.4);
+    }
+    .test-status-pill.idle {
+      background: #262626;
+      color: #888;
+      border: 1px solid #3a3a3a;
+    }
+
+    .test-results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .test-result-box {
+      background: #0d0d0d;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .test-result-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+    .test-json-preview {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: #cbd5e1;
+      max-height: 170px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.45;
+    }
+    .test-options-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 170px;
+      overflow-y: auto;
+    }
+    .test-option-pill {
+      background: #1c1c1c;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 5px 8px;
+      font-size: 0.78rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .test-option-val {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #93c5fd;
+    }
+
+    /* Drawer Footer */
+    .drawer-footer {
+      padding: 18px 28px;
+      background: #202020;
+      border-top: 1px solid #2f2f2f;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      border: 1px solid var(--accent-blue);
+      display: none;
+      z-index: 9999;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translate(-50%, 10px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Prototype Switcher Bar -->
+  <div class="prototype-nav">
+    <div class="prototype-brand">
+      <span class="prototype-badge">Sundance UI</span>
+      <span class="prototype-title">Form Designer &mdash; Data Source Configuration Studio</span>
+    </div>
+    <div class="prototype-links">
+      <a href="data-source-designs-overview.html" class="proto-link" style="color: #FFC425; border-color: rgba(255, 196, 37, 0.4);">&#9776; Overview</a>
+      <a href="data-source-design-1-drawer-wizard.html" class="proto-link active">Design 1: Drawer Wizard</a>
+      <a href="data-source-design-2-master-detail.html" class="proto-link">Design 2: Old Master-Detail</a>
+      <a href="data-source-design-3-inline-binding.html" class="proto-link">Design 3: Inline Binding</a>
+      <a href="data-source-design-4-dedicated-pages.html" class="proto-link" style="border-color:#38bdf8; color:#7dd3fc;">Design 4: Dedicated /designer/data-sources</a>
+      <a href="tags-design-3-matrix-grid.html" class="proto-link" style="margin-left:8px; border-color:#6b21a8; color:#d8b4fe;">&rarr; Tags Tab</a>
+    </div>
+  </div>
+
+  <!-- Design Concept Summary Banner -->
+  <div class="concept-banner">
+    <div class="concept-info">
+      <span class="concept-tag">Design 1: Contextual Drawer Wizard</span>
+      <span class="concept-text">
+        <strong>Context-Preserving Configuration:</strong> 
+        Form designers configure dynamic data sources (Static, Scheduled Ingestion, Webhook, Data Lake) directly from the field settings without leaving the form canvas.
+      </span>
+    </div>
+    <button class="btn btn-outlined" style="font-size:0.75rem; padding:4px 10px; border-color:#93c5fd; color:#bfdbfe;" onclick="openDrawer()">Open Configurator Drawer</button>
+  </div>
+
+  <!-- Main Sundance Form Designer Workspace -->
+  <div class="page-wrapper">
+
+    <!-- Form Designer Header -->
+    <header class="form-header">
+      <div class="header-title-group">
+        <h1 class="form-title">Contractor Onboarding & Privileged Role Grant</h1>
+        <p class="form-description">Worker identity provisioning, facility office assignment, and SOX audit justification with dynamic lookup data sources.</p>
+        <div class="header-meta">
+          <span class="status-tag draft">Draft v3</span>
+          <span class="status-tag published">Published v2</span>
+          <span class="header-pill">Tenant: sundance-corp</span>
+          <span style="color:var(--text-muted); font-size:0.8rem;">Data Sources: <strong>4 Connected</strong></span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-text" onclick="showToast('Form version saved')">Save Draft</button>
+        <button class="btn btn-outlined" onclick="showToast('Previewing form in runtime mode')">Preview</button>
+        <button class="btn btn-primary" onclick="showToast('Published form v3')">Publish</button>
+      </div>
+    </header>
+
+    <!-- Form Tabs Navigation -->
+    <nav class="tabs-bar">
+      <button class="tab-button active">Build</button>
+      <button class="tab-button" onclick="showToast('Switch to Rules tab')">Rules</button>
+      <button class="tab-button" onclick="location.href='data-source-design-2-master-detail.html'">
+        Reference Data
+        <span class="tab-pill">4 Sources</span>
+      </button>
+      <button class="tab-button" onclick="location.href='tags-design-3-matrix-grid.html'">Tags</button>
+      <button class="tab-button" onclick="showToast('Switch to Version tab')">Version</button>
+      <button class="tab-button" onclick="showToast('Switch to Settings tab')">Settings</button>
+    </nav>
+
+    <!-- Form Designer 3-Panel Workspace -->
+    <div class="designer-canvas-grid">
+
+      <!-- LEFT: Palette of Form Objects -->
+      <aside class="palette-panel">
+        <span class="palette-heading">Form Elements</span>
+        <div class="palette-item"><span class="palette-icon">T</span> Text Input</div>
+        <div class="palette-item" style="border-color:var(--accent-blue); background:#1e293b;"><span class="palette-icon">&#9662;</span> Select Dropdown</div>
+        <div class="palette-item"><span class="palette-icon">&#9745;</span> Checkbox Group</div>
+        <div class="palette-item"><span class="palette-icon">&#9673;</span> Radio Group</div>
+        <div class="palette-item"><span class="palette-icon">&#128197;</span> Date Picker</div>
+        <div class="palette-item"><span class="palette-icon">&#35;</span> Number Input</div>
+        <div class="palette-item"><span class="palette-icon">&#128100;</span> User Lookup</div>
+      </aside>
+
+      <!-- CENTER: Canvas with Form Sections & Fields -->
+      <main class="canvas-panel">
+        <section class="canvas-section">
+          <div class="section-header">
+            <span class="section-title">Section 1: Worker Core Profile</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">3 Fields</span>
+          </div>
+
+          <div class="field-card" onclick="selectField('legal_name')">
+            <div class="field-card-header">
+              <span class="field-label">Full Legal Name <span class="required-star">*</span></span>
+              <span class="field-key">key: legal_name</span>
+            </div>
+            <div class="field-pill-row">
+              <span class="type-pill">Text Input</span>
+              <span style="font-size:0.72rem; color:var(--text-muted);">Direct user string</span>
+            </div>
+          </div>
+
+          <div class="field-card" onclick="selectField('job_title')">
+            <div class="field-card-header">
+              <span class="field-label">Job Title / Functional Role <span class="required-star">*</span></span>
+              <span class="field-key">key: job_title</span>
+            </div>
+            <div class="field-pill-row">
+              <span class="type-pill">Text Input</span>
+            </div>
+          </div>
+
+          <!-- Active Field with Scheduled Data Source -->
+          <div class="field-card selected" id="card-dept_code" onclick="selectField('dept_code')">
+            <div class="field-card-header">
+              <span class="field-label">Department Assignment <span class="required-star">*</span></span>
+              <span class="field-key">key: dept_code</span>
+            </div>
+            <div class="field-pill-row">
+              <span class="type-pill">Select Dropdown</span>
+              <span class="ds-badge scheduled" id="cardDsBadge">
+                <span>&#128337;</span>
+                <span id="cardDsBadgeText">Scheduled: Workday Global Departments</span>
+              </span>
+              <span style="font-size:0.7rem; color:var(--text-muted);" id="cardItemCount">48 options</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="canvas-section">
+          <div class="section-header">
+            <span class="section-title">Section 2: Governance & Location</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">2 Fields</span>
+          </div>
+
+          <!-- Facility Location field with Webhook Data Source -->
+          <div class="field-card" id="card-facility_location" onclick="selectField('facility_location')">
+            <div class="field-card-header">
+              <span class="field-label">Primary Facility Office</span>
+              <span class="field-key">key: facility_location</span>
+            </div>
+            <div class="field-pill-row">
+              <span class="type-pill">Select Dropdown</span>
+              <span class="ds-badge webhook">
+                <span>&#9889;</span>
+                <span>Webhook: Facilities by Country (On-Demand)</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Cost Center field with Data Lake Query -->
+          <div class="field-card" id="card-cost_center" onclick="selectField('cost_center')">
+            <div class="field-card-header">
+              <span class="field-label">General Ledger Cost Center</span>
+              <span class="field-key">key: cost_center</span>
+            </div>
+            <div class="field-pill-row">
+              <span class="type-pill">Select Dropdown</span>
+              <span class="ds-badge data-lake">
+                <span>&#128451;</span>
+                <span>Data Lake: Finance Lakehouse GL Query</span>
+              </span>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- RIGHT: Object Settings Panel -->
+      <aside class="settings-panel">
+        <div class="settings-panel-header">
+          <span class="settings-title">Select Field Settings</span>
+          <span style="font-family:var(--font-mono); font-size:0.75rem; color:#93c5fd;" id="settingsFieldKey">key: dept_code</span>
+        </div>
+
+        <span class="settings-section-title">Field Properties</span>
+        <div class="form-group">
+          <label class="form-label">Display Label</label>
+          <input type="text" class="form-input" id="inputLabel" value="Department Assignment" onchange="showToast('Field label updated')">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Field Key (Unique)</label>
+          <input type="text" class="form-input" id="inputKey" value="dept_code" readonly style="color:#aaa;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Placeholder Text</label>
+          <input type="text" class="form-input" value="Select an assigned department...">
+        </div>
+
+        <span class="settings-section-title">Options & Reference Data</span>
+
+        <!-- Connected Data Source Summary Card -->
+        <div class="ds-summary-card">
+          <div class="ds-summary-title">
+            <span id="activeDsTitle">Workday Global Departments</span>
+            <span class="ds-badge scheduled" id="activeDsBadge">Scheduled</span>
+          </div>
+          <span class="ds-summary-sub" id="activeDsSub">Background ingestion every 6 hrs &bull; 48 options cached</span>
+          <div style="display:flex; gap:8px; margin-top:4px;">
+            <button class="btn btn-outlined" style="font-size:0.75rem; padding:4px 10px; width:100%; justify-content:center;" onclick="openDrawer()">
+              &#9881; Configure Data Source
+            </button>
+            <button class="btn btn-outlined" style="font-size:0.75rem; padding:4px 8px; color:#f87171; border-color:#552" onclick="unbindDataSource()" title="Disconnect data source">
+              &times;
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn-outlined" style="font-size:0.78rem; justify-content:center; border-color:var(--accent-blue); color:#bfdbfe;" onclick="openDrawer()">
+          + Connect / Replace Data Source
+        </button>
+
+        <span class="settings-section-title">Validation</span>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <span style="font-size:0.85rem;">Is Required Field</span>
+          <input type="checkbox" checked onchange="showToast('Toggled required validation')">
+        </div>
+      </aside>
+
+    </div>
+
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- SLIDE-OVER DATA SOURCE CONFIGURATION DRAWER WIZARD        -->
+  <!-- ========================================================= -->
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeDrawer()"></div>
+
+  <aside class="ds-drawer" id="dsDrawer">
+    <!-- Drawer Header -->
+    <div class="drawer-header">
+      <div class="drawer-title-box">
+        <div class="drawer-main-title">
+          <span>&#128450;</span>
+          <span>Configure Data Source</span>
+        </div>
+        <span class="drawer-subtitle">
+          Bind field <strong style="color:white;" id="drawerFieldTarget">"Department Assignment"</strong> (key: dept_code) to dynamic options
+        </span>
+      </div>
+      <button class="drawer-close-btn" onclick="closeDrawer()">&times;</button>
+    </div>
+
+    <!-- Drawer Body -->
+    <div class="drawer-content">
+
+      <!-- STEP 1: Select Data Source Type -->
+      <div>
+        <div class="drawer-section-heading">
+          <span>Step 1 &bull; Select Data Source Type</span>
+          <span style="color:#38bdf8; font-size:0.72rem;">Strategy: ADR #005</span>
+        </div>
+
+        <div class="type-card-grid">
+          <!-- Type 1: Static -->
+          <div class="type-card" id="type-card-static" onclick="setDataSourceType('static')">
+            <span class="type-card-icon">&#9776;</span>
+            <span class="type-card-name">Static Options</span>
+            <span class="type-card-desc">Fixed key-value list stored directly in definition.</span>
+            <span class="type-card-tag">In-Memory</span>
+          </div>
+
+          <!-- Type 2: Scheduled -->
+          <div class="type-card active" id="type-card-scheduled" onclick="setDataSourceType('scheduled')">
+            <span class="type-card-icon">&#128337;</span>
+            <span class="type-card-name">Scheduled Ingest</span>
+            <span class="type-card-desc">Automated background fetch cached on schedule.</span>
+            <span class="type-card-tag">Cached TTL</span>
+          </div>
+
+          <!-- Type 3: Webhook -->
+          <div class="type-card" id="type-card-webhook" onclick="setDataSourceType('webhook')">
+            <span class="type-card-icon">&#9889;</span>
+            <span class="type-card-name">Webhook API</span>
+            <span class="type-card-desc">Real-time HTTP request with form input parameter injection.</span>
+            <span class="type-card-tag">On-Demand</span>
+          </div>
+
+          <!-- Type 4: Data Lake -->
+          <div class="type-card" id="type-card-data-lake" onclick="setDataSourceType('data-lake')">
+            <span class="type-card-icon">&#128451;</span>
+            <span class="type-card-name">Data Lake SQL</span>
+            <span class="type-card-desc">Direct query against BigQuery or Snowflake warehouse.</span>
+            <span class="type-card-tag">SQL Catalog</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Common Metadata: Name & Description -->
+      <div class="config-card-box">
+        <div class="drawer-section-heading">
+          <span>Data Source Identity</span>
+          <span style="font-size:0.7rem; color:var(--text-muted);">Tenant Scoped</span>
+        </div>
+        <div style="display:grid; grid-template-columns: 1.25fr 1fr; gap:14px;">
+          <div class="form-group">
+            <label class="form-label">Data Source Name *</label>
+            <input type="text" class="form-input" id="dsNameInput" value="Workday Global Departments">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <input type="text" class="form-input" id="dsDescInput" value="Corporate cost centers and executive organizational hierarchy">
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: TYPE-SPECIFIC ATTRIBUTE CONFIGURATION -->
+
+      <!-- [A] STATIC ATTRIBUTES PANEL -->
+      <div class="config-card-box" id="panel-static" style="display:none;">
+        <div class="drawer-section-heading">
+          <span>Static Lookups Table (Labels & Values)</span>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-outlined" style="font-size:0.72rem; padding:2px 8px;" onclick="addStaticRow()">+ Add Option</button>
+            <button class="btn btn-outlined" style="font-size:0.72rem; padding:2px 8px;" onclick="loadSampleStatic()">Load Sample</button>
+          </div>
+        </div>
+
+        <div class="static-table-wrapper">
+          <table class="static-table">
+            <thead>
+              <tr>
+                <th style="width:40px;">#</th>
+                <th>Display Label (What user sees)</th>
+                <th>Stored Value (Code / Key)</th>
+                <th style="width:40px;"></th>
+              </tr>
+            </thead>
+            <tbody id="staticTableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+        <span style="font-size:0.72rem; color:var(--text-muted);">
+          Tip: You can reorder or clear values. Values will be immediately bundled into the form version schema.
+        </span>
+      </div>
+
+      <!-- [B] SCHEDULED INGESTION ATTRIBUTES PANEL -->
+      <div class="config-card-box" id="panel-scheduled">
+        <div class="drawer-section-heading">
+          <span>Scheduled Ingestion HTTP Specification</span>
+          <span style="color:#d8b4fe; font-size:0.72rem;">Background Sync Worker</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 120px 1fr 160px; gap:12px;">
+          <div class="form-group">
+            <label class="form-label">HTTP Method</label>
+            <select class="form-select" id="schedMethod">
+              <option selected>GET</option>
+              <option>POST</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Endpoint URL *</label>
+            <input type="text" class="form-input" id="schedUrl" value="https://api.workday.internal/v2/tenants/sundance/departments">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Refresh Interval</label>
+            <select class="form-select" id="schedInterval">
+              <option>1 Hour</option>
+              <option selected>6 Hours</option>
+              <option>12 Hours</option>
+              <option>24 Hours</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Headers Builder -->
+        <div class="form-group">
+          <div class="drawer-section-heading">
+            <span>HTTP Request Headers</span>
+            <button class="btn btn-text" style="font-size:0.72rem; padding:0; color:#93c5fd;" onclick="addHeaderRow('schedHeadersList')">+ Add Header</button>
+          </div>
+          <div class="headers-builder" id="schedHeadersList">
+            <div class="header-row">
+              <input type="text" class="form-input" value="Authorization" placeholder="Header Key">
+              <input type="text" class="form-input" value="Bearer sec_live_workday_prod_992" placeholder="Header Value">
+              <button class="btn-remove-row" onclick="this.parentElement.remove()">&times;</button>
+            </div>
+            <div class="header-row">
+              <input type="text" class="form-input" value="Accept" placeholder="Header Key">
+              <input type="text" class="form-input" value="application/json" placeholder="Header Value">
+              <button class="btn-remove-row" onclick="this.parentElement.remove()">&times;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Extraction Mapping -->
+        <div class="extraction-grid">
+          <div class="form-group">
+            <label class="form-label">Value Field Path (Code) *</label>
+            <input type="text" class="form-input" id="schedValueField" value="dept_id" placeholder="e.g. id, code, or data[*].id">
+            <span style="font-size:0.7rem; color:var(--text-muted);">JSON property extracted as lookup value</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Label Field Path (Display) *</label>
+            <input type="text" class="form-input" id="schedLabelField" value="department_name" placeholder="e.g. name or data[*].label">
+            <span style="font-size:0.7rem; color:var(--text-muted);">JSON property extracted as dropdown option title</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- [C] WEBHOOK ON-DEMAND ATTRIBUTES PANEL -->
+      <div class="config-card-box" id="panel-webhook" style="display:none;">
+        <div class="drawer-section-heading">
+          <span>Webhook On-Demand HTTP Specification</span>
+          <span style="color:#67e8f9; font-size:0.72rem;">Live Synchronous Fetch</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 120px 1fr; gap:12px;">
+          <div class="form-group">
+            <label class="form-label">HTTP Method</label>
+            <select class="form-select" id="webhookMethod">
+              <option selected>GET</option>
+              <option>POST</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Endpoint URL (With Param Template) *</label>
+            <input type="text" class="form-input" id="webhookUrl" value="https://api.facilities.corp.internal/v1/sites?countryCode={{countryCode}}">
+          </div>
+        </div>
+
+        <!-- Required Parameter Keys (Chip Box) -->
+        <div class="form-group">
+          <label class="form-label">Required Context Parameter Keys (`RequiredKeys`)</label>
+          <div class="chip-container" id="requiredKeysContainer" onclick="document.getElementById('keyChipInput').focus()">
+            <span class="key-chip">countryCode <span class="chip-del" onclick="removeChip(this)">&times;</span></span>
+            <span class="key-chip">orgUnit <span class="chip-del" onclick="removeChip(this)">&times;</span></span>
+            <input type="text" class="chip-input" id="keyChipInput" placeholder="+ Type key & hit Enter..." onkeydown="handleChipKey(event)">
+          </div>
+          <span style="font-size:0.7rem; color:var(--text-muted);">
+            These parameters must be provided via Form Field Bindings (e.g. <code>countryCode</code> binds to <code>field["user_country"]</code>).
+          </span>
+        </div>
+
+        <!-- Extraction Mapping -->
+        <div class="extraction-grid">
+          <div class="form-group">
+            <label class="form-label">Value Field Path (Code) *</label>
+            <input type="text" class="form-input" id="webhookValueField" value="facility_code" placeholder="e.g. code">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Label Field Path (Display) *</label>
+            <input type="text" class="form-input" id="webhookLabelField" value="facility_name" placeholder="e.g. name">
+          </div>
+        </div>
+      </div>
+
+      <!-- [D] DATA LAKE SQL ATTRIBUTES PANEL -->
+      <div class="config-card-box" id="panel-data-lake" style="display:none;">
+        <div class="drawer-section-heading">
+          <span>Data Lake SQL Query Specification</span>
+          <span style="color:#fde68a; font-size:0.72rem;">BigQuery / Lakehouse</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr 140px; gap:12px;">
+          <div class="form-group">
+            <label class="form-label">Catalog Name</label>
+            <input type="text" class="form-input" id="lakeCatalog" value="lakehouse_prod">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Schema</label>
+            <input type="text" class="form-input" id="lakeSchema" value="corporate_finance">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Timeout (ms)</label>
+            <input type="number" class="form-input" id="lakeTimeout" value="5000">
+          </div>
+        </div>
+
+        <!-- SQL Query Box -->
+        <div class="form-group">
+          <label class="form-label">SQL Query Statement</label>
+          <div class="sql-editor-container">
+            <div class="sql-editor-toolbar">
+              <span>SQL Editor &bull; Use :parameter_name for runtime parameter bindings</span>
+              <span>Syntax: ANSI SQL</span>
+            </div>
+            <textarea class="sql-textarea" id="lakeQuery" spellcheck="false">SELECT 
+  cost_center_code AS value, 
+  CONCAT(cost_center_code, ' - ', department_name) AS label 
+FROM corporate_finance.dim_cost_centers 
+WHERE is_active = TRUE 
+  AND region_code = :regionCode
+ORDER BY cost_center_code ASC;</textarea>
+          </div>
+        </div>
+
+        <!-- Extraction Columns -->
+        <div class="extraction-grid">
+          <div class="form-group">
+            <label class="form-label">Value Column Name *</label>
+            <input type="text" class="form-input" id="lakeValueCol" value="value">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Label Column Name *</label>
+            <input type="text" class="form-input" id="lakeLabelCol" value="label">
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: LIVE TEST BENCH & DRY RUN -->
+      <div class="test-bench-card">
+        <div class="test-bench-header">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <strong style="color:white; font-size:0.9rem;">Live Lookup Test Bench & Sandbox</strong>
+            <span class="test-status-pill success" id="testStatusBadge">200 OK &bull; 42ms</span>
+          </div>
+          <button class="btn btn-primary" style="font-size:0.8rem; padding:5px 14px;" onclick="executeTestFetch()">
+            <span>&#9654;</span>
+            <span>Execute Test Lookup</span>
+          </button>
+        </div>
+
+        <!-- Mock Parameter Inputs if RequiredKeys exist -->
+        <div id="mockParamBar" style="display:none; background:#121212; padding:10px; border-radius:6px; border:1px solid #333;">
+          <div style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:6px; font-weight:600;">
+            Test Execution Parameters (`params` payload):
+          </div>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:#67e8f9;">countryCode:</span>
+              <input type="text" class="form-input" id="testParamCountry" value="US" style="width:90px; padding:3px 8px; font-size:0.78rem;">
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span style="font-family:var(--font-mono); font-size:0.75rem; color:#67e8f9;">orgUnit:</span>
+              <input type="text" class="form-input" id="testParamOrg" value="CORP_ENG" style="width:110px; padding:3px 8px; font-size:0.78rem;">
+            </div>
+          </div>
+        </div>
+
+        <div class="test-results-grid">
+          <!-- Raw Inbound Response -->
+          <div class="test-result-box">
+            <span class="test-result-title">Raw Upstream Inbound Payload</span>
+            <div class="test-json-preview" id="rawPayloadView"></div>
+          </div>
+
+          <!-- Normalized Lookups Preview -->
+          <div class="test-result-box">
+            <span class="test-result-title">Normalized Form Dropdown Options (<code>ILookup[]</code>)</span>
+            <div class="test-options-preview" id="optionsPillsView"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Drawer Footer Actions -->
+    <div class="drawer-footer">
+      <button class="btn btn-outlined" onclick="closeDrawer()">Cancel</button>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-outlined" style="border-color:#38bdf8; color:#7dd3fc;" onclick="executeTestFetch()">Run Pre-Flight Test</button>
+        <button class="btn btn-primary" onclick="applyDataSourceToField()">Save & Bind to Field</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">Data source saved</div>
+
+  <!-- Interactive JavaScript Application Logic -->
+  <script>
+    // Initial mock data
+    let currentSelectedField = 'dept_code';
+    let currentSourceType = 'scheduled';
+
+    const staticOptionsStore = [
+      { label: "Engineering & Platform Architecture", value: "DEPT_ENG_001" },
+      { label: "Commercial Risk Underwriting", value: "DEPT_UW_002" },
+      { label: "Corporate Finance & Treasury", value: "DEPT_FIN_003" },
+      { label: "Legal & Regulatory Compliance", value: "DEPT_LEG_004" },
+      { label: "Information Security & IAM", value: "DEPT_SEC_005" }
+    ];
+
+    function selectField(fieldKey) {
+      currentSelectedField = fieldKey;
+      document.querySelectorAll('.field-card').forEach(c => c.classList.remove('selected'));
+      const card = document.getElementById('card-' + fieldKey);
+      if (card) card.classList.add('selected');
+
+      const keyLabel = document.getElementById('settingsFieldKey');
+      if (keyLabel) keyLabel.innerText = 'key: ' + fieldKey;
+
+      if (fieldKey === 'dept_code') {
+        document.getElementById('inputLabel').value = 'Department Assignment';
+        document.getElementById('inputKey').value = 'dept_code';
+        setDataSourceType('scheduled');
+        document.getElementById('activeDsTitle').innerText = 'Workday Global Departments';
+        document.getElementById('activeDsBadge').innerText = 'Scheduled';
+        document.getElementById('activeDsBadge').className = 'ds-badge scheduled';
+        document.getElementById('activeDsSub').innerText = 'Background ingestion every 6 hrs • 48 options cached';
+      } else if (fieldKey === 'facility_location') {
+        document.getElementById('inputLabel').value = 'Primary Facility Office';
+        document.getElementById('inputKey').value = 'facility_location';
+        setDataSourceType('webhook');
+        document.getElementById('activeDsTitle').innerText = 'Facilities by Country (On-Demand)';
+        document.getElementById('activeDsBadge').innerText = 'Webhook';
+        document.getElementById('activeDsBadge').className = 'ds-badge webhook';
+        document.getElementById('activeDsSub').innerText = 'On-demand HTTP fetch • Parameterized by countryCode';
+      } else if (fieldKey === 'cost_center') {
+        document.getElementById('inputLabel').value = 'General Ledger Cost Center';
+        document.getElementById('inputKey').value = 'cost_center';
+        setDataSourceType('data-lake');
+        document.getElementById('activeDsTitle').innerText = 'Finance Lakehouse GL Query';
+        document.getElementById('activeDsBadge').innerText = 'Data Lake';
+        document.getElementById('activeDsBadge').className = 'ds-badge data-lake';
+        document.getElementById('activeDsSub').innerText = 'BigQuery SQL query • Refreshed on form load';
+      } else {
+        document.getElementById('inputLabel').value = 'Full Legal Name';
+        document.getElementById('inputKey').value = fieldKey;
+        setDataSourceType('static');
+      }
+
+      document.getElementById('drawerFieldTarget').innerText = `"${document.getElementById('inputLabel').value}"`;
+      showToast(`Selected field: ${fieldKey}`);
+    }
+
+    function setDataSourceType(type) {
+      currentSourceType = type;
+
+      // Update type cards active state
+      ['static', 'scheduled', 'webhook', 'data-lake'].forEach(t => {
+        const card = document.getElementById('type-card-' + t);
+        if (card) card.classList.toggle('active', t === type);
+
+        const panel = document.getElementById('panel-' + t);
+        if (panel) panel.style.display = t === type ? 'flex' : 'none';
+      });
+
+      // Show/hide parameter mock inputs
+      const mockParamBar = document.getElementById('mockParamBar');
+      if (mockParamBar) {
+        mockParamBar.style.display = (type === 'webhook' || type === 'data-lake') ? 'block' : 'none';
+      }
+
+      // Default names based on type
+      const nameInput = document.getElementById('dsNameInput');
+      const descInput = document.getElementById('dsDescInput');
+      if (type === 'static') {
+        nameInput.value = 'Standard Corporate Departments';
+        descInput.value = 'Hardcoded manual options list bundled in form version schema';
+        renderStaticTable();
+      } else if (type === 'scheduled') {
+        nameInput.value = 'Workday Global Departments';
+        descInput.value = 'Corporate cost centers and executive organizational hierarchy';
+      } else if (type === 'webhook') {
+        nameInput.value = 'Facilities by Country Service';
+        descInput.value = 'Real-time REST endpoint returning office locations for a given territory';
+      } else if (type === 'data-lake') {
+        nameInput.value = 'Finance Lakehouse GL Query';
+        descInput.value = 'Direct BigQuery SQL query to corporate financial data lake';
+      }
+
+      executeTestFetch();
+    }
+
+    function openDrawer() {
+      document.getElementById('dsDrawer').classList.add('open');
+      document.getElementById('drawerBackdrop').classList.add('open');
+      document.getElementById('drawerFieldTarget').innerText = `"${document.getElementById('inputLabel').value}"`;
+    }
+
+    function closeDrawer() {
+      document.getElementById('dsDrawer').classList.remove('open');
+      document.getElementById('drawerBackdrop').classList.remove('open');
+    }
+
+    /* Static Table Handlers */
+    function renderStaticTable() {
+      const tbody = document.getElementById('staticTableBody');
+      tbody.innerHTML = '';
+      staticOptionsStore.forEach((opt, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color:#666; font-family:var(--font-mono);">${idx + 1}</td>
+          <td><input type="text" value="${opt.label}" onchange="updateStaticOption(${idx}, 'label', this.value)"></td>
+          <td><input type="text" value="${opt.value}" onchange="updateStaticOption(${idx}, 'value', this.value)" style="font-family:var(--font-mono); color:#93c5fd;"></td>
+          <td><button class="btn-remove-row" onclick="removeStaticRow(${idx})">&times;</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addStaticRow() {
+      staticOptionsStore.push({ label: "New Option Item", value: "OPT_" + (staticOptionsStore.length + 1) });
+      renderStaticTable();
+      executeTestFetch();
+      showToast("Added static option row");
+    }
+
+    function removeStaticRow(index) {
+      staticOptionsStore.splice(index, 1);
+      renderStaticTable();
+      executeTestFetch();
+      showToast("Removed static option row");
+    }
+
+    function updateStaticOption(index, key, val) {
+      staticOptionsStore[index][key] = val;
+      executeTestFetch();
+    }
+
+    function loadSampleStatic() {
+      staticOptionsStore.length = 0;
+      staticOptionsStore.push(
+        { label: "Executive Leadership (VP+)", value: "EXEC_001" },
+        { label: "Engineering & Architecture", value: "ENG_002" },
+        { label: "Legal & Corporate Compliance", value: "LEG_003" },
+        { label: "Commercial Operations", value: "OPS_004" }
+      );
+      renderStaticTable();
+      executeTestFetch();
+      showToast("Loaded sample options");
+    }
+
+    /* Headers Builder */
+    function addHeaderRow(containerId) {
+      const container = document.getElementById(containerId);
+      const row = document.createElement('div');
+      row.className = 'header-row';
+      row.innerHTML = `
+        <input type="text" class="form-input" placeholder="Header Key">
+        <input type="text" class="form-input" placeholder="Header Value">
+        <button class="btn-remove-row" onclick="this.parentElement.remove()">&times;</button>
+      `;
+      container.appendChild(row);
+    }
+
+    /* Chip Input for RequiredKeys */
+    function handleChipKey(e) {
+      if (e.key === 'Enter' && e.target.value.trim() !== '') {
+        e.preventDefault();
+        const val = e.target.value.trim();
+        const chip = document.createElement('span');
+        chip.className = 'key-chip';
+        chip.innerHTML = `${val} <span class="chip-del" onclick="removeChip(this)">&times;</span>`;
+        document.getElementById('requiredKeysContainer').insertBefore(chip, e.target);
+        e.target.value = '';
+        executeTestFetch();
+        showToast(`Added required parameter key: ${val}`);
+      }
+    }
+
+    function removeChip(btn) {
+      btn.parentElement.remove();
+      executeTestFetch();
+      showToast('Removed parameter key');
+    }
+
+    /* Test Fetch Runner Simulator */
+    function executeTestFetch() {
+      const badge = document.getElementById('testStatusBadge');
+      badge.className = 'test-status-pill idle';
+      badge.innerText = 'Executing query...';
+
+      const rawView = document.getElementById('rawPayloadView');
+      const pillsView = document.getElementById('optionsPillsView');
+
+      setTimeout(() => {
+        let rawResponse = {};
+        let parsedLookups = [];
+
+        if (currentSourceType === 'static') {
+          rawResponse = {
+            sourceType: "static",
+            tenantId: "sundance-corp",
+            count: staticOptionsStore.length,
+            records: staticOptionsStore
+          };
+          parsedLookups = staticOptionsStore.map(o => ({ label: o.label, value: o.value }));
+          badge.className = 'test-status-pill success';
+          badge.innerText = `200 OK • In-Memory (${staticOptionsStore.length} options)`;
+        } 
+        else if (currentSourceType === 'scheduled') {
+          rawResponse = {
+            status: "success",
+            provider: "Workday REST API v2",
+            cacheExpires: "in 5h 48m",
+            data: [
+              { dept_id: "DEPT_ENG", department_name: "Software Engineering & Infrastructure", active: true },
+              { dept_id: "DEPT_UW", department_name: "Commercial Underwriting & Risk", active: true },
+              { dept_id: "DEPT_SEC", department_name: "Cybersecurity & Identity Governance", active: true },
+              { dept_id: "DEPT_FIN", department_name: "Global Treasury & Billing", active: true },
+              { dept_id: "DEPT_HR", department_name: "People Operations & Talent", active: true }
+            ]
+          };
+          parsedLookups = [
+            { label: "Software Engineering & Infrastructure", value: "DEPT_ENG" },
+            { label: "Commercial Underwriting & Risk", value: "DEPT_UW" },
+            { label: "Cybersecurity & Identity Governance", value: "DEPT_SEC" },
+            { label: "Global Treasury & Billing", value: "DEPT_FIN" },
+            { label: "People Operations & Talent", value: "DEPT_HR" }
+          ];
+          badge.className = 'test-status-pill success';
+          badge.innerText = '200 OK • 38ms (Cache Ready)';
+        }
+        else if (currentSourceType === 'webhook') {
+          const country = document.getElementById('testParamCountry')?.value || 'US';
+          rawResponse = {
+            requestedEndpoint: `https://api.facilities.corp.internal/v1/sites?countryCode=${country}`,
+            httpStatus: 200,
+            matchedFacilities: [
+              { facility_code: `${country}_HQ_01`, facility_name: `Dallas Headquarters - Tower B (${country})`, capacity: 1200 },
+              { facility_code: `${country}_AUS_02`, facility_name: `Austin Technology Center (${country})`, capacity: 450 },
+              { facility_code: `${country}_NYC_03`, facility_name: `New York Financial District (${country})`, capacity: 320 }
+            ]
+          };
+          parsedLookups = [
+            { label: `Dallas Headquarters - Tower B (${country})`, value: `${country}_HQ_01` },
+            { label: `Austin Technology Center (${country})`, value: `${country}_AUS_02` },
+            { label: `New York Financial District (${country})`, value: `${country}_NYC_03` }
+          ];
+          badge.className = 'test-status-pill success';
+          badge.innerText = '200 OK • 54ms (Live HTTP)';
+        }
+        else if (currentSourceType === 'data-lake') {
+          rawResponse = {
+            engine: "BigQuery / Trino Connector",
+            catalog: document.getElementById('lakeCatalog')?.value || "lakehouse_prod",
+            executionTimeMs: 112,
+            rows: [
+              { value: "CC-1010-ENG", label: "CC-1010-ENG - Cloud Engineering" },
+              { value: "CC-2020-RISK", label: "CC-2020-RISK - Risk Strategy & Actuarial" },
+              { value: "CC-3030-EXEC", label: "CC-3030-EXEC - Executive Corporate Office" },
+              { value: "CC-4040-SEC", label: "CC-4040-SEC - Security Operations Center" }
+            ]
+          };
+          parsedLookups = rawResponse.rows;
+          badge.className = 'test-status-pill success';
+          badge.innerText = '200 OK • 112ms (Lakehouse)';
+        }
+
+        rawView.innerText = JSON.stringify(rawResponse, null, 2);
+
+        pillsView.innerHTML = '';
+        parsedLookups.forEach(opt => {
+          const pill = document.createElement('div');
+          pill.className = 'test-option-pill';
+          pill.innerHTML = `
+            <span>${opt.label}</span>
+            <span class="test-option-val">${opt.value}</span>
+          `;
+          pillsView.appendChild(pill);
+        });
+
+      }, 180);
+    }
+
+    /* Apply and unbind */
+    function applyDataSourceToField() {
+      const name = document.getElementById('dsNameInput').value;
+      const type = currentSourceType;
+
+      // Update right settings card
+      document.getElementById('activeDsTitle').innerText = name;
+      const badge = document.getElementById('activeDsBadge');
+      badge.innerText = type.charAt(0).toUpperCase() + type.slice(1);
+      badge.className = 'ds-badge ' + type;
+
+      // Update canvas card
+      const cardBadge = document.getElementById('cardDsBadge');
+      if (cardBadge) {
+        cardBadge.className = 'ds-badge ' + type;
+        document.getElementById('cardDsBadgeText').innerText = `${type.toUpperCase()}: ${name}`;
+      }
+
+      closeDrawer();
+      showToast(`Data source "${name}" bound to field "${currentSelectedField}"`);
+    }
+
+    function unbindDataSource() {
+      const cardBadge = document.getElementById('cardDsBadge');
+      if (cardBadge) {
+        cardBadge.className = 'ds-badge unbound';
+        document.getElementById('cardDsBadgeText').innerText = 'Unbound (No Data Source)';
+      }
+      document.getElementById('activeDsTitle').innerText = 'None (Static Empty)';
+      document.getElementById('activeDsBadge').className = 'ds-badge unbound';
+      document.getElementById('activeDsBadge').innerText = 'Unbound';
+      document.getElementById('activeDsSub').innerText = 'Select a data source to populate dropdown options';
+      showToast('Disconnected data source from field');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2600);
+    }
+
+    // Initialize
+    renderStaticTable();
+    executeTestFetch();
+  </script>
+</body>
+</html>

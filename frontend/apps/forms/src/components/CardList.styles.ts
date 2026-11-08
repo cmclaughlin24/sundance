@@ -1,6 +1,6 @@
 import type { Styles } from "@/types/styles";
 
-export const formListStyles: Styles = {
+export const cardListStyles: Styles = {
   list: {
     margin: 0,
     padding: 0,
@@ -16,5 +16,7 @@ export const formListStyles: Styles = {
     borderRadius: "10px",
     cursor: "pointer",
     listStyle: "none",
+    height: "100%",
+    display: "flex",
   },
 };

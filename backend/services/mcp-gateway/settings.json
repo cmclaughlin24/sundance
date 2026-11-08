@@ -14,8 +14,8 @@
       },
       "headers": {
         "Authorization": {
-           "value": "Bearer mcp-gateway-token",
-           "overridePolicy": "forbidden"
+          "value": "Bearer mcp-gateway-token",
+          "overridePolicy": "forbidden"
         }
       },
       "timeout": null,
@@ -33,13 +33,17 @@
       },
       "headers": {
         "Authorization": {
-           "value": "Bearer mcp-gateway-token",
-           "overridePolicy": "forbidden"
+          "value": "Bearer mcp-gateway-token",
+          "overridePolicy": "forbidden"
         }
       },
       "timeout": null,
       "policy": {
-        "allow": ["GET /**"],
+        "allow": [
+          "GET /**",
+          "POST /api/v1/data-sources",
+          "PUT /api/v1/data-sources/*"
+        ],
         "deny": []
       }
     }

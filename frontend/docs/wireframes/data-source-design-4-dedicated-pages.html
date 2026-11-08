@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Sources Studio - /data-sources/ & Read-Only Reference Panel | Sundance</title>
+  <style>
+    :root {
+      --bg-primary: #242424;
+      --bg-panel: #1b1b1b;
+      --bg-card: #252525;
+      --bg-card-hover: #2e2e2e;
+      --border-primary: #2b2b2b;
+      --border-subtle: #3a3a3a;
+      --sundance-navy: #0C1F40;
+      --sundance-red: #E51837;
+      --sundance-gold: #FFC425;
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #c084fc;
+      --accent-green: #34d399;
+      --accent-amber: #fbbf24;
+      --text-primary: rgba(255, 255, 255, 0.92);
+      --text-secondary: rgba(255, 255, 255, 0.65);
+      --text-muted: rgba(255, 255, 255, 0.45);
+      --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Top Prototype Navigation Bar */
+    .prototype-nav {
+      background: #141414;
+      border-bottom: 1px solid #333;
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .prototype-brand { display: flex; align-items: center; gap: 12px; }
+    .prototype-badge {
+      background: var(--sundance-red);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .prototype-title { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); }
+    .prototype-links { display: flex; gap: 8px; }
+    .proto-link {
+      font-size: 0.8rem;
+      padding: 6px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      background: #222;
+      border: 1px solid #333;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    .proto-link:hover { background: #2a2a2a; color: white; }
+    .proto-link.active {
+      background: var(--sundance-navy);
+      border-color: #3b82f6;
+      color: #93c5fd;
+    }
+
+    /* Interactive Route Switcher Bar (Simulates Real Route Transitions) */
+    .route-switcher-bar {
+      background: #0f172a;
+      border-bottom: 1px solid #1e3a8a;
+      padding: 12px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+    .route-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .route-badge {
+      background: rgba(59, 130, 246, 0.25);
+      color: #bfdbfe;
+      border: 1px solid rgba(59, 130, 246, 0.5);
+      padding: 3px 12px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+    }
+    .route-tabs {
+      display: flex;
+      gap: 8px;
+    }
+    .route-btn {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #cbd5e1;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+    .route-btn:hover {
+      background: #334155;
+      color: white;
+    }
+    .route-btn.active {
+      background: var(--accent-blue);
+      border-color: #60a5fa;
+      color: white;
+    }
+
+    /* Common Page Container */
+    .page-wrapper {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 32px 32px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    /* PageTitle Component Styling (matching PageTitle.tsx) */
+    .page-title-box {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .page-main-title {
+      font-size: 2.2rem;
+      font-weight: 300;
+      letter-spacing: -0.5px;
+      color: white;
+      line-height: 1.25;
+    }
+    .page-main-desc {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      font-weight: 300;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 8px 18px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-text { background: transparent; color: var(--text-primary); }
+    .btn-text:hover { background: rgba(255, 255, 255, 0.08); }
+    .btn-outlined {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+    }
+    .btn-outlined:hover { border-color: #777; background: rgba(255, 255, 255, 0.05); }
+    .btn-primary {
+      background: var(--sundance-navy);
+      border: 1px solid #1e3a6d;
+      color: white;
+    }
+    .btn-primary:hover { background: #142a54; border-color: var(--accent-blue); }
+
+    /* DataSourceTypeTag (matches DataSourceTypeTag.tsx & dataSourceLabels.ts) */
+    .ds-type-tag {
+      font-size: 0.75rem;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+    }
+    .ds-type-tag.scheduled {
+      background: rgba(192, 132, 252, 0.18);
+      color: #d8b4fe;
+      border: 1px solid rgba(192, 132, 252, 0.4);
+    }
+    .ds-type-tag.webhook {
+      background: rgba(6, 182, 212, 0.18);
+      color: #67e8f9;
+      border: 1px solid rgba(6, 182, 212, 0.4);
+    }
+    .ds-type-tag.static {
+      background: rgba(52, 211, 153, 0.18);
+      color: #6ee7b7;
+      border: 1px solid rgba(52, 211, 153, 0.4);
+    }
+    .ds-type-tag.data-lake {
+      background: rgba(251, 191, 36, 0.18);
+      color: #fde68a;
+      border: 1px solid rgba(251, 191, 36, 0.4);
+    }
+
+    /* Views Container */
+    .view-container { display: none; }
+    .view-container.active { display: flex; flex-direction: column; gap: 24px; }
+
+    /* ========================================================= */
+    /* VIEW A: /data-sources/ (DataSourcesToolbar + CardList)    */
+    /* ========================================================= */
+    .ds-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .search-field-box {
+      position: relative;
+      width: 20rem;
+      max-width: 100%;
+    }
+    .search-field-box input {
+      width: 100%;
+      background: #141414;
+      border: 1px solid #404040;
+      border-radius: 6px;
+      padding: 9px 36px 9px 14px;
+      color: white;
+      font-size: 0.88rem;
+      outline: none;
+      font-family: inherit;
+    }
+    .search-field-box input:focus {
+      border-color: var(--accent-blue);
+    }
+    .search-field-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #777;
+      pointer-events: none;
+    }
+
+    /* CardList & DataSourceCard (matching DataSourceCard.style.ts) */
+    .card-list-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 20px;
+      list-style: none;
+    }
+    .data-source-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 4px 8px 0 rgba(156, 145, 145, 0.15);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.25s ease;
+    }
+    .data-source-card:hover {
+      border-color: #666;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.4);
+    }
+    .card-name {
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0;
+      line-height: 1.5;
+      margin-bottom: 6px;
+      color: white;
+    }
+    .card-description {
+      font-size: 0.95rem;
+      font-weight: 300;
+      letter-spacing: 0;
+      line-height: 1.35;
+      color: var(--text-secondary);
+      flex: 1;
+      margin-bottom: 12px;
+    }
+    .card-divider {
+      height: 1px;
+      background: #333;
+      margin: 10px 0;
+      border: none;
+    }
+    .card-information {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-usage {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* ========================================================= */
+    /* SLIDE-OVER CreateDataSourceDrawer (matching component)    */
+    /* ========================================================= */
+    .drawer-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(3px);
+      z-index: 2000;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+    .drawer-backdrop.open {
+      display: block;
+      opacity: 1;
+    }
+    .create-ds-drawer {
+      position: fixed;
+      top: 0;
+      right: -760px;
+      width: 740px;
+      max-width: 95vw;
+      height: 100vh;
+      background: #1c1c1c;
+      border-left: 1px solid #333;
+      box-shadow: -15px 0 35px rgba(0, 0, 0, 0.85);
+      z-index: 2100;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .create-ds-drawer.open {
+      right: 0;
+    }
+    .drawer-top-bar {
+      padding: 18px 24px;
+      border-bottom: 1px solid #333;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #222;
+    }
+    .drawer-top-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .drawer-body-box {
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .drawer-hgroup {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .drawer-h3 {
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: white;
+    }
+    .drawer-subtitle {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+    .drawer-section-heading {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2px;
+    }
+    .drawer-type-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .drawer-type-card {
+      background: #242424;
+      border: 1px solid #383838;
+      border-radius: 8px;
+      padding: 12px 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .drawer-type-card:hover {
+      background: #2c2c2c;
+      border-color: #555;
+    }
+    .drawer-type-card.active {
+      border-color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.14);
+      box-shadow: 0 0 0 1px var(--accent-blue);
+    }
+    .drawer-type-card-name {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: white;
+    }
+    .drawer-type-card-desc {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+    }
+    .drawer-config-panel {
+      background: #222;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .header-row {
+      display: grid;
+      grid-template-columns: 1fr 1.25fr 32px;
+      gap: 8px;
+      align-items: center;
+    }
+    .chip-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      background: #121212;
+      border: 1px solid #383838;
+      border-radius: 6px;
+      padding: 8px 10px;
+      min-height: 42px;
+      align-items: center;
+    }
+    .key-chip {
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid #0284c7;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chip-del {
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #94a3b8;
+    }
+    .chip-del:hover { color: #f87171; }
+    .chip-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: white;
+      font-size: 0.82rem;
+      font-family: var(--font-mono);
+      flex: 1;
+      min-width: 110px;
+    }
+    .drawer-static-table-wrapper {
+      border: 1px solid #333;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #141414;
+    }
+    .drawer-static-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    .drawer-static-table th {
+      background: #242424;
+      text-align: left;
+      padding: 8px 10px;
+      color: var(--text-muted);
+      border-bottom: 1px solid #333;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+    .drawer-static-table td {
+      padding: 6px 10px;
+      border-bottom: 1px solid #282828;
+    }
+    .drawer-static-table input {
+      background: #111;
+      border: 1px solid #3a3a3a;
+      border-radius: 4px;
+      padding: 6px 8px;
+      color: white;
+      font-size: 0.82rem;
+      width: 100%;
+      outline: none;
+    }
+    .drawer-static-table input:focus { border-color: var(--accent-blue); }
+    .test-bench-drawer {
+      background: #181818;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .test-results-drawer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .test-json-box {
+      background: #0d0d0d;
+      border: 1px solid #282828;
+      border-radius: 6px;
+      padding: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.73rem;
+      color: #cbd5e1;
+      max-height: 140px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    .test-pills-box {
+      background: #0d0d0d;
+      border: 1px solid #282828;
+      border-radius: 6px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+    .test-option-pill {
+      background: #1c1c1c;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .drawer-buttons-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 28px;
+      border-top: 1px solid #333;
+      background: #202020;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-input, .form-textarea, .form-select {
+      background: #121212;
+      border: 1px solid #383838;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      color: white;
+      outline: none;
+      font-family: inherit;
+    }
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      border-color: var(--accent-blue);
+    }
+    .drawer-buttons-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      padding-top: 20px;
+      border-top: 1px solid #333;
+      margin-top: auto;
+    }
+
+    /* ========================================================= */
+    /* VIEW B: /data-sources/$dataSourceId (Editor Studio)       */
+    /* ========================================================= */
+    .editor-wrapper {
+      background: #181818;
+      border: 1px solid var(--border-primary);
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .editor-header-bar {
+      padding: 24px 32px;
+      background: #1f1f1f;
+      border-bottom: 1px solid var(--border-primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .editor-body {
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .type-switcher-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+    .type-card-btn {
+      background: #222;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 14px 16px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .type-card-btn:hover {
+      background: #292929;
+      border-color: #555;
+    }
+    .type-card-btn.active {
+      border-color: var(--accent-blue);
+      background: rgba(59, 130, 246, 0.12);
+      box-shadow: 0 0 0 1px var(--accent-blue);
+    }
+
+    /* ========================================================= */
+    /* VIEW C: /designer/forms/.../reference-data (Read-Only)    */
+    /* ========================================================= */
+    .readonly-banner {
+      background: #172554;
+      border: 1px solid #1e40af;
+      border-radius: 8px;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .readonly-layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      border: 1px solid var(--border-primary);
+      background: var(--bg-panel);
+      border-radius: 8px;
+      min-height: 700px;
+      overflow: hidden;
+    }
+    .ref-catalog-panel {
+      background: #181818;
+      border-right: 1px solid var(--border-primary);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .ref-canvas-pane {
+      display: flex;
+      flex-direction: column;
+      background: #141414;
+    }
+    .canvas-tabs-nav {
+      display: flex;
+      background: #181818;
+      border-bottom: 1px solid var(--border-primary);
+      padding: 0 24px;
+    }
+    .canvas-tab-btn {
+      padding: 12px 18px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+      font-family: inherit;
+    }
+    .canvas-tab-btn:hover { color: white; }
+    .canvas-tab-btn.active { color: #93c5fd; font-weight: 600; }
+    .canvas-tab-btn.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-blue);
+    }
+
+    .spec-readonly-box {
+      background: #1c1c1c;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: 24px;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      border: 1px solid var(--accent-blue);
+      display: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Prototype Nav -->
+  <div class="prototype-nav">
+    <div class="prototype-brand">
+      <span class="prototype-badge">Sundance UI</span>
+      <span class="prototype-title">Forms Platform &mdash; Data Sources Information Architecture</span>
+    </div>
+    <div class="prototype-links">
+      <a href="data-source-designs-overview.html" class="proto-link" style="color: #FFC425; border-color: rgba(255, 196, 37, 0.4);">&#9776; Overview</a>
+      <a href="data-source-design-1-drawer-wizard.html" class="proto-link">Design 1: Drawer Wizard</a>
+      <a href="data-source-design-2-master-detail.html" class="proto-link">Design 2: Old Master-Detail</a>
+      <a href="data-source-design-3-inline-binding.html" class="proto-link">Design 3: Inline Binding</a>
+      <a href="data-source-design-4-dedicated-pages.html" class="proto-link active" style="border-color:#38bdf8; color:#7dd3fc;">Design 4: /data-sources/ Studio</a>
+      <a href="tags-design-3-matrix-grid.html" class="proto-link" style="margin-left:8px; border-color:#6b21a8; color:#d8b4fe;">&rarr; Tags Tab</a>
+    </div>
+  </div>
+
+  <!-- Interactive Route Switcher Bar -->
+  <div class="route-switcher-bar">
+    <div class="route-info">
+      <span style="color:#aaa; font-size:0.75rem; text-transform:uppercase; font-weight:700;">Simulated Route:</span>
+      <span class="route-badge" id="activeRouteBadge">/data-sources/</span>
+    </div>
+    <div class="route-tabs">
+      <button class="route-btn active" id="btn-route-catalog" onclick="switchRoute('catalog')">
+        <span>1.</span> /data-sources/ (Catalog & Drawer)
+      </button>
+      <button class="route-btn" id="btn-route-editor" onclick="switchRoute('editor')">
+        <span>2.</span> /data-sources/$dataSourceId (Editor Studio)
+      </button>
+      <button class="route-btn" id="btn-route-ref" onclick="switchRoute('ref')">
+        <span>3.</span> /designer/forms/.../reference-data (Read-Only)
+      </button>
+    </div>
+  </div>
+
+  <div class="page-wrapper">
+
+    <!-- ========================================================================= -->
+    <!-- VIEW A: /data-sources/ (Matches routes/data-sources/index.tsx exactly)    -->
+    <!-- ========================================================================= -->
+    <div class="view-container active" id="view-catalog">
+
+      <!-- PageTitle matching PageTitle.tsx -->
+      <div class="page-title-box">
+        <h1 class="page-main-title">Data Sources</h1>
+        <p class="page-main-desc">Manage and monitor global lookup endpoints, background sync workers, and SQL connectors.</p>
+      </div>
+
+      <!-- DataSourcesToolbar matching DataSourcesToolbar.tsx -->
+      <div class="ds-toolbar">
+        <div>
+          <button class="btn btn-outlined" data-testid="new-form-btn" onclick="openCreateDrawer()">
+            New Data Source
+          </button>
+        </div>
+        <div class="search-field-box">
+          <input type="text" placeholder="Search Data Sources" oninput="filterCards(this.value)">
+          <span class="search-field-icon">&#128269;</span>
+        </div>
+      </div>
+
+      <!-- CardList matching CardList.tsx & DataSourceCard.tsx -->
+      <ul class="card-list-grid" id="dataSourceCardGrid">
+
+        <!-- Card 1: Workday Departments -->
+        <li class="data-source-card" onclick="openDataSourceEditor('ds_workday_depts')">
+          <div class="card-name">Workday Global Departments</div>
+          <p class="card-description">Corporate cost centers and executive organizational hierarchy.</p>
+          <hr class="card-divider">
+          <div class="card-information">
+            <span class="ds-type-tag scheduled">Schedule</span>
+            <span class="card-usage">Used in 3 forms</span>
+          </div>
+        </li>
+
+        <!-- Card 2: Facilities Webhook -->
+        <li class="data-source-card" onclick="openDataSourceEditor('ds_facilities_api')">
+          <div class="card-name">Facilities by Country API</div>
+          <p class="card-description">Live REST endpoint returning physical office locations for a given territory.</p>
+          <hr class="card-divider">
+          <div class="card-information">
+            <span class="ds-type-tag webhook">Webhook</span>
+            <span class="card-usage">Used in 1 forms</span>
+          </div>
+        </li>
+
+        <!-- Card 3: BigQuery GL Query -->
+        <li class="data-source-card" onclick="openDataSourceEditor('ds_gl_cost_centers')">
+          <div class="card-name">Finance Lakehouse GL Query</div>
+          <p class="card-description">Direct BigQuery SQL query to corporate financial ledger in lakehouse_prod.</p>
+          <hr class="card-divider">
+          <div class="card-information">
+            <span class="ds-type-tag data-lake">Data Lake</span>
+            <span class="card-usage">Used in 2 forms</span>
+          </div>
+        </li>
+
+        <!-- Card 4: Static Contractor Classification -->
+        <li class="data-source-card" onclick="openDataSourceEditor('ds_employment_types')">
+          <div class="card-name">Contractor Classification Types</div>
+          <p class="card-description">Fixed compliance classifications for 1099, C2C, and SOW vendors.</p>
+          <hr class="card-divider">
+          <div class="card-information">
+            <span class="ds-type-tag static">Static</span>
+            <span class="card-usage">Used in 4 forms</span>
+          </div>
+        </li>
+
+      </ul>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW B: /data-sources/$dataSourceId (Editor Studio)                       -->
+    <!-- ========================================================================= -->
+    <div class="view-container" id="view-editor">
+
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <button class="btn btn-outlined" onclick="switchRoute('catalog')">&larr; Back to Data Sources</button>
+        <div style="display:flex; gap:12px;">
+          <button class="btn btn-outlined" style="color:#f87171; border-color:#552;" onclick="showToast('Deleted data source')">Delete</button>
+          <button class="btn btn-primary" onclick="showToast('Saved changes to data source attributes')">Save Changes</button>
+        </div>
+      </div>
+
+      <div class="editor-wrapper">
+        <div class="editor-header-bar">
+          <div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <h2 style="font-size:1.6rem; font-weight:600; color:white;" id="editorTitle">Workday Global Departments</h2>
+              <span class="ds-type-tag scheduled" id="editorTypeTag">Schedule</span>
+            </div>
+            <p style="font-size:0.92rem; color:var(--text-secondary); margin-top:4px;" id="editorDesc">Corporate cost centers and executive organizational hierarchy.</p>
+            <span style="font-size:0.75rem; color:#888; font-family:var(--font-mono);">ID: <span id="editorId">ds_workday_depts</span> &bull; Tenant: sundance-corp</span>
+          </div>
+          <div>
+            <button class="btn btn-outlined" style="font-size:0.78rem;" onclick="showToast('Triggered on-demand background sync')">&#8635; Sync Now</button>
+          </div>
+        </div>
+
+        <div class="editor-body">
+
+          <!-- 1. Strategy Selector per ADR #005 -->
+          <div class="form-group">
+            <label class="form-label">Strategy Type (`domain.DataSourceType`)</label>
+            <div class="type-switcher-grid">
+              <div class="type-card-btn active" id="btn-type-scheduled" onclick="setEditorType('scheduled')">
+                <strong style="color:white; font-size:0.9rem;">Schedule</strong>
+                <span style="font-size:0.72rem; color:var(--text-muted);">Periodic background ingest with TTL cache.</span>
+              </div>
+              <div class="type-card-btn" id="btn-type-webhook" onclick="setEditorType('webhook')">
+                <strong style="color:white; font-size:0.9rem;">Webhook</strong>
+                <span style="font-size:0.72rem; color:var(--text-muted);">On-demand parameterized HTTP fetch.</span>
+              </div>
+              <div class="type-card-btn" id="btn-type-data-lake" onclick="setEditorType('data-lake')">
+                <strong style="color:white; font-size:0.9rem;">Data Lake</strong>
+                <span style="font-size:0.72rem; color:var(--text-muted);">Direct BigQuery / Lakehouse SQL query.</span>
+              </div>
+              <div class="type-card-btn" id="btn-type-static" onclick="setEditorType('static')">
+                <strong style="color:white; font-size:0.9rem;">Static</strong>
+                <span style="font-size:0.72rem; color:var(--text-muted);">In-memory key-value list in definition.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Type-Specific Attributes Form -->
+          <div style="background:#141414; border:1px solid #333; border-radius:8px; padding:22px; display:flex; flex-direction:column; gap:16px;">
+            <div style="font-size:0.8rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); border-bottom:1px solid #282828; padding-bottom:8px;">
+              Connection Specification (`DataSourceAttributes`)
+            </div>
+
+            <div style="display:grid; grid-template-columns: 140px 1fr 180px; gap:14px;">
+              <div class="form-group">
+                <label class="form-label">HTTP Method</label>
+                <select class="form-select" id="editorMethod">
+                  <option selected>GET</option>
+                  <option>POST</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Target Endpoint URL *</label>
+                <input type="text" class="form-input" id="editorUrl" value="https://api.workday.internal/v2/tenants/sundance/departments">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Interval (Hours)</label>
+                <select class="form-select" id="editorInterval">
+                  <option>1 Hour</option>
+                  <option selected>6 Hours</option>
+                  <option>12 Hours</option>
+                  <option>24 Hours</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
+              <div class="form-group">
+                <label class="form-label">Value Field (Code) *</label>
+                <input type="text" class="form-input" id="editorValueField" value="dept_id">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Label Field (Display Name) *</label>
+                <input type="text" class="form-input" id="editorLabelField" value="department_name">
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Test Bench -->
+          <div style="background:#141414; border:1px solid #333; border-radius:8px; padding:20px; display:flex; flex-direction:column; gap:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <strong style="color:white; font-size:0.9rem;">Live Lookup Test Bench</strong>
+              <button class="btn btn-primary" style="font-size:0.8rem;" onclick="showToast('Executed test request &bull; 200 OK (38ms)')">&#9654; Test Connection</button>
+            </div>
+            <div style="background:#0d0d0d; border:1px solid #282828; border-radius:6px; padding:12px; font-family:var(--font-mono); font-size:0.75rem; color:#93c5fd; max-height:160px; overflow:auto;">
+[
+  { "label": "Software Engineering & Infrastructure", "value": "DEPT_ENG" },
+  { "label": "Commercial Underwriting & Risk", "value": "DEPT_UW" },
+  { "label": "Cybersecurity & Identity Governance", "value": "DEPT_SEC" }
+]
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- VIEW C: /designer/forms/.../reference-data (Read-Only Form Panel)         -->
+    <!-- ========================================================================= -->
+    <div class="view-container" id="view-ref">
+
+      <!-- Navigation Tabs inside Form Designer -->
+      <nav class="tabs-bar">
+        <button class="tab-button" onclick="showToast('Build Tab')">Build</button>
+        <button class="tab-button" onclick="showToast('Rules Tab')">Rules</button>
+        <button class="tab-button active">
+          Reference Data
+          <span style="font-size:0.7rem; background:#1e3a8a; color:#93c5fd; padding:1px 6px; border-radius:10px; margin-left:6px;">4 Connected</span>
+        </button>
+        <button class="tab-button" onclick="location.href='tags-design-3-matrix-grid.html'">Tags</button>
+        <button class="tab-button" onclick="showToast('Version Tab')">Version</button>
+        <button class="tab-button" onclick="showToast('Settings Tab')">Settings</button>
+      </nav>
+
+      <!-- READ-ONLY CALLOUT BANNER -->
+      <div class="readonly-banner">
+        <div style="display:flex; align-items:center; gap:14px;">
+          <span style="font-size:1.4rem;">&#128274;</span>
+          <div>
+            <strong style="color:white; font-size:0.92rem;">Shared Tenant Reference Data (Strictly Read-Only)</strong>
+            <p style="font-size:0.82rem; color:#bfdbfe; margin-top:2px;">
+              Data sources are shared tenant assets. Attribute configurations (endpoints, SQL queries, refresh schedules) cannot be edited inside a form version.
+            </p>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="font-size:0.8rem; background:#1e3a8a; border-color:#3b82f6;" onclick="openDataSourceEditor('ds_workday_depts')">
+          Manage in Data Sources Studio &#8599;
+        </button>
+      </div>
+
+      <!-- 2-Pane Split Workspace matching ReferenceData.tsx -->
+      <div class="readonly-layout">
+
+        <!-- Left: DataSourcesCatalogPanel -->
+        <aside class="ref-catalog-panel">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="font-size:0.95rem; color:white;">Data Sources Catalog</strong>
+            <span style="font-size:0.75rem; color:#888;">4 Sources</span>
+          </div>
+
+          <input type="text" class="form-input" placeholder="Search" style="padding:7px 10px; font-size:0.82rem;">
+
+          <ul style="list-style:none; display:flex; flex-direction:column; gap:8px;">
+            <li class="data-source-card" style="padding:10px; border-color:var(--accent-blue);" onclick="showToast('Selected Workday Departments')">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="font-size:0.88rem; color:white;">Workday Global Departments</strong>
+                <span class="ds-type-tag scheduled" style="font-size:0.65rem; padding:1px 6px;">Schedule</span>
+              </div>
+              <span style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Corporate cost centers and org hierarchy.</span>
+            </li>
+            <li class="data-source-card" style="padding:10px;" onclick="showToast('Selected Facilities API')">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="font-size:0.88rem; color:white;">Facilities by Country API</strong>
+                <span class="ds-type-tag webhook" style="font-size:0.65rem; padding:1px 6px;">Webhook</span>
+              </div>
+              <span style="font-size:0.75rem; color:var(--text-muted); margin-top:4px;">Live REST endpoint returning office locations.</span>
+            </li>
+          </ul>
+
+          <div style="margin-top:auto; padding-top:14px; border-top:1px solid #333;">
+            <button class="btn btn-outlined" style="width:100%; font-size:0.78rem; justify-content:center;" onclick="switchRoute('catalog')">
+              Open Data Sources Hub &rarr;
+            </button>
+          </div>
+        </aside>
+
+        <!-- Right: DataSourceCanvas matching DataSourceCanvas.tsx with 4 Tabs -->
+        <main class="ref-canvas-pane">
+          <div style="padding:20px 24px; border-bottom:1px solid var(--border-primary); display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <h3 style="font-size:1.3rem; font-weight:600; color:white;">Workday Global Departments</h3>
+              <p style="font-size:0.85rem; color:var(--text-secondary); margin-top:2px;">Corporate cost centers and executive organizational hierarchy.</p>
+            </div>
+            <button class="btn btn-outlined" style="font-size:0.75rem;" onclick="openDataSourceEditor('ds_workday_depts')">
+              &#9998; Edit Source Definition &#8599;
+            </button>
+          </div>
+
+          <!-- The exact 4 Tabs from DataSourceCanvas.tsx -->
+          <div class="canvas-tabs-nav">
+            <button class="canvas-tab-btn active" onclick="setCanvasTab('attr', this)">1. Configuration & Attributes (Locked)</button>
+            <button class="canvas-tab-btn" onclick="setCanvasTab('extract', this)">2. Response Extraction</button>
+            <button class="canvas-tab-btn" onclick="setCanvasTab('test', this)">3. Live Test Bench</button>
+            <button class="canvas-tab-btn" onclick="setCanvasTab('bindings', this)">4. Form Field Bindings</button>
+          </div>
+
+          <!-- Tab Content -->
+          <div class="spec-readonly-box" id="tabcontent-attr">
+            <div style="display:grid; grid-template-columns: 140px 1fr 160px; gap:16px;">
+              <div>
+                <span style="font-size:0.72rem; color:#888; text-transform:uppercase; font-weight:700;">HTTP Method</span>
+                <div style="color:white; font-family:var(--font-mono); font-size:0.85rem; margin-top:4px;">GET</div>
+              </div>
+              <div>
+                <span style="font-size:0.72rem; color:#888; text-transform:uppercase; font-weight:700;">Endpoint URL</span>
+                <div style="color:white; font-family:var(--font-mono); font-size:0.85rem; margin-top:4px;">https://api.workday.internal/v2/tenants/sundance/departments</div>
+              </div>
+              <div>
+                <span style="font-size:0.72rem; color:#888; text-transform:uppercase; font-weight:700;">Interval</span>
+                <div style="color:white; font-family:var(--font-mono); font-size:0.85rem; margin-top:4px;">Every 6 Hours</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="spec-readonly-box" id="tabcontent-extract" style="display:none;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+              <div>
+                <span style="font-size:0.72rem; color:#888; text-transform:uppercase; font-weight:700;">Value Field Path</span>
+                <div style="color:white; font-family:var(--font-mono); font-size:0.85rem; margin-top:4px;">dept_id</div>
+              </div>
+              <div>
+                <span style="font-size:0.72rem; color:#888; text-transform:uppercase; font-weight:700;">Label Field Path</span>
+                <div style="color:white; font-family:var(--font-mono); font-size:0.85rem; margin-top:4px;">department_name</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="spec-readonly-box" id="tabcontent-test" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:0.75rem; color:#aaa; font-weight:700; text-transform:uppercase;">Extracted Dropdown Options (ILookup[])</span>
+              <button class="btn btn-outlined" style="font-size:0.72rem; padding:2px 8px;" onclick="showToast('Refetched dry run lookups')">Refresh Preview</button>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px;">
+              <div style="background:#141414; border:1px solid #333; padding:6px 10px; border-radius:4px; font-size:0.8rem;">
+                Engineering & Architecture <span style="color:#93c5fd; font-family:var(--font-mono); font-size:0.72rem;">(DEPT_ENG)</span>
+              </div>
+              <div style="background:#141414; border:1px solid #333; padding:6px 10px; border-radius:4px; font-size:0.8rem;">
+                Commercial Underwriting <span style="color:#93c5fd; font-family:var(--font-mono); font-size:0.72rem;">(DEPT_UW)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="spec-readonly-box" id="tabcontent-bindings" style="display:none;">
+            <span style="font-size:0.75rem; color:#aaa; font-weight:700; text-transform:uppercase; margin-bottom:8px;">Bound Elements in this Form</span>
+            <div style="font-size:0.85rem; color:white;">
+              &bull; <strong>dept_code</strong> (Department Assignment) &mdash; Select Dropdown
+            </div>
+          </div>
+
+        </main>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- SLIDE-OVER CreateDataSourceDrawer (Matching CreateDataSourceDrawer.tsx)   -->
+  <!-- ========================================================================= -->
+  <div class="drawer-backdrop" id="drawerBackdrop" onclick="closeCreateDrawer()"></div>
+
+  <aside class="create-ds-drawer" id="createDsDrawer">
+    <div class="drawer-top-bar">
+      <span class="drawer-top-title">
+        <span>&#128450;</span>
+        <span>New Data Source</span>
+      </span>
+      <button class="btn btn-text" style="font-size:1.2rem; padding:0 6px;" onclick="closeCreateDrawer()">&times;</button>
+    </div>
+
+    <div class="drawer-body-box">
+      <!-- Title & Subtitle matching CreateDataSourceDrawer.tsx with approved longer description -->
+      <div class="drawer-hgroup">
+        <h3 class="drawer-h3">Create a Brand New Data Source.</h3>
+        <p class="drawer-subtitle">
+          Start by giving your data source a name and short description. Configure its strategy type, connection attributes, and lookup mappings to register it for the tenant.
+        </p>
+      </div>
+
+      <!-- STEP 1: IDENTITY -->
+      <div>
+        <div class="drawer-section-heading">
+          <span>1. Data Source Identity</span>
+          <span style="font-size:0.7rem; color:var(--text-muted);">Tenant Scoped</span>
+        </div>
+        <div class="form-fields-group">
+          <div class="form-group">
+            <label class="form-label">Name *</label>
+            <input type="text" class="form-input" id="newDsNameInput" placeholder="e.g. Workday Global Departments" value="Workday Global Departments" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description *</label>
+            <textarea class="form-textarea" id="newDsDescInput" rows="2" placeholder="Provide a concise description of what this data source supplies..." required>Corporate cost centers and organizational hierarchy.</textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: STRATEGY TYPE SELECTOR -->
+      <div>
+        <div class="drawer-section-heading">
+          <span>2. Strategy Type (`domain.DataSourceType`)</span>
+          <span style="color:#38bdf8; font-size:0.72rem;">ADR #005</span>
+        </div>
+
+        <div class="drawer-type-grid">
+          <div class="drawer-type-card active" id="drawer-card-scheduled" onclick="setDrawerType('scheduled')">
+            <span style="font-size:1.2rem;">&#128337;</span>
+            <span class="drawer-type-card-name">Schedule</span>
+            <span class="drawer-type-card-desc">Periodic background sync with TTL cache.</span>
+          </div>
+
+          <div class="drawer-type-card" id="drawer-card-webhook" onclick="setDrawerType('webhook')">
+            <span style="font-size:1.2rem;">&#9889;</span>
+            <span class="drawer-type-card-name">Webhook</span>
+            <span class="drawer-type-card-desc">On-demand HTTP fetch parameterized by form.</span>
+          </div>
+
+          <div class="drawer-type-card" id="drawer-card-data-lake" onclick="setDrawerType('data-lake')">
+            <span style="font-size:1.2rem;">&#128451;</span>
+            <span class="drawer-type-card-name">Data Lake</span>
+            <span class="drawer-type-card-desc">Direct BigQuery SQL query to lakehouse.</span>
+          </div>
+
+          <div class="drawer-type-card" id="drawer-card-static" onclick="setDrawerType('static')">
+            <span style="font-size:1.2rem;">&#9776;</span>
+            <span class="drawer-type-card-name">Static</span>
+            <span class="drawer-type-card-desc">In-memory key-value list stored in schema.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: TYPE-SPECIFIC ATTRIBUTES CONFIGURATION -->
+      <div>
+        <div class="drawer-section-heading">
+          <span>3. Connection Specification (`DataSourceAttributes`)</span>
+          <span style="font-size:0.7rem; color:var(--text-muted);" id="drawerAttrStrategyLabel">Strategy: ScheduledLookupStrategy</span>
+        </div>
+
+        <!-- Panel A: Scheduled Attributes -->
+        <div class="drawer-config-panel" id="drawer-panel-scheduled">
+          <div style="display:grid; grid-template-columns: 120px 1fr 150px; gap:12px;">
+            <div class="form-group">
+              <label class="form-label">HTTP Method</label>
+              <select class="form-select" id="drawerSchedMethod">
+                <option selected>GET</option>
+                <option>POST</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target Endpoint URL *</label>
+              <input type="text" class="form-input" id="drawerSchedUrl" value="https://api.workday.internal/v2/tenants/sundance/departments">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Refresh Interval</label>
+              <select class="form-select" id="drawerSchedInterval">
+                <option>1 Hour</option>
+                <option selected>6 Hours</option>
+                <option>12 Hours</option>
+                <option>24 Hours</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Headers Builder -->
+          <div class="form-group">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <span class="form-label">HTTP Request Headers</span>
+              <button class="btn btn-text" style="font-size:0.72rem; padding:0; color:#93c5fd;" onclick="addDrawerHeader('drawerSchedHeaders')">+ Add Header</button>
+            </div>
+            <div class="headers-builder" id="drawerSchedHeaders" style="display:flex; flex-direction:column; gap:8px;">
+              <div class="header-row">
+                <input type="text" class="form-input" value="Authorization" placeholder="Header Key">
+                <input type="text" class="form-input" value="Bearer sec_live_workday_prod_992" placeholder="Header Value">
+                <button class="btn btn-text" style="color:#888; font-size:1.1rem; padding:0;" onclick="this.parentElement.remove()">&times;</button>
+              </div>
+              <div class="header-row">
+                <input type="text" class="form-input" value="Accept" placeholder="Header Key">
+                <input type="text" class="form-input" value="application/json" placeholder="Header Value">
+                <button class="btn btn-text" style="color:#888; font-size:1.1rem; padding:0;" onclick="this.parentElement.remove()">&times;</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Extraction Mapping -->
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; background:#181818; padding:12px; border-radius:6px; border:1px solid #282828;">
+            <div class="form-group">
+              <label class="form-label">Value Field Path (Code) *</label>
+              <input type="text" class="form-input" id="drawerSchedValueField" value="dept_id" placeholder="e.g. dept_id or data[*].id">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Label Field Path (Display Name) *</label>
+              <input type="text" class="form-input" id="drawerSchedLabelField" value="department_name" placeholder="e.g. department_name">
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel B: Webhook Attributes -->
+        <div class="drawer-config-panel" id="drawer-panel-webhook" style="display:none;">
+          <div style="display:grid; grid-template-columns: 120px 1fr; gap:12px;">
+            <div class="form-group">
+              <label class="form-label">HTTP Method</label>
+              <select class="form-select" id="drawerWebhookMethod">
+                <option selected>GET</option>
+                <option>POST</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Endpoint URL (With {{param}} Template) *</label>
+              <input type="text" class="form-input" id="drawerWebhookUrl" value="https://api.facilities.corp.internal/v1/sites?countryCode={{countryCode}}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Required Context Parameter Keys (`RequiredKeys`)</label>
+            <div class="chip-container" id="drawerKeysContainer" onclick="document.getElementById('drawerKeyInput').focus()">
+              <span class="key-chip">countryCode <span class="chip-del" onclick="removeDrawerChip(this)">&times;</span></span>
+              <input type="text" class="chip-input" id="drawerKeyInput" placeholder="+ Type key & hit Enter..." onkeydown="handleDrawerChipKey(event)">
+            </div>
+            <span style="font-size:0.7rem; color:var(--text-muted);">Parameters resolved at form runtime via upstream field bindings.</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; background:#181818; padding:12px; border-radius:6px; border:1px solid #282828;">
+            <div class="form-group">
+              <label class="form-label">Value Field Path *</label>
+              <input type="text" class="form-input" id="drawerWebhookValueField" value="facility_code">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Label Field Path *</label>
+              <input type="text" class="form-input" id="drawerWebhookLabelField" value="facility_name">
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel C: Data Lake Attributes -->
+        <div class="drawer-config-panel" id="drawer-panel-data-lake" style="display:none;">
+          <div style="display:grid; grid-template-columns: 1fr 1fr 130px; gap:12px;">
+            <div class="form-group">
+              <label class="form-label">Catalog Name</label>
+              <input type="text" class="form-input" id="drawerLakeCatalog" value="lakehouse_prod">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Schema Name</label>
+              <input type="text" class="form-input" id="drawerLakeSchema" value="corporate_finance">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Timeout (ms)</label>
+              <input type="number" class="form-input" id="drawerLakeTimeout" value="5000">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">SQL Query Statement (:parameter_name supported)</label>
+            <textarea class="form-textarea" id="drawerLakeQuery" rows="4" spellcheck="false" style="font-family:var(--font-mono); font-size:0.8rem; color:#7dd3fc;">SELECT 
+  cost_center_code AS value, 
+  CONCAT(cost_center_code, ' - ', department_name) AS label 
+FROM corporate_finance.dim_cost_centers 
+WHERE is_active = TRUE 
+ORDER BY cost_center_code ASC;</textarea>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; background:#181818; padding:12px; border-radius:6px; border:1px solid #282828;">
+            <div class="form-group">
+              <label class="form-label">Value Column Name *</label>
+              <input type="text" class="form-input" id="drawerLakeValueCol" value="value">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Label Column Name *</label>
+              <input type="text" class="form-input" id="drawerLakeLabelCol" value="label">
+            </div>
+          </div>
+        </div>
+
+        <!-- Panel D: Static Attributes -->
+        <div class="drawer-config-panel" id="drawer-panel-static" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span class="form-label">Static Options Table (`data: ILookup[]`)</span>
+            <button class="btn btn-outlined" style="font-size:0.72rem; padding:3px 8px;" onclick="addDrawerStaticRow()">+ Add Option</button>
+          </div>
+
+          <div class="drawer-static-table-wrapper">
+            <table class="drawer-static-table">
+              <thead>
+                <tr>
+                  <th style="width:36px;">#</th>
+                  <th>Display Label</th>
+                  <th>Stored Value</th>
+                  <th style="width:36px;"></th>
+                </tr>
+              </thead>
+              <tbody id="drawerStaticTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: LIVE TEST BENCH IN DRAWER -->
+      <div class="test-bench-drawer">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <strong style="color:white; font-size:0.88rem;">Live Test Bench & Lookup Dry-Run</strong>
+            <span class="ds-type-tag static" style="font-size:0.7rem; padding:1px 6px;" id="drawerTestBadge">200 OK &bull; 38ms</span>
+          </div>
+          <button class="btn btn-primary" style="font-size:0.78rem; padding:4px 12px;" onclick="runDrawerTestFetch()">
+            <span>&#9654;</span> Test Lookup
+          </button>
+        </div>
+
+        <div class="test-results-drawer">
+          <div>
+            <span style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Raw Upstream Response</span>
+            <div class="test-json-box" id="drawerRawResponse"></div>
+          </div>
+          <div>
+            <span style="font-size:0.72rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Normalized Options (<code>ILookup[]</code>)</span>
+            <div class="test-pills-box" id="drawerParsedLookups"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drawer Footer Buttons -->
+      <div class="drawer-buttons-row">
+        <button class="btn btn-text" onclick="closeCreateDrawer()">Cancel</button>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-outlined" style="font-size:0.8rem;" onclick="runDrawerTestFetch()">Verify Connection</button>
+          <button class="btn btn-primary" onclick="submitCreateDataSource()">Create Data Source</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">Action dispatched</div>
+
+  <!-- JavaScript Interaction Logic -->
+  <script>
+    const dataSources = {
+      'ds_workday_depts': {
+        id: 'ds_workday_depts',
+        name: 'Workday Global Departments',
+        description: 'Corporate cost centers and executive organizational hierarchy.',
+        type: 'scheduled',
+        typeLabel: 'Schedule',
+        method: 'GET',
+        url: 'https://api.workday.internal/v2/tenants/sundance/departments',
+        interval: '6 Hours',
+        valField: 'dept_id',
+        lblField: 'department_name'
+      },
+      'ds_facilities_api': {
+        id: 'ds_facilities_api',
+        name: 'Facilities by Country API',
+        description: 'Live REST endpoint returning physical office locations for a given territory.',
+        type: 'webhook',
+        typeLabel: 'Webhook',
+        method: 'GET',
+        url: 'https://api.facilities.corp.internal/v1/sites?countryCode={{countryCode}}',
+        interval: 'Real-Time',
+        valField: 'facility_code',
+        lblField: 'facility_name'
+      },
+      'ds_gl_cost_centers': {
+        id: 'ds_gl_cost_centers',
+        name: 'Finance Lakehouse GL Query',
+        description: 'Direct BigQuery SQL query to corporate financial ledger in lakehouse_prod.',
+        type: 'data-lake',
+        typeLabel: 'Data Lake',
+        method: 'SQL Query',
+        url: 'BigQuery: lakehouse_prod.corporate_finance',
+        interval: 'On Demand',
+        valField: 'value',
+        lblField: 'label'
+      },
+      'ds_employment_types': {
+        id: 'ds_employment_types',
+        name: 'Contractor Classification Types',
+        description: 'Fixed compliance classifications for 1099, C2C, and SOW vendors.',
+        type: 'static',
+        typeLabel: 'Static',
+        method: 'STATIC',
+        url: 'In-Memory Definition',
+        interval: 'Static',
+        valField: 'value',
+        lblField: 'label'
+      }
+    };
+
+    function switchRoute(routeKey) {
+      document.querySelectorAll('.route-btn').forEach(b => b.classList.remove('active'));
+      const activeBtn = document.getElementById('btn-route-' + routeKey);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active'));
+      const activeView = document.getElementById('view-' + routeKey);
+      if (activeView) activeView.classList.add('active');
+
+      const badge = document.getElementById('activeRouteBadge');
+      if (routeKey === 'catalog') {
+        badge.innerText = '/data-sources/';
+        showToast('Route: /data-sources/');
+      } else if (routeKey === 'editor') {
+        badge.innerText = '/data-sources/$dataSourceId';
+        showToast('Route: /data-sources/$dataSourceId');
+      } else if (routeKey === 'ref') {
+        badge.innerText = '/designer/forms/:formId/versions/:versionId/reference-data';
+        showToast('Route: Form Designer Reference Data Tab');
+      }
+    }
+
+    let currentDrawerType = 'scheduled';
+    const drawerStaticOptions = [
+      { label: "Executive Leadership", value: "ROLE_EXEC" },
+      { label: "Engineering & Architecture", value: "ROLE_ENG" },
+      { label: "Commercial Underwriting", value: "ROLE_UW" }
+    ];
+
+    function openCreateDrawer() {
+      document.getElementById('newDsNameInput').value = '';
+      document.getElementById('newDsDescInput').value = '';
+      setDrawerType('scheduled');
+      renderDrawerStaticTable();
+      runDrawerTestFetch();
+      document.getElementById('createDsDrawer').classList.add('open');
+      document.getElementById('drawerBackdrop').classList.add('open');
+    }
+
+    function closeCreateDrawer() {
+      document.getElementById('createDsDrawer').classList.remove('open');
+      document.getElementById('drawerBackdrop').classList.remove('open');
+    }
+
+    function setDrawerType(type) {
+      currentDrawerType = type;
+      ['scheduled', 'webhook', 'data-lake', 'static'].forEach(t => {
+        const card = document.getElementById('drawer-card-' + t);
+        if (card) card.classList.toggle('active', t === type);
+        const panel = document.getElementById('drawer-panel-' + t);
+        if (panel) panel.style.display = (t === type ? 'flex' : 'none');
+      });
+
+      const label = document.getElementById('drawerAttrStrategyLabel');
+      if (type === 'scheduled') label.innerText = 'Strategy: ScheduledLookupStrategy';
+      else if (type === 'webhook') label.innerText = 'Strategy: WebhookLookupStrategy';
+      else if (type === 'data-lake') label.innerText = 'Strategy: DataLakeLookupStrategy';
+      else if (type === 'static') {
+        label.innerText = 'Strategy: StaticLookupStrategy';
+        renderDrawerStaticTable();
+      }
+
+      runDrawerTestFetch();
+      showToast(`Selected strategy: ${type}`);
+    }
+
+    function renderDrawerStaticTable() {
+      const tbody = document.getElementById('drawerStaticTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      drawerStaticOptions.forEach((opt, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="color:#666; font-family:var(--font-mono);">${idx + 1}</td>
+          <td><input type="text" value="${opt.label}" onchange="drawerStaticOptions[${idx}].label = this.value; runDrawerTestFetch();"></td>
+          <td><input type="text" value="${opt.value}" onchange="drawerStaticOptions[${idx}].value = this.value; runDrawerTestFetch();" style="font-family:var(--font-mono); color:#93c5fd;"></td>
+          <td><button class="btn btn-text" style="color:#888; font-size:1.1rem; padding:0;" onclick="removeDrawerStaticRow(${idx})">&times;</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addDrawerStaticRow() {
+      drawerStaticOptions.push({ label: "New Option Item", value: "OPT_" + (drawerStaticOptions.length + 1) });
+      renderDrawerStaticTable();
+      runDrawerTestFetch();
+      showToast('Added option row');
+    }
+
+    function removeDrawerStaticRow(idx) {
+      drawerStaticOptions.splice(idx, 1);
+      renderDrawerStaticTable();
+      runDrawerTestFetch();
+      showToast('Removed option row');
+    }
+
+    function addDrawerHeader(containerId) {
+      const container = document.getElementById(containerId);
+      const row = document.createElement('div');
+      row.className = 'header-row';
+      row.innerHTML = `
+        <input type="text" class="form-input" placeholder="Header Key">
+        <input type="text" class="form-input" placeholder="Header Value">
+        <button class="btn btn-text" style="color:#888; font-size:1.1rem; padding:0;" onclick="this.parentElement.remove()">&times;</button>
+      `;
+      container.appendChild(row);
+    }
+
+    function handleDrawerChipKey(e) {
+      if (e.key === 'Enter' && e.target.value.trim() !== '') {
+        e.preventDefault();
+        const val = e.target.value.trim();
+        const chip = document.createElement('span');
+        chip.className = 'key-chip';
+        chip.innerHTML = `${val} <span class="chip-del" onclick="removeDrawerChip(this)">&times;</span>`;
+        document.getElementById('drawerKeysContainer').insertBefore(chip, e.target);
+        e.target.value = '';
+        runDrawerTestFetch();
+        showToast(`Added parameter key: ${val}`);
+      }
+    }
+
+    function removeDrawerChip(btn) {
+      btn.parentElement.remove();
+      runDrawerTestFetch();
+      showToast('Removed parameter key');
+    }
+
+    function runDrawerTestFetch() {
+      const rawBox = document.getElementById('drawerRawResponse');
+      const pillsBox = document.getElementById('drawerParsedLookups');
+      const badge = document.getElementById('drawerTestBadge');
+
+      if (!rawBox || !pillsBox) return;
+
+      let rawPayload = {};
+      let lookups = [];
+
+      if (currentDrawerType === 'scheduled') {
+        rawPayload = {
+          endpoint: "https://api.workday.internal/v2/tenants/sundance/departments",
+          status: 200,
+          cachedTtlHours: 6,
+          items: [
+            { dept_id: "DEPT_ENG", department_name: "Software Engineering & Infrastructure" },
+            { dept_id: "DEPT_UW", department_name: "Commercial Underwriting & Risk" },
+            { dept_id: "DEPT_SEC", department_name: "Cybersecurity & Identity Governance" }
+          ]
+        };
+        lookups = [
+          { label: "Software Engineering & Infrastructure", value: "DEPT_ENG" },
+          { label: "Commercial Underwriting & Risk", value: "DEPT_UW" },
+          { label: "Cybersecurity & Identity Governance", value: "DEPT_SEC" }
+        ];
+        badge.innerText = '200 OK • 38ms (Cache Ready)';
+      } else if (currentDrawerType === 'webhook') {
+        rawPayload = {
+          endpoint: "https://api.facilities.corp.internal/v1/sites?countryCode=US",
+          status: 200,
+          sites: [
+            { facility_code: "US_HQ_01", facility_name: "Dallas Headquarters - Tower B" },
+            { facility_code: "US_AUS_02", facility_name: "Austin Technology Center" }
+          ]
+        };
+        lookups = [
+          { label: "Dallas Headquarters - Tower B", value: "US_HQ_01" },
+          { label: "Austin Technology Center", value: "US_AUS_02" }
+        ];
+        badge.innerText = '200 OK • 44ms (Live HTTP)';
+      } else if (currentDrawerType === 'data-lake') {
+        rawPayload = {
+          catalog: "lakehouse_prod",
+          schema: "corporate_finance",
+          rowsCount: 2,
+          records: [
+            { value: "CC-ENG-100", label: "Cloud Platform Engineering" },
+            { value: "CC-RISK-200", label: "Actuarial & Risk Modelling" }
+          ]
+        };
+        lookups = rawPayload.records;
+        badge.innerText = '200 OK • 112ms (BigQuery)';
+      } else if (currentDrawerType === 'static') {
+        rawPayload = {
+          type: "static",
+          count: drawerStaticOptions.length,
+          data: drawerStaticOptions
+        };
+        lookups = drawerStaticOptions;
+        badge.innerText = `200 OK • ${drawerStaticOptions.length} Items`;
+      }
+
+      rawBox.innerText = JSON.stringify(rawPayload, null, 2);
+      pillsBox.innerHTML = '';
+      lookups.forEach(opt => {
+        const pill = document.createElement('div');
+        pill.className = 'test-option-pill';
+        pill.innerHTML = `
+          <span>${opt.label}</span>
+          <span style="font-family:var(--font-mono); color:#93c5fd; font-size:0.72rem;">${opt.value}</span>
+        `;
+        pillsBox.appendChild(pill);
+      });
+    }
+
+    function submitCreateDataSource() {
+      const name = document.getElementById('newDsNameInput').value.trim();
+      const desc = document.getElementById('newDsDescInput').value.trim();
+      if (!name) {
+        showToast('Error: Name is required');
+        return;
+      }
+
+      const type = currentDrawerType;
+      const typeLabels = {
+        'scheduled': 'Schedule',
+        'webhook': 'Webhook',
+        'data-lake': 'Data Lake',
+        'static': 'Static'
+      };
+      const typeLabel = typeLabels[type] || type;
+      const newId = 'ds_' + name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+
+      // Save to dataSources dictionary
+      dataSources[newId] = {
+        id: newId,
+        name: name,
+        description: desc || 'Custom tenant data source',
+        type: type,
+        typeLabel: typeLabel,
+        method: type === 'scheduled' ? document.getElementById('drawerSchedMethod')?.value || 'GET' : 'GET',
+        url: type === 'scheduled' ? document.getElementById('drawerSchedUrl')?.value || '' : 'Configured Endpoint',
+        interval: type === 'scheduled' ? document.getElementById('drawerSchedInterval')?.value || '6 Hours' : 'N/A',
+        valField: 'value',
+        lblField: 'label'
+      };
+
+      // Append new card directly into the CardList on /data-sources/
+      const grid = document.getElementById('dataSourceCardGrid');
+      const newCard = document.createElement('li');
+      newCard.className = 'data-source-card';
+      newCard.onclick = () => openDataSourceEditor(newId);
+      newCard.innerHTML = `
+        <div class="card-name">${name}</div>
+        <p class="card-description">${desc || 'Custom tenant data source'}</p>
+        <hr class="card-divider">
+        <div class="card-information">
+          <span class="ds-type-tag ${type}">${typeLabel}</span>
+          <span class="card-usage">Used in 0 forms</span>
+        </div>
+      `;
+      grid.insertBefore(newCard, grid.firstChild);
+
+      closeCreateDrawer();
+      showToast(`Created data source "${name}" (${typeLabel})`);
+    }
+
+    function openDataSourceEditor(id) {
+      const ds = dataSources[id];
+      if (ds) {
+        document.getElementById('editorTitle').innerText = ds.name;
+        document.getElementById('editorDesc').innerText = ds.description;
+        document.getElementById('editorId').innerText = ds.id;
+        document.getElementById('editorUrl').value = ds.url;
+        document.getElementById('editorValueField').value = ds.valField;
+        document.getElementById('editorLabelField').value = ds.lblField;
+
+        const tag = document.getElementById('editorTypeTag');
+        tag.className = 'ds-type-tag ' + ds.type;
+        tag.innerText = ds.typeLabel;
+
+        setEditorType(ds.type);
+      }
+      switchRoute('editor');
+    }
+
+    function setEditorType(type) {
+      document.querySelectorAll('.type-card-btn').forEach(b => b.classList.remove('active'));
+      const activeCard = document.getElementById('btn-type-' + type);
+      if (activeCard) activeCard.classList.add('active');
+      showToast(`Switched strategy to: ${type}`);
+    }
+
+    function setCanvasTab(tabKey, btn) {
+      document.querySelectorAll('.canvas-tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      ['attr', 'extract', 'test', 'bindings'].forEach(k => {
+        const panel = document.getElementById('tabcontent-' + k);
+        if (panel) panel.style.display = k === tabKey ? 'block' : 'none';
+      });
+    }
+
+    function filterCards(val) {
+      val = val.toLowerCase();
+      document.querySelectorAll('#dataSourceCardGrid li').forEach(card => {
+        card.style.display = card.innerText.toLowerCase().includes(val) ? 'flex' : 'none';
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2600);
+    }
+  </script>
+</body>
+</html>

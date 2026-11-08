@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Source Config - Design 3: Inline ObjectSettings Binding | Sundance Forms</title>
+  <style>
+    :root {
+      --bg-primary: #242424;
+      --bg-panel: #1b1b1b;
+      --bg-card: #252525;
+      --bg-card-hover: #2e2e2e;
+      --border-primary: #2b2b2b;
+      --border-subtle: #3a3a3a;
+      --border-highlight: #3b82f6;
+      --sundance-navy: #0C1F40;
+      --sundance-red: #E51837;
+      --sundance-gold: #FFC425;
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #c084fc;
+      --accent-green: #34d399;
+      --accent-amber: #fbbf24;
+      --text-primary: rgba(255, 255, 255, 0.92);
+      --text-secondary: rgba(255, 255, 255, 0.65);
+      --text-muted: rgba(255, 255, 255, 0.45);
+      --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Top Prototype Switcher Bar */
+    .prototype-nav {
+      background: #151515;
+      border-bottom: 1px solid #333;
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .prototype-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .prototype-badge {
+      background: var(--sundance-red);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .prototype-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+    .prototype-links {
+      display: flex;
+      gap: 8px;
+    }
+    .proto-link {
+      font-size: 0.8rem;
+      padding: 6px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      background: #222;
+      border: 1px solid #333;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    .proto-link:hover {
+      background: #2a2a2a;
+      color: white;
+    }
+    .proto-link.active {
+      background: var(--sundance-navy);
+      border-color: #3b82f6;
+      color: #93c5fd;
+    }
+
+    /* Concept Banner */
+    .concept-banner {
+      background: linear-gradient(90deg, rgba(6, 78, 59, 0.4) 0%, rgba(12, 31, 64, 0.8) 50%, rgba(20, 20, 20, 0.95) 100%);
+      border-bottom: 1px solid #059669;
+      padding: 12px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+    .concept-tag {
+      background: rgba(52, 211, 153, 0.25);
+      color: #a7f3d0;
+      border: 1px solid rgba(52, 211, 153, 0.5);
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+
+    /* Page Layout */
+    .page-wrapper {
+      max-width: 1840px;
+      margin: 0 auto;
+      padding: 24px 32px 48px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* Header */
+    .form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      width: 100%;
+    }
+    .header-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-title {
+      font-size: 2.2rem;
+      font-weight: 300;
+      line-height: 1.25;
+      letter-spacing: -0.5px;
+      color: white;
+    }
+    .form-description {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn {
+      padding: 8px 18px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-text {
+      background: transparent;
+      color: var(--text-primary);
+    }
+    .btn-text:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .btn-outlined {
+      background: transparent;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+    }
+    .btn-outlined:hover {
+      border-color: #555;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .btn-primary {
+      background: var(--sundance-navy);
+      border: 1px solid #1e3a6d;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #142a54;
+      border-color: var(--accent-blue);
+    }
+
+    /* Tabs Bar */
+    .tabs-bar {
+      display: flex;
+      border-bottom: 1px solid var(--border-primary);
+      width: 100%;
+    }
+    .tab-button {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      position: relative;
+      font-family: inherit;
+      transition: color 0.2s;
+    }
+    .tab-button:hover {
+      color: white;
+    }
+    .tab-button.active {
+      color: #34d399;
+      font-weight: 600;
+    }
+    .tab-button.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-green);
+    }
+
+    /* Form Designer Canvas Layout */
+    .designer-canvas-grid {
+      display: grid;
+      grid-template-columns: 240px 1fr 420px;
+      border: 1px solid var(--border-primary);
+      background: var(--bg-panel);
+      border-radius: 8px;
+      min-height: 820px;
+      overflow: hidden;
+    }
+
+    /* Left Palette */
+    .palette-panel {
+      background: #191919;
+      border-right: 1px solid var(--border-primary);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .palette-heading {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+    .palette-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      cursor: grab;
+    }
+
+    /* Center Form Canvas */
+    .canvas-panel {
+      padding: 24px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background: #141414;
+      overflow-y: auto;
+    }
+    .canvas-section {
+      background: #1c1c1c;
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .section-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    /* Interactive Field Preview Cards */
+    .field-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 6px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .field-card.selected {
+      border-color: var(--accent-green);
+      box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.35);
+      background: #1b2621;
+    }
+    .field-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .field-label {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: white;
+    }
+    .field-key {
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+    }
+
+    /* Interactive Live Select Input on Canvas */
+    .runtime-input-mock {
+      background: #121212;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 0.88rem;
+      color: white;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .runtime-input-mock:hover {
+      border-color: #666;
+    }
+
+    /* RIGHT: ObjectSettingsPanel with Rich Data Source Configurator */
+    .settings-panel {
+      background: #181818;
+      border-left: 1px solid var(--border-primary);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+    }
+    .settings-header {
+      border-bottom: 1px solid var(--border-primary);
+      padding-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .settings-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: white;
+    }
+
+    .section-divider-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Toggle Mode Segment: Manual vs Data Source */
+    .options-mode-switch {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #121212;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 3px;
+      gap: 4px;
+    }
+    .mode-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 7px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .mode-btn:hover {
+      color: white;
+    }
+    .mode-btn.active {
+      background: #064e3b;
+      color: #a7f3d0;
+      border: 1px solid #059669;
+    }
+
+    /* Form Inputs */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-label {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .form-input, .form-select {
+      background: #121212;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-size: 0.85rem;
+      color: white;
+      outline: none;
+      font-family: inherit;
+      width: 100%;
+    }
+    .form-input:focus, .form-select:focus {
+      border-color: var(--accent-green);
+    }
+
+    /* Cascading Bindings Card */
+    .bindings-card {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .binding-param-row {
+      background: #141414;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .binding-param-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .binding-param-key {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: #38bdf8;
+      font-weight: 600;
+    }
+
+    /* Mini Live Options Inspector Widget */
+    .live-preview-widget {
+      background: #121212;
+      border: 1px solid #2e2e2e;
+      border-radius: 6px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .preview-option-pill {
+      background: #1e1e1e;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #064e3b;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      border: 1px solid var(--accent-green);
+      display: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Switcher Bar -->
+  <div class="prototype-nav">
+    <div class="prototype-brand">
+      <span class="prototype-badge">Sundance UI</span>
+      <span class="prototype-title">Form Designer &mdash; Data Source Configuration Studio</span>
+    </div>
+    <div class="prototype-links">
+      <a href="data-source-designs-overview.html" class="proto-link" style="color: #FFC425; border-color: rgba(255, 196, 37, 0.4);">&#9776; Overview</a>
+      <a href="data-source-design-1-drawer-wizard.html" class="proto-link">Design 1: Drawer Wizard</a>
+      <a href="data-source-design-2-master-detail.html" class="proto-link">Design 2: Old Master-Detail</a>
+      <a href="data-source-design-3-inline-binding.html" class="proto-link active">Design 3: Inline Binding</a>
+      <a href="data-source-design-4-dedicated-pages.html" class="proto-link" style="border-color:#38bdf8; color:#7dd3fc;">Design 4: Dedicated /designer/data-sources</a>
+      <a href="tags-design-3-matrix-grid.html" class="proto-link" style="margin-left:8px; border-color:#6b21a8; color:#d8b4fe;">&rarr; Tags Tab</a>
+    </div>
+  </div>
+
+  <!-- Concept Banner -->
+  <div class="concept-banner">
+    <div class="concept-info">
+      <span class="concept-tag">Design 3: Inline ObjectSettings Configurator</span>
+      <span class="concept-text">
+        <strong>Frictionless Field-Centric Binding:</strong> 
+        Configure data sources and cascading field bindings (e.g. Country &rarr; Office Facility) right inside the element settings panel with live dropdown simulation.
+      </span>
+    </div>
+    <button class="btn btn-outlined" style="font-size:0.75rem; padding:4px 10px;" onclick="testCascadingTrigger()">Test Cascading Update</button>
+  </div>
+
+  <div class="page-wrapper">
+
+    <!-- Header -->
+    <header class="form-header">
+      <div class="header-title-group">
+        <h1 class="form-title">Contractor Onboarding & Privileged Role Grant</h1>
+        <p class="form-description">Interactive Cascading Lookups: Upstream form field selections dynamically parameterize downstream data sources.</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-text" onclick="showToast('Saved draft v3')">Save Draft</button>
+        <button class="btn btn-primary" onclick="showToast('Published form v3')">Publish</button>
+      </div>
+    </header>
+
+    <!-- Tabs Bar -->
+    <nav class="tabs-bar">
+      <button class="tab-button active">Build</button>
+      <button class="tab-button" onclick="showToast('Switch to Rules tab')">Rules</button>
+      <button class="tab-button" onclick="location.href='data-source-design-2-master-detail.html'">Reference Data</button>
+      <button class="tab-button" onclick="location.href='tags-design-3-matrix-grid.html'">Tags</button>
+      <button class="tab-button" onclick="showToast('Switch to Version tab')">Version</button>
+      <button class="tab-button" onclick="showToast('Switch to Settings tab')">Settings</button>
+    </nav>
+
+    <!-- 3-Panel Canvas Grid -->
+    <div class="designer-canvas-grid">
+
+      <!-- Left Palette -->
+      <aside class="palette-panel">
+        <span class="palette-heading">Palette</span>
+        <div class="palette-item">Select Dropdown</div>
+        <div class="palette-item">Radio Group</div>
+        <div class="palette-item">Checkbox Group</div>
+        <div class="palette-item">Text Input</div>
+      </aside>
+
+      <!-- Center Form Canvas with Cascading Fields -->
+      <main class="canvas-panel">
+        <section class="canvas-section">
+          <span class="section-title">Section 1: Worker Territory & Office Placement</span>
+
+          <!-- Field A: Country Selector (Upstream Driver) -->
+          <div class="field-card" id="card-worker_country" onclick="selectCanvasField('worker_country')">
+            <div class="field-card-header">
+              <span class="field-label">1. Operating Country / Region *</span>
+              <span class="field-key">key: worker_country</span>
+            </div>
+            <div class="runtime-input-mock">
+              <span id="runtimeCountryDisplay">United States (US)</span>
+              <span style="color:#aaa;">&#9662;</span>
+            </div>
+            <span style="font-size:0.72rem; color:#34d399;">&#10003; Static list &bull; Drivers downstream parameters</span>
+          </div>
+
+          <!-- Field B: Facility Location (Downstream Cascaded Dropdown) -->
+          <div class="field-card selected" id="card-facility_location" onclick="selectCanvasField('facility_location')">
+            <div class="field-card-header">
+              <span class="field-label">2. Primary Facility Office *</span>
+              <span class="field-key">key: facility_location</span>
+            </div>
+            <div class="runtime-input-mock" style="border-color:var(--accent-green);" onclick="toggleDropdownPreview()">
+              <span id="runtimeFacilityDisplay">Austin Technology Center (US_AUS_02)</span>
+              <span style="color:#34d399;">&#9662;</span>
+            </div>
+            <span style="font-size:0.72rem; color:#38bdf8;">
+              &#9889; Parameterized by <code>worker_country = US</code> &bull; 3 facilities loaded
+            </span>
+          </div>
+        </section>
+      </main>
+
+      <!-- RIGHT: Inline ObjectSettingsPanel -->
+      <aside class="settings-panel">
+        <div class="settings-header">
+          <span class="settings-title">Select Field Settings</span>
+          <span style="font-size:0.75rem; color:#34d399; font-family:var(--font-mono);">facility_location</span>
+        </div>
+
+        <span class="section-divider-label">Data Source Mode</span>
+        <div class="options-mode-switch">
+          <button class="mode-btn" onclick="setMode('manual', this)">Static Manual</button>
+          <button class="mode-btn active" onclick="setMode('datasource', this)">Connected Source</button>
+        </div>
+
+        <!-- Connected Source Selector -->
+        <div class="form-group">
+          <label class="form-label">Connected Data Source (`dataSourceRef`)</label>
+          <select class="form-select" id="dsSelector" onchange="handleDataSourceChange(this.value)">
+            <option value="ds_facilities_api" selected>Facilities by Country API (Webhook)</option>
+            <option value="ds_workday_depts">Workday Global Departments (Scheduled)</option>
+            <option value="ds_gl_cost_centers">Finance Lakehouse GL Query (Data Lake)</option>
+          </select>
+        </div>
+
+        <!-- CASCADING PARAMETER BINDINGS MATRIX -->
+        <div class="bindings-card" id="bindingsCard">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong style="color:white; font-size:0.8rem; text-transform:uppercase;">Parameter Bindings (`bindings`)</strong>
+            <span style="font-size:0.68rem; color:#67e8f9;">1 Required Key</span>
+          </div>
+
+          <div class="binding-param-row">
+            <div class="binding-param-header">
+              <span class="binding-param-key">:countryCode</span>
+              <span style="font-size:0.68rem; color:#f87171;">Required</span>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1.35fr; gap:8px;">
+              <select class="form-select" style="font-size:0.78rem;">
+                <option selected>Form Field Ref</option>
+                <option>Static Literal</option>
+              </select>
+
+              <!-- Upstream Field Selector -->
+              <select class="form-select" id="bindingFieldSelect" style="font-size:0.78rem; border-color:#0284c7;" onchange="updateCascadingBinding(this.value)">
+                <option value="worker_country" selected>field["worker_country"]</option>
+                <option value="legal_name">field["legal_name"]</option>
+              </select>
+            </div>
+            <span style="font-size:0.7rem; color:var(--text-muted);">
+              When user selects <code>Operating Country</code>, this dropdown automatically queries facilities for that country.
+            </span>
+          </div>
+        </div>
+
+        <!-- Live Options Inspection Preview -->
+        <span class="section-divider-label">Resolved Dropdown Options Preview</span>
+        <div class="live-preview-widget">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:0.72rem; color:var(--text-muted);">Loaded from Webhook:</span>
+            <span style="font-size:0.72rem; color:#34d399;" id="previewCountText">3 Options (Country: US)</span>
+          </div>
+          <div id="previewOptionsList" style="display:flex; flex-direction:column; gap:4px;">
+            <div class="preview-option-pill">
+              <span>Dallas Headquarters - Tower B</span>
+              <span style="font-family:var(--font-mono); color:#93c5fd;">US_HQ_01</span>
+            </div>
+            <div class="preview-option-pill">
+              <span>Austin Technology Center</span>
+              <span style="font-family:var(--font-mono); color:#93c5fd;">US_AUS_02</span>
+            </div>
+            <div class="preview-option-pill">
+              <span>New York Financial District</span>
+              <span style="font-family:var(--font-mono); color:#93c5fd;">US_NYC_03</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-outlined" style="font-size:0.78rem; justify-content:center;" onclick="location.href='data-source-design-1-drawer-wizard.html'">
+          &#9881; Edit Full Data Source Definition
+        </button>
+
+      </aside>
+
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast">Cascading lookup resolved</div>
+
+  <script>
+    function setMode(mode, btn) {
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      if (mode === 'manual') {
+        document.getElementById('bindingsCard').style.display = 'none';
+        showToast('Switched to manual static options');
+      } else {
+        document.getElementById('bindingsCard').style.display = 'flex';
+        showToast('Connected to tenant data source');
+      }
+    }
+
+    function handleDataSourceChange(val) {
+      if (val === 'ds_facilities_api') {
+        document.getElementById('bindingsCard').style.display = 'flex';
+      } else {
+        document.getElementById('bindingsCard').style.display = 'none';
+      }
+      showToast('Updated data source connection');
+    }
+
+    function testCascadingTrigger() {
+      const countryMock = document.getElementById('runtimeCountryDisplay');
+      const facilityMock = document.getElementById('runtimeFacilityDisplay');
+      const countText = document.getElementById('previewCountText');
+      const list = document.getElementById('previewOptionsList');
+
+      if (countryMock.innerText.includes('US')) {
+        countryMock.innerText = 'United Kingdom (UK)';
+        facilityMock.innerText = 'London Tech City Hub (UK_LON_01)';
+        countText.innerText = '2 Options (Country: UK)';
+        list.innerHTML = `
+          <div class="preview-option-pill">
+            <span>London Tech City Hub</span>
+            <span style="font-family:var(--font-mono); color:#93c5fd;">UK_LON_01</span>
+          </div>
+          <div class="preview-option-pill">
+            <span>Edinburgh Innovation Center</span>
+            <span style="font-family:var(--font-mono); color:#93c5fd;">UK_EDI_02</span>
+          </div>
+        `;
+        showToast('Cascaded: worker_country changed to UK -> Reloaded UK facilities');
+      } else {
+        countryMock.innerText = 'United States (US)';
+        facilityMock.innerText = 'Austin Technology Center (US_AUS_02)';
+        countText.innerText = '3 Options (Country: US)';
+        list.innerHTML = `
+          <div class="preview-option-pill">
+            <span>Dallas Headquarters - Tower B</span>
+            <span style="font-family:var(--font-mono); color:#93c5fd;">US_HQ_01</span>
+          </div>
+          <div class="preview-option-pill">
+            <span>Austin Technology Center</span>
+            <span style="font-family:var(--font-mono); color:#93c5fd;">US_AUS_02</span>
+          </div>
+          <div class="preview-option-pill">
+            <span>New York Financial District</span>
+            <span style="font-family:var(--font-mono); color:#93c5fd;">US_NYC_03</span>
+          </div>
+        `;
+        showToast('Cascaded: worker_country changed to US -> Reloaded US facilities');
+      }
+    }
+
+    function toggleDropdownPreview() {
+      testCascadingTrigger();
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2600);
+    }
+  </script>
+</body>
+</html>

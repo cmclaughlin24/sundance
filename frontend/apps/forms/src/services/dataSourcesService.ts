@@ -1,12 +1,19 @@
 import type { ILookup } from "@/types/data";
 import { BaseHttpService, type DefaultRequestOptions } from "./baseHttpService";
 import { CONFIG } from "@/constants/config";
+import type { DataSource } from "@/types/dataSource";
+import type { DataSourceRequest } from "./dataSourcesService.type";
+import type { DataSourceAttributes } from "@/types/dataSourceAttributes";
 
 export class DataSourcesService extends BaseHttpService {
   static readonly serviceKey = "DataSourcesService";
 
   constructor() {
     super(CONFIG.tenantsUrl);
+  }
+
+  async getDataSources(options: DefaultRequestOptions): Promise<DataSource[]> {
+    return this._get<DataSource[]>("/api/v1/data-sources", options);
   }
 
   async getLookups(
@@ -23,6 +30,25 @@ export class DataSourcesService extends BaseHttpService {
     const resp = await this._client.get<ILookup[]>(
       `/api/v1/data-sources/${dataSourceId}/look-ups`,
       { headers, params },
+    );
+
+    return resp.data;
+  }
+
+  /**
+   * Creates a new data source.
+   * @param dataSource The data source to create.
+   * @param options The default request options.
+   * @returns A promise that resolves to the created data source.
+   */
+  async create(
+    dataSource: DataSourceRequest,
+    options: DefaultRequestOptions,
+  ): Promise<DataSource> {
+    const resp = await this._post<DataSourceRequest, DataSource>(
+      `/api/v1/data-sources`,
+      { attributes: {} as DataSourceAttributes, ...dataSource },
+      options,
     );
 
     return resp.data;

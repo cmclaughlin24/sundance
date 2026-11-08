@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Source Configuration UX Designs - Executive Overview | Sundance Forms</title>
+  <style>
+    :root {
+      --bg-primary: #1e1e1e;
+      --bg-panel: #161616;
+      --bg-card: #242424;
+      --bg-card-hover: #2c2c2c;
+      --border-primary: #2d2d2d;
+      --border-subtle: #3a3a3a;
+      --sundance-navy: #0C1F40;
+      --sundance-red: #E51837;
+      --sundance-gold: #FFC425;
+      --accent-blue: #3b82f6;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #c084fc;
+      --accent-green: #34d399;
+      --accent-amber: #fbbf24;
+      --text-primary: rgba(255, 255, 255, 0.94);
+      --text-secondary: rgba(255, 255, 255, 0.68);
+      --text-muted: rgba(255, 255, 255, 0.45);
+      --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-family);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: 60px;
+    }
+
+    /* Top Switcher Bar */
+    .prototype-nav {
+      background: #111;
+      border-bottom: 1px solid #333;
+      padding: 10px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .prototype-brand { display: flex; align-items: center; gap: 12px; }
+    .prototype-badge {
+      background: var(--sundance-red);
+      color: white;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+    .prototype-title { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); }
+    .prototype-links { display: flex; gap: 8px; }
+    .proto-link {
+      font-size: 0.8rem;
+      padding: 6px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      background: #222;
+      border: 1px solid #333;
+      transition: all 0.2s ease;
+      font-weight: 500;
+    }
+    .proto-link:hover { background: #2a2a2a; color: white; }
+    .proto-link.active {
+      background: var(--sundance-navy);
+      border-color: #3b82f6;
+      color: #93c5fd;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 36px;
+    }
+
+    /* Hero Banner */
+    .hero-card {
+      background: linear-gradient(135deg, rgba(12, 31, 64, 0.85) 0%, rgba(30, 58, 138, 0.4) 50%, rgba(22, 22, 22, 0.95) 100%);
+      border: 1px solid #1e3a8a;
+      border-radius: 12px;
+      padding: 36px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .hero-tag {
+      background: rgba(59, 130, 246, 0.2);
+      color: #bfdbfe;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      align-self: flex-start;
+      text-transform: uppercase;
+    }
+    .hero-title {
+      font-size: 2.2rem;
+      font-weight: 400;
+      letter-spacing: -0.5px;
+      color: white;
+    }
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      max-width: 1000px;
+    }
+
+    /* Section Headings */
+    .section-header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-bottom: 1px solid var(--border-primary);
+      padding-bottom: 12px;
+    }
+    .section-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    /* 4 Design Cards Grid */
+    .designs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    .design-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 10px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+    .design-card:hover {
+      border-color: #555;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .design-card-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      align-self: flex-start;
+    }
+    .badge-d1 { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); }
+    .badge-d2 { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .badge-d3 { background: rgba(52, 211, 153, 0.2); color: #6ee7b7; border: 1px solid rgba(52, 211, 153, 0.4); }
+    .badge-d4 { background: rgba(6, 182, 212, 0.2); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4); }
+
+    .design-card-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: white;
+    }
+    .design-card-desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+      flex: 1;
+    }
+
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      border-top: 1px solid #333;
+      padding-top: 12px;
+    }
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .feature-list li strong {
+      color: white;
+    }
+    .check-icon {
+      color: var(--accent-green);
+      font-weight: bold;
+    }
+
+    .launch-btn {
+      padding: 10px 18px;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .launch-btn-primary {
+      background: var(--sundance-navy);
+      border: 1px solid #1e3a8a;
+      color: white;
+    }
+    .launch-btn-primary:hover {
+      background: #142a54;
+      border-color: var(--accent-blue);
+    }
+
+    /* Comparison Table */
+    .comparison-table-box {
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+    }
+    .comparison-table th {
+      background: #181818;
+      text-align: left;
+      padding: 14px 18px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-primary);
+    }
+    .comparison-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid #2c2c2c;
+      vertical-align: top;
+    }
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Architecture Callout Cards */
+    .arch-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .arch-card {
+      background: #1b1b1b;
+      border: 1px solid #2e2e2e;
+      border-radius: 8px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .arch-card-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .arch-card-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+    .arch-card-mono {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #93c5fd;
+      background: #111;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 1px solid #292929;
+      margin-top: 4px;
+    }
+
+    /* Implementation Roadmap */
+    .roadmap-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .timeline-step {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 20px;
+      background: #1b1b1b;
+      border: 1px solid #2c2c2c;
+      border-radius: 8px;
+      padding: 18px 22px;
+    }
+    .timeline-phase {
+      font-weight: 700;
+      color: var(--sundance-gold);
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Prototype Switcher Bar -->
+  <div class="prototype-nav">
+    <div class="prototype-brand">
+      <span class="prototype-badge">Sundance UI</span>
+      <span class="prototype-title">Form Designer &mdash; Data Source Configuration Studio</span>
+    </div>
+    <div class="prototype-links">
+      <a href="data-source-designs-overview.html" class="proto-link active" style="color: #FFC425; border-color: rgba(255, 196, 37, 0.4);">&#9776; Overview</a>
+      <a href="data-source-design-1-drawer-wizard.html" class="proto-link">Design 1: Drawer Wizard</a>
+      <a href="data-source-design-2-master-detail.html" class="proto-link">Design 2: Master-Detail</a>
+      <a href="data-source-design-3-inline-binding.html" class="proto-link">Design 3: Inline Binding</a>
+      <a href="data-source-design-4-dedicated-pages.html" class="proto-link" style="border-color: #38bdf8; color: #7dd3fc;">Design 4: Dedicated /designer/data-sources</a>
+      <a href="tags-design-3-matrix-grid.html" class="proto-link" style="margin-left:8px; border-color:#6b21a8; color:#d8b4fe;">&rarr; Tags Tab (Studio 3)</a>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Hero Card -->
+    <section class="hero-card">
+      <span class="hero-tag">UX Strategy & Prototype Showcase</span>
+      <h1 class="hero-title">Data Source Configuration: UX Wireframe Suite</h1>
+      <p class="hero-desc">
+        A comprehensive exploration of user experience patterns for configuring, parameterizing, and binding dynamic data sources in Sundance Forms Hub. Grounded in ADR #005 Strategy Pattern (Static, Scheduled, Webhook, Data Lake) and real-world form designer workflows.
+      </p>
+    </section>
+
+    <!-- 3 Designs Showcase -->
+    <section>
+      <div class="section-header" style="margin-bottom: 24px;">
+        <h2 class="section-title"><span>&#9881;</span> 3 Distinct Design Paradigms</h2>
+        <p class="section-subtitle">Each design addresses data source configuration from a distinct architectural and ergonomic perspective.</p>
+      </div>
+
+      <div class="designs-grid">
+
+        <!-- Design 1 Card -->
+        <div class="design-card">
+          <span class="design-card-badge badge-d1">Design 1 &bull; Focused Workflow</span>
+          <h3 class="design-card-title">Drawer Wizard & Attribute Inspector</h3>
+          <p class="design-card-desc">
+            A contextual slide-over drawer that preserves the form builder context while walking the designer through type selection, endpoint/query specification, response extraction, and live dry-run testing.
+          </p>
+
+          <ul class="feature-list">
+            <li><span class="check-icon">&#10003;</span> <strong>4 Type Selector Cards:</strong> Instant switching between Static, Scheduled, Webhook, and Data Lake.</li>
+            <li><span class="check-icon">&#10003;</span> <strong>Type-Specific Forms:</strong> Dynamic inputs for URL, headers, intervals, RequiredKeys, or SQL.</li>
+            <li><span class="check-icon">&#10003;</span> <strong>Live Test Bench:</strong> Real-time HTTP/SQL simulation showing raw JSON and normalized <code>ILookup[]</code> dropdown pills.</li>
+            <li><span class="check-icon">&#10003;</span> <strong>Zero Context Loss:</strong> Opens over the canvas and immediately updates the selected field.</li>
+          </ul>
+
+          <a href="data-source-design-1-drawer-wizard.html" class="launch-btn launch-btn-primary">
+            <span>&#9654;</span> Launch Design 1 Prototype
+          </a>
+        </div>
+
+        <!-- Design 2 Card -->
+        <div class="design-card">
+          <span class="design-card-badge badge-d2">Design 2 &bull; Governance Studio</span>
+          <h3 class="design-card-title">Master-Detail Reference Data Studio</h3>
+          <p class="design-card-desc">
+            A full-page dedicated studio (the "Reference Data" top tab) for managing tenant-wide reusable data sources with background ingestion metrics, cache expiration counters, and multi-form usage tracking.
+          </p>
+
+          <ul class="feature-list">
+            <li><span class="check-icon">&#10003;</span> <strong>Tenant Reusable Catalog:</strong> Master list of all sources with search, filters, and health badges.</li>
+            <li><span class="check-icon">&#10003;</span> <strong>Sync & Ingestion Monitoring:</strong> Track cache TTL, interval hours, and retry attempts.</li>
+            <li><span class="check-icon">&#10003;</span> <strong>Usage Auditing:</strong> View all forms and fields currently consuming the data source.</li>
+            <li><span class="check-icon">&#10003;</span> <strong>Ideal for Data Engineers:</strong> Best for centralizing corporate APIs and lakehouse queries.</li>
+          </ul>
+
+          <a href="data-source-design-2-master-detail.html" class="launch-btn launch-btn-primary">
+            <span>&#9654;</span> Launch Design 2 Prototype
+          </a>
+        </div>
+
+        <!-- Design 3 Card -->
+        <div class="design-card">
+          <span class="design-card-badge badge-d3">Design 3 &bull; Frictionless Inline</span>
+          <h3 class="design-card-title">Field-Centric Inline Binding & Preview</h3>
+          <p class="design-card-desc">
+            Embeds data source selection and cascading parameter bindings directly inside the existing <code>ObjectSettingsPanel</code> with an interactive live dropdown preview on the canvas.
+          </p>
+
+          <ul class="feature-list">
+            <li><span class="check-icon">&#10003;</span> <strong>Cascading Field Lookups:</strong> Map webhook parameters to upstream form fields (e.g. Country &rarr; Facility).</li>
+            <li><span class="check-icon">&#10003;</span> <strong>Inline Mode Toggle:</strong> Instant switch between Static Manual Options and Connected Data Sources.</li>
+            <li><span class="check-icon">&#10003;</span> <strong>Live Dropdown Simulation:</strong> Test clicking and selecting dropdown items right on the canvas.</li>
+            <li><span class="check-icon">&#10003;</span> <strong>Fastest Form Building:</strong> Minimizes clicks for standard select and checkbox fields.</li>
+          </ul>
+
+          <a href="data-source-design-3-inline-binding.html" class="launch-btn launch-btn-primary">
+            <span>&#9654;</span> Launch Design 3 Prototype
+          </a>
+        </div>
+
+        <!-- Design 4 Card: Dedicated Pages Architecture -->
+        <div class="design-card" style="border-color: #0284c7; background: linear-gradient(180deg, rgba(14, 116, 144, 0.1) 0%, var(--bg-card) 100%);">
+          <span class="design-card-badge badge-d4">Design 4 &bull; Architectural Decoupling</span>
+          <h3 class="design-card-title">Dedicated /data-sources/ Studio & Read-Only Reference Panel</h3>
+          <p class="design-card-desc">
+            Aligns directly with <code>routes/data-sources/index.tsx</code> and <code>CreateDataSourceDrawer.tsx</code>: manages data sources at <code>/data-sources/</code> and <code>/data-sources/$dataSourceId</code> while keeping the Form Designer's Reference Data panel strictly <strong>read-only & consumption-focused</strong>.
+          </p>
+
+          <ul class="feature-list">
+            <li><span class="check-icon">&#10003;</span> <strong>Production Route Alignment:</strong> Matches <code>/data-sources/</code> with <code>DataSourcesToolbar</code>, <code>CardList</code>, and <code>DataSourceCard</code>.</li>
+            <li><span class="check-icon">&#10003;</span> <strong>Modal Drawer Creation:</strong> <code>CreateDataSourceDrawer</code> handles Name & Description, smoothly navigating to <code>/data-sources/$dataSourceId</code>.</li>
+            <li><span class="check-icon">&#10003;</span> <strong>Read-Only Reference Panel:</strong> Previews connected sources, parameters, and lookups with direct "Manage in Data Sources Studio ↗" links.</li>
+            <li><span class="check-icon">&#10003;</span> <strong>Zero Cross-Form Side Effects:</strong> Form designers cannot accidentally mutate shared tenant endpoints from within a form version.</li>
+          </ul>
+
+          <a href="data-source-design-4-dedicated-pages.html" class="launch-btn launch-btn-primary" style="background:#0369a1; border-color:#38bdf8;">
+            <span>&#9654;</span> Launch Design 4 Prototype
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- Underlying Domain Architecture -->
+    <section>
+      <div class="section-header" style="margin-bottom: 24px;">
+        <h2 class="section-title"><span>&#128736;</span> Architectural Alignment (Sundance Backend & Frontend)</h2>
+        <p class="section-subtitle">How each data source type maps to domain contracts defined in ADR #005 and <code>DataSourcesService</code>.</p>
+      </div>
+
+      <div class="arch-grid">
+        <div class="arch-card">
+          <div class="arch-card-title" style="color:#6ee7b7;">
+            <span>&#9776;</span> Static Lookups
+          </div>
+          <p class="arch-card-desc">In-memory key-value pairs stored directly in form or tenant record. Zero network dependency.</p>
+          <div class="arch-card-mono">Data: []*Lookup { label, value }</div>
+        </div>
+
+        <div class="arch-card">
+          <div class="arch-card-title" style="color:#d8b4fe;">
+            <span>&#128337;</span> Scheduled Ingest
+          </div>
+          <p class="arch-card-desc">Background worker queries external API periodically and caches results locally with TTL.</p>
+          <div class="arch-card-mono">IntervalHours, ExpirationDate, ValueField, LabelField</div>
+        </div>
+
+        <div class="arch-card">
+          <div class="arch-card-title" style="color:#67e8f9;">
+            <span>&#9889;</span> Webhook API
+          </div>
+          <p class="arch-card-desc">Real-time HTTP fetch on form interaction, parameterized by upstream field values.</p>
+          <div class="arch-card-mono">URL, Headers, RequiredKeys[], ValueField, LabelField</div>
+        </div>
+
+        <div class="arch-card">
+          <div class="arch-card-title" style="color:#fde68a;">
+            <span>&#128451;</span> Data Lake SQL
+          </div>
+          <p class="arch-card-desc">Direct BigQuery / Lakehouse SQL queries with parameter binding tokens (:param).</p>
+          <div class="arch-card-mono">Catalog, Schema, Query, TimeoutMs, ValueCol, LabelCol</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Trade-off Comparison Table -->
+    <section>
+      <div class="section-header" style="margin-bottom: 24px;">
+        <h2 class="section-title"><span>&#128202;</span> UX & Engineering Trade-Off Matrix</h2>
+        <p class="section-subtitle">Comparison across cognitive load, workflow velocity, and React/MUI implementation complexity.</p>
+      </div>
+
+      <div class="comparison-table-box">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th style="width:180px;">Evaluation Dimension</th>
+              <th>Design 1: Drawer Wizard</th>
+              <th>Design 2: Old Master-Detail</th>
+              <th>Design 3: Inline ObjectSettings</th>
+              <th>Design 4: Dedicated Pages + Read-Only Panel</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Primary User Persona</strong></td>
+              <td>Form Designers & Product Builders</td>
+              <td>Enterprise Data Engineers & Admins</td>
+              <td>Fast Form Authors (Business Analysts)</td>
+              <td><span style="color:#67e8f9;">Both:</span> Tenant Admins + Form Authors</td>
+            </tr>
+            <tr>
+              <td><strong>Context Preservation</strong></td>
+              <td><span style="color:#34d399;">High</span> (Drawer slides over canvas)</td>
+              <td><span style="color:#f87171;">Low</span> (Navigates away to dedicated tab)</td>
+              <td><span style="color:#34d399;">Maximum</span> (Directly in settings sidebar)</td>
+              <td><span style="color:#34d399;">Clean Separation</span> (Dedicated URLs for dedicated tasks)</td>
+            </tr>
+            <tr>
+              <td><strong>Cross-Form Mutation Safety</strong></td>
+              <td><span style="color:#fbbf24;">Risky</span> (Allows editing shared source)</td>
+              <td><span style="color:#f87171;">Dangerous</span> (Edits shared source inside form tab)</td>
+              <td><span style="color:#34d399;">Safe</span> (Read-only binding to existing ID)</td>
+              <td><span style="color:#34d399;">100% Protected</span> (Reference panel is strictly locked)</td>
+            </tr>
+            <tr>
+              <td><strong>Dedicated Lifecycle URL</strong></td>
+              <td>None (Modal only)</td>
+              <td>None (Trapped in Form tab)</td>
+              <td>None (Sidebar only)</td>
+              <td><span style="color:#34d399;">Yes:</span> <code>/designer/data-sources</code> & <code>/new</code></td>
+            </tr>
+            <tr>
+              <td><strong>Cascading Lookups</strong></td>
+              <td>Handled in Step 3 / Binding preview</td>
+              <td>Audited across forms and fields</td>
+              <td><span style="color:#34d399;">Best</span> (Direct upstream field dropdown)</td>
+              <td>Audited in panel + bound in settings</td>
+            </tr>
+            <tr>
+              <td><strong>Live Test & Sandbox</strong></td>
+              <td>Dedicated Test Bench in drawer</td>
+              <td>Full Runner tab with JSON viewer</td>
+              <td>Compact preview widget in sidebar</td>
+              <td>Pre-flight test bench in <code>/data-sources/new</code></td>
+            </tr>
+            <tr>
+              <td><strong>Implementation Blueprint</strong></td>
+              <td>Drawer Component</td>
+              <td>Form Designer Tab</td>
+              <td>Extends ObjectSettingsPanel</td>
+              <td><span style="color:#34d399;">Recommended Architecture</span> (Matches Sundance route tree)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Recommended Implementation Blueprint -->
+    <section>
+      <div class="section-header" style="margin-bottom: 24px;">
+        <h2 class="section-title"><span>&#128640;</span> Recommended Implementation Strategy</h2>
+        <p class="section-subtitle">How to deliver maximum user value incrementally within <code>frontend/apps/forms</code>.</p>
+      </div>
+
+      <div class="roadmap-timeline">
+        <div class="timeline-step">
+          <span class="timeline-phase">Phase 1 &bull; Immediate</span>
+          <div>
+            <strong style="color:white; font-size:1rem;">Implement Design 3 + Design 1 Drawer Trigger</strong>
+            <p style="color:var(--text-secondary); font-size:0.88rem; margin-top:4px;">
+              In <code>ObjectSettingsPanel/settings/</code>, create <code>SelectElementSettings.tsx</code> featuring Design 3's inline data source selector and parameter bindings. Clicking "+ Create / Edit Data Source" opens Design 1's slide-over drawer wizard. This gives form designers complete functionality immediately without disrupting existing navigation.
+            </p>
+          </div>
+        </div>
+
+        <div class="timeline-step">
+          <span class="timeline-phase">Phase 2 &bull; Near-Term</span>
+          <div>
+            <strong style="color:white; font-size:1rem;">Activate "Reference Data" Tab with Design 2 Master-Detail Studio</strong>
+            <p style="color:var(--text-secondary); font-size:0.88rem; margin-top:4px;">
+              Add the <code>Reference Data</code> tab to the Form Designer header tabs in <code>index.tsx</code>, allowing tenant admins to manage corporate data sources globally, view cache expiration countdowns, and trigger manual ingestion sync jobs.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+</body>
+</html>
