@@ -29,19 +29,6 @@ export const createDataSourceDrawerStyles: Styles = {
     gap: 2.5,
     height: "100%",
   },
-  typesList: {
-    gridTemplateColumns: {
-      xs: "1fr",
-      sm: "repeat(3, 1fr)",
-      md: "repeat(4, 1fr)",
-    },
-    gap: 1,
-  },
-  selectedTypeCard: (theme) => ({
-    borderColor: `${theme.palette.primary.main}`,
-    borderStyle: "solid",
-    background: `${theme.palette.primary.main}25`,
-  }),
   buttons: {
     p: 4,
     mt: "auto",

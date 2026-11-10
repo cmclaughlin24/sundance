@@ -5,16 +5,8 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useActionState, useImperativeHandle, useRef, useState } from "react";
 import { createDataSourceDrawerStyles as styles } from "./CreateDataSourceDrawer.style";
-import {
-  DataSourceTypeCard,
-  type DataSourceTypeCardProps,
-} from "./DataSourceTypeCard";
-import HttpIcon from "@mui/icons-material/Http";
-import MenuIcon from "@mui/icons-material/Menu";
-import StorageIcon from "@mui/icons-material/Storage";
-import AccessAlarm from "@mui/icons-material/AccessAlarm";
-import { CardList } from "@/components/CardList";
 import type { DataSourceType } from "@/types/dataSource";
+import { DataSourceCardList } from "./DataSourceCardList";
 
 export interface CreateDataSourceDrawerProps {
   ref: React.Ref<DrawerHandle>;
@@ -31,28 +23,6 @@ interface CreateFormState {
   error?: string;
 }
 
-const dataSourceTypes: DataSourceTypeCardProps[] = [
-  {
-    type: "scheduled",
-    description: "Periodic background sync with TTL cache.",
-    icon: <AccessAlarm fontSize="large" />,
-  },
-  {
-    type: "webhook",
-    description: "On-demand HTTP fetch parameterized by form.",
-    icon: <HttpIcon fontSize="large" />,
-  },
-  {
-    type: "data-lake",
-    description: "Direct BigQuery SQL query to lakehouse.",
-    icon: <StorageIcon fontSize="large" />,
-  },
-  {
-    type: "static",
-    description: "In-memory key-value list stored in schema.",
-    icon: <MenuIcon fontSize="large" />,
-  },
-];
 
 export const CreateDataSourceDrawer: React.FC<CreateDataSourceDrawerProps> =
   function ({ ref, onCreate }) {
@@ -125,24 +95,7 @@ export const CreateDataSourceDrawer: React.FC<CreateDataSourceDrawerProps> =
               data-testid="create-data-source-description-input"
             />
             <Typography>2. Where does the data come from?</Typography>
-            <CardList
-              data={dataSourceTypes}
-              keyFn={({ type }) => type}
-              onClick={(item) => setSelectedType(item.type)}
-              sx={styles.typesList}
-              disableAnimation
-            >
-              {(props) => (
-                <DataSourceTypeCard
-                  {...props}
-                  sx={
-                    selectedType === props.type
-                      ? styles.selectedTypeCard
-                      : undefined
-                  }
-                />
-              )}
-            </CardList>
+            <DataSourceCardList selection={selectedType} onSelection={setSelectedType} />
           </Box>
           <Box sx={styles.buttons}>
             <Button

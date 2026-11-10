@@ -3,6 +3,7 @@ import type { Styles } from "@/types/styles";
 
 export const dataSourceTypeCardStyles: Styles = {
   card: (theme) => ({
+    width: "100%",
     p: 2,
     display: "flex",
     flexDirection: "column",

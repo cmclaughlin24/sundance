@@ -16,6 +16,13 @@ export class DataSourcesService extends BaseHttpService {
     return this._get<DataSource[]>("/api/v1/data-sources", options);
   }
 
+  async getDataSource(
+    id: string,
+    options: DefaultRequestOptions,
+  ): Promise<DataSource> {
+    return this._get<DataSource>(`/api/v1/data-sources/${id}`, options);
+  }
+
   async getLookups(
     dataSourceId: string,
     filters: Record<string, any> | null,
@@ -52,5 +59,23 @@ export class DataSourcesService extends BaseHttpService {
     );
 
     return resp.data;
+  }
+
+  async update(
+    id: string,
+    dataSource: DataSourceRequest,
+    options: DefaultRequestOptions,
+  ): Promise<DataSource> {
+    const resp = await this._put<DataSourceRequest, DataSource>(
+      `/api/v1/data-sources/${id}`,
+      dataSource,
+      options,
+    );
+
+    return resp.data;
+  }
+
+  async delete(id: string, options: DefaultRequestOptions): Promise<void> {
+    return this._delete(`/api/v1/data-sources/${id}`, options);
   }
 }
