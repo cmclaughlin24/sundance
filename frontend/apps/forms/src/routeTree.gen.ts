@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DataSourcesIndexRouteImport } from './routes/data-sources/index'
 import { Route as DataSourcesDataSourceIdIndexRouteImport } from './routes/data-sources/$dataSourceId/index'
 import { Route as DesignerFormsIndexRouteImport } from './routes/designer/forms/index'
+import { Route as DataSourcesDataSourceIdChar123TabChar125IndexRouteImport } from './routes/data-sources/$dataSourceId/{-$tab}/index'
 import { Route as DesignerFormsFormIdIndexRouteImport } from './routes/designer/forms/$formId/index'
 import { Route as FormsFormIdVersionsVersionIdIndexRouteImport } from './routes/forms/$formId/versions/$versionId/index'
 import { Route as DesignerFormsFormIdVersionsVersionIdChar123TabChar125IndexRouteImport } from './routes/designer/forms/$formId/versions/$versionId/{-$tab}/index'
@@ -38,6 +39,12 @@ const DesignerFormsIndexRoute = DesignerFormsIndexRouteImport.update({
   path: '/designer/forms/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DataSourcesDataSourceIdChar123TabChar125IndexRoute =
+  DataSourcesDataSourceIdChar123TabChar125IndexRouteImport.update({
+    id: '/data-sources/$dataSourceId/{-$tab}/',
+    path: '/data-sources/$dataSourceId/{-$tab}/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const DesignerFormsFormIdIndexRoute =
   DesignerFormsFormIdIndexRouteImport.update({
     id: '/designer/forms/$formId/',
@@ -62,6 +69,7 @@ export interface FileRoutesByFullPath {
   '/data-sources/': typeof DataSourcesIndexRoute
   '/data-sources/$dataSourceId/': typeof DataSourcesDataSourceIdIndexRoute
   '/designer/forms/': typeof DesignerFormsIndexRoute
+  '/data-sources/$dataSourceId/{-$tab}/': typeof DataSourcesDataSourceIdChar123TabChar125IndexRoute
   '/designer/forms/$formId/': typeof DesignerFormsFormIdIndexRoute
   '/forms/$formId/versions/$versionId/': typeof FormsFormIdVersionsVersionIdIndexRoute
   '/designer/forms/$formId/versions/$versionId/{-$tab}/': typeof DesignerFormsFormIdVersionsVersionIdChar123TabChar125IndexRoute
@@ -71,6 +79,7 @@ export interface FileRoutesByTo {
   '/data-sources': typeof DataSourcesIndexRoute
   '/data-sources/$dataSourceId': typeof DataSourcesDataSourceIdIndexRoute
   '/designer/forms': typeof DesignerFormsIndexRoute
+  '/data-sources/$dataSourceId/{-$tab}': typeof DataSourcesDataSourceIdChar123TabChar125IndexRoute
   '/designer/forms/$formId': typeof DesignerFormsFormIdIndexRoute
   '/forms/$formId/versions/$versionId': typeof FormsFormIdVersionsVersionIdIndexRoute
   '/designer/forms/$formId/versions/$versionId/{-$tab}': typeof DesignerFormsFormIdVersionsVersionIdChar123TabChar125IndexRoute
@@ -81,6 +90,7 @@ export interface FileRoutesById {
   '/data-sources/': typeof DataSourcesIndexRoute
   '/data-sources/$dataSourceId/': typeof DataSourcesDataSourceIdIndexRoute
   '/designer/forms/': typeof DesignerFormsIndexRoute
+  '/data-sources/$dataSourceId/{-$tab}/': typeof DataSourcesDataSourceIdChar123TabChar125IndexRoute
   '/designer/forms/$formId/': typeof DesignerFormsFormIdIndexRoute
   '/forms/$formId/versions/$versionId/': typeof FormsFormIdVersionsVersionIdIndexRoute
   '/designer/forms/$formId/versions/$versionId/{-$tab}/': typeof DesignerFormsFormIdVersionsVersionIdChar123TabChar125IndexRoute
@@ -92,6 +102,7 @@ export interface FileRouteTypes {
     | '/data-sources/'
     | '/data-sources/$dataSourceId/'
     | '/designer/forms/'
+    | '/data-sources/$dataSourceId/{-$tab}/'
     | '/designer/forms/$formId/'
     | '/forms/$formId/versions/$versionId/'
     | '/designer/forms/$formId/versions/$versionId/{-$tab}/'
@@ -101,6 +112,7 @@ export interface FileRouteTypes {
     | '/data-sources'
     | '/data-sources/$dataSourceId'
     | '/designer/forms'
+    | '/data-sources/$dataSourceId/{-$tab}'
     | '/designer/forms/$formId'
     | '/forms/$formId/versions/$versionId'
     | '/designer/forms/$formId/versions/$versionId/{-$tab}'
@@ -110,6 +122,7 @@ export interface FileRouteTypes {
     | '/data-sources/'
     | '/data-sources/$dataSourceId/'
     | '/designer/forms/'
+    | '/data-sources/$dataSourceId/{-$tab}/'
     | '/designer/forms/$formId/'
     | '/forms/$formId/versions/$versionId/'
     | '/designer/forms/$formId/versions/$versionId/{-$tab}/'
@@ -120,6 +133,7 @@ export interface RootRouteChildren {
   DataSourcesIndexRoute: typeof DataSourcesIndexRoute
   DataSourcesDataSourceIdIndexRoute: typeof DataSourcesDataSourceIdIndexRoute
   DesignerFormsIndexRoute: typeof DesignerFormsIndexRoute
+  DataSourcesDataSourceIdChar123TabChar125IndexRoute: typeof DataSourcesDataSourceIdChar123TabChar125IndexRoute
   DesignerFormsFormIdIndexRoute: typeof DesignerFormsFormIdIndexRoute
   FormsFormIdVersionsVersionIdIndexRoute: typeof FormsFormIdVersionsVersionIdIndexRoute
   DesignerFormsFormIdVersionsVersionIdChar123TabChar125IndexRoute: typeof DesignerFormsFormIdVersionsVersionIdChar123TabChar125IndexRoute
@@ -155,6 +169,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DesignerFormsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/data-sources/$dataSourceId/{-$tab}/': {
+      id: '/data-sources/$dataSourceId/{-$tab}/'
+      path: '/data-sources/$dataSourceId/{-$tab}'
+      fullPath: '/data-sources/$dataSourceId/{-$tab}/'
+      preLoaderRoute: typeof DataSourcesDataSourceIdChar123TabChar125IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/designer/forms/$formId/': {
       id: '/designer/forms/$formId/'
       path: '/designer/forms/$formId'
@@ -184,6 +205,8 @@ const rootRouteChildren: RootRouteChildren = {
   DataSourcesIndexRoute: DataSourcesIndexRoute,
   DataSourcesDataSourceIdIndexRoute: DataSourcesDataSourceIdIndexRoute,
   DesignerFormsIndexRoute: DesignerFormsIndexRoute,
+  DataSourcesDataSourceIdChar123TabChar125IndexRoute:
+    DataSourcesDataSourceIdChar123TabChar125IndexRoute,
   DesignerFormsFormIdIndexRoute: DesignerFormsFormIdIndexRoute,
   FormsFormIdVersionsVersionIdIndexRoute:
     FormsFormIdVersionsVersionIdIndexRoute,

@@ -1,3 +1,4 @@
+import { Border } from "@/constants/colors";
 import type { Styles } from "@/types/styles";
 
 export const dataSourcePageStyles: Styles = {
@@ -30,5 +31,13 @@ export const dataSourcePageStyles: Styles = {
     "> button": {
       marginLeft: 2.5,
     },
+  },
+  configureTab: {
+    border: `1px solid ${Border.Primary}`,
+    padding: 5,
+    display: "flex",
+    flexDirection: "column",
+    gap: 2.5,
+    height: "100%",
   },
 };
