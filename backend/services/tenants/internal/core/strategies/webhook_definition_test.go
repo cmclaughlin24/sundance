@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestWebhookLookupStrategy_Lookup(t *testing.T) {
+func TestWebhookDataSourceDefinitionStrategy_Lookup(t *testing.T) {
 	webhookDS := &domain.DataSource{
 		ID:   "ds-1",
 		Type: domain.DataSourceTypeWebhook,
@@ -187,7 +187,7 @@ func TestWebhookLookupStrategy_Lookup(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := strategies.NewWebhookLookupStrategy(logger, &ports.Clients{
+			s := strategies.NewWebhookDataSourceDefinitionStrategy(logger, &ports.Clients{
 				Lookups: &mockLookupClient{
 					fetchLookupsFn: func(ctx context.Context, method, url string, headers map[string]string, params map[string]any) ([]map[string]any, error) {
 						if tt.fetchLookupsFn != nil {

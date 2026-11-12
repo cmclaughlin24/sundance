@@ -111,10 +111,20 @@ func (c *mockLookupClient) FetchLookups(ctx context.Context, request domain.Data
 	return c.fetchLookupsFn(ctx, request, params)
 }
 
-type mockLookupStrategy struct {
-	lookupFn func(context.Context, *domain.DataSource, map[string]any) ([]*domain.Lookup, error)
+type mockDataSourceDefinitionStrategy struct {
+	descriptionFn func() string
+	attributesFn  func() []ports.AttributeDescriptor
+	lookupFn      func(context.Context, *domain.DataSource, map[string]any) ([]*domain.Lookup, error)
 }
 
-func (s *mockLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSource, query map[string]any) ([]*domain.Lookup, error) {
+func (s *mockDataSourceDefinitionStrategy) Description() string {
+	return s.descriptionFn()
+}
+
+func (s *mockDataSourceDefinitionStrategy) Attributes() []ports.AttributeDescriptor {
+	return s.attributesFn()
+}
+
+func (s *mockDataSourceDefinitionStrategy) Lookup(ctx context.Context, ds *domain.DataSource, query map[string]any) ([]*domain.Lookup, error) {
 	return s.lookupFn(ctx, ds, query)
 }

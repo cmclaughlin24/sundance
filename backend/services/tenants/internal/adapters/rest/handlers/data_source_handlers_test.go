@@ -92,6 +92,94 @@ func Test_handlers_GetDataSources(t *testing.T) {
 	}
 }
 
+func Test_handlers_GetDataSourcesTypes(t *testing.T) {
+	tests := []struct {
+		name       string
+		fn         func(context.Context) ([]ports.DataSourceTypeDescriptor, error)
+		statusCode int
+		want       []dto.DataSourceTypeDescriptorResponse
+	}{
+		{
+			"should yield OK if the request is successful with results",
+			func(ctx context.Context) ([]ports.DataSourceTypeDescriptor, error) {
+				return []ports.DataSourceTypeDescriptor{
+					{
+						Type:        domain.DataSourceTypeStatic,
+						Description: "Static options",
+						Attributes: []ports.AttributeDescriptor{
+							{Type: "array", Name: "data", Description: "Options", Required: true},
+						},
+					},
+					{Type: domain.DataSourceTypeWebhook, Description: "Webhook options"},
+				}, nil
+			},
+			http.StatusOK,
+			[]dto.DataSourceTypeDescriptorResponse{
+				{
+					Type:        domain.DataSourceTypeStatic,
+					Description: "Static options",
+					Attributes: []dto.AttributeDescriptorResponse{
+						{Type: "array", Name: "data", Description: "Options", Required: true},
+					},
+				},
+				{Type: domain.DataSourceTypeWebhook, Description: "Webhook options", Attributes: []dto.AttributeDescriptorResponse{}},
+			},
+		},
+		{
+			"should yield OK if the request is successful with empty results",
+			func(ctx context.Context) ([]ports.DataSourceTypeDescriptor, error) {
+				return []ports.DataSourceTypeDescriptor{}, nil
+			},
+			http.StatusOK,
+			[]dto.DataSourceTypeDescriptorResponse{},
+		},
+		{
+			"should yield INTERNAL SERVER ERROR if the request fails",
+			func(ctx context.Context) ([]ports.DataSourceTypeDescriptor, error) {
+				return nil, errors.New("internal error")
+			},
+			http.StatusInternalServerError,
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange.
+			s := &ports.API{DataSources: &mockDataSourcesService{findTypesFn: tt.fn}}
+			h := newTestHandlers(s)
+			req, _ := http.NewRequest(http.MethodGet, "/api/v1/data-sources/types", nil)
+			ctx := httputil.SetTenantContext(req.Context(), "tenant-1")
+			req = req.WithContext(ctx)
+			rr := httptest.NewRecorder()
+			handler := http.HandlerFunc(h.GetDataSourcesTypes)
+
+			// Act.
+			handler.ServeHTTP(rr, req)
+
+			// Assert.
+			resp := rr.Result()
+
+			if resp.StatusCode != tt.statusCode {
+				t.Errorf("expected status code %d but got %d", tt.statusCode, resp.StatusCode)
+			}
+
+			if tt.statusCode < 200 || tt.statusCode >= 300 {
+				return
+			}
+
+			var body []dto.DataSourceTypeDescriptorResponse
+			if err := json.NewDecoder(resp.Body).Decode(&body); err != nil {
+				t.Fatalf("failed to decode response body: %v", err)
+			}
+
+			if !reflect.DeepEqual(tt.want, body) {
+				t.Errorf("expected %v but got %v", tt.want, body)
+			}
+		})
+	}
+}
+
 func Test_handlers_GetDataSource(t *testing.T) {
 	tests := []struct {
 		name       string

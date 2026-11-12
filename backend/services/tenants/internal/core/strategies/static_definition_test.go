@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestScheduledLookupStrategy_Lookup(t *testing.T) {
+func TestStaticDataSourceDefinitionStrategy_Lookup(t *testing.T) {
 	tests := []struct {
 		name    string
 		ds      *domain.DataSource
@@ -16,21 +16,21 @@ func TestScheduledLookupStrategy_Lookup(t *testing.T) {
 		{
 			"should yield a list of lookups",
 			&domain.DataSource{
-				Type: domain.DataSourceTypeScheduled,
-				Attributes: domain.ScheduledDataSourceAttributes{
+				Type: domain.DataSourceTypeStatic,
+				Attributes: domain.StaticDataSourceAttributes{
 					Data: []*domain.Lookup{
-						{Value: "hudson", Label: "Hudson"},
-						{Value: "bingo", Label: "Bingo"},
+						{Value: "pikachu", Label: "Pikachu"},
+						{Value: "charizard", Label: "Charizard"},
 					},
 				},
 			},
 			nil,
 		},
 		{
-			"should yield an empty list lookups",
+			"should yield an empty list of lookups",
 			&domain.DataSource{
-				Type: domain.DataSourceTypeScheduled,
-				Attributes: domain.ScheduledDataSourceAttributes{
+				Type: domain.DataSourceTypeStatic,
+				Attributes: domain.StaticDataSourceAttributes{
 					Data: make([]*domain.Lookup, 0),
 				},
 			},
@@ -46,7 +46,7 @@ func TestScheduledLookupStrategy_Lookup(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := strategies.NewScheduledLookupStrategy(logger)
+			s := strategies.NewStaticDataSourceDefinitionStrategy(logger)
 
 			// Act.
 			got, gotErr := s.Lookup(context.Background(), tt.ds, nil)
@@ -64,7 +64,7 @@ func TestScheduledLookupStrategy_Lookup(t *testing.T) {
 				return
 			}
 
-			attr, _ := tt.ds.Attributes.(domain.ScheduledDataSourceAttributes)
+			attr, _ := tt.ds.Attributes.(domain.StaticDataSourceAttributes)
 
 			if len(got) != len(attr.Data) {
 				t.Errorf("expected %d items but got %d", len(attr.Data), len(got))

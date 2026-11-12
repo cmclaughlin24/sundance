@@ -20,14 +20,14 @@ func Bootstrap(opts ...func(*strategyOptions)) *ports.Strategies {
 		opt(&so)
 	}
 
-	lookupStrategies := stratreg.New[domain.DataSourceType, ports.LookupStrategy]().
-		Set(domain.DataSourceTypeStatic, NewStaticLookupStrategy(so.logger)).
-		Set(domain.DataSourceTypeScheduled, NewScheduledLookupStrategy(so.logger)).
-		Set(domain.DataSourceTypeWebhook, NewWebhookLookupStrategy(so.logger, so.clients)).
-		Set(domain.DataSourceTypeDataLake, NewDataLakeLookupStrategy(so.logger, so.clients))
+	definitionStrategies := stratreg.New[domain.DataSourceType, ports.DataSourceDefinitionStrategy]().
+		Set(domain.DataSourceTypeStatic, NewStaticDataSourceDefinitionStrategy(so.logger)).
+		Set(domain.DataSourceTypeScheduled, NewScheduledDataSourceDefinitionStrategy(so.logger)).
+		Set(domain.DataSourceTypeWebhook, NewWebhookDataSourceDefinitionStrategy(so.logger, so.clients)).
+		Set(domain.DataSourceTypeDataLake, NewDataLakeDataSourceDefinitionStrategy(so.logger, so.clients))
 
 	return &ports.Strategies{
-		Lookups: lookupStrategies,
+		DataSourceDefinition: definitionStrategies,
 	}
 }
 
@@ -48,4 +48,3 @@ func WithClients(clients *ports.Clients) func(*strategyOptions) {
 		so.clients = clients
 	}
 }
-

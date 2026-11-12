@@ -46,11 +46,13 @@ type LookupClient interface {
 }
 
 type Strategies struct {
-	Lookups LookupStrategyRegistry
+	DataSourceDefinition DataSourceDefinitionRegistry
 }
 
-type LookupStrategy interface {
+type DataSourceDefinitionStrategy interface {
+	Description() string
+	Attributes() []AttributeDescriptor
 	Lookup(context.Context, *domain.DataSource, map[string]any) ([]*domain.Lookup, error)
 }
 
-type LookupStrategyRegistry = stratreg.StrategyRegistry[domain.DataSourceType, LookupStrategy]
+type DataSourceDefinitionRegistry = stratreg.StrategyRegistry[domain.DataSourceType, DataSourceDefinitionStrategy]

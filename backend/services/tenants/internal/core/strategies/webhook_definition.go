@@ -9,21 +9,29 @@ import (
 	"sundance/backend/services/tenants/internal/core/ports"
 )
 
-type WebhookLookupStrategy struct {
-	baseLookupStrategy
+type WebhookDataSourceDefinitionStrategy struct {
+	baseDefinitionStrategy
 	client ports.LookupClient
 }
 
-func NewWebhookLookupStrategy(logger *slog.Logger, clients *ports.Clients) ports.LookupStrategy {
-	return &WebhookLookupStrategy{
+func NewWebhookDataSourceDefinitionStrategy(logger *slog.Logger, clients *ports.Clients) ports.DataSourceDefinitionStrategy {
+	return &WebhookDataSourceDefinitionStrategy{
 		client: clients.Lookups,
-		baseLookupStrategy: baseLookupStrategy{
+		baseDefinitionStrategy: baseDefinitionStrategy{
 			logger: logger,
 		},
 	}
 }
 
-func (s *WebhookLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSource, params map[string]any) ([]*domain.Lookup, error) {
+func (s *WebhookDataSourceDefinitionStrategy) Description() string {
+	return "Options fetched live from an HTTP endpoint on each lookup, supporting custom headers, field mapping, and required request keys."
+}
+
+func (s *WebhookDataSourceDefinitionStrategy) Attributes() []ports.AttributeDescriptor {
+	return reflectAttributes[domain.WebhookDataSourceAttributes]()
+}
+
+func (s *WebhookDataSourceDefinitionStrategy) Lookup(ctx context.Context, ds *domain.DataSource, params map[string]any) ([]*domain.Lookup, error) {
 	attr, err := domain.GetDataSourceAttributes[domain.WebhookDataSourceAttributes](ds.Attributes)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "data_source_id", ds.ID, "data_source_type", ds.Type, "error", err)

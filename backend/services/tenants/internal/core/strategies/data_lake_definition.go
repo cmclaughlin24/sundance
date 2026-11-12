@@ -8,21 +8,29 @@ import (
 	"sundance/backend/services/tenants/internal/core/ports"
 )
 
-type DataLakeLookupStrategy struct {
-	baseLookupStrategy
+type DataLakeDataSourceDefinitionStrategy struct {
+	baseDefinitionStrategy
 	client ports.DataLakeClient
 }
 
-func NewDataLakeLookupStrategy(logger *slog.Logger, client *ports.Clients) ports.LookupStrategy {
-	return &DataLakeLookupStrategy{
+func NewDataLakeDataSourceDefinitionStrategy(logger *slog.Logger, client *ports.Clients) ports.DataSourceDefinitionStrategy {
+	return &DataLakeDataSourceDefinitionStrategy{
 		client: client.DataLake,
-		baseLookupStrategy: baseLookupStrategy{
+		baseDefinitionStrategy: baseDefinitionStrategy{
 			logger: logger,
 		},
 	}
 }
 
-func (s *DataLakeLookupStrategy) Lookup(ctx context.Context, ds *domain.DataSource, params map[string]any) ([]*domain.Lookup, error) {
+func (s *DataLakeDataSourceDefinitionStrategy) Description() string {
+	return "Options resolved by running a parameterized query against the data lake, supporting catalog and schema selection, required and optional keys, and query timeouts."
+}
+
+func (s *DataLakeDataSourceDefinitionStrategy) Attributes() []ports.AttributeDescriptor {
+	return reflectAttributes[domain.DataLakeDataSourceAttributes]()
+}
+
+func (s *DataLakeDataSourceDefinitionStrategy) Lookup(ctx context.Context, ds *domain.DataSource, params map[string]any) ([]*domain.Lookup, error) {
 	attr, err := domain.GetDataSourceAttributes[domain.DataLakeDataSourceAttributes](ds.Attributes)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "strategy attributes mismatch", "data_source_id", ds.ID, "data_source_type", ds.Type, "error", err)

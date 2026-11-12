@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"reflect"
 	"testing"
 
 	"sundance/backend/pkg/common"
@@ -173,6 +174,71 @@ func TestDataSourcesService_FindByID(t *testing.T) {
 			}
 
 			if tt.want.ID != got.ID || tt.want.TenantID != got.TenantID || tt.want.Name != got.Name {
+				t.Errorf("expected %v but got %v", tt.want, got)
+			}
+		})
+	}
+}
+
+func TestDataSourcesService_FindTypes(t *testing.T) {
+	newStrategy := func(description string, attributes []ports.AttributeDescriptor) *mockDataSourceDefinitionStrategy {
+		return &mockDataSourceDefinitionStrategy{
+			descriptionFn: func() string { return description },
+			attributesFn:  func() []ports.AttributeDescriptor { return attributes },
+		}
+	}
+
+	tests := []struct {
+		name     string
+		registry ports.DataSourceDefinitionRegistry
+		want     []ports.DataSourceTypeDescriptor
+	}{
+		{
+			"should yield descriptors sorted by type",
+			ports.DataSourceDefinitionRegistry{
+				domain.DataSourceTypeWebhook: newStrategy("Webhook", []ports.AttributeDescriptor{
+					{Type: "string", Name: "url", Description: "Endpoint URL", Required: true},
+				}),
+				domain.DataSourceTypeStatic: newStrategy("Static", []ports.AttributeDescriptor{
+					{Type: "array", Name: "data", Description: "Options", Required: true},
+				}),
+				domain.DataSourceTypeDataLake: newStrategy("Data Lake", nil),
+			},
+			[]ports.DataSourceTypeDescriptor{
+				{Type: domain.DataSourceTypeDataLake, Description: "Data Lake"},
+				{Type: domain.DataSourceTypeStatic, Description: "Static", Attributes: []ports.AttributeDescriptor{
+					{Type: "array", Name: "data", Description: "Options", Required: true},
+				}},
+				{Type: domain.DataSourceTypeWebhook, Description: "Webhook", Attributes: []ports.AttributeDescriptor{
+					{Type: "string", Name: "url", Description: "Endpoint URL", Required: true},
+				}},
+			},
+		},
+		{
+			"should yield an empty list of descriptors",
+			ports.DataSourceDefinitionRegistry{},
+			nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Arrange.
+			s := dataSourcesService{
+				logger:               logger,
+				definitionStrategies: tt.registry,
+			}
+
+			// Act.
+			got, gotErr := s.FindTypes(context.Background())
+
+			// Assert.
+			if gotErr != nil {
+				t.Errorf("expected no error but got %v", gotErr)
+				return
+			}
+
+			if !reflect.DeepEqual(tt.want, got) {
 				t.Errorf("expected %v but got %v", tt.want, got)
 			}
 		})
@@ -654,7 +720,7 @@ func TestDataSourcesService_Lookup(t *testing.T) {
 		query     *ports.GetDataSourceLookupsQuery
 		findDs    *domain.DataSource
 		findErr   error
-		registry  ports.LookupStrategyRegistry
+		registry  ports.DataSourceDefinitionRegistry
 		lookupErr error
 		want      []*domain.Lookup
 		wantErr   bool
@@ -664,8 +730,8 @@ func TestDataSourcesService_Lookup(t *testing.T) {
 			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1", nil),
 			staticDS,
 			nil,
-			ports.LookupStrategyRegistry{
-				domain.DataSourceTypeStatic: &mockLookupStrategy{
+			ports.DataSourceDefinitionRegistry{
+				domain.DataSourceTypeStatic: &mockDataSourceDefinitionStrategy{
 					lookupFn: func(_ context.Context, _ *domain.DataSource, _ map[string]any) ([]*domain.Lookup, error) {
 						return lookups, nil
 					},
@@ -710,7 +776,7 @@ func TestDataSourcesService_Lookup(t *testing.T) {
 			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1", nil),
 			staticDS,
 			nil,
-			ports.LookupStrategyRegistry{},
+			ports.DataSourceDefinitionRegistry{},
 			nil,
 			nil,
 			true,
@@ -720,8 +786,8 @@ func TestDataSourcesService_Lookup(t *testing.T) {
 			ports.NewGetDataSourceLookupsQuery("tenant-1", "ds-1", nil),
 			staticDS,
 			nil,
-			ports.LookupStrategyRegistry{
-				domain.DataSourceTypeStatic: &mockLookupStrategy{
+			ports.DataSourceDefinitionRegistry{
+				domain.DataSourceTypeStatic: &mockDataSourceDefinitionStrategy{
 					lookupFn: func(_ context.Context, _ *domain.DataSource, _ map[string]any) ([]*domain.Lookup, error) {
 						return nil, errors.New("lookup error")
 					},
@@ -743,7 +809,7 @@ func TestDataSourcesService_Lookup(t *testing.T) {
 						return tt.findDs, tt.findErr
 					},
 				},
-				lookupStrategies: tt.registry,
+				definitionStrategies: tt.registry,
 			}
 
 			// Act.

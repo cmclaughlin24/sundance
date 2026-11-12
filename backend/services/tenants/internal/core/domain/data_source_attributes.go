@@ -15,11 +15,11 @@ type DataSourceAttributes interface {
 }
 
 type DataSourceHTTPRequest struct {
-	URL        string
-	Method     string
-	Headers    map[string]string
-	ValueField string
-	LabelField string
+	URL        string            `desc:"Endpoint URL to request lookup options from."`
+	Method     string            `desc:"HTTP method used for the request (e.g. GET, POST)."`
+	Headers    map[string]string `desc:"HTTP headers sent with the request, such as authorization."`
+	ValueField string            `desc:"Field in each response item to use as the option value."`
+	LabelField string            `desc:"Field in each response item to use as the option label."`
 }
 
 type baseDataSourceAttributes struct{}
@@ -28,16 +28,16 @@ func (b baseDataSourceAttributes) isDataSourceAttributes() {}
 
 type StaticDataSourceAttributes struct {
 	baseDataSourceAttributes
-	Data []*Lookup
+	Data []*Lookup `desc:"List of value and label options returned by the data source."`
 }
 
 type ScheduledDataSourceAttributes struct {
 	baseDataSourceAttributes
 	DataSourceHTTPRequest
-	Data           []*Lookup
-	IntervalHours  float64
-	ExpirationDate time.Time
-	Attempts       int
+	Data           []*Lookup `desc:"-"`
+	IntervalHours  float64   `desc:"Number of hours between data refreshes."`
+	ExpirationDate time.Time `desc:"-"`
+	Attempts       int       `desc:"-"`
 }
 
 func (attr *ScheduledDataSourceAttributes) RecordAttempt() {
@@ -53,19 +53,19 @@ func (attr *ScheduledDataSourceAttributes) RefreshData(data []*Lookup) {
 type WebhookDataSourceAttributes struct {
 	baseDataSourceAttributes
 	DataSourceHTTPRequest
-	RequiredKeys []string
+	RequiredKeys []string `desc:"Parameter keys that must be provided on each lookup request."`
 }
 
 type DataLakeDataSourceAttributes struct {
 	baseDataSourceAttributes
-	Query        string
-	RequiredKeys []string
-	OptionalKeys []string
-	Catalog      string
-	Schema       string
-	ValueField   string
-	LabelField   string
-	TimeoutMs    int
+	Query        string   `desc:"Parameterized SQL query used to resolve lookup options."`
+	RequiredKeys []string `desc:"Query parameter keys that must be provided on each lookup request."`
+	OptionalKeys []string `desc:"Query parameter keys that may optionally be provided on each lookup request."`
+	Catalog      string   `desc:"Data lake catalog to run the query against."`
+	Schema       string   `desc:"Data lake schema to run the query against."`
+	ValueField   string   `desc:"Column in the query result to use as the option value."`
+	LabelField   string   `desc:"Column in the query result to use as the option label."`
+	TimeoutMs    int      `desc:"Maximum query execution time in milliseconds."`
 }
 
 func GetDataSourceAttributes[T DataSourceAttributes](attr DataSourceAttributes) (T, error) {

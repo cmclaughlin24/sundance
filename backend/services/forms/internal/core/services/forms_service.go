@@ -177,7 +177,7 @@ func (s *formsService) FindElementTypes(ctx context.Context) ([]ports.ElementTyp
 		})
 	}
 
-	// NOTE: Sort element types alphabetically so that the order is deterministic.
+	// NOTE: Sort descriptors alphabetically so that the order is deterministic.
 	slices.SortFunc(descriptors, func(a, b ports.ElementTypeDescriptor) int {
 		return cmp.Compare(a.Type, b.Type)
 	})

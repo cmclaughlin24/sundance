@@ -22,6 +22,17 @@ definitions:
       message:
         type: string
     type: object
+  AttributeDescriptorResponse:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      required:
+        type: boolean
+      type:
+        type: string
+    type: object
   DataSourceRequest:
     properties:
       attributes:
@@ -70,6 +81,17 @@ definitions:
     - DataSourceTypeScheduled
     - DataSourceTypeWebhook
     - DataSourceTypeDataLake
+  DataSourceTypeDescriptorResponse:
+    properties:
+      attributes:
+        items:
+          $ref: '#/definitions/AttributeDescriptorResponse'
+        type: array
+      description:
+        type: string
+      type:
+        $ref: '#/definitions/DataSourceType'
+    type: object
   LookupResponse:
     properties:
       label:
@@ -401,6 +423,49 @@ paths:
       security:
       - BearerAuth: []
       summary: Get data source look-ups
+      tags:
+      - Data Sources
+  /api/v1/data-sources/types:
+    get:
+      consumes:
+      - application/json
+      description: Returns the catalog of supported data source types and their attribute
+        descriptors.
+      parameters:
+      - description: Tenant ID
+        in: header
+        name: X-Tenant-ID
+        required: true
+        type: string
+      - description: Client-supplied request trace ID (generated if absent)
+        in: header
+        name: X-Request-ID
+        type: string
+      - description: Client-supplied correlation ID for tracing
+        in: header
+        name: X-Correlation-ID
+        type: string
+      - description: Client-supplied request date in ISO 8601 format
+        format: date
+        in: header
+        name: X-Request-Date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/DataSourceTypeDescriptorResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/APIErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get supported data source types
       tags:
       - Data Sources
   /api/v1/tenants:

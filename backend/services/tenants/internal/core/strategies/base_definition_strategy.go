@@ -6,11 +6,11 @@ import (
 	"sundance/backend/services/tenants/internal/core/domain"
 )
 
-type baseLookupStrategy struct {
+type baseDefinitionStrategy struct {
 	logger *slog.Logger
 }
 
-func (s *baseLookupStrategy) toLookups(ctx context.Context, rows []map[string]any, valueField, labelField string, dataSourceID domain.DataSourceID) []*domain.Lookup {
+func (s *baseDefinitionStrategy) toLookups(ctx context.Context, rows []map[string]any, valueField, labelField string, dataSourceID domain.DataSourceID) []*domain.Lookup {
 	lookups := make([]*domain.Lookup, 0, len(rows))
 
 	for i, row := range rows {
@@ -36,7 +36,7 @@ func (s *baseLookupStrategy) toLookups(ctx context.Context, rows []map[string]an
 	return lookups
 }
 
-func (s baseLookupStrategy) missingRequiredKeys(required []string, params map[string]any) []string {
+func (s baseDefinitionStrategy) missingRequiredKeys(required []string, params map[string]any) []string {
 	if len(required) == 0 {
 		return nil
 	}

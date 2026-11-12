@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
+	"unicode"
 
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
@@ -76,15 +78,28 @@ func extractAttributes(t reflect.Type, out *[]ports.AttributeDescriptor) {
 }
 
 func toLowerCamelCase(s string) string {
-	if s == "" {
-		return ""
+	// NOTE: Lowercase the leading run of capitals so that acronyms are handled
+	// (e.g. "URL" -> "url", "URLPath" -> "urlPath", "IntervalHours" -> "intervalHours").
+	n := 0
+	for n < len(s) && unicode.IsUpper(rune(s[n])) {
+		n++
 	}
-	return strings.ToLower(s[:1]) + s[1:]
+
+	if n > 1 && n < len(s) {
+		n--
+	}
+
+	return strings.ToLower(s[:n]) + s[n:]
 }
 
 func goTypeToSchemaType(t reflect.Type) string {
 	if t.Kind() == reflect.Pointer {
 		t = t.Elem()
+	}
+
+	// NOTE: time.Time is a struct, but is serialized as an RFC 3339 string.
+	if t == reflect.TypeFor[time.Time]() {
+		return "string"
 	}
 
 	switch t.Kind() {

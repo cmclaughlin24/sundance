@@ -1,9 +1,11 @@
 package services
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"log/slog"
+	"slices"
 
 	"sundance/backend/pkg/common"
 	"sundance/backend/services/tenants/internal/core/domain"
@@ -15,7 +17,7 @@ type dataSourcesService struct {
 	logger                *slog.Logger
 	tenantsRepository     ports.TenantsRepository
 	dataSourcesRepository ports.DataSourcesRepository
-	lookupStrategies      ports.LookupStrategyRegistry
+	definitionStrategies  ports.DataSourceDefinitionRegistry
 }
 
 func NewDataSourcesService(logger *slog.Logger, repository *ports.Repository, strategies *ports.Strategies) ports.DataSourcesAPI {
@@ -23,7 +25,7 @@ func NewDataSourcesService(logger *slog.Logger, repository *ports.Repository, st
 		logger:                logger,
 		dataSourcesRepository: repository.DataSources,
 		tenantsRepository:     repository.Tenants,
-		lookupStrategies:      strategies.Lookups,
+		definitionStrategies:  strategies.DataSourceDefinition,
 	}
 }
 
@@ -63,6 +65,26 @@ func (s *dataSourcesService) FindByID(ctx context.Context, query *ports.FindData
 	}
 
 	return ds, nil
+}
+
+func (s *dataSourcesService) FindTypes(ctx context.Context) ([]ports.DataSourceTypeDescriptor, error) {
+	s.logger.DebugContext(ctx, "listing supported data source types")
+
+	var descriptors []ports.DataSourceTypeDescriptor
+	for t, strategy := range s.definitionStrategies {
+		descriptors = append(descriptors, ports.DataSourceTypeDescriptor{
+			Type:        t,
+			Description: strategy.Description(),
+			Attributes:  strategy.Attributes(),
+		})
+	}
+
+	// NOTE: Sort descriptors alphabetically so that the order is deterministic.
+	slices.SortFunc(descriptors, func(a, b ports.DataSourceTypeDescriptor) int {
+		return cmp.Compare(a.Type, b.Type)
+	})
+
+	return descriptors, nil
 }
 
 func (s *dataSourcesService) Create(ctx context.Context, cmd *commands.CreateDataSourceCommand) (*domain.DataSource, error) {
@@ -182,19 +204,19 @@ func (s *dataSourcesService) Lookup(ctx context.Context, query *ports.GetDataSou
 		return nil, err
 	}
 
-	strategy, err := s.lookupStrategies.Get(ds.Type)
+	strategy, err := s.definitionStrategies.Get(ds.Type)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "failed to get lookup strategy", "tenant_id", query.TenantID, "data_source_id", query.ID, "type", ds.Type, "error", err)
+		s.logger.ErrorContext(ctx, "failed to get definition strategy", "tenant_id", query.TenantID, "data_source_id", query.ID, "type", ds.Type, "error", err)
 		return nil, err
 	}
 
-	lookups, err := strategy.Lookup(ctx, ds, query.Params)
+	definitions, err := strategy.Lookup(ctx, ds, query.Params)
 	if err != nil {
 		s.logger.ErrorContext(ctx, "failed to execute lookup", "tenant_id", query.TenantID, "data_source_id", query.ID, "type", ds.Type, "error", err)
 		return nil, err
 	}
 
-	return lookups, nil
+	return definitions, nil
 }
 
 func (s *dataSourcesService) tenantExists(ctx context.Context, tenantID domain.TenantID) error {

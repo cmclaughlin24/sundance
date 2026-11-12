@@ -54,6 +54,42 @@ func (h *Handlers) GetDataSources(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// @summary		Get supported data source types
+// @description	Returns the catalog of supported data source types and their attribute descriptors.
+// @tags		Data Sources
+// @accept		json
+// @produce		json
+// @param		X-Tenant-ID header string true "Tenant ID"
+// @param 		X-Request-ID header string false "Client-supplied request trace ID (generated if absent)"
+// @param 		X-Correlation-ID header string false "Client-supplied correlation ID for tracing"
+// @param 		X-Request-Date header string false "Client-supplied request date in ISO 8601 format" Format(date)
+// @success		200 {array} dto.DataSourceTypeDescriptorResponse
+// @failure		500 {object} httputil.APIErrorResponse
+// @security 	BearerAuth
+// @Router		/api/v1/data-sources/types [get]
+func (h *Handlers) GetDataSourcesTypes(w http.ResponseWriter, r *http.Request) {
+	resultChan := make(chan result[[]ports.DataSourceTypeDescriptor], 1)
+
+	go func() {
+		defer close(resultChan)
+		dataSourceTypes, err := h.app.API.DataSources.FindTypes(r.Context())
+		resultChan <- result[[]ports.DataSourceTypeDescriptor]{dataSourceTypes, err}
+	}()
+
+	select {
+	case <-r.Context().Done():
+		h.app.Logger.WarnContext(r.Context(), "context cancellation")
+		return
+	case res := <-resultChan:
+		if res.err != nil {
+			h.sendErrorResponse(w, res.err)
+			return
+		}
+
+		httputil.SendJSONResponse(w, http.StatusOK, dto.DataSourceTypeDescriptorsToResponse(res.data))
+	}
+}
+
 // @summary		Get a data source by ID
 // @tags		Data Sources
 // @accept		json

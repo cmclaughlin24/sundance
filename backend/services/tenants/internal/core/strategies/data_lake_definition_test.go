@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestDataLakeLookupStrategy_Lookup(t *testing.T) {
+func TestDataLakeDataSourceDefinitionStrategy_Lookup(t *testing.T) {
 	dataLakeDS := &domain.DataSource{
 		ID:   "ds-1",
 		Type: domain.DataSourceTypeDataLake,
@@ -92,7 +92,7 @@ func TestDataLakeLookupStrategy_Lookup(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange.
-			s := strategies.NewDataLakeLookupStrategy(logger, &ports.Clients{
+			s := strategies.NewDataLakeDataSourceDefinitionStrategy(logger, &ports.Clients{
 				DataLake: &mockDataLakeClient{
 					queryFn: func(ctx context.Context, attr domain.DataLakeDataSourceAttributes, params map[string]any) ([]*domain.Lookup, error) {
 						if tt.queryFn != nil {

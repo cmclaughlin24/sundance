@@ -37,12 +37,17 @@ func (s *mockTenantsService) Delete(ctx context.Context, id domain.TenantID) err
 }
 
 type mockDataSourcesService struct {
-	findFn     func(context.Context, *ports.ListDataSourceQuery) ([]*domain.DataSource, error)
-	findByIdFn func(context.Context, *ports.FindDataSourceByIDQuery) (*domain.DataSource, error)
-	createFn   func(context.Context, *commands.CreateDataSourceCommand) (*domain.DataSource, error)
-	updateFn   func(context.Context, *commands.UpdateDataSourceCommand) (*domain.DataSource, error)
-	deleteFn   func(context.Context, *commands.RemoveDataSourceCommand) error
-	lookupFn   func(context.Context, *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error)
+	findFn      func(context.Context, *ports.ListDataSourceQuery) ([]*domain.DataSource, error)
+	findByIdFn  func(context.Context, *ports.FindDataSourceByIDQuery) (*domain.DataSource, error)
+	findTypesFn func(context.Context) ([]ports.DataSourceTypeDescriptor, error)
+	createFn    func(context.Context, *commands.CreateDataSourceCommand) (*domain.DataSource, error)
+	updateFn    func(context.Context, *commands.UpdateDataSourceCommand) (*domain.DataSource, error)
+	deleteFn    func(context.Context, *commands.RemoveDataSourceCommand) error
+	lookupFn    func(context.Context, *ports.GetDataSourceLookupsQuery) ([]*domain.Lookup, error)
+}
+
+func (s *mockDataSourcesService) FindTypes(ctx context.Context) ([]ports.DataSourceTypeDescriptor, error) {
+	return s.findTypesFn(ctx)
 }
 
 func (s *mockDataSourcesService) Find(ctx context.Context, query *ports.ListDataSourceQuery) ([]*domain.DataSource, error) {

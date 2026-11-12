@@ -68,6 +68,7 @@ func NewRoutes(app *core.Application, options ServerOptions) http.Handler {
 			dataSourcesRoutes.Use(httputil.NewTenantMiddleware("X-Tenant-ID"))
 
 			dataSourcesRoutes.Get("/", h.GetDataSources)
+			dataSourcesRoutes.Get("/types", h.GetDataSourcesTypes)
 			dataSourcesRoutes.Post("/", h.CreateDataSource)
 
 			dataSourcesRoutes.Route("/{dataSourceId}", func(dataSourceRoutes chi.Router) {

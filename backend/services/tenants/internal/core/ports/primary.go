@@ -24,6 +24,7 @@ type TenantsAPI interface {
 type DataSourcesAPI interface {
 	Find(context.Context, *ListDataSourceQuery) ([]*domain.DataSource, error)
 	FindByID(context.Context, *FindDataSourceByIDQuery) (*domain.DataSource, error)
+	FindTypes(context.Context) ([]DataSourceTypeDescriptor, error)
 	Create(context.Context, *commands.CreateDataSourceCommand) (*domain.DataSource, error)
 	Update(context.Context, *commands.UpdateDataSourceCommand) (*domain.DataSource, error)
 	Delete(context.Context, *commands.RemoveDataSourceCommand) error
