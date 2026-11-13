@@ -23,12 +23,18 @@ type Section struct {
 	ID       SectionID
 	Key      string `validate:"required,nowhitespace"`
 	Name     string `validate:"required"`
+	repeat   *SectionRepeat
 	elements PositionElements[*Element]
 	withPosition
 	withRules
 }
 
-func NewSection(key, name string, position float32) (*Section, error) {
+type SectionRepeat struct {
+	MinInstances int  `validate:"min=0"`
+	MaxInstances *int `validate:"omitempty,min=1,gtefield=MinInstances"`
+}
+
+func NewSection(key, name string, position float32, repeat *SectionRepeat) (*Section, error) {
 	if !isValidPosition(position) {
 		return nil, ErrInvalidPosition
 	}
@@ -37,6 +43,7 @@ func NewSection(key, name string, position float32) (*Section, error) {
 		ID:       SectionID(NewID()),
 		Key:      key,
 		Name:     name,
+		repeat:   cloneSectionRepeat(repeat),
 		elements: make(PositionElements[*Element], 0),
 		withPosition: withPosition{
 			position: position,
@@ -50,11 +57,12 @@ func NewSection(key, name string, position float32) (*Section, error) {
 	return s, nil
 }
 
-func HydrateSection(id SectionID, key, name string, position float32) *Section {
+func HydrateSection(id SectionID, key, name string, position float32, repeat *SectionRepeat) *Section {
 	return &Section{
 		ID:       id,
 		Key:      key,
 		Name:     name,
+		repeat:   cloneSectionRepeat(repeat),
 		elements: make(PositionElements[*Element], 0),
 		withPosition: withPosition{
 			position: position,
@@ -62,7 +70,7 @@ func HydrateSection(id SectionID, key, name string, position float32) *Section {
 	}
 }
 
-func (s *Section) Update(key, name string, position float32) error {
+func (s *Section) Update(key, name string, position float32, repeat *SectionRepeat) error {
 	if s == nil {
 		return ErrInvalidSection
 	}
@@ -74,6 +82,7 @@ func (s *Section) Update(key, name string, position float32) error {
 	cpy := *s
 	cpy.Key = key
 	cpy.Name = name
+	cpy.repeat = cloneSectionRepeat(repeat)
 	cpy.position = position
 
 	if err := validate.ValidateStruct(cpy); err != nil {
@@ -143,4 +152,29 @@ func (s *Section) SetRules(rules ...*Rule) error {
 	}
 
 	return s.withRules.SetRules(rules...)
+}
+
+func (s *Section) GetRepeat() *SectionRepeat {
+	if s == nil {
+		return nil
+	}
+
+	return cloneSectionRepeat(s.repeat)
+}
+
+func (s *Section) IsRepeatable() bool {
+	return s != nil && s.repeat != nil
+}
+
+func cloneSectionRepeat(sr *SectionRepeat) *SectionRepeat {
+	if sr == nil {
+		return nil
+	}
+
+	cpy := *sr
+	if sr.MaxInstances != nil {
+		cpy.MaxInstances = new(*sr.MaxInstances)
+	}
+
+	return &cpy
 }

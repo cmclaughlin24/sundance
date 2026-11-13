@@ -156,7 +156,9 @@ func (m *formDefinitionMapper) updatePage(p commands.PageData, page *domain.Page
 }
 
 func (m *formDefinitionMapper) createSection(s commands.SectionData) (*domain.Section, error) {
-	section, err := domain.NewSection(s.Key, s.Name, s.Position)
+	repeat := s.Repeat.ToDomain()
+
+	section, err := domain.NewSection(s.Key, s.Name, s.Position, repeat)
 	if err != nil {
 		return nil, err
 	}
@@ -189,7 +191,9 @@ func (m *formDefinitionMapper) createSection(s commands.SectionData) (*domain.Se
 }
 
 func (m *formDefinitionMapper) updateSection(s commands.SectionData, section *domain.Section) error {
-	if err := section.Update(s.Key, s.Name, s.Position); err != nil {
+	repeat := s.Repeat.ToDomain()
+
+	if err := section.Update(s.Key, s.Name, s.Position, repeat); err != nil {
 		return err
 	}
 

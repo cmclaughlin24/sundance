@@ -44,8 +44,25 @@ type SectionData struct {
 	Key          string
 	Name         string
 	Position     float32
+	Repeat       *SectionRepeatData
 	ElementsData []ElementData
 	Rules        []RuleData
+}
+
+type SectionRepeatData struct {
+	MinInstances int
+	MaxInstances *int
+}
+
+func (s *SectionRepeatData) ToDomain() *domain.SectionRepeat {
+	if s == nil {
+		return nil
+	}
+
+	return &domain.SectionRepeat{
+		MinInstances: s.MinInstances,
+		MaxInstances: s.MaxInstances,
+	}
 }
 
 type PageData struct {

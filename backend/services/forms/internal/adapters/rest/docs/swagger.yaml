@@ -354,6 +354,22 @@ definitions:
     - RuleTypeVisible
     - RuleTypeRequired
     - RuleTypeReadOnly
+  SectionRepeatRequest:
+    properties:
+      maxInstances:
+        minimum: 1
+        type: integer
+      minInstances:
+        minimum: 0
+        type: integer
+    type: object
+  SectionRepeatResponse:
+    properties:
+      maxInstances:
+        type: integer
+      minInstances:
+        type: integer
+    type: object
   SectionRequest:
     properties:
       elements:
@@ -372,6 +388,8 @@ definitions:
         maximum: 10
         minimum: 0
         type: number
+      repeat:
+        $ref: '#/definitions/SectionRepeatRequest'
       rules:
         items:
           $ref: '#/definitions/RuleRequest'
@@ -394,6 +412,8 @@ definitions:
         type: string
       position:
         type: number
+      repeat:
+        $ref: '#/definitions/SectionRepeatResponse'
       rules:
         items:
           $ref: '#/definitions/RuleResponse'

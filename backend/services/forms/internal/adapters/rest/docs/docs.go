@@ -2942,6 +2942,30 @@ const docTemplate = `{
                 "RuleTypeReadOnly"
             ]
         },
+        "SectionRepeatRequest": {
+            "type": "object",
+            "properties": {
+                "maxInstances": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "minInstances": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            }
+        },
+        "SectionRepeatResponse": {
+            "type": "object",
+            "properties": {
+                "maxInstances": {
+                    "type": "integer"
+                },
+                "minInstances": {
+                    "type": "integer"
+                }
+            }
+        },
         "SectionRequest": {
             "type": "object",
             "required": [
@@ -2971,6 +2995,9 @@ const docTemplate = `{
                     "maximum": 10,
                     "minimum": 0
                 },
+                "repeat": {
+                    "$ref": "#/definitions/SectionRepeatRequest"
+                },
                 "rules": {
                     "type": "array",
                     "items": {
@@ -2999,6 +3026,9 @@ const docTemplate = `{
                 },
                 "position": {
                     "type": "number"
+                },
+                "repeat": {
+                    "$ref": "#/definitions/SectionRepeatResponse"
                 },
                 "rules": {
                     "type": "array",
