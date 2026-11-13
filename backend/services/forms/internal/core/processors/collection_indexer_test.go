@@ -96,11 +96,11 @@ func Test_collectionIndexer_ResolveIndices(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			indexer := newCollectionIndexer()
 			for _, p := range tt.prescan {
-				indexer.trackIndices(p.keypath, p.candidates)
+				indexer.trackIndices(newTestTag(p.keypath), p.candidates)
 			}
 
 			for i, s := range tt.steps {
-				got, err := indexer.resolveIndices(s.candidate, s.keypath)
+				got, err := indexer.resolveIndices(s.candidate, newTestTag(s.keypath))
 				if s.expectedErr != nil {
 					if !errors.Is(err, s.expectedErr) {
 						t.Fatalf("step %d: expected error %v, got %v", i, s.expectedErr, err)
@@ -294,6 +294,10 @@ func Test_collectionIndexer_entityCollection(t *testing.T) {
 	}
 }
 
+func newTestTag(keyPath string) domain.Tag {
+	return domain.Tag{KeyPath: keyPath}
+}
+
 func newTestSubmissionValue(t *testing.T, elementID domain.ElementID, value any, collectionIndex, instanceIndex *int) *domain.SubmissionValue {
 	t.Helper()
 
@@ -303,42 +307,4 @@ func newTestSubmissionValue(t *testing.T, elementID domain.ElementID, value any,
 	}
 
 	return sv
-}
-
-func Test_getCollectionRoot(t *testing.T) {
-	tests := []struct {
-		name    string
-		keypath string
-		want    string
-	}{
-		{
-			name:    "should extract collection root with [*]",
-			keypath: "appFormData[*].name",
-			want:    "appFormData[*]",
-		},
-		{
-			name:    "should extract collection root with nested segments",
-			keypath: "user.contacts[*].email.address",
-			want:    "user.contacts[*]",
-		},
-		{
-			name:    "should extract top-level collection",
-			keypath: "items[*]",
-			want:    "items[*]",
-		},
-		{
-			name:    "should return empty string when [*] is absent",
-			keypath: "user.profile.name",
-			want:    "",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := getCollectionRoot(tt.keypath)
-			if got != tt.want {
-				t.Errorf("expected %q, got %q", tt.want, got)
-			}
-		})
-	}
 }

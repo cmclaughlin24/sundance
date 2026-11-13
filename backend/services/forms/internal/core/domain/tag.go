@@ -112,6 +112,14 @@ func (t *Tag) HasCollectionAncestor() bool {
 	return strings.Contains(t.KeyPath, TagCollectionSegment)
 }
 
+func (t *Tag) CollectionRoot() string {
+	i := strings.Index(t.KeyPath, TagCollectionSegment)
+	if i == -1 {
+		return ""
+	}
+	return t.KeyPath[:i+len(TagCollectionSegment)]
+}
+
 var isTagValueKind = validate.NewTypeValidator([]TagNodeType{
 	TagNodeTypePrimitive,
 	TagNodeTypeObject,

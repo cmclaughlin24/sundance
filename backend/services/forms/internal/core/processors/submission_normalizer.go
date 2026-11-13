@@ -66,7 +66,7 @@ func (n *submissionNormalizer) normalize(ctx context.Context, resolved []resolve
 		resolvedVersions[ta.tag.ID] = version
 
 		if ta.tag.HasCollectionAncestor() {
-			indexer.trackIndices(ta.tag.KeyPath, candidatesByVersion[version.ID])
+			indexer.trackIndices(ta.tag, candidatesByVersion[version.ID])
 		}
 	}
 
@@ -130,7 +130,7 @@ func (n *submissionNormalizer) evaluateCollectionCandidates(
 
 	byCollectionIdx := make(map[int][]candidate)
 	for _, c := range candidates {
-		indices, err := indexer.resolveIndices(c, tag.KeyPath)
+		indices, err := indexer.resolveIndices(c, tag)
 		if err != nil {
 			return nil, err
 		}

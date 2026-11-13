@@ -130,6 +130,7 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 		v, err := domain.NewSubmissionValue(fv.ElementID, fv.Value, fv.CollectionIndex, fv.InstanceIndex)
 		if err != nil {
 			h.sendErrorResponse(w, err)
+			return
 		}
 
 		values = append(values, v)
@@ -201,6 +202,7 @@ func (h *Handlers) NormalizeSubmission(w http.ResponseWriter, r *http.Request) {
 		v, err := domain.NewSubmissionValue(fv.ElementID, fv.Value, fv.CollectionIndex, fv.InstanceIndex)
 		if err != nil {
 			h.sendErrorResponse(w, err)
+			return
 		}
 
 		values = append(values, v)

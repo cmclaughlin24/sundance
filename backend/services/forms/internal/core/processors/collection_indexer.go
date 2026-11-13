@@ -2,7 +2,6 @@ package processors
 
 import (
 	"slices"
-	"strings"
 	"sundance/backend/services/forms/internal/core/domain"
 )
 
@@ -28,8 +27,8 @@ func (idx *collectionIndexer) addExplicitIndex(root string, index int) {
 	slices.Sort(idx.knownExplicitIndices[root])
 }
 
-func (idx *collectionIndexer) trackIndices(keypath string, candidates []candidate) {
-	root := getCollectionRoot(keypath)
+func (idx *collectionIndexer) trackIndices(t domain.Tag, candidates []candidate) {
+	root := t.CollectionRoot()
 	if root == "" {
 		return
 	}
@@ -43,15 +42,15 @@ func (idx *collectionIndexer) trackIndices(keypath string, candidates []candidat
 			idx.addExplicitIndex(root, *c.value.CollectionIndex)
 		}
 
-		elemList := idx.elementsPerTag[root][keypath]
+		elemList := idx.elementsPerTag[root][t.KeyPath]
 		if !slices.Contains(elemList, c.etm.ElementID) {
-			idx.elementsPerTag[root][keypath] = append(elemList, c.etm.ElementID)
+			idx.elementsPerTag[root][t.KeyPath] = append(elemList, c.etm.ElementID)
 		}
 	}
 }
 
-func (idx *collectionIndexer) resolveIndices(c candidate, keypath string) ([]int, error) {
-	root := getCollectionRoot(keypath)
+func (idx *collectionIndexer) resolveIndices(c candidate, t domain.Tag) ([]int, error) {
+	root := t.CollectionRoot()
 	if root == "" {
 		return nil, ErrMissingCollectionIndex
 	}
@@ -117,12 +116,4 @@ func (idx *collectionIndexer) entityCollection(root string, c candidate) ([]int,
 	}
 
 	return []int{index}, nil
-}
-
-func getCollectionRoot(keyPath string) string {
-	i := strings.Index(keyPath, domain.TagCollectionSegment)
-	if i == -1 {
-		return ""
-	}
-	return keyPath[:i+len(domain.TagCollectionSegment)]
 }
