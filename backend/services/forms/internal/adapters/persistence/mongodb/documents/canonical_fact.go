@@ -7,7 +7,7 @@ type canonicalFact struct {
 	TagVersionID    string `bson:"tag_version_id"`
 	TagKey          string `bson:"tag_key"`
 	Value           any    `bson:"value"`
-	CollectionIndex *int   `bson:"collection_index,omitempty"`
+	CollectionIndex []int  `bson:"collection_index,omitempty"`
 }
 
 func toCanonicalFactDocument(cf *domain.CanonicalFact) *canonicalFact {

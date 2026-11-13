@@ -3116,13 +3116,13 @@ const docTemplate = `{
                 "value"
             ],
             "properties": {
-                "collectionIndex": {
-                    "type": "integer"
-                },
                 "elementId": {
                     "type": "string"
                 },
-                "instanceIndex": {
+                "itemIndex": {
+                    "type": "integer"
+                },
+                "sectionIndex": {
                     "type": "integer"
                 },
                 "value": {}

@@ -13,10 +13,10 @@ type SubmissionRequest struct {
 }
 
 type SubmissionValueDto struct {
-	ElementID       domain.ElementID `json:"elementId" validate:"required"`
-	Value           any              `json:"value" validate:"required"`
-	CollectionIndex *int             `json:"collectionIndex,omitempty"`
-	InstanceIndex   *int             `json:"instanceIndex,omitempty"`
+	ElementID    domain.ElementID `json:"elementId" validate:"required"`
+	Value        any              `json:"value" validate:"required"`
+	SectionIndex *int             `json:"sectionIndex,omitempty"`
+	ItemIndex    *int             `json:"itemIndex,omitempty"`
 }
 
 type SubmissionResponse struct {
@@ -37,10 +37,10 @@ func SubmissionToResponse(s *domain.Submission) *SubmissionResponse {
 		values = append(
 			values,
 			SubmissionValueDto{
-				ElementID:       value.ElementID,
-				Value:           value.Value,
-				CollectionIndex: value.CollectionIndex,
-				InstanceIndex:   value.InstanceIndex,
+				ElementID:    value.ElementID,
+				Value:        value.Value,
+				SectionIndex: value.SectionIndex,
+				ItemIndex:    value.ItemIndex,
 			},
 		)
 	}

@@ -35,21 +35,21 @@ func fromSubmissionAttemptDocument(att *submissionAttemptDocument) *domain.Submi
 }
 
 type submissionValueDocument struct {
-	ElementID       string `bson:"element_id"`
-	Value           any    `bson:"value"`
-	CollectionIndex *int   `bson:"collection_index,omitempty"`
-	InstanceIndex   *int   `bson:"instance_index,omitempty"`
+	ElementID    string `bson:"element_id"`
+	Value        any    `bson:"value"`
+	SectionIndex *int   `bson:"section_index,omitempty"`
+	ItemIndex    *int   `bson:"item_index,omitempty"`
 }
 
 func toSubmissionValueDocument(sv *domain.SubmissionValue) *submissionValueDocument {
 	return &submissionValueDocument{
-		ElementID:       string(sv.ElementID),
-		Value:           sv.Value,
-		CollectionIndex: sv.CollectionIndex,
-		InstanceIndex:   sv.InstanceIndex,
+		ElementID:    string(sv.ElementID),
+		Value:        sv.Value,
+		SectionIndex: sv.SectionIndex,
+		ItemIndex:    sv.ItemIndex,
 	}
 }
 
 func fromSubmissionValueDocument(doc *submissionValueDocument) *domain.SubmissionValue {
-	return domain.HydrateSubmissionValue(domain.ElementID(doc.ElementID), doc.Value, doc.CollectionIndex, doc.InstanceIndex)
+	return domain.HydrateSubmissionValue(domain.ElementID(doc.ElementID), doc.Value, doc.SectionIndex, doc.ItemIndex)
 }

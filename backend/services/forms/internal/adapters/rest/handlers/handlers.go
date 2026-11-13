@@ -7,6 +7,7 @@ import (
 	"sundance/backend/pkg/common/httputil"
 	"sundance/backend/services/forms/internal/core"
 	"sundance/backend/services/forms/internal/core/domain"
+	"sundance/backend/services/forms/internal/core/processors"
 	"sundance/backend/services/forms/internal/core/services"
 )
 
@@ -70,5 +71,7 @@ func isBadRequest(err error) bool {
 		errors.Is(err, domain.ErrInvalidJoinOperator) ||
 		errors.Is(err, services.ErrDuplicateFormKey) ||
 		errors.Is(err, services.ErrInvalidExpressionKey) ||
+		errors.Is(err, processors.ErrMissingCollectionIndex) ||
+		errors.Is(err, processors.ErrCollectionDepthMismatch) ||
 		errors.Is(err, errSubmissionStatus)
 }

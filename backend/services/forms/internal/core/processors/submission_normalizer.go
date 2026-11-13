@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"maps"
 	"slices"
@@ -126,33 +127,35 @@ func (n *submissionNormalizer) evaluateCollectionCandidates(
 	candidates []candidate,
 	indexer *collectionIndexer,
 ) ([]*domain.CanonicalFact, error) {
-	facts := make([]*domain.CanonicalFact, 0)
+	groups := make(map[string][]candidate)
+	paths := make(map[string][]int)
 
-	byCollectionIdx := make(map[int][]candidate)
 	for _, c := range candidates {
-		indices, err := indexer.resolveIndices(c, tag)
+		resolved, err := indexer.resolvePaths(c, tag)
 		if err != nil {
 			return nil, err
 		}
 
-		for _, idx := range indices {
-			byCollectionIdx[idx] = append(byCollectionIdx[idx], c)
+		for _, p := range resolved {
+			key := fmt.Sprint(p)
+			groups[key] = append(groups[key], c)
+			paths[key] = p
 		}
 	}
 
-	sortedIndices := slices.Collect(maps.Keys(byCollectionIdx))
-	slices.Sort(sortedIndices)
+	keys := slices.SortedFunc(maps.Keys(groups), func(a, b string) int {
+		return slices.Compare(paths[a], paths[b])
+	})
 
-	for _, factIdx := range sortedIndices {
-		group := byCollectionIdx[factIdx]
-		winner := rankCandidates(group)
-
+	facts := make([]*domain.CanonicalFact, 0, len(keys))
+	for _, key := range keys {
+		winner := rankCandidates(groups[key])
 		facts = append(facts, domain.NewCanonicalFact(
 			winner.etm.ElementID,
 			version.ID,
 			tag.KeyPath,
 			pickValue(winner),
-			&factIdx,
+			paths[key],
 		))
 	}
 

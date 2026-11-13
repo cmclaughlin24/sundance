@@ -12,7 +12,7 @@ var (
 	ErrInvalidTag                  = errors.New("invalid tag")
 	ErrInvalidTagNodeType          = fmt.Errorf("%w; node type", ErrInvalidTag)
 	ErrNodeTypeObjectPrimitiveType = fmt.Errorf("%w; node type object cannot have a primitive type", ErrInvalidTag)
-	ErrCollectionCount             = fmt.Errorf("%w; tag cannot contain more than one collection segment", ErrInvalidTag)
+	ErrCollectionCount             = fmt.Errorf("%w; tag cannot contain more than %d collection segments", ErrInvalidTag, maxCollectionDepth)
 	ErrTagHasVersions              = fmt.Errorf("%w; tag has at least one version", ErrInvalidTag)
 )
 
@@ -25,6 +25,7 @@ const (
 	TagNodeTypeObject    TagNodeType = "object"
 	TagCollectionSegment string      = "[*]"
 	pathSeparator        string      = "."
+	maxCollectionDepth               = 2
 )
 
 type Tag struct {
@@ -47,10 +48,6 @@ func NewTag(tenantID, keyPath, displayName string, nodeType TagNodeType, primiti
 		return nil, ErrNodeTypeObjectPrimitiveType
 	}
 
-	if strings.Count(keyPath, TagCollectionSegment) > 1 {
-		return nil, ErrCollectionCount
-	}
-
 	ct := &Tag{
 		ID:            TagID(NewID()),
 		TenantID:      tenantID,
@@ -59,6 +56,10 @@ func NewTag(tenantID, keyPath, displayName string, nodeType TagNodeType, primiti
 		NodeType:      nodeType,
 		PrimitiveType: primitiveType,
 		CreatedAt:     Now(),
+	}
+
+	if ct.CollectionDepth() > maxCollectionDepth {
+		return nil, ErrCollectionCount
 	}
 
 	if err := validate.ValidateStruct(ct); err != nil {
@@ -112,12 +113,32 @@ func (t *Tag) HasCollectionAncestor() bool {
 	return strings.Contains(t.KeyPath, TagCollectionSegment)
 }
 
+func (t *Tag) CollectionSegments() []string {
+	segments := make([]string, 0, maxCollectionDepth)
+	offset := 0
+
+	for {
+		i := strings.Index(t.KeyPath[offset:], TagCollectionSegment)
+		if i == -1 {
+			return segments
+		}
+
+		end := offset + i + len(TagCollectionSegment)
+		segments = append(segments, t.KeyPath[:end])
+		offset = end
+	}
+}
+
+func (t *Tag) CollectionDepth() int {
+	return strings.Count(t.KeyPath, TagCollectionSegment)
+}
+
 func (t *Tag) CollectionRoot() string {
-	i := strings.Index(t.KeyPath, TagCollectionSegment)
-	if i == -1 {
+	segments := t.CollectionSegments()
+	if len(segments) == 0 {
 		return ""
 	}
-	return t.KeyPath[:i+len(TagCollectionSegment)]
+	return segments[0]
 }
 
 var isTagValueKind = validate.NewTypeValidator([]TagNodeType{

@@ -214,7 +214,7 @@ func ToFactMap(facts []*CanonicalFact) FactMap {
 	return result
 }
 
-func setNestedValue(node map[string]any, segments []string, value any, collectionIndex *int) {
+func setNestedValue(node map[string]any, segments []string, value any, path []int) {
 	raw := segments[0]
 	isCollection := strings.HasSuffix(raw, TagCollectionSegment)
 	key := strings.TrimSuffix(raw, TagCollectionSegment)
@@ -225,11 +225,11 @@ func setNestedValue(node map[string]any, segments []string, value any, collectio
 	}
 
 	if isCollection {
-		if collectionIndex == nil {
+		if len(path) == 0 {
 			return
 		}
 
-		idx := *collectionIndex
+		idx := path[0]
 		if _, ok := node[key]; !ok {
 			node[key] = make([]map[string]any, 0)
 		}
@@ -240,8 +240,7 @@ func setNestedValue(node map[string]any, segments []string, value any, collectio
 		}
 
 		node[key] = slice
-
-		setNestedValue(slice[idx], segments[1:], value, collectionIndex)
+		setNestedValue(slice[idx], segments[1:], value, path[1:])
 		return
 	}
 
@@ -249,7 +248,7 @@ func setNestedValue(node map[string]any, segments []string, value any, collectio
 		node[key] = make(map[string]any)
 	}
 
-	setNestedValue(node[key].(map[string]any), segments[1:], value, collectionIndex)
+	setNestedValue(node[key].(map[string]any), segments[1:], value, path)
 }
 
 type submissionAcceptedPayload struct {
