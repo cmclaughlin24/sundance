@@ -13,22 +13,22 @@ func Test_collectionIndexer_ResolveIndices(t *testing.T) {
 	idx1 := 1
 
 	etmDynamic, _ := domain.NewElementTagMapping("elem1", "tv1", 1, false, nil)
-	cDynamic0 := candidate{etm: etmDynamic, value: domain.NewSubmissionValue("elem1", "val0", &idx0)}
-	cDynamic1 := candidate{etm: etmDynamic, value: domain.NewSubmissionValue("elem1", "val1", &idx1)}
+	cDynamic0 := candidate{etm: etmDynamic, value: newTestSubmissionValue(t, "elem1", "val0", &idx0, nil)}
+	cDynamic1 := candidate{etm: etmDynamic, value: newTestSubmissionValue(t, "elem1", "val1", &idx1, nil)}
 
 	etmUsersName, _ := domain.NewElementTagMapping("users", "tv_app_name", 1, true, "Account Type")
 	etmUsersVal, _ := domain.NewElementTagMapping("users", "tv_app_val", 1, true, "User")
-	cUsersName := candidate{etm: etmUsersName, value: domain.NewSubmissionValue("users", "Alice", &idx0)}
-	cUsersVal := candidate{etm: etmUsersVal, value: domain.NewSubmissionValue("users", "Bob", &idx1)}
+	cUsersName := candidate{etm: etmUsersName, value: newTestSubmissionValue(t, "users", "Alice", &idx0, nil)}
+	cUsersVal := candidate{etm: etmUsersVal, value: newTestSubmissionValue(t, "users", "Bob", &idx1, nil)}
 
 	etmPrivName, _ := domain.NewElementTagMapping("privileged", "tv_app_name", 1, true, "Privilege")
 	etmPrivVal, _ := domain.NewElementTagMapping("privileged", "tv_app_val", 1, false, nil)
-	cPrivName := candidate{etm: etmPrivName, value: domain.NewSubmissionValue("privileged", "Admin", nil)}
-	cPrivVal := candidate{etm: etmPrivVal, value: domain.NewSubmissionValue("privileged", "Admin", nil)}
+	cPrivName := candidate{etm: etmPrivName, value: newTestSubmissionValue(t, "privileged", "Admin", nil, nil)}
+	cPrivVal := candidate{etm: etmPrivVal, value: newTestSubmissionValue(t, "privileged", "Admin", nil, nil)}
 
 	etmItemName, _ := domain.NewElementTagMapping("item_name", "tv_item_name", 1, false, nil)
-	cItemName0 := candidate{etm: etmItemName, value: domain.NewSubmissionValue("item_name", "Laptop", &idx0)}
-	cItemName1 := candidate{etm: etmItemName, value: domain.NewSubmissionValue("item_name", "Mouse", &idx1)}
+	cItemName0 := candidate{etm: etmItemName, value: newTestSubmissionValue(t, "item_name", "Laptop", &idx0, nil)}
+	cItemName1 := candidate{etm: etmItemName, value: newTestSubmissionValue(t, "item_name", "Mouse", &idx1, nil)}
 
 	etmCurrency, _ := domain.NewElementTagMapping("item_currency", "tv_item_currency", 10, true, "USD")
 	cCurrency := candidate{etm: etmCurrency, value: nil}
@@ -217,16 +217,16 @@ func Test_collectionIndexer_entityCollection(t *testing.T) {
 	idx1 := 1
 
 	etmDynamic, _ := domain.NewElementTagMapping("elem1", "tv1", 1, false, nil)
-	cDynamic0 := candidate{etm: etmDynamic, value: domain.NewSubmissionValue("elem1", "v0", &idx0)}
-	cDynamic1 := candidate{etm: etmDynamic, value: domain.NewSubmissionValue("elem1", "v1", &idx1)}
+	cDynamic0 := candidate{etm: etmDynamic, value: newTestSubmissionValue(t, "elem1", "v0", &idx0, nil)}
+	cDynamic1 := candidate{etm: etmDynamic, value: newTestSubmissionValue(t, "elem1", "v1", &idx1, nil)}
 
 	etmStatic, _ := domain.NewElementTagMapping("elem_static", "tv_static", 10, true, "USD")
 	cStatic := candidate{etm: etmStatic, value: nil}
 
 	etmHetA, _ := domain.NewElementTagMapping("het_a", "tv_het", 1, false, nil)
 	etmHetB, _ := domain.NewElementTagMapping("het_b", "tv_het", 1, false, nil)
-	cHetA := candidate{etm: etmHetA, value: domain.NewSubmissionValue("het_a", "A", nil)}
-	cHetB := candidate{etm: etmHetB, value: domain.NewSubmissionValue("het_b", "B", nil)}
+	cHetA := candidate{etm: etmHetA, value: newTestSubmissionValue(t, "het_a", "A", nil, nil)}
+	cHetB := candidate{etm: etmHetB, value: newTestSubmissionValue(t, "het_b", "B", nil, nil)}
 
 	type evalStep struct {
 		candidate candidate
@@ -292,6 +292,17 @@ func Test_collectionIndexer_entityCollection(t *testing.T) {
 			}
 		})
 	}
+}
+
+func newTestSubmissionValue(t *testing.T, elementID domain.ElementID, value any, collectionIndex, instanceIndex *int) *domain.SubmissionValue {
+	t.Helper()
+
+	sv, err := domain.NewSubmissionValue(elementID, value, collectionIndex, instanceIndex)
+	if err != nil {
+		t.Fatalf("NewSubmissionValue(%q): unexpected error: %v", elementID, err)
+	}
+
+	return sv
 }
 
 func Test_getCollectionRoot(t *testing.T) {

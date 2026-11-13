@@ -3111,6 +3111,9 @@
                 "elementId": {
                     "type": "string"
                 },
+                "instanceIndex": {
+                    "type": "integer"
+                },
                 "value": {}
             }
         },

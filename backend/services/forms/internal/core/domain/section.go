@@ -50,7 +50,7 @@ func NewSection(key, name string, position float32, repeat *SectionRepeat) (*Sec
 		},
 	}
 
-	if err := validate.ValidateStruct(s); err != nil {
+	if err := s.validate(); err != nil {
 		return nil, err
 	}
 
@@ -85,7 +85,7 @@ func (s *Section) Update(key, name string, position float32, repeat *SectionRepe
 	cpy.repeat = cloneSectionRepeat(repeat)
 	cpy.position = position
 
-	if err := validate.ValidateStruct(cpy); err != nil {
+	if err := cpy.validate(); err != nil {
 		return err
 	}
 
@@ -164,6 +164,21 @@ func (s *Section) GetRepeat() *SectionRepeat {
 
 func (s *Section) IsRepeatable() bool {
 	return s != nil && s.repeat != nil
+}
+
+func (s *Section) validate() error {
+	if err := validate.ValidateStruct(s); err != nil {
+		return err
+	}
+
+	return s.repeat.validate()
+}
+
+func (sr *SectionRepeat) validate() error {
+	if sr == nil {
+		return nil
+	}
+	return validate.ValidateStruct(sr)
 }
 
 func cloneSectionRepeat(sr *SectionRepeat) *SectionRepeat {

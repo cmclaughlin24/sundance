@@ -127,7 +127,12 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 
 	values := make([]*domain.SubmissionValue, 0, len(body.Values))
 	for _, fv := range body.Values {
-		values = append(values, domain.NewSubmissionValue(fv.ElementID, fv.Value, fv.CollectionIndex))
+		v, err := domain.NewSubmissionValue(fv.ElementID, fv.Value, fv.CollectionIndex, fv.InstanceIndex)
+		if err != nil {
+			h.sendErrorResponse(w, err)
+		}
+
+		values = append(values, v)
 	}
 
 	evalContext := domain.EvaluationContext{
@@ -193,7 +198,12 @@ func (h *Handlers) NormalizeSubmission(w http.ResponseWriter, r *http.Request) {
 
 	values := make([]*domain.SubmissionValue, 0, len(body.Values))
 	for _, fv := range body.Values {
-		values = append(values, domain.NewSubmissionValue(fv.ElementID, fv.Value, fv.CollectionIndex))
+		v, err := domain.NewSubmissionValue(fv.ElementID, fv.Value, fv.CollectionIndex, fv.InstanceIndex)
+		if err != nil {
+			h.sendErrorResponse(w, err)
+		}
+
+		values = append(values, v)
 	}
 
 	evalContext := domain.EvaluationContext{

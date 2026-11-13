@@ -474,6 +474,8 @@ definitions:
         type: integer
       elementId:
         type: string
+      instanceIndex:
+        type: integer
       value: {}
     required:
     - elementId

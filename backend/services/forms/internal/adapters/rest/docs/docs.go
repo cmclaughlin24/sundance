@@ -3122,6 +3122,9 @@ const docTemplate = `{
                 "elementId": {
                     "type": "string"
                 },
+                "instanceIndex": {
+                    "type": "integer"
+                },
                 "value": {}
             }
         },
