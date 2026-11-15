@@ -97,5 +97,7 @@ func shouldReject(err error) bool {
 		errors.Is(err, strategies.ErrElementValidation) ||
 		errors.Is(err, strategies.ErrElementRequired) ||
 		errors.Is(err, strategies.ErrElementTypeValue) ||
-		errors.Is(err, processors.ErrMissingCollectionIndex)
+		errors.Is(err, processors.ErrMissingCollectionIndex) ||
+		errors.Is(err, processors.ErrCollectionDepthMismatch) ||
+		errors.Is(err, processors.ErrUnsupportedCollectionDepth)
 }

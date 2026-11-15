@@ -73,5 +73,6 @@ func isBadRequest(err error) bool {
 		errors.Is(err, services.ErrInvalidExpressionKey) ||
 		errors.Is(err, processors.ErrMissingCollectionIndex) ||
 		errors.Is(err, processors.ErrCollectionDepthMismatch) ||
+		errors.Is(err, processors.ErrUnsupportedCollectionDepth) ||
 		errors.Is(err, errSubmissionStatus)
 }

@@ -72,6 +72,8 @@ pageLoop:
 				continue sectionLoop
 			}
 
+			instances := instancesPerSectionCount(s, section)
+
 		elementLoop:
 			for _, element := range section.GetElements() {
 				visible, err := r.shouldValidate(ctx, element, evalContext)
@@ -95,22 +97,15 @@ pageLoop:
 				}
 
 				values := s.GetValues(element.ID)
-				if len(values) == 0 {
-					resolved = append(resolved, resolveElement{
-						element:  element,
-						value:    nil,
-						required: *required,
-					})
+
+				if section.IsRepeatable() {
+					for idx := range instances {
+						resolved = appendResolved(resolved, element, filterBySectionIndex(values, idx), *required)
+					}
 					continue elementLoop
 				}
 
-				for _, v := range values {
-					resolved = append(resolved, resolveElement{
-						element:  element,
-						value:    v,
-						required: *required,
-					})
-				}
+				resolved = appendResolved(resolved, element, values, *required)
 			}
 		}
 	}
@@ -140,4 +135,52 @@ func (s *submissionResolver) shouldValidate(ctx context.Context, rg ruleByTypeGe
 	}
 
 	return s.evaluator.Evaluate(ctx, rule, evalCtx)
+}
+
+func filterBySectionIndex(values []*domain.SubmissionValue, idx int) []*domain.SubmissionValue {
+	filtered := make([]*domain.SubmissionValue, 0)
+	for _, v := range values {
+		if v.SectionIndex != nil && *v.SectionIndex == idx {
+			filtered = append(filtered, v)
+		}
+	}
+
+	return filtered
+}
+
+func instancesPerSectionCount(s *domain.Submission, section *domain.Section) int {
+	if !section.IsRepeatable() {
+		return 0
+	}
+
+	count := 0
+	for _, element := range section.GetElements() {
+		for _, v := range s.GetValues(element.ID) {
+			if v.SectionIndex != nil && *v.SectionIndex >= count {
+				count = *v.SectionIndex + 1
+			}
+		}
+	}
+
+	return count
+}
+
+func appendResolved(resolved []resolveElement, element *domain.Element, values []*domain.SubmissionValue, required bool) []resolveElement {
+	if len(values) == 0 {
+		return append(resolved, resolveElement{
+			element:  element,
+			value:    nil,
+			required: required,
+		})
+	}
+
+	for _, v := range values {
+		resolved = append(resolved, resolveElement{
+			element:  element,
+			value:    v,
+			required: required,
+		})
+	}
+
+	return resolved
 }
