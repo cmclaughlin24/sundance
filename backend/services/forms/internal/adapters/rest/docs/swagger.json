@@ -3037,10 +3037,10 @@
                 "formId": {
                     "type": "string"
                 },
-                "values": {
+                "sections": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/SubmissionValueDto"
+                        "$ref": "#/definitions/SubmissionSectionDto"
                     }
                 },
                 "versionId": {
@@ -3063,6 +3063,12 @@
                 "referenceId": {
                     "type": "string"
                 },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SubmissionSectionDto"
+                    }
+                },
                 "status": {
                     "$ref": "#/definitions/SubmissionStatus"
                 },
@@ -3072,14 +3078,40 @@
                 "updatedAt": {
                     "type": "string"
                 },
+                "versionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "SubmissionSectionDto": {
+            "type": "object",
+            "required": [
+                "instances",
+                "sectionId"
+            ],
+            "properties": {
+                "instances": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SubmissionSectionInstanceDto"
+                    }
+                },
+                "sectionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "SubmissionSectionInstanceDto": {
+            "type": "object",
+            "required": [
+                "values"
+            ],
+            "properties": {
                 "values": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/SubmissionValueDto"
                     }
-                },
-                "versionId": {
-                    "type": "string"
                 }
             }
         },
@@ -3109,9 +3141,6 @@
                     "type": "string"
                 },
                 "itemIndex": {
-                    "type": "integer"
-                },
-                "sectionIndex": {
                     "type": "integer"
                 },
                 "value": {}

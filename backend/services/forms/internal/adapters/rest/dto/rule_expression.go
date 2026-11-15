@@ -11,7 +11,7 @@ type RuleExprSourceRequest struct {
 }
 
 type RuleExpressionRequest struct {
-	Source           RuleExprSourceRequest `json:"source" validate:"dive"`
+	Source           RuleExprSourceRequest `json:"source"`
 	Operator         string                `json:"operator" validate:"required"`
 	Value            any                   `json:"value"`
 	JoinWithPrevious *string               `json:"joinWithPrevious"`

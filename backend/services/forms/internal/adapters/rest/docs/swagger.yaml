@@ -423,9 +423,9 @@ definitions:
     properties:
       formId:
         type: string
-      values:
+      sections:
         items:
-          $ref: '#/definitions/SubmissionValueDto'
+          $ref: '#/definitions/SubmissionSectionDto'
         type: array
       versionId:
         type: string
@@ -443,18 +443,39 @@ definitions:
         type: string
       referenceId:
         type: string
+      sections:
+        items:
+          $ref: '#/definitions/SubmissionSectionDto'
+        type: array
       status:
         $ref: '#/definitions/SubmissionStatus'
       tenantId:
         type: string
       updatedAt:
         type: string
+      versionId:
+        type: string
+    type: object
+  SubmissionSectionDto:
+    properties:
+      instances:
+        items:
+          $ref: '#/definitions/SubmissionSectionInstanceDto'
+        type: array
+      sectionId:
+        type: string
+    required:
+    - instances
+    - sectionId
+    type: object
+  SubmissionSectionInstanceDto:
+    properties:
       values:
         items:
           $ref: '#/definitions/SubmissionValueDto'
         type: array
-      versionId:
-        type: string
+    required:
+    - values
     type: object
   SubmissionStatus:
     enum:
@@ -473,8 +494,6 @@ definitions:
       elementId:
         type: string
       itemIndex:
-        type: integer
-      sectionIndex:
         type: integer
       value: {}
     required:

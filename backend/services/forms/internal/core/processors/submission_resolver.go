@@ -3,6 +3,8 @@ package processors
 import (
 	"context"
 	"log/slog"
+	"slices"
+
 	"sundance/backend/services/forms/internal/core/domain"
 	"sundance/backend/services/forms/internal/core/ports"
 )
@@ -14,6 +16,7 @@ type ruleByTypeGetter interface {
 type resolveElement struct {
 	element  *domain.Element
 	value    *domain.SubmissionValue
+	path     []int // [instanceIndex?, itemIndex?]; nil for scalar values in non-repeatable sections
 	required bool
 }
 
@@ -35,23 +38,12 @@ func (r *submissionResolver) resolve(ctx context.Context, s *domain.Submission, 
 		return nil, domain.ErrInvalidVersionStatus
 	}
 
-	evalContext := s.GetEvalContext()
-	fieldCtx := make(map[string]any, len(s.Values))
-
-	for _, element := range fv.FlatElements() {
-		// FIXME: Can result in a bug where only the first found element is checked in rule expressions.
-		if val, ok := s.GetValue(element.ID); ok {
-			fieldCtx[element.Key] = val.Value
-		}
-	}
-	evalContext[domain.RuleExprSourceTypeField] = fieldCtx
-
+	base := domain.BaseEvalContext(s, fv)
 	resolved := make([]resolveElement, 0)
 
 pageLoop:
 	for _, page := range fv.GetPages() {
-		visible, err := r.shouldValidate(ctx, page, evalContext)
-
+		visible, err := r.shouldValidate(ctx, page, base)
 		if err != nil {
 			return nil, err
 		}
@@ -62,8 +54,7 @@ pageLoop:
 
 	sectionLoop:
 		for _, section := range page.GetSections() {
-			visible, err := r.shouldValidate(ctx, section, evalContext)
-
+			visible, err := r.shouldValidate(ctx, section, base)
 			if err != nil {
 				return nil, err
 			}
@@ -72,40 +63,34 @@ pageLoop:
 				continue sectionLoop
 			}
 
-			instances := instancesPerSectionCount(s, section)
+			instances := s.GetSection(section.ID).Instances()
+			if err := section.ValidateInstanceCount(len(instances)); err != nil {
+				r.logger.WarnContext(ctx, "section instance count invalid", "submission_id", s.ID, "section_id", section.ID, "section_key", section.Key, "error", err)
+				return nil, err
+			}
 
-		elementLoop:
-			for _, element := range section.GetElements() {
-				visible, err := r.shouldValidate(ctx, element, evalContext)
+			if !section.IsRepeatable() {
+				var instance domain.SectionInstance
+				if len(instances) == 1 {
+					instance = instances[0]
+				}
 
+				res, err := r.resolveSection(ctx, section, instance, nil, base)
 				if err != nil {
 					return nil, err
 				}
 
-				if !visible {
-					continue elementLoop
-				}
+				resolved = append(resolved, res...)
+				continue sectionLoop
+			}
 
-				required, err := r.isRequired(ctx, element, evalContext)
+			for idx, instance := range instances {
+				res, err := r.resolveSection(ctx, section, instance, []int{idx}, base.WithFields(section.FieldValues(instance)))
 				if err != nil {
 					return nil, err
 				}
 
-				if required == nil {
-					req := element.Attributes.GetIsRequired()
-					required = &req
-				}
-
-				values := s.GetValues(element.ID)
-
-				if section.IsRepeatable() {
-					for idx := range instances {
-						resolved = appendResolved(resolved, element, filterBySectionIndex(values, idx), *required)
-					}
-					continue elementLoop
-				}
-
-				resolved = appendResolved(resolved, element, values, *required)
+				resolved = append(resolved, res...)
 			}
 		}
 	}
@@ -113,13 +98,81 @@ pageLoop:
 	return resolved, nil
 }
 
-func (s *submissionResolver) isRequired(ctx context.Context, rg ruleByTypeGetter, evalCtx ports.RuleEvaluationContext) (*bool, error) {
+func (r *submissionResolver) resolveSection(
+	ctx context.Context,
+	section *domain.Section,
+	instance domain.SectionInstance,
+	prefix []int,
+	evalCtx ports.RuleEvaluationContext,
+) ([]resolveElement, error) {
+	var resolved []resolveElement
+
+	for _, element := range section.GetElements() {
+		res, err := r.resolveElement(ctx, element, instance.Values(element.ID), prefix, evalCtx)
+		if err != nil {
+			return nil, err
+		}
+
+		resolved = append(resolved, res...)
+	}
+
+	return resolved, nil
+}
+
+func (r *submissionResolver) resolveElement(
+	ctx context.Context,
+	element *domain.Element,
+	values []*domain.SubmissionValue,
+	prefix []int,
+	evalCtx ports.RuleEvaluationContext,
+) ([]resolveElement, error) {
+	visible, err := r.shouldValidate(ctx, element, evalCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if !visible {
+		return nil, nil
+	}
+
+	required, err := r.isRequired(ctx, element, evalCtx)
+	if err != nil {
+		return nil, err
+	}
+
+	if required == nil {
+		req := element.Attributes.GetIsRequired()
+		required = &req
+	}
+
+	if len(values) == 0 {
+		return []resolveElement{{
+			element:  element,
+			path:     slices.Clone(prefix),
+			required: *required,
+		}}, nil
+	}
+
+	resolved := make([]resolveElement, 0, len(values))
+	for _, v := range values {
+		resolved = append(resolved, resolveElement{
+			element:  element,
+			value:    v,
+			path:     valuePath(prefix, v),
+			required: *required,
+		})
+	}
+
+	return resolved, nil
+}
+
+func (r *submissionResolver) isRequired(ctx context.Context, rg ruleByTypeGetter, evalCtx ports.RuleEvaluationContext) (*bool, error) {
 	rule := rg.GetRuleByType(domain.RuleTypeRequired)
 	if rule == nil {
 		return nil, nil
 	}
 
-	result, err := s.evaluator.Evaluate(ctx, rule, evalCtx)
+	result, err := r.evaluator.Evaluate(ctx, rule, evalCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -127,60 +180,20 @@ func (s *submissionResolver) isRequired(ctx context.Context, rg ruleByTypeGetter
 	return &result, nil
 }
 
-func (s *submissionResolver) shouldValidate(ctx context.Context, rg ruleByTypeGetter, evalCtx ports.RuleEvaluationContext) (bool, error) {
+func (r *submissionResolver) shouldValidate(ctx context.Context, rg ruleByTypeGetter, evalCtx ports.RuleEvaluationContext) (bool, error) {
 	rule := rg.GetRuleByType(domain.RuleTypeVisible)
-
 	if rule == nil {
 		return true, nil
 	}
 
-	return s.evaluator.Evaluate(ctx, rule, evalCtx)
+	return r.evaluator.Evaluate(ctx, rule, evalCtx)
 }
 
-func filterBySectionIndex(values []*domain.SubmissionValue, idx int) []*domain.SubmissionValue {
-	filtered := make([]*domain.SubmissionValue, 0)
-	for _, v := range values {
-		if v.SectionIndex != nil && *v.SectionIndex == idx {
-			filtered = append(filtered, v)
-		}
+func valuePath(prefix []int, v *domain.SubmissionValue) []int {
+	path := slices.Clone(prefix)
+	if v.ItemIndex != nil {
+		path = append(path, *v.ItemIndex)
 	}
 
-	return filtered
-}
-
-func instancesPerSectionCount(s *domain.Submission, section *domain.Section) int {
-	if !section.IsRepeatable() {
-		return 0
-	}
-
-	count := 0
-	for _, element := range section.GetElements() {
-		for _, v := range s.GetValues(element.ID) {
-			if v.SectionIndex != nil && *v.SectionIndex >= count {
-				count = *v.SectionIndex + 1
-			}
-		}
-	}
-
-	return count
-}
-
-func appendResolved(resolved []resolveElement, element *domain.Element, values []*domain.SubmissionValue, required bool) []resolveElement {
-	if len(values) == 0 {
-		return append(resolved, resolveElement{
-			element:  element,
-			value:    nil,
-			required: required,
-		})
-	}
-
-	for _, v := range values {
-		resolved = append(resolved, resolveElement{
-			element:  element,
-			value:    v,
-			required: required,
-		})
-	}
-
-	return resolved
+	return path
 }

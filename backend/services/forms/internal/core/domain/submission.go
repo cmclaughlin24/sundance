@@ -3,7 +3,6 @@ package domain
 import (
 	"encoding/json"
 	"errors"
-	"slices"
 	"strings"
 	"time"
 
@@ -17,8 +16,6 @@ type ReferenceID string
 type IdempotencyID string
 
 type SubmissionStatus string
-
-type EvaluationContext map[RuleExprSourceType]map[string]any
 
 type FactMap map[string]any
 
@@ -35,6 +32,7 @@ const (
 
 var (
 	ErrDuplicateSubmission = errors.New("duplicate submissions")
+	ErrDuplicateSection    = errors.New("each section response in a submission must be unique")
 )
 
 type Submission struct {
@@ -47,7 +45,7 @@ type Submission struct {
 	Status        SubmissionStatus
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
-	Values        []*SubmissionValue
+	Sections      []*SubmissionSection
 	Facts         []*CanonicalFact
 	Attempts      []*SubmissionAttempt
 	evalContext   EvaluationContext
@@ -59,7 +57,7 @@ func NewSubmission(
 	formID FormID,
 	versionID FormVersionID,
 	idempotencyID IdempotencyID,
-	values []*SubmissionValue,
+	sections []*SubmissionSection,
 	evalContext EvaluationContext,
 ) (*Submission, error) {
 	s := &Submission{
@@ -70,14 +68,14 @@ func NewSubmission(
 		ReferenceID:   ReferenceID(NewID()), // TODO: Investigate a more order number style implementation.
 		IdempotencyID: idempotencyID,
 		Status:        SubmissionStatusPending,
-		Values:        values,
+		Sections:      sections,
 		Facts:         make([]*CanonicalFact, 0),
 		Attempts:      make([]*SubmissionAttempt, 0),
 		evalContext:   evalContext,
 		CreatedAt:     Now(),
 	}
 
-	if err := validate.ValidateStruct(s); err != nil {
+	if err := s.validate(); err != nil {
 		return nil, err
 	}
 
@@ -92,7 +90,7 @@ func HydrateSubmission(
 	referenceID ReferenceID,
 	idempotencyID IdempotencyID,
 	status SubmissionStatus,
-	values []*SubmissionValue,
+	sections []*SubmissionSection,
 	facts []*CanonicalFact,
 	attempts []*SubmissionAttempt,
 	evalContext EvaluationContext,
@@ -107,7 +105,7 @@ func HydrateSubmission(
 		ReferenceID:   referenceID,
 		IdempotencyID: idempotencyID,
 		Status:        status,
-		Values:        values,
+		Sections:      sections,
 		Facts:         facts,
 		Attempts:      attempts,
 		evalContext:   evalContext,
@@ -116,35 +114,21 @@ func HydrateSubmission(
 	}
 }
 
-func (s *Submission) GetValue(id ElementID) (*SubmissionValue, bool) {
-	idx := slices.IndexFunc(s.Values, func(fv *SubmissionValue) bool {
-		return id == fv.ElementID
-	})
-
-	if idx == -1 {
-		return nil, false
-	}
-
-	return s.Values[idx], true
-}
-
-func (s *Submission) GetValues(id ElementID) []*SubmissionValue {
-	var values []*SubmissionValue
-
-	for _, v := range s.Values {
-		if v.ElementID == id {
-			values = append(values, v)
-		}
-	}
-
-	return values
-}
-
 func (s *Submission) GetEvalContext() EvaluationContext {
 	if s.evalContext == nil {
 		return make(EvaluationContext)
 	}
 	return s.evalContext
+}
+
+func (s *Submission) GetSection(sectionID SectionID) *SubmissionSection {
+	for _, section := range s.Sections {
+		if section.SectionID == sectionID {
+			return section.clone()
+		}
+	}
+
+	return nil
 }
 
 func (s *Submission) Accept(facts []*CanonicalFact) {
@@ -203,6 +187,22 @@ func (s *Submission) addEvent(eventType EventType, payload json.RawMessage) {
 	s.AddEvent(e)
 }
 
+func (s *Submission) validate() error {
+	if err := validate.ValidateStruct(s); err != nil {
+		return err
+	}
+
+	seen := make(map[SectionID]struct{})
+	for _, section := range s.Sections {
+		if _, ok := seen[section.SectionID]; ok {
+			return ErrDuplicateSection
+		}
+		seen[section.SectionID] = struct{}{}
+	}
+
+	return nil
+}
+
 func ToFactMap(facts []*CanonicalFact) FactMap {
 	result := make(FactMap)
 
@@ -226,15 +226,15 @@ func setNestedValue(node map[string]any, segments []string, value any, path []in
 
 	if isCollection {
 		if len(path) == 0 {
+			// NOTE: Path ends above this collection (missing value in a repeatable instance).
+			if _, ok := node[key]; !ok {
+				node[key] = nil
+			}
 			return
 		}
 
 		idx := path[0]
-		if _, ok := node[key]; !ok {
-			node[key] = make([]map[string]any, 0)
-		}
-
-		slice := node[key].([]map[string]any)
+		slice, _ := node[key].([]map[string]any)
 		for len(slice) <= idx {
 			slice = append(slice, make(map[string]any))
 		}

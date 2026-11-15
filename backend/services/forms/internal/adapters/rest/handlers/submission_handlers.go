@@ -125,15 +125,10 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	values := make([]*domain.SubmissionValue, 0, len(body.Values))
-	for _, fv := range body.Values {
-		v, err := domain.NewSubmissionValue(fv.ElementID, fv.Value, fv.SectionIndex, fv.ItemIndex)
-		if err != nil {
-			h.sendErrorResponse(w, err)
-			return
-		}
-
-		values = append(values, v)
+	sections, err := dto.FromSubmissionSectionRequests(body.Sections)
+	if err != nil {
+		h.sendErrorResponse(w, err)
+		return
 	}
 
 	evalContext := domain.EvaluationContext{
@@ -146,7 +141,7 @@ func (h *Handlers) CreateSubmission(w http.ResponseWriter, r *http.Request) {
 		domain.FormID(body.FormID),
 		domain.FormVersionID(body.VersionID),
 		domain.IdempotencyID(idempotencyID),
-		values,
+		sections,
 		evalContext,
 	)
 	resultChan := make(chan result[*domain.Submission], 1)
@@ -197,15 +192,10 @@ func (h *Handlers) NormalizeSubmission(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	values := make([]*domain.SubmissionValue, 0, len(body.Values))
-	for _, fv := range body.Values {
-		v, err := domain.NewSubmissionValue(fv.ElementID, fv.Value, fv.SectionIndex, fv.ItemIndex)
-		if err != nil {
-			h.sendErrorResponse(w, err)
-			return
-		}
-
-		values = append(values, v)
+	sections, err := dto.FromSubmissionSectionRequests(body.Sections)
+	if err != nil {
+		h.sendErrorResponse(w, err)
+		return
 	}
 
 	evalContext := domain.EvaluationContext{
@@ -216,7 +206,7 @@ func (h *Handlers) NormalizeSubmission(w http.ResponseWriter, r *http.Request) {
 		tenantID,
 		domain.FormID(body.FormID),
 		domain.FormVersionID(body.VersionID),
-		values,
+		sections,
 		evalContext,
 	)
 	resultChan := make(chan result[domain.FactMap], 1)

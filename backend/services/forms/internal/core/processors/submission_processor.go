@@ -32,9 +32,15 @@ func newSubmissionProcessor(
 }
 
 func (p *submissionProcessor) Process(ctx context.Context, submission *domain.Submission) ([]*domain.CanonicalFact, error) {
+	l := p.logger.With("submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID)
+
 	version, err := p.formVersionsRepository.FindByID(ctx, submission.VersionID)
 	if err != nil {
-		p.logger.ErrorContext(ctx, "failed to retrieve version for submission job", "submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID, "error", err)
+		l.ErrorContext(ctx, "failed to retrieve version for submission job", "error", err)
+		return nil, err
+	}
+
+	if err := p.validator.validateStructure(ctx, l, submission, version); err != nil {
 		return nil, err
 	}
 
@@ -43,8 +49,7 @@ func (p *submissionProcessor) Process(ctx context.Context, submission *domain.Su
 		return nil, err
 	}
 
-	l := p.logger.With("submission_id", submission.ID, "form_id", submission.FormID, "version_id", submission.VersionID)
-	if err := p.validator.validate(ctx, l, resolved); err != nil {
+	if err := p.validator.validateResolved(ctx, l, resolved); err != nil {
 		return nil, err
 	}
 

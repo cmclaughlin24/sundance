@@ -7,16 +7,9 @@ import (
 )
 
 type SubmissionRequest struct {
-	FormID    string               `json:"formId" validate:"required,uuidv7"`
-	VersionID string               `json:"versionId" validate:"required,uuidv7"`
-	Values    []SubmissionValueDto `json:"values" validate:"dive"`
-}
-
-type SubmissionValueDto struct {
-	ElementID    domain.ElementID `json:"elementId" validate:"required"`
-	Value        any              `json:"value" validate:"required"`
-	SectionIndex *int             `json:"sectionIndex,omitempty"`
-	ItemIndex    *int             `json:"itemIndex,omitempty"`
+	FormID    string                 `json:"formId" validate:"required,uuidv7"`
+	VersionID string                 `json:"versionId" validate:"required,uuidv7"`
+	Sections  []SubmissionSectionDto `json:"sections" validate:"dive"`
 }
 
 type SubmissionResponse struct {
@@ -26,22 +19,17 @@ type SubmissionResponse struct {
 	VersionID   domain.FormVersionID    `json:"versionId"`
 	ReferenceID domain.ReferenceID      `json:"referenceId"`
 	Status      domain.SubmissionStatus `json:"status"`
-	Values      []SubmissionValueDto    `json:"values"`
+	Sections    []SubmissionSectionDto  `json:"sections"`
 	CreatedAt   time.Time               `json:"createdAt"`
 	UpdatedAt   time.Time               `json:"updatedAt"`
 }
 
 func SubmissionToResponse(s *domain.Submission) *SubmissionResponse {
-	values := make([]SubmissionValueDto, 0, len(s.Values))
-	for _, value := range s.Values {
-		values = append(
-			values,
-			SubmissionValueDto{
-				ElementID:    value.ElementID,
-				Value:        value.Value,
-				SectionIndex: value.SectionIndex,
-				ItemIndex:    value.ItemIndex,
-			},
+	sections := make([]SubmissionSectionDto, 0, len(s.Sections))
+	for _, section := range s.Sections {
+		sections = append(
+			sections,
+			toSubmissionSectionResponse(section),
 		)
 	}
 
@@ -52,7 +40,7 @@ func SubmissionToResponse(s *domain.Submission) *SubmissionResponse {
 		VersionID:   s.VersionID,
 		ReferenceID: s.ReferenceID,
 		Status:      s.Status,
-		Values:      values,
+		Sections:    sections,
 		CreatedAt:   s.CreatedAt,
 		UpdatedAt:   s.UpdatedAt,
 	}

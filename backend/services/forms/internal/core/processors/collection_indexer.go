@@ -44,7 +44,7 @@ func (idx *collectionIndexer) trackIndices(t domain.Tag, candidates []candidate)
 	}
 
 	for _, c := range candidates {
-		if path := c.value.IndexPath(); !c.etm.HasStaticValue && len(path) == len(segments) {
+		if path := c.path; !c.etm.HasStaticValue && len(path) == len(segments) {
 			for depth, segment := range segments {
 				idx.addKnownPath(segment, path[:depth+1])
 			}
@@ -86,8 +86,12 @@ func (idx *collectionIndexer) entityCollection(segments []string, c candidate, k
 	}
 
 	// b) Dynamic values with explicit indices map to their native path.
-	switch path := c.value.IndexPath(); {
+	switch path := c.path; {
 	case len(path) == depth:
+		return [][]int{path}, nil
+	case len(path) > 0 && c.value == nil:
+		// NOTE: Missing value inside a repeatable instance: maps to the deepest level the path reaches so the
+		// collection below it resolves to null.
 		return [][]int{path}, nil
 	case len(path) > 0:
 		return nil, fmt.Errorf("%w; tag=%s depth=%d indices=%d", ErrCollectionDepthMismatch, keyPath, depth, len(path))
@@ -114,8 +118,8 @@ func (idx *collectionIndexer) assignRow(root string, c candidate) int {
 	}
 
 	key := rowKey{elementId: c.etm.ElementID, sectionIndex: -1}
-	if c.value != nil && c.value.SectionIndex != nil {
-		key.sectionIndex = *c.value.SectionIndex
+	if len(c.path) > 0 {
+		key.sectionIndex = c.path[0]
 	}
 
 	row, ok := idx.rows[root][key]

@@ -3048,10 +3048,10 @@ const docTemplate = `{
                 "formId": {
                     "type": "string"
                 },
-                "values": {
+                "sections": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/SubmissionValueDto"
+                        "$ref": "#/definitions/SubmissionSectionDto"
                     }
                 },
                 "versionId": {
@@ -3074,6 +3074,12 @@ const docTemplate = `{
                 "referenceId": {
                     "type": "string"
                 },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SubmissionSectionDto"
+                    }
+                },
                 "status": {
                     "$ref": "#/definitions/SubmissionStatus"
                 },
@@ -3083,14 +3089,40 @@ const docTemplate = `{
                 "updatedAt": {
                     "type": "string"
                 },
+                "versionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "SubmissionSectionDto": {
+            "type": "object",
+            "required": [
+                "instances",
+                "sectionId"
+            ],
+            "properties": {
+                "instances": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/SubmissionSectionInstanceDto"
+                    }
+                },
+                "sectionId": {
+                    "type": "string"
+                }
+            }
+        },
+        "SubmissionSectionInstanceDto": {
+            "type": "object",
+            "required": [
+                "values"
+            ],
+            "properties": {
                 "values": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/SubmissionValueDto"
                     }
-                },
-                "versionId": {
-                    "type": "string"
                 }
             }
         },
@@ -3120,9 +3152,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "itemIndex": {
-                    "type": "integer"
-                },
-                "sectionIndex": {
                     "type": "integer"
                 },
                 "value": {}

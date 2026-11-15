@@ -19,6 +19,7 @@ var (
 type candidate struct {
 	etm   *domain.ElementTagMapping
 	value *domain.SubmissionValue
+	path  []int
 }
 
 type tagAggregate struct {
@@ -47,6 +48,7 @@ func (n *submissionNormalizer) normalize(ctx context.Context, resolved []resolve
 			candidatesByVersion[t.TagVersionID] = append(candidatesByVersion[t.TagVersionID], candidate{
 				etm:   t,
 				value: re.value,
+				path:  re.path,
 			})
 		}
 	}

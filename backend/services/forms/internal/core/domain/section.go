@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
 	"slices"
@@ -11,8 +12,9 @@ import (
 type SectionID string
 
 var (
-	ErrInvalidSection     = errors.New("invalid section")
-	ErrInvalidSectionRule = errors.New("invalid section rule type")
+	ErrInvalidSection       = errors.New("invalid section")
+	ErrInvalidSectionRule   = errors.New("invalid section rule type")
+	ErrSectionInstanceCount = errors.New("section instance count out of range")
 
 	sectionRuleTypes = map[RuleType]bool{
 		RuleTypeVisible: true,
@@ -164,6 +166,56 @@ func (s *Section) GetRepeat() *SectionRepeat {
 
 func (s *Section) IsRepeatable() bool {
 	return s != nil && s.repeat != nil
+}
+
+func (s *Section) ValidateInstanceCount(n int) error {
+	if s == nil {
+		return ErrInvalidSection
+	}
+
+	if !s.IsRepeatable() {
+		if n > 1 {
+			return fmt.Errorf("%w; section=%s max=1 got=%d", ErrSectionInstanceCount, s.Key, n)
+		}
+		return nil
+	}
+
+	if n < s.repeat.MinInstances {
+		return fmt.Errorf("%w; section=%s min=%d got=%d", ErrSectionInstanceCount, s.Key, s.repeat.MinInstances, n)
+	}
+
+	if s.repeat.MaxInstances != nil && n > *s.repeat.MaxInstances {
+		return fmt.Errorf("%w; section=%s max=%d got=%d", ErrSectionInstanceCount, s.Key, *s.repeat.MaxInstances, n)
+	}
+
+	return nil
+}
+
+func (s *Section) FieldValues(instance SectionInstance) map[string]any {
+	fields := make(map[string]any)
+
+	for _, element := range s.GetElements() {
+		values := instance.Values(element.ID)
+
+		switch {
+		case len(values) == 0:
+			continue
+		case values[0].ItemIndex == nil:
+			fields[element.Key] = values[0].Value
+		default:
+			slices.SortFunc(values, func(a, b *SubmissionValue) int {
+				return cmp.Compare(*a.ItemIndex, *b.ItemIndex)
+			})
+
+			list := make([]any, 0, len(values))
+			for _, v := range values {
+				list = append(list, v.Value)
+			}
+			fields[element.Key] = list
+		}
+	}
+
+	return fields
 }
 
 func (s *Section) validate() error {

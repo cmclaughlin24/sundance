@@ -17,14 +17,14 @@ type SubmissionDocument struct {
 	UpdatedAt     time.Time                    `bson:"updated_at"`
 	Attempts      []*submissionAttemptDocument `bson:"attempts"`
 	Facts         []*canonicalFact             `bson:"facts"`
-	Values        []*submissionValueDocument   `bson:"values"`
+	Sections      []*submissionSectionDocument `bson:"sections"`
 	EvalContext   domain.EvaluationContext     `bson:"evaluation_context"`
 }
 
 func ToSubmissionDocument(s *domain.Submission) (*SubmissionDocument, error) {
-	values := make([]*submissionValueDocument, 0, len(s.Values))
-	for _, doc := range s.Values {
-		values = append(values, toSubmissionValueDocument(doc))
+	sections := make([]*submissionSectionDocument, 0, len(s.Sections))
+	for _, sec := range s.Sections {
+		sections = append(sections, toSubmissionSectionDocument(sec))
 	}
 
 	attempts := make([]*submissionAttemptDocument, 0, len(s.Attempts))
@@ -55,15 +55,15 @@ func ToSubmissionDocument(s *domain.Submission) (*SubmissionDocument, error) {
 		UpdatedAt:     s.UpdatedAt,
 		Attempts:      attempts,
 		Facts:         facts,
-		Values:        values,
+		Sections:      sections,
 		EvalContext:   s.GetEvalContext(),
 	}, nil
 }
 
 func FromSubmissionDocument(s *SubmissionDocument) (*domain.Submission, error) {
-	values := make([]*domain.SubmissionValue, 0, len(s.Values))
-	for _, doc := range s.Values {
-		values = append(values, fromSubmissionValueDocument(doc))
+	sections := make([]*domain.SubmissionSection, 0, len(s.Sections))
+	for _, doc := range s.Sections {
+		sections = append(sections, fromSubmissionSectionDocument(doc))
 	}
 
 	attempts := make([]*domain.SubmissionAttempt, 0, len(s.Attempts))
@@ -84,7 +84,7 @@ func FromSubmissionDocument(s *SubmissionDocument) (*domain.Submission, error) {
 		domain.ReferenceID(s.ReferenceID),
 		domain.IdempotencyID(s.IdempotencyID),
 		domain.SubmissionStatus(s.Status),
-		values,
+		sections,
 		facts,
 		attempts,
 		s.EvalContext,

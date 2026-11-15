@@ -112,7 +112,7 @@ func (s *submissionsService) Create(ctx context.Context, cmd *commands.CreateSub
 		cmd.FormID,
 		cmd.VersionID,
 		cmd.IdempotencyID,
-		cmd.Values,
+		cmd.Sections,
 		cmd.EvalContext,
 	)
 	if err != nil {
@@ -144,7 +144,7 @@ func (s *submissionsService) Normalize(ctx context.Context, cmd *commands.Normal
 		cmd.FormID,
 		cmd.VersionID,
 		domain.IdempotencyID(domain.NewID()),
-		cmd.Values,
+		cmd.Sections,
 		cmd.EvalContext,
 	)
 	if err != nil {

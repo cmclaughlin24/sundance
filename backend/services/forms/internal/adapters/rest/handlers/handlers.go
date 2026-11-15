@@ -69,6 +69,13 @@ func isBadRequest(err error) bool {
 		errors.Is(err, domain.ErrInvalidSection) ||
 		errors.Is(err, domain.ErrInvalidExprOperator) ||
 		errors.Is(err, domain.ErrInvalidJoinOperator) ||
+		errors.Is(err, domain.ErrDuplicateItemIndex) ||
+		errors.Is(err, domain.ErrDuplicateSection) ||
+		errors.Is(err, domain.ErrMixedItemIndex) ||
+		errors.Is(err, domain.ErrSectionInstanceCount) ||
+		errors.Is(err, processors.ErrSubmissionFormMismatch) ||
+		errors.Is(err, processors.ErrUnknownSection) ||
+		errors.Is(err, processors.ErrUnknownElement) ||
 		errors.Is(err, services.ErrDuplicateFormKey) ||
 		errors.Is(err, services.ErrInvalidExpressionKey) ||
 		errors.Is(err, processors.ErrMissingCollectionIndex) ||

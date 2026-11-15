@@ -6,11 +6,11 @@ import (
 )
 
 type CreateSubmissionCommand struct {
-	TenantID      string                    `validate:"required"`
-	FormID        domain.FormID             `validate:"required"`
-	VersionID     domain.FormVersionID      `validate:"required"`
-	IdempotencyID domain.IdempotencyID      `validate:"required"`
-	Values        []*domain.SubmissionValue `validate:"required,min=1"`
+	TenantID      string                      `validate:"required"`
+	FormID        domain.FormID               `validate:"required"`
+	VersionID     domain.FormVersionID        `validate:"required"`
+	IdempotencyID domain.IdempotencyID        `validate:"required"`
+	Sections      []*domain.SubmissionSection `validate:"required,min=1"`
 	EvalContext   domain.EvaluationContext
 }
 
@@ -19,7 +19,7 @@ func NewCreateSubmissionCommand(
 	formID domain.FormID,
 	versionID domain.FormVersionID,
 	idempotencyID domain.IdempotencyID,
-	values []*domain.SubmissionValue,
+	sections []*domain.SubmissionSection,
 	evalContext domain.EvaluationContext,
 ) *CreateSubmissionCommand {
 	return &CreateSubmissionCommand{
@@ -27,7 +27,7 @@ func NewCreateSubmissionCommand(
 		FormID:        formID,
 		VersionID:     versionID,
 		IdempotencyID: idempotencyID,
-		Values:        values,
+		Sections:      sections,
 		EvalContext:   evalContext,
 	}
 }
@@ -37,10 +37,10 @@ func (c *CreateSubmissionCommand) Validate() error {
 }
 
 type NormalizeSubmissionCommand struct {
-	TenantID    string                    `validate:"required"`
-	FormID      domain.FormID             `validate:"required"`
-	VersionID   domain.FormVersionID      `validate:"required"`
-	Values      []*domain.SubmissionValue `validate:"required,min=1"`
+	TenantID    string                      `validate:"required"`
+	FormID      domain.FormID               `validate:"required"`
+	VersionID   domain.FormVersionID        `validate:"required"`
+	Sections    []*domain.SubmissionSection `validate:"required,min=1"`
 	EvalContext domain.EvaluationContext
 }
 
@@ -48,14 +48,14 @@ func NewNormalizeSubmissionCommand(
 	tenantID string,
 	formID domain.FormID,
 	versionID domain.FormVersionID,
-	values []*domain.SubmissionValue,
+	sections []*domain.SubmissionSection,
 	evalContext domain.EvaluationContext,
 ) *NormalizeSubmissionCommand {
 	return &NormalizeSubmissionCommand{
 		TenantID:    tenantID,
 		FormID:      formID,
 		VersionID:   versionID,
-		Values:      values,
+		Sections:    sections,
 		EvalContext: evalContext,
 	}
 }
