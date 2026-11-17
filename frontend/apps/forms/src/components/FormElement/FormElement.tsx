@@ -7,7 +7,7 @@ import type {
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { SubmissionProvider } from "@/store/submission/SubmissionProvider";
 import { FormRenderer } from "./renderer/FormRenderer";
-import type { ISubmissionValue } from "@/types/submission";
+import type { ISubmissionSection, ISubmissionValue } from "@/types/submission";
 import { formElementStyles } from "./FormElement.style";
 import { FormDefinitionProvider } from "@/store/formDefinition/FormDefinitionProvider";
 import { Page } from "../layout/Page/Page";
@@ -42,9 +42,9 @@ export const FormElement: React.FC<FormElementProps> = function ({
   );
 
   const asyncSubmit = async (
-    values: ISubmissionValue[],
+    sections: ISubmissionSection[],
   ): Promise<IAsyncSubmitEvent> => {
-    const result = await submissionService.submit(formId, versionId, values, {
+    const result = await submissionService.submit(formId, versionId, sections, {
       tenantId,
       token,
     });
@@ -53,25 +53,29 @@ export const FormElement: React.FC<FormElementProps> = function ({
   };
 
   const syncSubmit = async (
-    values: ISubmissionValue[],
+    sections: ISubmissionSection[],
   ): Promise<ISyncSubmitEvent> => {
     const result = await submissionService.normalize(
       formId,
       versionId,
-      values,
-      { tenantId, token },
+      sections,
+      {
+        tenantId,
+        token,
+      },
     );
 
     return { raw: values, normalized: result };
   };
 
-  const handleSubmit = async (values: ISubmissionValue[]) => {
+  const handleSubmit = async (_values: ISubmissionValue[]) => {
+    // FIXME: Correctly pass values
     try {
       if (submitType === "async") {
-        const result = await asyncSubmit(values);
+        const result = await asyncSubmit([]);
         onSubmit(result);
       } else if (!submitType || submitType === "sync") {
-        const result = await syncSubmit(values);
+        const result = await syncSubmit([]);
         onSubmit(result);
       }
     } catch (error) {}

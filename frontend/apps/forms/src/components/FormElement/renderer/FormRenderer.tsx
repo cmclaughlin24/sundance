@@ -13,12 +13,12 @@ import { filterVisible } from "@/utils/filter";
 import { EvalContextContext } from "@/store/submission/evalContext";
 import { buildFieldEvalNamespace, type EvalContext } from "@/utils/evaluate";
 import { rendererStyles } from "./renderer.style";
-import { FormFooter } from "../layout/FormFooter/FormFooter";
-import { FormFooterActions } from "../layout/FormFooter/FormFooterActions";
 import { useForm, useFormVersion } from "@/store/formDefinition";
 import { AnimatePresence } from "motion/react";
 import { calculateProgress } from "@/utils/progress";
 import { checkFormValidity } from "@/utils/form";
+import { FormFooter } from "../layout/FormFooter/FormFooter";
+import { FormFooterActions } from "../layout/FormFooter/FormFooterActions";
 
 export interface FormRendererProps {
   onSubmit: (values: ISubmissionValue[]) => void;
@@ -63,7 +63,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
           ...value.map((v, idx) => ({
             value: v,
             elementId,
-            collectionIndex: idx,
+            itemIndex: idx,
           })),
         );
         continue;

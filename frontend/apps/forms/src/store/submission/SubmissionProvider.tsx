@@ -1,13 +1,13 @@
 import { createContext, useEffect, useRef } from "react";
-import type { ISubmissionValue } from "@/types/submission";
+import type { ISubmissionSection } from "@/types/submission";
 import {
-  createFormValues,
+  hydrateSubmissionValues,
   createSubmissionStore,
   type SubmissionStoreApi,
 } from "./submissionStore";
 
 export type SubmissionProviderProps = React.PropsWithChildren<{
-  rawSubmission: ISubmissionValue[] | undefined;
+  rawSubmission: ISubmissionSection[] | undefined;
 }>;
 
 export const SubmissionStoreContext = createContext<SubmissionStoreApi | null>(
@@ -26,8 +26,7 @@ export const SubmissionProvider: React.FC<SubmissionProviderProps> = ({
 
   useEffect(() => {
     storeRef.current!.setState({
-      values: createFormValues(rawSubmission),
-      errors: {},
+      sections: hydrateSubmissionValues(rawSubmission),
     });
   }, [rawSubmission]);
 
