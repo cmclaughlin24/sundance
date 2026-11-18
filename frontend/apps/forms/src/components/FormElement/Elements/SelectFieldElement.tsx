@@ -11,7 +11,7 @@ import { useDataSource } from "@/hooks/useDataSource";
 import {
   useElementErrors,
   useElementValue,
-  useSubmissionDispatch,
+  useElementDispatch,
 } from "@/store/submission/useSubmissionContext";
 import { z } from "zod";
 
@@ -39,7 +39,7 @@ const BaseSelectFieldElement: React.FC<BaseSelectFieldElementProps> =
     elementId,
     onChange,
   }) {
-    const { setError } = useSubmissionDispatch();
+    const { setError } = useElementDispatch();
     const value = useElementValue<LookupValue | LookupValue[]>(
       elementId,
       !multiple ? "" : [],
@@ -74,7 +74,7 @@ const BaseSelectFieldElement: React.FC<BaseSelectFieldElementProps> =
     ));
 
     return (
-      <FormControl error={errors?.length > 0}>
+      <FormControl error={errors && errors.length > 0}>
         <MuiSelectField
           id={id}
           value={value}

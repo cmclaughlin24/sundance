@@ -4,7 +4,7 @@ import type { ElementComponent } from "../../renderer/ElementRenderer";
 import {
   useElementErrors,
   useElementValue,
-  useSubmissionDispatch,
+  useElementDispatch,
 } from "@/store/submission/useSubmissionContext";
 import type { IUserLookup } from "@/types/userLookup";
 import Box from "@mui/material/Box";
@@ -33,7 +33,7 @@ export const UserFieldElement: ElementComponent = function ({
 
   const usersService = useUsersService();
   const tenantId = useTenantId();
-  const { setError } = useSubmissionDispatch();
+  const { setError } = useElementDispatch();
   const value = useElementValue<IUserLookup[]>(element.id, []);
   const errors = useElementErrors(element.id);
   const validationSchema = buildUserValidationSchema({

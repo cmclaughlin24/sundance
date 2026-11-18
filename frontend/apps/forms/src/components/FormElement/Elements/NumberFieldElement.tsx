@@ -7,7 +7,7 @@ import { checkElementType } from "@/utils/error";
 import {
   useElementErrors,
   useElementValue,
-  useSubmissionDispatch,
+  useElementDispatch,
 } from "@/store/submission/useSubmissionContext";
 import { z } from "zod";
 
@@ -18,7 +18,7 @@ export const NumberFieldElement: ElementComponent = function ({
 }) {
   checkElementType(element.type, "number");
 
-  const { setError } = useSubmissionDispatch();
+  const { setError } = useElementDispatch();
   const value = useElementValue<number | "">(element.id, "");
   const errors = useElementErrors(element.id);
   const attr = element.attributes as NumberElementAttributes;
@@ -51,8 +51,8 @@ export const NumberFieldElement: ElementComponent = function ({
         value={value}
         required={ruleState.required}
         disabled={ruleState.readonly}
-        error={errors.length > 0}
-        helperText={errors[0]}
+        error={errors && errors.length > 0}
+        helperText={errors?.[0]}
         onChange={handleChange}
         onBlur={handleBlur}
         slotProps={{

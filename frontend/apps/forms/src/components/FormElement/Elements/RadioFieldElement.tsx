@@ -4,7 +4,7 @@ import type { RadioElementAttributes } from "@/types/elementAttributes";
 import {
   useElementErrors,
   useElementValue,
-  useSubmissionDispatch,
+  useElementDispatch,
 } from "@/store/submission/useSubmissionContext";
 import type { LookupValue } from "@/types/data";
 import z from "zod";
@@ -22,7 +22,7 @@ export const RadioFieldElement: ElementComponent = function ({
   checkElementType(element.type, "radio");
 
   const attr = element.attributes as RadioElementAttributes;
-  const { setError } = useSubmissionDispatch();
+  const { setError } = useElementDispatch();
   const value = useElementValue<LookupValue>(
     element.id,
     attr.defaultValue ?? "",
@@ -46,7 +46,7 @@ export const RadioFieldElement: ElementComponent = function ({
 
   return (
     <FieldElementContainer element={element}>
-      <FormControl error={errors?.length > 0}>
+      <FormControl error={errors && errors.length > 0}>
         <MuiRadioGroup
           id={element.id}
           value={value}

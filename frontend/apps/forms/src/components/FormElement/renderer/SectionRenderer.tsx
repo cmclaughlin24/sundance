@@ -12,7 +12,6 @@ import {
   useSubmissionSectionInstances,
 } from "@/store/submission/useSubmissionContext";
 import { useEffect } from "react";
-import * as ArrayUtils from "@/utils/array";
 import { SectionInstanceProvider } from "@/store/submission/sectionInstanceContext";
 
 export const SectionRenderer: React.FC<{ section: ISection }> = function ({
@@ -20,18 +19,19 @@ export const SectionRenderer: React.FC<{ section: ISection }> = function ({
 }) {
   const evalCtx = useEvalContext();
   const instances = useSubmissionSectionInstances(section.id);
+  const hasInstances = instances && instances.length > 0;
   const { ensureInstance } = useSubmissionInstanceActions();
 
   useEffect(() => {
-    if (!ArrayUtils.hasLengthGreaterThan(instances, 0)) {
+    if (!hasInstances) {
       ensureInstance(section.id);
     }
-  }, [ensureInstance, section.id, instances.length]);
+  }, [ensureInstance, section.id, hasInstances]);
 
   let elements = sortPositioned(section.elements);
   elements = filterVisible(elements, evalCtx);
 
-  if (!ArrayUtils.hasLengthGreaterThan(instances, 0)) {
+  if (!hasInstances) {
     return null;
   }
 

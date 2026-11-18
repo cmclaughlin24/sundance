@@ -38,15 +38,21 @@ export function replaceInstance(
   fn: (i: SectionInstanceState) => SectionInstanceState,
 ): Partial<ISubmissionStore> | ISubmissionStore {
   const instances = s.sections[sectionId];
+  const index = instances?.findIndex((i) => i.id === instanceId) ?? -1;
 
-  if (!instances?.some((i) => i.id === instanceId)) {
+  if (index === -1) {
     return s;
   }
 
-  return {
-    sections: {
-      ...s.sections,
-      [sectionId]: instances.map((i) => (i.id === instanceId ? fn(i) : i)),
-    },
-  };
+  const current = instances[index];
+  const next = fn(current);
+
+  if (next === current) {
+    return s;
+  }
+
+  const updated = [...instances];
+  updated[index] = next;
+
+  return { sections: { ...s.sections, [sectionId]: updated } };
 }

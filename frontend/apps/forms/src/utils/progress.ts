@@ -1,8 +1,9 @@
-import type { FormValues } from "@/store/submission/submissionStore";
 import type { EvalContext } from "./evaluate";
 import { evaluateRules } from "./evaluate";
 import { filterVisible } from "./filter";
 import type { IPage } from "@/types/page";
+import type { SectionInstanceState } from "@/store/submission/SectionInstanceState";
+import * as ArrayUtils from "@/utils/array";
 
 export interface IFormProgress {
   /**
@@ -28,8 +29,7 @@ export interface IFormProgress {
 }
 
 export function calculateProgress(
-  values: FormValues,
-  errors: Record<string, string[]>,
+  formValues: Record<string, SectionInstanceState[]>,
   evalCtx: EvalContext,
   pages: IPage[],
 ): IFormProgress | undefined {
@@ -46,6 +46,12 @@ export function calculateProgress(
     const visibleSections = filterVisible(page.sections, evalCtx);
 
     for (const section of visibleSections) {
+      const instances = formValues[section.id];
+
+      if (!ArrayUtils.hasLengthGreaterThan(instances, 0)) {
+        continue;
+      }
+
       const visibleElements = filterVisible(section.elements, evalCtx);
 
       for (const element of visibleElements) {
@@ -58,9 +64,17 @@ export function calculateProgress(
         }
 
         total++;
-        const hasErrors = errors[element.id] && errors[element.id].length > 0;
 
-        if (!(element.id in values) || hasErrors) {
+        const hasErrors = instances.some((instance) =>
+          ArrayUtils.hasLengthGreaterThan(instance.getErrors(element.id)!, 0),
+        );
+
+        const hasValue = instances.some((instance) => {
+          const value = instance.getValue(element.id);
+          return value != undefined;
+        });
+
+        if (!hasValue || hasErrors) {
           hasErrors && errorCount++;
           continue;
         }

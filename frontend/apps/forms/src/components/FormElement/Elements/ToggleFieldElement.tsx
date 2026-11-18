@@ -3,7 +3,7 @@ import type { ElementComponent } from "../renderer/ElementRenderer";
 import {
   useElementErrors,
   useElementValue,
-  useSubmissionDispatch,
+  useElementDispatch,
 } from "@/store/submission/useSubmissionContext";
 import z from "zod";
 import { FieldElementContainer } from "../layout/FieldElementContainer";
@@ -19,7 +19,7 @@ export const ToggleFieldElement: ElementComponent = function ({
   checkElementType(element.type, "toggle");
 
   const attr = element.attributes as ToggleElementAttributes;
-  const { setError } = useSubmissionDispatch();
+  const { setError } = useElementDispatch();
   const value = useElementValue<boolean>(element.id, attr.defaultValue);
   const errors = useElementErrors(element.id);
   const validationSchema = buildToggleValidationSchema({
@@ -40,7 +40,7 @@ export const ToggleFieldElement: ElementComponent = function ({
 
   return (
     <FieldElementContainer element={element}>
-      <FormControl error={errors?.length > 0}>
+      <FormControl error={errors && errors.length > 0}>
         <Switch value={value} onChange={handleChange} onBlur={handleBlur} />
       </FormControl>
     </FieldElementContainer>

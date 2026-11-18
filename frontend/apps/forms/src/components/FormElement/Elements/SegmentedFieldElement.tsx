@@ -4,7 +4,7 @@ import type { SegmentedElementAttributes } from "@/types/elementAttributes";
 import {
   useElementErrors,
   useElementValue,
-  useSubmissionDispatch,
+  useElementDispatch,
 } from "@/store/submission/useSubmissionContext";
 import type { LookupValue } from "@/types/data";
 import z from "zod";
@@ -22,7 +22,7 @@ export const SegmentedFieldElement: ElementComponent = function ({
   checkElementType(element.type, "segmented");
 
   const attr = element.attributes as SegmentedElementAttributes;
-  const { setError } = useSubmissionDispatch();
+  const { setError } = useElementDispatch();
   const value = useElementValue<LookupValue>(
     element.id,
     attr.defaultValue ?? "",
@@ -68,7 +68,7 @@ export const SegmentedFieldElement: ElementComponent = function ({
 
   return (
     <FieldElementContainer element={element}>
-      <FormControl error={errors?.length > 0}>
+      <FormControl error={errors && errors.length > 0}>
         <ToggleButtonGroup
           value={value}
           exclusive

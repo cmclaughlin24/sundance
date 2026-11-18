@@ -19,14 +19,20 @@ export const SubmissionProvider: React.FC<SubmissionProviderProps> = ({
   rawSubmission,
 }) => {
   const storeRef = useRef<SubmissionStoreApi | null>(null);
+  const hydrateFrom = useRef(rawSubmission);
 
   if (!storeRef.current) {
     storeRef.current = createSubmissionStore(rawSubmission);
   }
 
   useEffect(() => {
+    if (hydrateFrom.current === rawSubmission) {
+      return;
+    }
+
+    hydrateFrom.current = rawSubmission;
     storeRef.current!.setState({
-      sections: hydrateSectionState(rawSubmission),
+      sections: hydrateSectionState(rawSubmission ?? []),
     });
   }, [rawSubmission]);
 

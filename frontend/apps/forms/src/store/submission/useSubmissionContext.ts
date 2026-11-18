@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { useEvalContext } from "./evalContext";
 import type { IElement } from "@/types/element";
 import type { IRuleState } from "@/types/rule";
@@ -6,6 +6,8 @@ import { evaluateRules } from "@/utils/evaluate";
 import { SubmissionStoreContext } from "./SubmissionProvider";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
+import { useSectionInstance } from "./sectionInstanceContext";
+import { findSectionInstance } from "./utils";
 
 export function useSubmissionContext() {
   const store = useContext(SubmissionStoreContext);
@@ -17,25 +19,9 @@ export function useSubmissionContext() {
   return store;
 }
 
-export function useSubmissionDispatch() {
-  const store = useSubmissionContext();
-  return useStore(
-    store,
-    useShallow((s) => ({
-      setValue: s.setValue,
-      setError: s.setError,
-    })),
-  );
-}
-
 export function useFormValues() {
   const store = useSubmissionContext();
-  return useStore(store, (s) => s.values);
-}
-
-export function useFormErrors() {
-  const store = useSubmissionContext();
-  return useStore(store, (s) => s.errors);
+  return useStore(store, (s) => s.sections);
 }
 
 export function useSubmissionInstanceActions() {
@@ -55,14 +41,40 @@ export function useSubmissionSectionInstances(sectionId: string) {
   return useStore(store, (s) => s.sections[sectionId]);
 }
 
-export function useElementValue<T>(elementId: string, defaultValue?: T): T {
+export function useElementDispatch() {
   const store = useSubmissionContext();
-  return useStore(store, (s) => s.values[elementId]) ?? defaultValue;
+  const { sectionId, instanceId } = useSectionInstance();
+
+  return useMemo(() => {
+    const { setValue, setError } = store.getState();
+
+    return {
+      setValue: setValue.bind(null, sectionId, instanceId),
+      setError: setError.bind(null, sectionId, instanceId),
+    };
+  }, [store, sectionId, instanceId]);
 }
 
-export function useElementErrors(elementId: string): string[] {
+export function useElementValue<T>(elementId: string, defaultValue?: T): T {
   const store = useSubmissionContext();
-  return useStore(store, (s) => s.errors[elementId]);
+  const { sectionId, instanceId } = useSectionInstance();
+
+  return (
+    useStore(store, (s) => {
+      const instance = findSectionInstance(s.sections, sectionId, instanceId);
+      return instance?.getValue(elementId);
+    }) ?? defaultValue
+  );
+}
+
+export function useElementErrors(elementId: string): string[] | undefined {
+  const store = useSubmissionContext();
+  const { sectionId, instanceId } = useSectionInstance();
+
+  return useStore(store, (s) => {
+    const instance = findSectionInstance(s.sections, sectionId, instanceId);
+    return instance?.getErrors(elementId);
+  });
 }
 
 export function useElementRuleState(element: IElement): Readonly<IRuleState> {

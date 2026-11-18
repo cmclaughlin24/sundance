@@ -5,10 +5,7 @@ import { sortPositioned } from "@/utils/position";
 import type { ISubmissionValue } from "@/types/submission";
 import { PageRenderer } from "./PageRenderer";
 import { useMemo, useRef, useState, type SubmitEvent } from "react";
-import {
-  useFormErrors,
-  useFormValues,
-} from "@/store/submission/useSubmissionContext";
+import { useFormValues } from "@/store/submission/useSubmissionContext";
 import { filterVisible } from "@/utils/filter";
 import { EvalContextContext } from "@/store/submission/evalContext";
 import { buildFieldEvalNamespace, type EvalContext } from "@/utils/evaluate";
@@ -32,15 +29,14 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
   const formRef = useRef<HTMLFormElement>(null);
   const form = useForm();
   const version = useFormVersion();
-  const values = useFormValues();
-  const errors = useFormErrors();
+  const formValues = useFormValues();
   const [pageIndex, setPageIndex] = useState(0);
   const evalCtx = useMemo<EvalContext>(() => {
     const pages = version?.pages ?? [];
-    const field = buildFieldEvalNamespace(pages, values);
+    const field = buildFieldEvalNamespace(pages, formValues);
     // TODO: Add userClaims namespace.
     return { field };
-  }, [version, values]);
+  }, [version, formValues]);
 
   let pages = sortPositioned(version!.pages);
   pages = filterVisible(pages, evalCtx);
@@ -48,7 +44,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
   // NOTE: While it is protected against during form design time, if the current page becomes invisible
   // the previous page will be show to the user.
   const page = pages[pageIndex] ?? pages[pageIndex - 1];
-  const progress = calculateProgress(values, errors, evalCtx, pages);
+  const progress = calculateProgress(formValues, evalCtx, pages);
   const isLastPage = pageIndex === pages.length - 1;
   const isFormValid = checkFormValidity(formRef.current, progress);
 
@@ -57,7 +53,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
 
     const submission: ISubmissionValue[] = [];
 
-    for (const [elementId, value] of Object.entries(values)) {
+    for (const [elementId, value] of Object.entries(submission)) {
       if (Array.isArray(value)) {
         submission.push(
           ...value.map((v, idx) => ({

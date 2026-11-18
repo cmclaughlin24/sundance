@@ -37,6 +37,10 @@ export class SectionInstanceState {
   }
 
   withValue(elementId: string, value: any): SectionInstanceState {
+    if (Object.is(this._values[elementId], value)) {
+      return this;
+    }
+
     return new SectionInstanceState(
       this._id,
       { ...this._values, [elementId]: value },
@@ -61,6 +65,10 @@ export class SectionInstanceState {
 
     for (const elementId in this._values) {
       const answer = this._values[elementId];
+
+      if (answer == null) {
+        continue;
+      }
 
       if (Array.isArray(answer)) {
         values.push(

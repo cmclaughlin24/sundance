@@ -81,6 +81,14 @@ export const FormElement: React.FC<FormElementProps> = function ({
     } catch (error) {}
   };
 
+  const values = useMemo(
+    () =>
+      data && data.length == 2
+        ? hydrateSubmissionValues(rawSubmission, data[1])
+        : [],
+    [rawSubmission, data],
+  );
+
   if (isLoading) {
     return <>Loading the form...</>;
   }
@@ -94,10 +102,6 @@ export const FormElement: React.FC<FormElementProps> = function ({
   }
 
   const [form, version] = data;
-  const values = useMemo(
-    () => hydrateSubmissionValues(rawSubmission, version),
-    [rawSubmission, version],
-  );
 
   return (
     <FormDefinitionProvider form={form} version={version}>

@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import {
   useElementErrors,
   useElementValue,
-  useSubmissionDispatch,
+  useElementDispatch,
 } from "@/store/submission/useSubmissionContext";
 import { z } from "zod";
 
@@ -19,7 +19,7 @@ export const DateFieldElement: ElementComponent = function ({
 }) {
   checkElementType(element.type, "date");
 
-  const { setError } = useSubmissionDispatch();
+  const { setError } = useElementDispatch();
   const value = useElementValue<string | null>(element.id, null);
   const errors = useElementErrors(element.id);
   const attr = element.attributes as DateElementAttributes;
@@ -53,8 +53,8 @@ export const DateFieldElement: ElementComponent = function ({
           textField: {
             required: ruleState.required,
             id: element.id,
-            error: errors.length > 0,
-            helperText: errors[0],
+            error: errors && errors.length > 0,
+            helperText: errors?.[0],
             onBlur: handleBlur,
           },
         }}
