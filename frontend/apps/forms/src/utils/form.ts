@@ -1,6 +1,10 @@
 import type { IElement } from "@/types/element";
 import type { FormVersionStatus, IFormVersion } from "@/types/formVersion";
-import type { ISubmissionValue } from "@/types/submission";
+import type {
+  ISubmissionSection,
+  ISubmissionSectionInstance,
+  ISubmissionValue,
+} from "@/types/submission";
 import type { IFormProgress } from "./progress";
 import type { IPage } from "@/types/page";
 import type { SelectedItem } from "@/store/formDesigner";
@@ -27,36 +31,87 @@ export function getVersionElements(version: IFormVersion): IElement[] {
 }
 
 /**
- * Builds a complete set of submission values for the given form version, using prior submission
- * values where available and falling back to each element's default value for any gaps.
+ * Returns all sections across every page of the given form version.
  *
- * @param raw - The prior submission values to rehydrate from, if any.
- * @param version - The form version whose elements define the expected shape.
- * @returns A complete array of `ISubmissionValue` entries, one per element in the version.
+ * @param version - The form version whose sections should be collected.
+ * @returns A flat array of all `ISection` instances in the version.
+ */
+export function getVersionSections(version: IFormVersion): ISection[] {
+  return version.pages.flatMap((page) => page.sections);
+}
+
+/**
+ * Builds the starting submission for the given form version, grouped by section. Saved instances
+ * are kept in order, and any element missing from an instance gets its default value. A section
+ * with no saved data gets one instance holding only default values.
+ *
+ * Saved sections that don't exist in the version are dropped.
+ *
+ * @param raw - The prior submission to rehydrate from, if any.
+ * @param version - The form version whose sections and elements define the expected shape.
+ * @returns One `ISubmissionSection` per section in the version.
  */
 export function hydrateSubmissionValues(
-  raw: ISubmissionValue[] | undefined,
+  raw: ISubmissionSection[] | undefined,
   version: IFormVersion,
-): ISubmissionValue[] {
-  const values: ISubmissionValue[] = [];
-  const elements = getVersionElements(version);
+): ISubmissionSection[] {
+  const saved = new Map(raw?.map((s) => [s.sectionId, s.instances]) ?? []);
+
+  return getVersionSections(version).map((section) => {
+    const instances = saved.get(section.id);
+
+    if (!instances || instances.length === 0) {
+      return {
+        sectionId: section.id,
+        instances: [hydrateInstance(undefined, section.elements)],
+      };
+    }
+
+    return {
+      sectionId: section.id,
+      instances: instances.map((inst) =>
+        hydrateInstance(inst, section.elements),
+      ),
+    };
+  });
+}
+
+/**
+ * Keeps the saved values for an instance and adds default values for any element that has none.
+ */
+function hydrateInstance(
+  instance: ISubmissionSectionInstance | undefined,
+  elements: IElement[],
+): ISubmissionSectionInstance {
+  const saved = instance?.values ?? [];
+  const answered = new Set(saved.map((v) => v.elementId));
+  const values: ISubmissionValue[] = [...saved];
 
   for (const element of elements) {
-    const rawValue = raw?.find((val) => val.elementId === element.id);
-
-    if (rawValue) {
-      values.push(rawValue);
+    if (answered.has(element.id)) {
       continue;
     }
 
     const defaultValue = element.attributes.defaultValue;
 
     if (defaultValue != null) {
-      values.push({ elementId: element.id, value: defaultValue });
+      values.push(...toSubmissionValues(element.id, defaultValue));
     }
   }
 
-  return values;
+  return { values };
+}
+
+/**
+ * Converts one element's value into API entries: an array becomes one entry per item, each
+ * with its `itemIndex`; any other value becomes a single entry.
+ */
+function toSubmissionValues(elementId: string, value: any): ISubmissionValue[] {
+  if (Array.isArray(value)) {
+    return value.map((v, itemIndex) => ({ elementId, value: v, itemIndex }));
+  }
+
+  return [{ elementId, value }];
 }
 
 /**

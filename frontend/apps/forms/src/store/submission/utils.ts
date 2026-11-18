@@ -24,7 +24,7 @@ export function hydrateSectionState(
 
   for (const section of sections) {
     state[section.sectionId] = section.instances.map((i) => {
-      return SectionInstanceState.create(i.values);
+      return SectionInstanceState.fromSubmission(i.values);
     });
   }
 

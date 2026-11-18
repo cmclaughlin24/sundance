@@ -1,14 +1,14 @@
 import type {
-  ISubmissionValue,
+  ISubmissionSection,
   NormalizedSubmission,
 } from "@/types/submission";
 
 export interface ISyncSubmitEvent {
   /**
-   * The raw submission data. This is an array of `ISubmissionVlaue` objects, each representing a field in the form and its
-   * corresponding value.
+   * The raw submission data. This is an array of `ISubmissionSection` objects, each representing a section in the form and its
+   * corresponding values.
    */
-  raw: ISubmissionValue[];
+  raw: ISubmissionSection[];
 
   /**
    * The normalized submission data. This is an object representing the submission in a normalized format.
@@ -45,10 +45,10 @@ interface BaseFormElementProps {
 
   /**
    * The raw submission data. This is an optional prop that can be used to pre-fill the form with existing submission data.
-   * It should be an array of `ISubmissionValue` objects, each representing a field in the form and its corresponding value. If
+   * It should be an array of `ISubmissioonSection` objects, each representing a section in the form and its corresponding values. If
    * this prop is not provided the form will be rendered with empty fields.
    */
-  rawSubmission?: ISubmissionValue[];
+  rawSubmission?: ISubmissionSection[];
 
   /**
    * Callback function that is called when the user cancels the form.
@@ -99,6 +99,4 @@ interface DefaultFormElementProps extends BaseFormElementProps {
 }
 
 export type FormElementProps =
-  | SyncFormElementProps
-  | AsyncFormElementProps
-  | DefaultFormElementProps;
+  SyncFormElementProps | AsyncFormElementProps | DefaultFormElementProps;
