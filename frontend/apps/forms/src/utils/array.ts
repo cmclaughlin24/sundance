@@ -4,7 +4,7 @@
  * @param n - The number to compare the array's length against.
  * @returns `true` if the array's length is greater than the specified number, `false` otherwise.
  */
-export function hasLengthGreaterThan<T>(array: T[] | null, n: number): boolean {
+export function hasLengthGreaterThan<T>(array: T[] | null | undefined, n: number): boolean {
   return !!array && array.length > n;
 }
 

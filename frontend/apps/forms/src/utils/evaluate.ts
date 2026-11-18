@@ -8,7 +8,8 @@ import {
 } from "@/types/rule";
 import { sortPositioned } from "./position";
 import type { IPage } from "@/types/page";
-import type { FormValues } from "@/store/submission/submissionStore";
+import type { SectionInstanceState } from "@/store/submission/SectionInstanceState";
+import * as ArrayUtils from "@/utils/array";
 
 type EvaluatorFn = (fieldValue: any, target: any) => boolean;
 
@@ -27,7 +28,7 @@ export type EvalContext = Partial<Record<RuleExprSourceType, EvalNamespace>>;
 
 export function buildFieldEvalNamespace(
   pages: IPage[] | null,
-  values: FormValues,
+  formValues: Record<string, SectionInstanceState[]>,
 ): EvalNamespace {
   const namespace: EvalNamespace = {};
 
@@ -45,8 +46,18 @@ export function buildFieldEvalNamespace(
         continue sectionLoop;
       }
 
+      const instances = formValues[section.id];
+
+      if (!ArrayUtils.hasLengthGreaterThan(instances, 0)) {
+        continue sectionLoop;
+      }
+
       for (const element of section.elements) {
-        namespace[element.key] = values[element.id];
+        if (ArrayUtils.hasExactLength(instances, 1)) {
+          namespace[element.key] = instances[0].getValue(element.id);
+        } else {
+          namespace[element.key] = instances.map((i) => i.getValue(element.id));
+        }
       }
     }
   }

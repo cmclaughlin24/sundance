@@ -7,7 +7,7 @@ import type {
 import { useAsyncData } from "@/hooks/useAsyncData";
 import { SubmissionProvider } from "@/store/submission/SubmissionProvider";
 import { FormRenderer } from "./renderer/FormRenderer";
-import type { ISubmissionSection, ISubmissionValue } from "@/types/submission";
+import type { ISubmissionSection } from "@/types/submission";
 import { formElementStyles } from "./FormElement.style";
 import { FormDefinitionProvider } from "@/store/formDefinition/FormDefinitionProvider";
 import { Page } from "../layout/Page/Page";
@@ -65,17 +65,16 @@ export const FormElement: React.FC<FormElementProps> = function ({
       },
     );
 
-    return { raw: values, normalized: result };
+    return { raw: sections, normalized: result };
   };
 
-  const handleSubmit = async (_values: ISubmissionValue[]) => {
-    // FIXME: Correctly pass values
+  const handleSubmit = async (submission: ISubmissionSection[]) => {
     try {
       if (submitType === "async") {
-        const result = await asyncSubmit([]);
+        const result = await asyncSubmit(submission);
         onSubmit(result);
       } else if (!submitType || submitType === "sync") {
-        const result = await syncSubmit([]);
+        const result = await syncSubmit(submission);
         onSubmit(result);
       }
     } catch (error) {}

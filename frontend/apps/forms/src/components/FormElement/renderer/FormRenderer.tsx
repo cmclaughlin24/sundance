@@ -2,7 +2,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import { PageTitle } from "../../layout/Page/PageTitle";
 import { sortPositioned } from "@/utils/position";
-import type { ISubmissionValue } from "@/types/submission";
+import type { ISubmissionSection } from "@/types/submission";
 import { PageRenderer } from "./PageRenderer";
 import { useMemo, useRef, useState, type SubmitEvent } from "react";
 import { useFormValues } from "@/store/submission/useSubmissionContext";
@@ -18,7 +18,7 @@ import { FormFooter } from "../layout/FormFooter/FormFooter";
 import { FormFooterActions } from "../layout/FormFooter/FormFooterActions";
 
 export interface FormRendererProps {
-  onSubmit: (values: ISubmissionValue[]) => void;
+  onSubmit: (values: ISubmissionSection[]) => void;
   onCancel: () => void;
 }
 
@@ -51,21 +51,15 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
   const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const submission: ISubmissionValue[] = [];
+    const submission: ISubmissionSection[] = [];
 
-    for (const [elementId, value] of Object.entries(submission)) {
-      if (Array.isArray(value)) {
-        submission.push(
-          ...value.map((v, idx) => ({
-            value: v,
-            elementId,
-            itemIndex: idx,
-          })),
-        );
-        continue;
-      }
-
-      submission.push({ elementId, value });
+    for (const sectionId in formValues) {
+      submission.push({
+        sectionId,
+        instances: formValues[sectionId].map((i) => ({
+          values: i.toSubmissionValues(),
+        })),
+      });
     }
 
     onSubmit(submission);
@@ -116,7 +110,7 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
             <Button
               variant="contained"
               type="submit"
-              disabled={isFormValid}
+              disabled={!isFormValid}
               form={form.id}
             >
               Submit

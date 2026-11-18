@@ -48,38 +48,36 @@ export function calculateProgress(
     for (const section of visibleSections) {
       const instances = formValues[section.id];
 
+      const requiredElements = filterVisible(section.elements, evalCtx).filter(
+        (element) =>
+          evaluateRules(element.rules, evalCtx, {
+            required: element.attributes.isRequired,
+          }).required,
+      );
+
       if (!ArrayUtils.hasLengthGreaterThan(instances, 0)) {
+        total += requiredElements.length;
         continue;
       }
 
-      const visibleElements = filterVisible(section.elements, evalCtx);
+      // NOTE: Each instance must fill in its own required fields, so they are counted once per instance.
+      for (const instance of instances) {
+        for (const element of requiredElements) {
+          total++;
 
-      for (const element of visibleElements) {
-        const { required } = evaluateRules(element.rules, evalCtx, {
-          required: element.attributes.isRequired,
-        });
+          if (
+            ArrayUtils.hasLengthGreaterThan(instance.getErrors(element.id)!, 0)
+          ) {
+            errorCount++;
+            continue;
+          }
 
-        if (!required) {
-          continue;
+          if (isEmpty(instance.getValue(element.id))) {
+            continue;
+          }
+
+          filled++;
         }
-
-        total++;
-
-        const hasErrors = instances.some((instance) =>
-          ArrayUtils.hasLengthGreaterThan(instance.getErrors(element.id)!, 0),
-        );
-
-        const hasValue = instances.some((instance) => {
-          const value = instance.getValue(element.id);
-          return value != undefined;
-        });
-
-        if (!hasValue || hasErrors) {
-          hasErrors && errorCount++;
-          continue;
-        }
-
-        filled++;
       }
     }
   }
@@ -90,4 +88,12 @@ export function calculateProgress(
     total: total,
     errors: errorCount,
   };
+}
+
+function isEmpty(value: any): boolean {
+  return (
+    value == null ||
+    value === "" ||
+    (Array.isArray(value) && value.length === 0)
+  );
 }

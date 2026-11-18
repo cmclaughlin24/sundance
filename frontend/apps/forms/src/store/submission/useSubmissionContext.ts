@@ -5,7 +5,6 @@ import type { IRuleState } from "@/types/rule";
 import { evaluateRules } from "@/utils/evaluate";
 import { SubmissionStoreContext } from "./SubmissionProvider";
 import { useStore } from "zustand";
-import { useShallow } from "zustand/react/shallow";
 import { useSectionInstance } from "./sectionInstanceContext";
 import { findSectionInstance } from "./utils";
 
@@ -26,14 +25,8 @@ export function useFormValues() {
 
 export function useSubmissionInstanceActions() {
   const store = useSubmissionContext();
-  return useStore(
-    store,
-    useShallow((s) => ({
-      addInstance: s.addInstance,
-      removeInstance: s.removeInstance,
-      ensureInstance: s.ensureInstance,
-    })),
-  );
+  const { addInstance, removeInstance, ensureInstance } = store.getState();
+  return { addInstance, removeInstance, ensureInstance };
 }
 
 export function useSubmissionSectionInstances(sectionId: string) {
