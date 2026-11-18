@@ -38,6 +38,23 @@ export function useFormErrors() {
   return useStore(store, (s) => s.errors);
 }
 
+export function useSubmissionInstanceActions() {
+  const store = useSubmissionContext();
+  return useStore(
+    store,
+    useShallow((s) => ({
+      addInstance: s.addInstance,
+      removeInstance: s.removeInstance,
+      ensureInstance: s.ensureInstance,
+    })),
+  );
+}
+
+export function useSubmissionSectionInstances(sectionId: string) {
+  const store = useSubmissionContext();
+  return useStore(store, (s) => s.sections[sectionId]);
+}
+
 export function useElementValue<T>(elementId: string, defaultValue?: T): T {
   const store = useSubmissionContext();
   return useStore(store, (s) => s.values[elementId]) ?? defaultValue;

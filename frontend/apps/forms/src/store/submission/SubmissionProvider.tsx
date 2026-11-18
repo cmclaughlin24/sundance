@@ -1,10 +1,10 @@
 import { createContext, useEffect, useRef } from "react";
 import type { ISubmissionSection } from "@/types/submission";
 import {
-  hydrateSubmissionValues,
   createSubmissionStore,
   type SubmissionStoreApi,
 } from "./submissionStore";
+import { hydrateSectionState } from "./utils";
 
 export type SubmissionProviderProps = React.PropsWithChildren<{
   rawSubmission: ISubmissionSection[] | undefined;
@@ -26,7 +26,7 @@ export const SubmissionProvider: React.FC<SubmissionProviderProps> = ({
 
   useEffect(() => {
     storeRef.current!.setState({
-      sections: hydrateSubmissionValues(rawSubmission),
+      sections: hydrateSectionState(rawSubmission),
     });
   }, [rawSubmission]);
 

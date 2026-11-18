@@ -1,17 +1,14 @@
 import { createStore } from "zustand";
-import type { ISubmissionSection, ISubmissionValue } from "@/types/submission";
+import type { ISubmissionSection } from "@/types/submission";
+import { SectionInstanceState } from "./SectionInstanceState";
 import * as ArrayUtils from "@/utils/array";
-
-interface ISectionInstanceState {
-  id: string;
-  values: Record<string, any>;
-  errors: Record<string, string[]>;
-}
+import { hydrateSectionState, replaceInstance } from "./utils";
 
 export interface ISubmissionStore {
-  sections: Record<string, ISectionInstanceState[]>;
+  sections: Record<string, SectionInstanceState[]>;
   addInstance: (sectionId: string) => void;
   removeInstance: (sectionId: string, instanceId: string) => void;
+  ensureInstance: (sectionId: string) => void;
   setValue: (
     sectionId: string,
     instanceId: string,
@@ -30,56 +27,59 @@ export type SubmissionStoreApi = ReturnType<typeof createSubmissionStore>;
 
 export function createSubmissionStore(raw: ISubmissionSection[] = []) {
   return createStore<ISubmissionStore>((set) => ({
-    sections: hydrateSubmissionValues(raw),
-    addInstance(sectioonId) {
-      return set((s) => s);
+    sections: hydrateSectionState(raw),
+    addInstance(sectionId) {
+      return set((s) => {
+        const instances = s.sections[sectionId] ?? [];
+
+        return {
+          sections: {
+            ...s.sections,
+            [sectionId]: [...instances, SectionInstanceState.create()],
+          },
+        };
+      });
     },
     removeInstance(sectionId, instanceId) {
-      return set((s) => s);
+      return set((s) => {
+        let section = s.sections[sectionId];
+
+        if (ArrayUtils.hasLengthGreaterThan(section, 0)) {
+          section = section.filter((i) => i.id !== instanceId);
+        }
+
+        return { sections: { ...s.sections, [sectionId]: section } };
+      });
+    },
+    ensureInstance(sectionId) {
+      return set((s) => {
+        let section = s.sections[sectionId];
+
+        if (ArrayUtils.hasLengthGreaterThan(section, 0)) {
+          return s;
+        }
+
+        return {
+          sections: {
+            ...s.sections,
+            [sectionId]: [SectionInstanceState.create()],
+          },
+        };
+      });
     },
     setValue(sectionId, instanceId, elementId, value) {
-      return set((s) => s);
+      set((s) =>
+        replaceInstance(s, sectionId, instanceId, (i) =>
+          i.withValue(elementId, value),
+        ),
+      );
     },
     setError(sectionId, instanceId, elementId, errors) {
-      return set((s) => s);
+      set((s) =>
+        replaceInstance(s, sectionId, instanceId, (i) =>
+          i.withErrors(elementId, errors),
+        ),
+      );
     },
   }));
-}
-
-export function hydrateSubmissionValues(
-  raw: ISubmissionSection[] | undefined,
-): Record<string, ISectionInstanceState[]> {
-  if (!raw) {
-    return {};
-  }
-
-  const sections: Record<string, ISectionInstanceState[]> = {};
-
-  for (const section of raw) {
-    if (!ArrayUtils.hasLengthGreaterThan(sections[section.sectionId], 0)) {
-      sections[section.sectionId] = [];
-    }
-
-    for (const instance of section.instances) {
-      sections[section.sectionId].push({
-        id: crypto.randomUUID(),
-        values: createElementValues(instance.values),
-        errors: {},
-      });
-    }
-  }
-
-  return sections;
-}
-
-export function createElementValues(
-  raw: ISubmissionValue[] | undefined,
-): Record<string, any> {
-  if (!raw) {
-    return {};
-  }
-
-  return Object.fromEntries(
-    raw.map(({ elementId, value }) => [elementId, value]),
-  );
 }
