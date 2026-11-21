@@ -28,6 +28,10 @@ import type {
   UpdateElementEvent,
   UpdateSectionEvent,
 } from "@/store/formDesigner/events";
+import {
+  SectionSettings,
+  type SectionSettingsChangeEvent,
+} from "./settings/SectionSettings";
 
 export type ElementSettingsComponent = React.FC<{
   element: IElement;
@@ -82,6 +86,14 @@ export const ObjectSettingsPanel: React.FC = function () {
     } satisfies UpdateElementEvent);
   };
 
+  const handleSectionChanges = (event: SectionSettingsChangeEvent) => {
+    dispatch({
+      type: "UpdateSection",
+      id: selected!.item.id,
+      changes: { repeat: event },
+    });
+  };
+
   let content = (
     <Typography>
       Select an element in the canvas to view and edit it's properties.
@@ -90,10 +102,25 @@ export const ObjectSettingsPanel: React.FC = function () {
 
   if (selected) {
     const elementType = selectedToPaletteType(selected);
-    let PropertyComponent =
-      selected.type === "element"
-        ? registry.get(selected.item.type)
-        : undefined;
+    let propertyContent = null;
+
+    if (selected.type === "element") {
+      const ElementPropertyComponent = registry.get(selected.item.type);
+
+      propertyContent = ElementPropertyComponent && (
+        <ElementPropertyComponent
+          element={selected.item}
+          onChange={handleElementAttributeChanges}
+        />
+      );
+    } else if (selected.type === "section") {
+      propertyContent = (
+        <SectionSettings
+          section={selected.item}
+          onChange={handleSectionChanges}
+        />
+      );
+    }
 
     content = (
       <>
@@ -114,16 +141,11 @@ export const ObjectSettingsPanel: React.FC = function () {
               {...selectedToIdentityProps(selected)}
             />
           </Collapisble>
+          {propertyContent && (
+            <Collapisble summary="Properties">{propertyContent}</Collapisble>
+          )}
           {selected.type === "element" && (
             <>
-              {PropertyComponent && (
-                <Collapisble summary="Properties">
-                  <PropertyComponent
-                    element={selected.item}
-                    onChange={handleElementAttributeChanges}
-                  />
-                </Collapisble>
-              )}
               <Collapisble summary="Behavior">
                 <BehaviorSettings
                   element={selected.item}

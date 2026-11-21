@@ -4,4 +4,11 @@ import type { HasRules } from "./rule";
 
 export interface ISection extends IFormObject, HasRules {
   elements: IElement[];
+  repeat?: ISectionRepeat;
+}
+
+export interface ISectionRepeat {
+  minInstances: number;
+  maxInstances?: number;
+  addInstanceLabel?: string;
 }

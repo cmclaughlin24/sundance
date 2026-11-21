@@ -74,7 +74,7 @@ export type MoveSectionEvent = {
 export type UpdateSectionEvent = {
   type: "UpdateSection";
   id: string;
-  changes: Partial<Pick<ISection, "key" | "name">>;
+  changes: Partial<Pick<ISection, "key" | "name" | "repeat">>;
 };
 
 export type RemoveSectionEvent = {
