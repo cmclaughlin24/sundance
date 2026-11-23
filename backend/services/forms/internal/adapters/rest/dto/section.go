@@ -16,8 +16,9 @@ type SectionRequest struct {
 }
 
 type SectionRepeatRequest struct {
-	MinInstances int  `json:"minInstances,omitempty" validate:"omitempty,min=0"`
-	MaxInstances *int `json:"maxInstances,omitempty" validate:"omitempty,min=1,gtefield=MinInstances"`
+	MinInstances int     `json:"minInstances,omitempty" validate:"omitempty,min=0"`
+	MaxInstances *int    `json:"maxInstances,omitempty" validate:"omitempty,min=1,gtefield=MinInstances"`
+	AddLabel     *string `json:"addLabel,omitempty" validate:"omitempty,min=1,max=100"`
 }
 
 type SectionResponse struct {
@@ -31,8 +32,9 @@ type SectionResponse struct {
 }
 
 type SectionRepeatResponse struct {
-	MinInstances int  `json:"minInstances"`
-	MaxInstances *int `json:"maxInstances"`
+	MinInstances int     `json:"minInstances"`
+	MaxInstances *int    `json:"maxInstances"`
+	AddLabel     *string `json:"addLabel"`
 }
 
 func RequestToSectionData(dto SectionRequest) (commands.SectionData, error) {
@@ -54,6 +56,7 @@ func RequestToSectionData(dto SectionRequest) (commands.SectionData, error) {
 		repeat = &commands.SectionRepeatData{
 			MinInstances: dto.Repeat.MinInstances,
 			MaxInstances: dto.Repeat.MaxInstances,
+			AddLabel:     dto.Repeat.AddLabel,
 		}
 	}
 
@@ -88,6 +91,7 @@ func SectionToResponse(section *domain.Section) *SectionResponse {
 		repeat = &SectionRepeatResponse{
 			MinInstances: r.MinInstances,
 			MaxInstances: r.MaxInstances,
+			AddLabel:     r.AddLabel,
 		}
 	}
 

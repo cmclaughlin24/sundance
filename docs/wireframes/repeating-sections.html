@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Wireframe – Repeating Sections</title>
+    <!--
+      Standalone wireframe for repeating sections in the form renderer.
+      Open directly in a browser (requires internet: React, MUI and motion load from esm.sh).
+
+      Styles are copied from the forms app so the wireframe matches the real renderer:
+        - Theme ............ packages/common/src/components/ThemeProvider/ThemeProvider.tsx
+        - Global CSS ....... apps/forms/src/index.css (light mode)
+        - Page ............. components/layout/Page/Page.tsx + FormElement/FormElement.style.ts
+        - Page title ....... components/layout/Page/PageTitle.style.ts
+        - Form/page/section  components/FormElement/renderer/renderer.style.ts
+        - Animations ....... components/FormElement/renderer/renderer.animations.ts
+        - Field layout ..... components/FormElement/layout/FieldElementContainer.style.ts
+        - Field label ...... components/FormElement/layout/FieldElementLabel.style.ts
+        - Footer ........... components/FormElement/layout/FormFooter/*.style.ts
+        - Progress ......... components/FormElement/layout/FormProgress/FormProgress.style.ts
+
+      Anything marked "NEW" in the styles below is introduced for repeating sections.
+    -->
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@19.2.8",
+          "react-dom/client": "https://esm.sh/react-dom@19.2.8/client?deps=react@19.2.8",
+          "motion/react": "https://esm.sh/motion@12.43.0/react?deps=react@19.2.8,react-dom@19.2.8",
+          "@mui/material/styles": "https://esm.sh/@mui/material@9.3.1/styles?deps=react@19.2.8,react-dom@19.2.8",
+          "@mui/material/Box": "https://esm.sh/@mui/material@9.3.1/Box?deps=react@19.2.8,react-dom@19.2.8",
+          "@mui/material/Button": "https://esm.sh/@mui/material@9.3.1/Button?deps=react@19.2.8,react-dom@19.2.8",
+          "@mui/material/Typography": "https://esm.sh/@mui/material@9.3.1/Typography?deps=react@19.2.8,react-dom@19.2.8",
+          "@mui/material/TextField": "https://esm.sh/@mui/material@9.3.1/TextField?deps=react@19.2.8,react-dom@19.2.8",
+          "@mui/material/Select": "https://esm.sh/@mui/material@9.3.1/Select?deps=react@19.2.8,react-dom@19.2.8",
+          "@mui/material/MenuItem": "https://esm.sh/@mui/material@9.3.1/MenuItem?deps=react@19.2.8,react-dom@19.2.8",
+          "@mui/material/FormControl": "https://esm.sh/@mui/material@9.3.1/FormControl?deps=react@19.2.8,react-dom@19.2.8",
+          "@mui/material/FormHelperText": "https://esm.sh/@mui/material@9.3.1/FormHelperText?deps=react@19.2.8,react-dom@19.2.8",
+          "@mui/material/LinearProgress": "https://esm.sh/@mui/material@9.3.1/LinearProgress?deps=react@19.2.8,react-dom@19.2.8",
+          "@mui/material/SvgIcon": "https://esm.sh/@mui/material@9.3.1/SvgIcon?deps=react@19.2.8,react-dom@19.2.8",
+          "@mui/material/Switch": "https://esm.sh/@mui/material@9.3.1/Switch?deps=react@19.2.8,react-dom@19.2.8",
+          "@mui/material/FormControlLabel": "https://esm.sh/@mui/material@9.3.1/FormControlLabel?deps=react@19.2.8,react-dom@19.2.8"
+        }
+      }
+    </script>
+    <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+    <style>
+      /* apps/forms/src/index.css (light mode) */
+      :root {
+        font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+        line-height: 1.5;
+        font-weight: 400;
+        color: #213547;
+        background-color: #ffffff;
+        font-synthesis: none;
+        text-rendering: optimizeLegibility;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module" data-presets="react">
+      import React, { useEffect, useMemo, useRef, useState } from "react";
+      import { createRoot } from "react-dom/client";
+      import { AnimatePresence, motion } from "motion/react";
+      import { createTheme, ThemeProvider } from "@mui/material/styles";
+      import Box from "@mui/material/Box";
+      import Button from "@mui/material/Button";
+      import Typography from "@mui/material/Typography";
+      import TextField from "@mui/material/TextField";
+      import Select from "@mui/material/Select";
+      import MenuItem from "@mui/material/MenuItem";
+      import FormControl from "@mui/material/FormControl";
+      import FormHelperText from "@mui/material/FormHelperText";
+      import LinearProgress from "@mui/material/LinearProgress";
+      import SvgIcon from "@mui/material/SvgIcon";
+      import Switch from "@mui/material/Switch";
+      import FormControlLabel from "@mui/material/FormControlLabel";
+
+      // ---------------------------------------------------------------------------
+      // Theme — SundanceTheme
+      // ---------------------------------------------------------------------------
+      const theme = createTheme({
+        palette: {
+          primary: { main: "#0C1F40" },
+          secondary: { main: "#E51837" },
+        },
+      });
+
+      const Border = { Primary: "#2b2b2b" };
+
+      // ---------------------------------------------------------------------------
+      // Styles — copied from the forms app (see header comment for sources)
+      // ---------------------------------------------------------------------------
+      const baseStyles = { display: "flex", flexDirection: "column", alignItems: "start", gap: 5 };
+
+      const styles = {
+        // Page.tsx merged with FormElement.style.ts["page"]
+        page: {
+          marginX: "auto",
+          marginTop: 2.5,
+          padding: 0,
+          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, .1)",
+          border: `1px solid ${Border.Primary}`,
+          position: "relative",
+          flex: 1,
+          width: "100%",
+          maxWidth: 1440,
+          display: "flex",
+          flexDirection: "column",
+        },
+        // renderer.style.ts
+        form: { ...baseStyles, maxWidth: "901px", position: "relative", flex: 1, padding: 6.5, paddingBottom: 0, minHeight: 0 },
+        rendererPage: { ...baseStyles, width: "100%" },
+        section: { ...baseStyles, width: "100%" },
+        // PageTitle.style.ts
+        titleContainer: { display: "flex", flexDirection: "column", gap: 1, paddingBottom: 2.5 },
+        titleName: { fontSize: "2.5rem", fontWeight: 300, letterSpacing: 0, lineHeight: 1.3 },
+        titleDescription: { fontSize: "1rem", fontWeight: 400, letterSpacing: 0, lineHeight: 1.25 },
+        // FieldElementContainer.style.ts
+        fieldContainer: { display: "flex", gap: { xs: 2, md: 1 }, flexDirection: { xs: "column", md: "row" }, padding: "2px", paddingBottom: 1.25 },
+        fieldLabel: { flex: 1, marginRight: 4 },
+        fieldInput: { flex: 1, width: "100%", "> *": { width: "100%" } },
+        // FieldElementLabel.style.ts
+        label: { fontSize: "2.125rem", fontWeight: 300, letterSpacing: 0, lineHeight: 1.18, display: "inline-block", marginBottom: 1 },
+        labelRequired: { "::after": { content: '"*"', color: "#971E28", marginLeft: 1 } },
+        labelDescription: { fontSize: "1rem", fontWeight: 400, letterSpacing: 0, lineHeight: 1.25 },
+        // FormFooter.style.ts + FormFooterActions.style.ts
+        footer: { marginTop: 2.25, position: "sticky", bottom: 0, background: "#fff" },
+        compactContent: {
+          paddingX: 8, paddingY: 2.5, display: "flex", alignItems: "center", borderTop: `1px solid ${Border.Primary}`,
+          justifyContent: { xs: "space-around", md: "flex-end" }, gap: 2.5,
+        },
+        statusMessage: { display: { xs: "none", md: "inline-block" } },
+        footerActions: { display: "flex", gap: 2.5, alignSelf: "flex-end" },
+        // FormProgress.style.ts
+        progressError: { color: "#B42D19", ":hover": { cursor: "pointer", textDecoration: "underline" } },
+
+        // NEW — repeating section group. Heading reuses the PageTitle type scale one step down;
+        // count reuses the FormProgress "text" weight.
+        repeatHeader: { display: "flex", alignItems: "baseline", justifyContent: "space-between", width: "100%", gap: 2 },
+        repeatName: { fontSize: "1.75rem", fontWeight: 300, letterSpacing: 0, lineHeight: 1.3 },
+        repeatCount: { fontWeight: 600 },
+        repeatHint: { fontSize: "1rem", fontWeight: 400, lineHeight: 1.25, marginTop: -4 },
+        repeatList: { display: "flex", flexDirection: "column", gap: 3, width: "100%" },
+        // NEW — one instance. Uses the Page border colour as a left rule rather than a new card style.
+        instance: { width: "100%", boxSizing: "border-box", borderLeft: `2px solid ${Border.Primary}`, paddingLeft: 3, overflow: "hidden" },
+        instanceHeader: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2, marginBottom: 2 },
+        instanceTitle: {
+          display: "inline-flex", alignItems: "center", gap: 1, padding: 0, border: 0, background: "none",
+          font: "inherit", color: "inherit", textAlign: "left",
+        },
+        instanceTitleText: { fontWeight: 600, letterSpacing: 0 },
+        instanceSummary: { fontSize: "0.75rem", fontWeight: 600 },
+        instanceBody: { ...baseStyles, width: "100%" },
+        empty: {
+          width: "100%", boxSizing: "border-box", padding: 3, border: `1px dashed ${Border.Primary}`, textAlign: "center",
+          fontSize: "1rem", lineHeight: 1.25,
+        },
+
+        // Wireframe-only chrome (not part of the product UI).
+        wfBar: {
+          display: "flex", gap: 3, alignItems: "center", flexWrap: "wrap", paddingX: 2, paddingY: 0.5,
+          background: "#fff8e1", borderBottom: "1px dashed #f0b400", fontSize: "0.875rem",
+        },
+        wfNote: {
+          width: "100%", boxSizing: "border-box", fontSize: "0.8125rem", lineHeight: 1.4, color: "#6d5600",
+          background: "#fff8e1", borderLeft: "3px solid #f0b400", paddingX: 1.5, paddingY: 1,
+        },
+      };
+
+      // renderer.animations.ts
+      const spring = { duration: 0.3, type: "spring", bounce: 0.4 };
+      const pageVariants = { initial: { opacity: 0, x: -50 }, animate: { opacity: 1, x: 0, transition: spring } };
+      const sectionVariants = {
+        initial: { opacity: 0, y: -25 },
+        animate: { opacity: 1, y: 0, transition: spring },
+        exit: { opacity: 0, y: -25, height: 0, paddingBottom: 0, transition: { duration: 0.2 } },
+      };
+      const elementVariants = sectionVariants;
+
+      const AddIcon = (p) => <SvgIcon {...p}><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6z" /></SvgIcon>;
+      const DeleteIcon = (p) => <SvgIcon {...p}><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6zM8 9h8v10H8zm7.5-5-1-1h-5l-1 1H5v2h14V4z" /></SvgIcon>;
+      const ChevronIcon = (p) => <SvgIcon {...p}><path d="M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6z" /></SvgIcon>;
+
+      // ---------------------------------------------------------------------------
+      // Example form definition (ISection + proposed `repeat`)
+      // ---------------------------------------------------------------------------
+      const form = {
+        id: "benefits-enrollment",
+        name: "Benefits Enrollment",
+        description: "Tell us about yourself and anyone you would like to cover.",
+      };
+
+      const sections = [
+        {
+          id: "employee",
+          name: "Employee Information",
+          repeat: null,
+          note: "Non-repeating section — unchanged from today: no heading, no instance chrome, elements stacked in the section.",
+          elements: [
+            { id: "firstName", name: "First name", type: "text", required: true, description: "Your legal first name." },
+            { id: "lastName", name: "Last name", type: "text", required: true, description: "Your legal last name." },
+            { id: "email", name: "Email", type: "text", required: true, description: "We will send your confirmation here." },
+          ],
+        },
+        {
+          id: "dependents",
+          name: "Dependents",
+          itemLabel: "Dependent",
+          titleFrom: "depFirstName",
+          repeat: { minInstances: 0, maxInstances: 5 },
+          note: "repeat: { minInstances: 0, maxInstances: 5 } — starts empty; Add hides at 5. Instance title uses the first name once entered. \"Describe relationship\" appears per instance when Relationship = Other (instance-scoped rule).",
+          elements: [
+            { id: "depFirstName", name: "First name", type: "text", required: true, description: null },
+            { id: "depLastName", name: "Last name", type: "text", required: true, description: null },
+            { id: "depDob", name: "Date of birth", type: "date", required: true, description: "Stand-in for the MUI X DatePicker used by DateFieldElement." },
+            {
+              id: "relationship", name: "Relationship", type: "select", required: true, description: null,
+              data: [{ value: "spouse", label: "Spouse" }, { value: "child", label: "Child" }, { value: "other", label: "Other" }],
+            },
+            {
+              id: "relationshipOther", name: "Describe relationship", type: "text", required: true, description: null,
+              visibleWhen: (values) => values.relationship === "other",
+            },
+          ],
+        },
+        {
+          id: "contacts",
+          name: "Emergency Contacts",
+          itemLabel: "Contact",
+          titleFrom: "contactName",
+          repeat: { minInstances: 1, maxInstances: 3 },
+          note: "repeat: { minInstances: 1, maxInstances: 3 } — seeded with one instance; Remove is disabled while at the minimum.",
+          elements: [
+            { id: "contactName", name: "Full name", type: "text", required: true, description: null },
+            { id: "contactPhone", name: "Phone", type: "text", required: true, description: "Include the area code." },
+          ],
+        },
+      ];
+
+      const newInstance = () => ({ id: crypto.randomUUID(), values: {}, errors: {}, collapsed: false });
+
+      function initialState() {
+        const s = {};
+        for (const section of sections) {
+          const seed = section.repeat ? section.repeat.minInstances : 1;
+          s[section.id] = Array.from({ length: seed }, newInstance);
+        }
+        return s;
+      }
+
+      const isEmpty = (v) => v == null || v === "" || (Array.isArray(v) && v.length === 0);
+      const visibleElements = (section, inst) => section.elements.filter((e) => !e.visibleWhen || e.visibleWhen(inst.values));
+
+      // Mirrors utils/progress.ts, with the proposed fix: an optional repeating section with zero instances contributes 0.
+      function calculateProgress(state) {
+        let total = 0, filled = 0, errors = 0;
+        const countViolations = [];
+        for (const section of sections) {
+          const instances = state[section.id];
+          if (section.repeat && instances.length < section.repeat.minInstances) countViolations.push(section);
+          for (const inst of instances) {
+            for (const e of visibleElements(section, inst).filter((e) => e.required)) {
+              total++;
+              if (inst.errors[e.id]?.length) { errors++; continue; }
+              if (!isEmpty(inst.values[e.id])) filled++;
+            }
+          }
+        }
+        return { percentage: total === 0 ? 100 : (filled / total) * 100, filled, total, errors, countViolations };
+      }
+
+      const Annotation = ({ show, children }) =>
+        show ? <Box sx={styles.wfNote} role="note">{children}</Box> : null;
+
+      // ---------------------------------------------------------------------------
+      // Field elements — FieldElementContainer + FieldElementLabel + MUI inputs
+      // ---------------------------------------------------------------------------
+      function FieldElementContainer({ element, inputId, errors, children }) {
+        return (
+          <Box sx={styles.fieldContainer} data-error={!!errors?.length}>
+            <Box sx={styles.fieldLabel}>
+              <Typography component="label" htmlFor={inputId} sx={{ ...styles.label, ...(element.required ? styles.labelRequired : {}) }}>
+                {element.name}
+              </Typography>
+              {element.description && (
+                <Typography component="p" sx={styles.labelDescription}>{element.description}</Typography>
+              )}
+            </Box>
+            <Box sx={styles.fieldInput}>{children}</Box>
+          </Box>
+        );
+      }
+
+      function ElementRenderer({ element, instance, onChange, onError }) {
+        const inputId = `${instance.id}-${element.id}`;
+        const value = instance.values[element.id] ?? "";
+        const errors = instance.errors[element.id];
+        const validate = () => onError(element.id, element.required && isEmpty(value) ? ["This field is required"] : []);
+
+        let input;
+        if (element.type === "select") {
+          input = (
+            <FormControl error={!!errors?.length}>
+              <Select id={inputId} value={value} required={element.required} onChange={(e) => onChange(element.id, e.target.value)} onBlur={validate}>
+                {element.data.map((d) => <MenuItem key={d.value} value={d.value}>{d.label}</MenuItem>)}
+              </Select>
+              {errors?.[0] && <FormHelperText>{errors[0]}</FormHelperText>}
+            </FormControl>
+          );
+        } else {
+          input = (
+            <TextField
+              id={inputId}
+              type={element.type === "date" ? "date" : "text"}
+              value={value}
+              required={element.required}
+              error={!!errors?.length}
+              helperText={errors?.[0]}
+              onChange={(e) => onChange(element.id, e.target.value)}
+              onBlur={validate}
+            />
+          );
+        }
+
+        return (
+          <Box component={motion.div} sx={{ width: "100%" }} variants={elementVariants} initial="initial" animate="animate" exit="exit">
+            <FieldElementContainer element={element} inputId={inputId} errors={errors}>{input}</FieldElementContainer>
+          </Box>
+        );
+      }
+
+      function InstanceElements({ section, instance, actions }) {
+        return (
+          <AnimatePresence initial={false}>
+            {visibleElements(section, instance).map((element) => (
+              <ElementRenderer
+                key={element.id}
+                element={element}
+                instance={instance}
+                onChange={(elementId, value) => actions.setValue(section.id, instance.id, elementId, value)}
+                onError={(elementId, errors) => actions.setError(section.id, instance.id, elementId, errors)}
+              />
+            ))}
+          </AnimatePresence>
+        );
+      }
+
+      // ---------------------------------------------------------------------------
+      // Sections
+      // ---------------------------------------------------------------------------
+      function SingleSection({ section, instances, actions, opts }) {
+        return (
+          <Box component={motion.section} variants={sectionVariants} initial="initial" animate="animate" exit="exit" sx={styles.section}>
+            <Annotation show={opts.notes}>{section.note}</Annotation>
+            <InstanceElements section={section} instance={instances[0]} actions={actions} />
+          </Box>
+        );
+      }
+
+      function RepeatingSection({ section, instances, actions, opts, focusRequest }) {
+        const { minInstances, maxInstances } = section.repeat;
+        const headingId = `${section.id}-heading`;
+        const addRef = useRef(null);
+        const canAdd = maxInstances == null || instances.length < maxInstances;
+        const canRemove = instances.length > minInstances;
+        const label = section.itemLabel.toLowerCase();
+
+        useEffect(() => {
+          if (focusRequest?.sectionId !== section.id) return;
+          if (focusRequest.instanceId) {
+            document.querySelector(`[data-instance-id="${focusRequest.instanceId}"] input`)?.focus();
+          } else {
+            addRef.current?.focus();
+          }
+        }, [focusRequest, section.id]);
+
+        return (
+          <Box component={motion.section} variants={sectionVariants} initial="initial" animate="animate" exit="exit"
+            sx={styles.section} role="group" aria-labelledby={headingId}>
+            <Box sx={styles.repeatHeader}>
+              <Typography component="h2" id={headingId} sx={styles.repeatName}>{section.name}</Typography>
+              <Typography variant="body2" sx={styles.repeatCount}>
+                {instances.length}{maxInstances != null ? ` of ${maxInstances}` : ""}
+              </Typography>
+            </Box>
+            {minInstances > 0 && (
+              <Typography component="p" sx={styles.repeatHint}>
+                At least {minInstances} {minInstances === 1 ? label : `${label}s`} required.
+              </Typography>
+            )}
+            <Annotation show={opts.notes}>{section.note}</Annotation>
+
+            <Box sx={styles.repeatList}>
+              <AnimatePresence initial={false}>
+                {instances.length === 0 && (
+                  <Box key="empty" component={motion.div} variants={sectionVariants} initial="initial" animate="animate" exit="exit" sx={styles.empty}>
+                    No {section.name.toLowerCase()} added.
+                  </Box>
+                )}
+                {instances.map((inst, idx) => {
+                  const title = inst.values[section.titleFrom]?.trim() || `${section.itemLabel} ${idx + 1}`;
+                  const collapsed = opts.collapsible && inst.collapsed;
+                  const missing = visibleElements(section, inst).filter((e) => e.required && isEmpty(inst.values[e.id])).length;
+
+                  return (
+                    <Box key={inst.id} component={motion.div} variants={sectionVariants} initial="initial" animate="animate" exit="exit"
+                      sx={styles.instance} data-instance-id={inst.id}>
+                      <Box sx={styles.instanceHeader}>
+                        <Box
+                          component={opts.collapsible ? "button" : "div"}
+                          type={opts.collapsible ? "button" : undefined}
+                          aria-expanded={opts.collapsible ? !collapsed : undefined}
+                          onClick={opts.collapsible ? () => actions.toggleCollapsed(section.id, inst.id) : undefined}
+                          sx={{ ...styles.instanceTitle, cursor: opts.collapsible ? "pointer" : "default" }}
+                        >
+                          {opts.collapsible && (
+                            <ChevronIcon fontSize="small" sx={{ transition: "transform 150ms", transform: collapsed ? "rotate(-90deg)" : "none" }} />
+                          )}
+                          <Typography variant="body1" component="span" sx={styles.instanceTitleText}>{title}</Typography>
+                          {collapsed && (
+                            <Typography component="span" sx={{ ...styles.instanceSummary, color: missing ? "#B42D19" : "inherit" }}>
+                              · {missing ? `${missing} required field(s) remaining` : "complete"}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Button
+                          variant="text"
+                          color="error"
+                          size="small"
+                          startIcon={<DeleteIcon />}
+                          disabled={!canRemove}
+                          aria-label={`Remove ${title}`}
+                          onClick={() => actions.removeInstance(section.id, inst.id)}
+                        >
+                          Remove
+                        </Button>
+                      </Box>
+                      {!collapsed && (
+                        <Box sx={styles.instanceBody}>
+                          <InstanceElements section={section} instance={inst} actions={actions} />
+                        </Box>
+                      )}
+                    </Box>
+                  );
+                })}
+              </AnimatePresence>
+            </Box>
+
+            {canAdd && (
+              <Button ref={addRef} variant="outlined" startIcon={<AddIcon />} onClick={() => actions.addInstance(section.id)}>
+                Add {label}
+              </Button>
+            )}
+          </Box>
+        );
+      }
+
+      // ---------------------------------------------------------------------------
+      // Footer — FormFooter (compact) + FormProgressMessage
+      // ---------------------------------------------------------------------------
+      function FormFooter({ progress, isValid, onCancel }) {
+        let status = null;
+        if (progress.errors) {
+          status = <Typography component="span" sx={styles.progressError}>{progress.errors} field(s) require attention</Typography>;
+        } else if (progress.countViolations.length) {
+          const s = progress.countViolations[0];
+          status = (
+            <Typography component="span" sx={styles.progressError}>
+              {s.name} requires at least {s.repeat.minInstances} {s.itemLabel.toLowerCase()}
+            </Typography>
+          );
+        }
+
+        return (
+          <Box sx={styles.footer}>
+            <LinearProgress variant="determinate" value={progress.percentage} />
+            <Box sx={styles.compactContent}>
+              {progress.percentage !== 100 || status ? <Box component="span" sx={styles.statusMessage}>{status}</Box> : null}
+              <Box sx={styles.footerActions}>
+                <Button variant="contained" color="secondary" onClick={onCancel}>Cancel</Button>
+                <Button variant="contained" type="submit" disabled={!isValid} form={form.id}>Submit</Button>
+              </Box>
+            </Box>
+          </Box>
+        );
+      }
+
+      // ---------------------------------------------------------------------------
+      // FormRenderer
+      // ---------------------------------------------------------------------------
+      function FormRenderer({ opts }) {
+        const [state, setState] = useState(initialState);
+        const [focusRequest, setFocusRequest] = useState(null);
+
+        const update = (sectionId, instanceId, fn) =>
+          setState((s) => ({ ...s, [sectionId]: s[sectionId].map((i) => (i.id === instanceId ? fn(i) : i)) }));
+
+        const actions = useMemo(() => ({
+          addInstance(sectionId) {
+            const inst = newInstance();
+            setState((s) => ({ ...s, [sectionId]: [...s[sectionId], inst] }));
+            setFocusRequest({ sectionId, instanceId: inst.id });
+          },
+          removeInstance(sectionId, instanceId) {
+            setState((s) => ({ ...s, [sectionId]: s[sectionId].filter((i) => i.id !== instanceId) }));
+            setFocusRequest({ sectionId, instanceId: null });
+          },
+          setValue(sectionId, instanceId, elementId, value) {
+            update(sectionId, instanceId, (i) => ({ ...i, values: { ...i.values, [elementId]: value } }));
+          },
+          setError(sectionId, instanceId, elementId, errors) {
+            update(sectionId, instanceId, (i) => ({ ...i, errors: { ...i.errors, [elementId]: errors } }));
+          },
+          toggleCollapsed(sectionId, instanceId) {
+            update(sectionId, instanceId, (i) => ({ ...i, collapsed: !i.collapsed }));
+          },
+        }), []);
+
+        const progress = calculateProgress(state);
+        const isValid = progress.filled === progress.total && progress.errors === 0 && progress.countViolations.length === 0;
+
+        const handleSubmit = (event) => {
+          event.preventDefault();
+          const submission = Object.entries(state).map(([sectionId, instances]) => ({
+            sectionId,
+            instances: instances.map((i) => ({
+              values: Object.entries(i.values)
+                .filter(([, v]) => !isEmpty(v))
+                .map(([elementId, value]) => ({ elementId, value })),
+            })),
+          }));
+          console.log("ISubmissionSection[]", submission);
+          alert("Submitted — see the console for the ISubmissionSection[] payload.");
+        };
+
+        return (
+          <>
+            <Box component="form" id={form.id} sx={styles.form} onSubmit={handleSubmit} noValidate>
+              <Box component="section" sx={styles.titleContainer}>
+                <Typography component="h1" sx={styles.titleName}>{form.name}</Typography>
+                <Typography component="p" sx={styles.titleDescription}>{form.description}</Typography>
+              </Box>
+              <Box component={motion.div} variants={pageVariants} initial="initial" animate="animate" sx={styles.rendererPage}>
+                {sections.map((section) =>
+                  section.repeat ? (
+                    <RepeatingSection key={section.id} section={section} instances={state[section.id]} actions={actions} opts={opts} focusRequest={focusRequest} />
+                  ) : (
+                    <SingleSection key={section.id} section={section} instances={state[section.id]} actions={actions} opts={opts} />
+                  ),
+                )}
+              </Box>
+            </Box>
+            <FormFooter progress={progress} isValid={isValid} onCancel={() => setState(initialState())} />
+          </>
+        );
+      }
+
+      function App() {
+        const [opts, setOpts] = useState({ collapsible: false, notes: true });
+        const toggle = (key) => (e) => setOpts((o) => ({ ...o, [key]: e.target.checked }));
+
+        return (
+          <ThemeProvider theme={theme}>
+            <Box sx={styles.wfBar}>
+              <strong>Wireframe: Repeating sections</strong>
+              <FormControlLabel control={<Switch size="small" checked={opts.collapsible} onChange={toggle("collapsible")} />} label="Collapsible instances" />
+              <FormControlLabel control={<Switch size="small" checked={opts.notes} onChange={toggle("notes")} />} label="Show annotations" />
+            </Box>
+            <Box sx={styles.page}>
+              <FormRenderer opts={opts} />
+            </Box>
+          </ThemeProvider>
+        );
+      }
+
+      createRoot(document.getElementById("root")).render(<App />);
+    </script>
+  </body>
+</html>

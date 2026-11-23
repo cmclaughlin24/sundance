@@ -13,8 +13,9 @@ type SectionDocument struct {
 }
 
 type SectionRepeatDocument struct {
-	MinInstances int  `bson:"min_instances"`
-	MaxInstances *int `bson:"max_instances"`
+	MinInstances int     `bson:"min_instances"`
+	MaxInstances *int    `bson:"max_instances"`
+	AddLabel     *string `bson:"add_label,omitempty"`
 }
 
 func ToSectionDocument(s *domain.Section) (*SectionDocument, error) {
@@ -39,6 +40,7 @@ func ToSectionDocument(s *domain.Section) (*SectionDocument, error) {
 		repeat = &SectionRepeatDocument{
 			MinInstances: r.MinInstances,
 			MaxInstances: r.MaxInstances,
+			AddLabel:     r.AddLabel,
 		}
 	}
 
@@ -59,6 +61,7 @@ func FromSectionDocument(s *SectionDocument) (*domain.Section, error) {
 		repeat = &domain.SectionRepeat{
 			MinInstances: s.Repeat.MinInstances,
 			MaxInstances: s.Repeat.MaxInstances,
+			AddLabel:     s.Repeat.AddLabel,
 		}
 	}
 

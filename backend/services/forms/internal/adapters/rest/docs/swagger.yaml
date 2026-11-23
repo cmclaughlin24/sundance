@@ -356,6 +356,10 @@ definitions:
     - RuleTypeReadOnly
   SectionRepeatRequest:
     properties:
+      addLabel:
+        maxLength: 100
+        minLength: 1
+        type: string
       maxInstances:
         minimum: 1
         type: integer
@@ -365,6 +369,8 @@ definitions:
     type: object
   SectionRepeatResponse:
     properties:
+      addLabel:
+        type: string
       maxInstances:
         type: integer
       minInstances:
