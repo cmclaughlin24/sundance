@@ -50,9 +50,10 @@ type SectionData struct {
 }
 
 type SectionRepeatData struct {
-	MinInstances int
-	MaxInstances *int
-	AddLabel     *string
+	MinInstances  int
+	MaxInstances  *int
+	AddLabel      *string
+	InstanceLabel *string
 }
 
 func (s *SectionRepeatData) ToDomain() *domain.SectionRepeat {
@@ -61,9 +62,10 @@ func (s *SectionRepeatData) ToDomain() *domain.SectionRepeat {
 	}
 
 	return &domain.SectionRepeat{
-		MinInstances: s.MinInstances,
-		MaxInstances: s.MaxInstances,
-		AddLabel:     s.AddLabel,
+		MinInstances:  s.MinInstances,
+		MaxInstances:  s.MaxInstances,
+		AddLabel:      s.AddLabel,
+		InstanceLabel: s.InstanceLabel,
 	}
 }
 

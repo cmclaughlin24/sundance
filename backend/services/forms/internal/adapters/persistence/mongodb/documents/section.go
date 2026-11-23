@@ -13,9 +13,10 @@ type SectionDocument struct {
 }
 
 type SectionRepeatDocument struct {
-	MinInstances int     `bson:"min_instances"`
-	MaxInstances *int    `bson:"max_instances"`
-	AddLabel     *string `bson:"add_label,omitempty"`
+	MinInstances  int     `bson:"min_instances"`
+	MaxInstances  *int    `bson:"max_instances"`
+	AddLabel      *string `bson:"add_label,omitempty"`
+	InstanceLabel *string `bson:"instance_label,omitempty"`
 }
 
 func ToSectionDocument(s *domain.Section) (*SectionDocument, error) {
@@ -38,9 +39,10 @@ func ToSectionDocument(s *domain.Section) (*SectionDocument, error) {
 	if s.IsRepeatable() {
 		r := s.GetRepeat()
 		repeat = &SectionRepeatDocument{
-			MinInstances: r.MinInstances,
-			MaxInstances: r.MaxInstances,
-			AddLabel:     r.AddLabel,
+			MinInstances:  r.MinInstances,
+			MaxInstances:  r.MaxInstances,
+			AddLabel:      r.AddLabel,
+			InstanceLabel: r.InstanceLabel,
 		}
 	}
 
@@ -59,9 +61,10 @@ func FromSectionDocument(s *SectionDocument) (*domain.Section, error) {
 	var repeat *domain.SectionRepeat
 	if s.Repeat != nil {
 		repeat = &domain.SectionRepeat{
-			MinInstances: s.Repeat.MinInstances,
-			MaxInstances: s.Repeat.MaxInstances,
-			AddLabel:     s.Repeat.AddLabel,
+			MinInstances:  s.Repeat.MinInstances,
+			MaxInstances:  s.Repeat.MaxInstances,
+			AddLabel:      s.Repeat.AddLabel,
+			InstanceLabel: s.Repeat.InstanceLabel,
 		}
 	}
 

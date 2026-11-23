@@ -16,9 +16,10 @@ type SectionRequest struct {
 }
 
 type SectionRepeatRequest struct {
-	MinInstances int     `json:"minInstances,omitempty" validate:"omitempty,min=0"`
-	MaxInstances *int    `json:"maxInstances,omitempty" validate:"omitempty,min=1,gtefield=MinInstances"`
-	AddLabel     *string `json:"addLabel,omitempty" validate:"omitempty,min=1,max=100"`
+	MinInstances  int     `json:"minInstances,omitempty" validate:"omitempty,min=0"`
+	MaxInstances  *int    `json:"maxInstances,omitempty" validate:"omitempty,min=1,gtefield=MinInstances"`
+	AddLabel      *string `json:"addLabel,omitempty" validate:"omitempty,min=1,max=100"`
+	InstanceLabel *string `json:"instanceLabel,omitempty" validate:"omitempty,min=1,max=100"`
 }
 
 type SectionResponse struct {
@@ -32,9 +33,10 @@ type SectionResponse struct {
 }
 
 type SectionRepeatResponse struct {
-	MinInstances int     `json:"minInstances"`
-	MaxInstances *int    `json:"maxInstances"`
-	AddLabel     *string `json:"addLabel"`
+	MinInstances  int     `json:"minInstances"`
+	MaxInstances  *int    `json:"maxInstances"`
+	AddLabel      *string `json:"addLabel"`
+	InstanceLabel *string `json:"instanceLabel"`
 }
 
 func RequestToSectionData(dto SectionRequest) (commands.SectionData, error) {
@@ -54,9 +56,10 @@ func RequestToSectionData(dto SectionRequest) (commands.SectionData, error) {
 	var repeat *commands.SectionRepeatData
 	if dto.Repeat != nil {
 		repeat = &commands.SectionRepeatData{
-			MinInstances: dto.Repeat.MinInstances,
-			MaxInstances: dto.Repeat.MaxInstances,
-			AddLabel:     dto.Repeat.AddLabel,
+			MinInstances:  dto.Repeat.MinInstances,
+			MaxInstances:  dto.Repeat.MaxInstances,
+			AddLabel:      dto.Repeat.AddLabel,
+			InstanceLabel: dto.Repeat.InstanceLabel,
 		}
 	}
 
@@ -89,9 +92,10 @@ func SectionToResponse(section *domain.Section) *SectionResponse {
 	if section.IsRepeatable() {
 		r := section.GetRepeat()
 		repeat = &SectionRepeatResponse{
-			MinInstances: r.MinInstances,
-			MaxInstances: r.MaxInstances,
-			AddLabel:     r.AddLabel,
+			MinInstances:  r.MinInstances,
+			MaxInstances:  r.MaxInstances,
+			AddLabel:      r.AddLabel,
+			InstanceLabel: r.InstanceLabel,
 		}
 	}
 

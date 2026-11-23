@@ -32,9 +32,10 @@ type Section struct {
 }
 
 type SectionRepeat struct {
-	MinInstances int     `validate:"min=0"`
-	MaxInstances *int    `validate:"omitempty,min=1,gtefield=MinInstances"`
-	AddLabel     *string `validate:"omitempty,min=1,max=100"`
+	MinInstances  int     `validate:"min=0"`
+	MaxInstances  *int    `validate:"omitempty,min=1,gtefield=MinInstances"`
+	AddLabel      *string `validate:"omitempty,min=1,max=100"`
+	InstanceLabel *string `validate:"omitempty,min=1,max=100"`
 }
 
 func NewSection(key, name string, position float32, repeat *SectionRepeat) (*Section, error) {
@@ -245,6 +246,9 @@ func cloneSectionRepeat(sr *SectionRepeat) *SectionRepeat {
 	}
 	if sr.AddLabel != nil {
 		cpy.AddLabel = new(*sr.AddLabel)
+	}
+	if sr.InstanceLabel != nil {
+		cpy.InstanceLabel = new(*sr.InstanceLabel)
 	}
 
 	return &cpy

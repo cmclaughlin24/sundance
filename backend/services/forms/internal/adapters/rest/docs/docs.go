@@ -2950,6 +2950,11 @@ const docTemplate = `{
                     "maxLength": 100,
                     "minLength": 1
                 },
+                "instanceLabel": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 1
+                },
                 "maxInstances": {
                     "type": "integer",
                     "minimum": 1
@@ -2964,6 +2969,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "addLabel": {
+                    "type": "string"
+                },
+                "instanceLabel": {
                     "type": "string"
                 },
                 "maxInstances": {

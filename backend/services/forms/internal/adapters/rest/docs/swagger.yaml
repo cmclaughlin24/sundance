@@ -360,6 +360,10 @@ definitions:
         maxLength: 100
         minLength: 1
         type: string
+      instanceLabel:
+        maxLength: 100
+        minLength: 1
+        type: string
       maxInstances:
         minimum: 1
         type: integer
@@ -370,6 +374,8 @@ definitions:
   SectionRepeatResponse:
     properties:
       addLabel:
+        type: string
+      instanceLabel:
         type: string
       maxInstances:
         type: integer
