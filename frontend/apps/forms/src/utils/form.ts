@@ -265,7 +265,15 @@ export function getFlattenedElements(pages: IPage[]): IElement[] {
 export function defaultFormVersion(): FormVersionRequest {
   return {
     metadata: {},
-    pages: [],
+    pages: [
+      {
+        key: "page_1",
+        name: "Page 1",
+        position: 0,
+        sections: [],
+        rules: [],
+      },
+    ],
   };
 }
 

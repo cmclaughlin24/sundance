@@ -28,12 +28,13 @@ var (
 )
 
 type Element struct {
-	ID         ElementID
-	Key        string `validate:"required,nowhitespace"`
-	Name       string `validate:"required"`
-	Type       ElementType
-	Attributes ElementAttributes
-	tags       []*ElementTagMapping
+	ID          ElementID
+	Key         string `validate:"required,nowhitespace"`
+	Name        string `validate:"required"`
+	Description string
+	Type        ElementType
+	Attributes  ElementAttributes
+	tags        []*ElementTagMapping
 	withPosition
 	withRules
 }

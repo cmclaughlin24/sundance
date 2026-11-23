@@ -8,7 +8,8 @@ export interface ISection extends IFormObject, HasRules {
 }
 
 export interface ISectionRepeat {
-  minInstances: number;
+  minInstances?: number;
   maxInstances?: number;
-  addInstanceLabel?: string;
+  addLabel?: string;
+  instanceLabel?: string;
 }

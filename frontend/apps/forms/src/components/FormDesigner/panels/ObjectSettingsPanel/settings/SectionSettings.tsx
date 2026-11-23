@@ -1,23 +1,19 @@
 import { useDebouncedCallback } from "@/hooks/useDebouncedCallback";
-import type { ISection } from "@/types/section";
+import type { ISection, ISectionRepeat } from "@/types/section";
 import { stringToNumber } from "@/utils/utils";
 import Box from "@mui/material/Box";
 import { useEffect, useState, type ChangeEvent } from "react";
 import { settingsStyle } from "./Settings.style";
 import TextField from "@mui/material/TextField";
+import * as Utils from "@/utils/utils";
 
-export type SectionSettingsChangeEvent =
-  | {
-      minInstances: number;
-      maxInstances?: number;
-      addLabel?: string;
-    }
-  | undefined;
+export type SectionSettingsChangeEvent = ISectionRepeat | undefined;
 
 interface Fields {
   minInstances: string;
   maxInstances?: string;
   addLabel?: string;
+  instanceLabel?: string;
 }
 
 export const SectionSettings: React.FC<{
@@ -25,42 +21,50 @@ export const SectionSettings: React.FC<{
   onChange: (event: SectionSettingsChangeEvent) => void;
 }> = function ({ section, onChange }) {
   const [minInstances, setMinInstances] = useState(
-    section.repeat?.minInstances.toString() ?? "",
+    Utils.numberToString(section.repeat?.minInstances),
   );
   const [maxInstances, setMaxInstances] = useState(
-    section.repeat?.maxInstances?.toString() ?? "",
+    Utils.numberToString(section.repeat?.maxInstances),
   );
-  const [addLabel, setAddLabel] = useState(section.repeat?.addInstanceLabel ?? "");
+  const [addLabel, setAddLabel] = useState(section.repeat?.addLabel ?? "");
+  const [instanceLabel, setInstanceLabel] = useState(
+    section.repeat?.instanceLabel ?? "",
+  );
 
   const {
     debounced: debounceEmit,
     cancel,
     flush,
   } = useDebouncedCallback((next: Fields) => {
-    let event: SectionSettingsChangeEvent = undefined;
+    let event: SectionSettingsChangeEvent = {};
     const minInstances = stringToNumber(next.minInstances);
     const maxInstances = stringToNumber(next.maxInstances);
 
-    if (minInstances && minInstances >= 0) {
+    if (minInstances != null && minInstances >= 0) {
       event = { minInstances };
     }
 
-    if (event && maxInstances && maxInstances >= 0) {
+    if (maxInstances != null && maxInstances > 0) {
       event.maxInstances = maxInstances;
     }
 
-    if (event && next.addLabel && next.addLabel.trim() !== "") {
+    if (next.addLabel && next.addLabel.trim() !== "") {
       event.addLabel = addLabel;
     }
 
-    onChange(event);
+    if (next.instanceLabel && next.instanceLabel.trim() !== "") {
+      event.instanceLabel = instanceLabel;
+    }
+
+    onChange(Object.keys(event).length > 0 ? event : undefined);
   });
 
   useEffect(() => {
     cancel();
-    setMinInstances(section.repeat?.minInstances.toString() ?? "");
-    setMaxInstances(section.repeat?.maxInstances?.toString() ?? "");
-    setAddLabel(section.repeat?.addInstanceLabel ?? "");
+    setMinInstances(Utils.numberToString(section.repeat?.minInstances));
+    setMaxInstances(Utils.numberToString(section.repeat?.maxInstances));
+    setAddLabel(section.repeat?.addLabel ?? "");
+    setInstanceLabel(section.repeat?.instanceLabel ?? "");
   }, [section]);
 
   const handleChange = (field: keyof Fields) => {
@@ -80,6 +84,10 @@ export const SectionSettings: React.FC<{
         case "addLabel":
           next.addLabel = value;
           setAddLabel(value);
+          break;
+        case "instanceLabel":
+          next.instanceLabel = value;
+          setInstanceLabel(value);
           break;
       }
 
@@ -117,6 +125,12 @@ export const SectionSettings: React.FC<{
         label="Add Instance Label"
         value={addLabel}
         onChange={handleChange("addLabel")}
+        onBlur={handleBlur}
+      />
+      <TextField
+        label="Instance Label"
+        value={instanceLabel}
+        onChange={handleChange("instanceLabel")}
         onBlur={handleBlur}
       />
     </Box>

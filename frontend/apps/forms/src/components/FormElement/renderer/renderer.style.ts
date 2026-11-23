@@ -1,5 +1,6 @@
 import type { SxProps, Theme } from "@mui/material/styles";
 import type { Styles } from "@/types/styles";
+import { Border } from "@/constants/colors";
 
 const baseStyles: SxProps<Theme> = {
   display: "flex",
@@ -20,4 +21,14 @@ export const rendererStyles: Styles = {
   },
   page: { ...baseStyles, width: "100%" },
   section: { ...baseStyles, width: "100%" },
+  repeatableSection: {
+    borderLeft: `3px solid ${Border.Primary}`,
+    paddingLeft: 2.5,
+  },
+  repeatableSectionActionTitle: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+  },
 };

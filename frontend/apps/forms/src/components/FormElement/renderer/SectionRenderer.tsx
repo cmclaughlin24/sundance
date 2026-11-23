@@ -13,6 +13,9 @@ import {
 } from "@/store/submission/useSubmissionContext";
 import { useEffect } from "react";
 import { SectionInstanceProvider } from "@/store/submission/sectionInstanceContext";
+import Button from "@mui/material/Button";
+import { mergeSx } from "merge-sx";
+import Typography from "@mui/material/Typography";
 
 export const SectionRenderer: React.FC<{ section: ISection }> = function ({
   section,
@@ -20,7 +23,9 @@ export const SectionRenderer: React.FC<{ section: ISection }> = function ({
   const evalCtx = useEvalContext();
   const instances = useSubmissionSectionInstances(section.id);
   const hasInstances = instances && instances.length > 0;
-  const { ensureInstance } = useSubmissionInstanceActions();
+  const { addInstance, ensureInstance, removeInstance } =
+    useSubmissionInstanceActions();
+  const repeat = section.repeat;
 
   useEffect(() => {
     if (!hasInstances) {
@@ -37,7 +42,19 @@ export const SectionRenderer: React.FC<{ section: ISection }> = function ({
 
   return (
     <>
-      {instances.map((i) => (
+      {repeat && (
+        <Box sx={rendererStyles["repeatableSectionActionTitle"]}>
+          <Typography component="h2" sx={{ fontSize: "2.5rem" }}>
+            {section.name}
+          </Typography>
+          {repeat.maxInstances && (
+            <Typography sx={{ fontWeight: 600 }}>
+              {instances.length} of {repeat.maxInstances}
+            </Typography>
+          )}
+        </Box>
+      )}
+      {instances.map((i, idx) => (
         <SectionInstanceProvider
           sectionId={section.id}
           instanceId={i.id}
@@ -49,8 +66,32 @@ export const SectionRenderer: React.FC<{ section: ISection }> = function ({
             initial="initial"
             animate="animate"
             exit="exit"
-            sx={rendererStyles["section"]}
+            sx={mergeSx(
+              rendererStyles["section"],
+              repeat && rendererStyles["repeatableSection"],
+            )}
           >
+            {repeat && (
+              <Box sx={rendererStyles["repeatableSectionActionTitle"]}>
+                <Typography
+                  component="h3"
+                  sx={{ fontSize: "1.25rem", fontWeight: 600 }}
+                >
+                  {repeat.instanceLabel ?? "Item"} {idx + 1}
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  size="small"
+                  onClick={() => removeInstance(section.id, i.id)}
+                  disabled={
+                    repeat.minInstances != null && idx < repeat.minInstances
+                  }
+                >
+                  Remove
+                </Button>
+              </Box>
+            )}
             <AnimatePresence initial={false}>
               {elements.map((element) => (
                 <ElementRenderer element={element} key={element.id} />
@@ -59,6 +100,18 @@ export const SectionRenderer: React.FC<{ section: ISection }> = function ({
           </Box>
         </SectionInstanceProvider>
       ))}
+      {repeat && (
+        <Button
+          variant="outlined"
+          onClick={() => addInstance(section.id)}
+          disabled={
+            repeat.maxInstances != null &&
+            instances.length === repeat.maxInstances
+          }
+        >
+          {repeat.addLabel ?? "Add Instance"}
+        </Button>
+      )}
     </>
   );
 };
