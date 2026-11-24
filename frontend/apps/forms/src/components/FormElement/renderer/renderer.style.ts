@@ -24,6 +24,7 @@ export const rendererStyles: Styles = {
   repeatableSection: {
     borderLeft: `3px solid ${Border.Primary}`,
     paddingLeft: 2.5,
+    width: "unset",
   },
   repeatableSectionActionTitle: {
     display: "flex",

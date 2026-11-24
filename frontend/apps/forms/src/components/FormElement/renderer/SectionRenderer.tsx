@@ -1,4 +1,4 @@
-import type { ISection } from "@/types/section";
+import type { ISection, ISectionRepeat } from "@/types/section";
 import { sortPositioned } from "@/utils/position";
 import { ElementRenderer } from "./ElementRenderer";
 import { filterVisible } from "@/utils/filter";
@@ -17,28 +17,35 @@ import Button from "@mui/material/Button";
 import { mergeSx } from "merge-sx";
 import Typography from "@mui/material/Typography";
 
+function hasMinInstances(
+  count: number,
+  repeat: ISectionRepeat | undefined,
+): boolean {
+  if (!repeat || !repeat.minInstances) {
+    return count > 0;
+  }
+
+  return count >= repeat.minInstances;
+}
+
 export const SectionRenderer: React.FC<{ section: ISection }> = function ({
   section,
 }) {
+  const { addInstance, ensureMinInstances, removeInstance } =
+    useSubmissionInstanceActions();
   const evalCtx = useEvalContext();
   const instances = useSubmissionSectionInstances(section.id);
-  const hasInstances = instances && instances.length > 0;
-  const { addInstance, ensureInstance, removeInstance } =
-    useSubmissionInstanceActions();
   const repeat = section.repeat;
+  const hasInstances = instances && hasMinInstances(instances.length, repeat);
 
   useEffect(() => {
     if (!hasInstances) {
-      ensureInstance(section.id);
+      ensureMinInstances(section.id, repeat?.minInstances ?? 0);
     }
-  }, [ensureInstance, section.id, hasInstances]);
+  }, [ensureMinInstances, section.id, hasInstances, repeat]);
 
   let elements = sortPositioned(section.elements);
   elements = filterVisible(elements, evalCtx);
-
-  if (!hasInstances) {
-    return null;
-  }
 
   return (
     <>

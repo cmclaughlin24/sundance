@@ -25,8 +25,8 @@ export function useFormValues() {
 
 export function useSubmissionInstanceActions() {
   const store = useSubmissionContext();
-  const { addInstance, removeInstance, ensureInstance } = store.getState();
-  return { addInstance, removeInstance, ensureInstance };
+  const { addInstance, removeInstance, ensureMinInstances } = store.getState();
+  return { addInstance, removeInstance, ensureMinInstances };
 }
 
 export function useSubmissionSectionInstances(sectionId: string) {

@@ -95,7 +95,8 @@ export const SectionSettings: React.FC<{
     };
   };
 
-  const handleBlur = () => flush({ minInstances, maxInstances, addLabel });
+  const handleBlur = () =>
+    flush({ minInstances, maxInstances, addLabel, instanceLabel });
 
   return (
     <Box sx={settingsStyle.container}>

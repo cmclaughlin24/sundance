@@ -8,7 +8,7 @@ export interface ISubmissionStore {
   sections: Record<string, SectionInstanceState[]>;
   addInstance: (sectionId: string) => void;
   removeInstance: (sectionId: string, instanceId: string) => void;
-  ensureInstance: (sectionId: string) => void;
+  ensureMinInstances: (sectionId: string, min: number) => void;
   setValue: (
     sectionId: string,
     instanceId: string,
@@ -51,18 +51,21 @@ export function createSubmissionStore(raw: ISubmissionSection[] = []) {
         return { sections: { ...s.sections, [sectionId]: section } };
       });
     },
-    ensureInstance(sectionId) {
+    ensureMinInstances(sectionId, min) {
       return set((s) => {
         let section = s.sections[sectionId];
 
-        if (ArrayUtils.hasLengthGreaterThan(section, 0)) {
+        if (
+          ArrayUtils.hasLengthGreaterThan(section, 0) &&
+          ArrayUtils.hasExactLength(section, min)
+        ) {
           return s;
         }
 
         return {
           sections: {
             ...s.sections,
-            [sectionId]: [SectionInstanceState.create()],
+            [sectionId]: Array(min).fill(SectionInstanceState.create()),
           },
         };
       });
