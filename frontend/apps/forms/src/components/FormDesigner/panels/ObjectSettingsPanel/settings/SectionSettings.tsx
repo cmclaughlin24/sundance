@@ -49,11 +49,11 @@ export const SectionSettings: React.FC<{
     }
 
     if (next.addLabel && next.addLabel.trim() !== "") {
-      event.addLabel = addLabel;
+      event.addLabel = next.addLabel;
     }
 
     if (next.instanceLabel && next.instanceLabel.trim() !== "") {
-      event.instanceLabel = instanceLabel;
+      event.instanceLabel = next.instanceLabel;
     }
 
     onChange(Object.keys(event).length > 0 ? event : undefined);

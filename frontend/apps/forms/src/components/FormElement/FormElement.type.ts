@@ -24,6 +24,43 @@ export interface IAsyncSubmitEvent {
 }
 
 /**
+ * Customization options for the parts of the `FormRenderer` UI that consumers can override.
+ * All properties are optional. Anything left out uses the component's default.
+ */
+export interface FormRendererSlotProps {
+  /**
+   * Overrides for the action button in the form footer.
+   */
+  buttons?: {
+    /**
+     * Options for the `cancel` button, which submits the `SubmitAction.AddToCart`
+     */
+    cancel?: {
+      /**
+       * Whether to show the `add-to-cart` button. Defaults to `true`.
+       */
+      show?: boolean;
+
+      /**
+       * Text for the `cancel` button. Defaults to "Cancel".
+       */
+      label?: string;
+    };
+    submit?: {
+      /**
+       * Whether to show the `submit` button. Defaults to `true`.
+       */
+      show?: boolean;
+
+      /**
+       * Text for the `submit` button. Defaults to "Submit Request".
+       */
+      label?: string;
+    };
+  };
+}
+
+/**
  * Base props shared across all `FormElement` variants. These props are common to all submission modes.
  */
 interface BaseFormElementProps {
@@ -49,6 +86,12 @@ interface BaseFormElementProps {
    * this prop is not provided the form will be rendered with empty fields.
    */
   rawSubmission?: ISubmissionSection[];
+
+  /**
+   * Optional overrides for parts of teh form UI, such as the footer button labels and
+   * whether the `cancel` button is shown. Anything left out uses the default.
+   */
+  slotProps?: FormRendererSlotProps;
 
   /**
    * Callback function that is called when the user cancels the form.

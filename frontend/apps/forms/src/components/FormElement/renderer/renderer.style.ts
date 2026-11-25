@@ -32,4 +32,11 @@ export const rendererStyles: Styles = {
     alignItems: "center",
     width: "100%",
   },
+  repeatableSectionNoInstances: {
+    border: `1px dashed ${Border.Primary}`,
+    borderRadius: 1.5,
+    p: 2.5,
+    width: "100%",
+    boxSizing: "border-box",
+  },
 };

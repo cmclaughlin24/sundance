@@ -16,15 +16,19 @@ import { calculateProgress } from "@/utils/progress";
 import { checkFormValidity } from "@/utils/form";
 import { FormFooter } from "../layout/FormFooter/FormFooter";
 import { FormFooterActions } from "../layout/FormFooter/FormFooterActions";
+import type { FormRendererSlotProps } from "../FormElement.type";
+import { getFormRendererSlotProp } from "./rendererDefaults";
 
 export interface FormRendererProps {
   onSubmit: (values: ISubmissionSection[]) => void;
   onCancel: () => void;
+  slotProps?: FormRendererSlotProps;
 }
 
 export const FormRenderer: React.FC<FormRendererProps> = function ({
   onSubmit,
   onCancel,
+  slotProps,
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const form = useForm();
@@ -93,9 +97,11 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
       </Box>
       <FormFooter progress={progress} variant="compact">
         <FormFooterActions>
-          <Button variant="contained" color="secondary" onClick={onCancel}>
-            Cancel
-          </Button>
+          {getFormRendererSlotProp("buttons.cancel.show", slotProps) && (
+            <Button variant="contained" color="secondary" onClick={onCancel}>
+              {getFormRendererSlotProp("buttons.cancel.label", slotProps)}
+            </Button>
+          )}
           {pages.length > 1 && pageIndex > 0 && (
             <Button variant="outlined" onClick={() => handlePageChange(-1)}>
               Previous
@@ -106,16 +112,17 @@ export const FormRenderer: React.FC<FormRendererProps> = function ({
               Next
             </Button>
           )}
-          {isLastPage && (
-            <Button
-              variant="contained"
-              type="submit"
-              disabled={!isFormValid}
-              form={form.id}
-            >
-              Submit
-            </Button>
-          )}
+          {isLastPage &&
+            getFormRendererSlotProp("buttons.submit.show", slotProps) && (
+              <Button
+                variant="contained"
+                type="submit"
+                disabled={!isFormValid}
+                form={form.id}
+              >
+                {getFormRendererSlotProp("buttons.submit.label", slotProps)}
+              </Button>
+            )}
         </FormFooterActions>
       </FormFooter>
     </EvalContextContext>

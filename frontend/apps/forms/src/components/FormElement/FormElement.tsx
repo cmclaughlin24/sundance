@@ -22,6 +22,7 @@ export const FormElement: React.FC<FormElementProps> = function ({
   rawSubmission,
   onSubmit,
   onCancel,
+  slotProps,
 }) {
   const formsService = useFormsService();
   const submissionService = useSubmissionsService();
@@ -106,7 +107,11 @@ export const FormElement: React.FC<FormElementProps> = function ({
     <FormDefinitionProvider form={form} version={version}>
       <SubmissionProvider rawSubmission={values}>
         <Page sx={formElementStyles["page"]}>
-          <FormRenderer onSubmit={handleSubmit} onCancel={onCancel} />
+          <FormRenderer
+            onSubmit={handleSubmit}
+            onCancel={onCancel}
+            slotProps={slotProps}
+          />
         </Page>
       </SubmissionProvider>
     </FormDefinitionProvider>
